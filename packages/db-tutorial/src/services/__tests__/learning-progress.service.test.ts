@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LearningProgressService, type AuthenticatedIdentity } from '../learning-progress.service';
+import { createD1Fixture, createC1Fixture, createI1Fixture } from './test-fixtures';
 import type {
   ITutorialNavigationProgressRepository,
   TutorialNavigationProgressRecord,
@@ -47,7 +48,7 @@ class MockSectionRepository {
       subtopicId,
       navigationNodeId,
       brandId: brandId as 'shared' | 'realtutorialhub' | 'skillup' | 'skillhubcore',
-      content: { schemaVersion: 1, blocks: [] },
+      content: { schemaVersion: 1, blocks: [createD1Fixture({ id: 'block-D1' })] } as any,
     };
     this.sections.set(key, mockSection as TutorialSection);
   }
@@ -569,6 +570,8 @@ describe('LearningProgressService', () => {
       await service.recordBlockCompletion({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1', 'section-1', 'block-D1', 'definition', 'D1'
       );
 
+      const current = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      current!.content = { schemaVersion: 1, blocks: [{ id: 'block-D1', type: 'definition', version: 'D2', content: {} }] } as any;
       const result = await service.recordBlockCompletion({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1', 'section-1', 'block-D1', 'definition', 'D2' // Different version
       );
 
@@ -640,8 +643,8 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -665,8 +668,8 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -697,7 +700,7 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
           ],
         };
       }
@@ -737,8 +740,8 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
             { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
@@ -769,8 +772,8 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
             { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
@@ -801,7 +804,7 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
           ],
         };
       }
@@ -843,7 +846,7 @@ describe('LearningProgressService', () => {
       });
 
       // User completed DIFFERENT blockId (block-other) even though same version (D1)
-      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-other', 'definition', 'D1');
+      await expect(service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-other', 'definition', 'D1')).rejects.toThrow();
 
       // Completion should fail - blockId mismatch (block-other != block-def)
       // Verifies matching on blockId + blockVersion, not just version
@@ -885,8 +888,8 @@ describe('LearningProgressService', () => {
         sectionA.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
             { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
@@ -899,7 +902,7 @@ describe('LearningProgressService', () => {
         sectionB.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
           ],
         };
       }
@@ -949,8 +952,8 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -1349,9 +1352,9 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createI1Fixture({ id: 'block-I1' }) as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -1398,9 +1401,9 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createI1Fixture({ id: 'block-I1' }) as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
             { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['Key point 1', 'Key point 2'] } } as any,
           ],
         };
@@ -1445,9 +1448,9 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
-            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
+            createI1Fixture({ id: 'block-I1' }) as any,
             { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point'] } } as any,
           ],
         };
@@ -1470,9 +1473,9 @@ describe('LearningProgressService', () => {
           schemaVersion: 1,
           blocks: [
             { id: 'heading-1', type: 'heading', content: { text: 'Section 1', level: 2 } } as any,
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
             { id: 'para-1', type: 'paragraph', content: { text: 'Some text' } } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -1493,8 +1496,8 @@ describe('LearningProgressService', () => {
         sectionA.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }
@@ -1509,9 +1512,9 @@ describe('LearningProgressService', () => {
         sectionB.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
-            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
-            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            createI1Fixture({ id: 'block-I1' }) as any,
+            createD1Fixture({ id: 'block-D1' }) as any,
+            createC1Fixture({ id: 'block-C1' }) as any,
           ],
         };
       }

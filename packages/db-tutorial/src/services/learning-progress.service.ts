@@ -72,6 +72,7 @@ import {
 import {
   resolveRequiredBlocks as resolveRequiredBlocksImpl,
   validateNavigationHierarchy as validateNavigationHierarchyImpl,
+  validateCompletionMembership,
 } from './learning-progress.hierarchy-resolution';
 
 // Re-export types for convenience
@@ -348,6 +349,9 @@ export class LearningProgressService {
       sectionId,
       identity
     );
+
+    // Resolve current content identity before any progress creation or mutation.
+    await validateCompletionMembership(this.sectionRepository, subtopicId, navigationNodeId, identity, blockId, blockVersion);
 
     // Ensure progress exists
     await this.getNavigationProgress(identity, navigationNodeId, subtopicId, sectionId);

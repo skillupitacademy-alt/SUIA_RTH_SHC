@@ -22,7 +22,7 @@ def main():
   it('SOL-TERRA canonical stored block positive control', async () => {
     mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'skillup');
     const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'skillup');
-    section!.content = {schemaVersion: 1, blocks: [{id: 'canonical-allowed', type: 'definition', version: 'D1'}]} as any;
+    section!.content = {schemaVersion: 1, blocks: [createD1Fixture({id: 'canonical-allowed'})]} as any;
     const result = await service.recordBlockCompletion(
       {userId: 'user-1', brand: 'skillup'}, 'node-1', 'subtopic-1', 'section-1', 'canonical-allowed', 'definition', 'D1'
     );
@@ -31,7 +31,7 @@ def main():
   it('SOL-TERRA canonical unknown block must fail before progress mutation', async () => {
     mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'skillup');
     const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'skillup');
-    section!.content = {schemaVersion: 1, blocks: [{id: 'canonical-allowed', type: 'definition', version: 'D1'}]} as any;
+    section!.content = {schemaVersion: 1, blocks: [createD1Fixture({id: 'canonical-allowed'})]} as any;
     const write = vi.spyOn(mockRepo, 'markBlockCompleted');
     const create = vi.spyOn(mockRepo, 'createProgress');
     const accepted = await service.recordBlockCompletion(
