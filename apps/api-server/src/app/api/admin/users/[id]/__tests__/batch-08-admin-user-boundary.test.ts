@@ -28,6 +28,6 @@ describe('admin user actual entry effect boundary', () => {
   });
   it('denies a learner at the guard before a privileged read', async () => {
     const response = await GET(await request('user'), { params: Promise.resolve({ id: 'target' }) });
-    expect(response.status).toBeGreaterThanOrEqual(400); expect(db.query.users.findFirst).not.toHaveBeenCalled();
+    expect.soft(response.status).toBe(401); expect.soft(await response.json()).toMatchObject({ code: 'UNAUTHORIZED' }); expect(db.query.users.findFirst).not.toHaveBeenCalled();
   });
 });

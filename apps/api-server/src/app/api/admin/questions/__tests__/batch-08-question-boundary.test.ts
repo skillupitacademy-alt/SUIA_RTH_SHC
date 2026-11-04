@@ -26,6 +26,6 @@ describe('admin question CQRS handler effect boundary', () => {
   });
   it('denies learner before query dispatch', async () => {
     const response = await GET(await request('user'), undefined);
-    expect(response.status).toBeGreaterThanOrEqual(400); expect(queryBus.dispatch).not.toHaveBeenCalled();
+    expect.soft(response.status).toBe(401); expect.soft(await response.json()).toMatchObject({ code: 'UNAUTHORIZED' }); expect(queryBus.dispatch).not.toHaveBeenCalled();
   });
 });

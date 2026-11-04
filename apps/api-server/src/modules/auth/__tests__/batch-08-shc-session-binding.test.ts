@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { SHCAuthService } from '../shc-auth.service';
 import { AuditService } from '../audit.service';
 import { TokenRepository } from '../repositories/token.repository';
@@ -27,6 +28,22 @@ describe('SHC issued credential and logout repository seam', () => {
     expect(repo.createRefreshToken).not.toHaveBeenCalled();
     await service.logout('admin-1');
     expect(repo.revokeAll).toHaveBeenCalledExactlyOnceWith('admin-1');
+  });
+  it('uses the real token repository on isolated rows without creating a row for the issued credential', async () => {
+    const rows = [{ userId: 'admin-1', token: 'old-row', revoked: false }, { userId: 'other', token: 'other-row', revoked: false }];
+    const insert = vi.fn(() => ({ values: vi.fn(async () => undefined) }));
+    const where = vi.fn(async (clause: any) => {
+      const params = new PgDialect().sqlToQuery(clause).params;
+      for (const row of rows) if (params.includes(row.userId)) row.revoked = true;
+    });
+    const update = vi.fn(() => ({ set: () => ({ where }) }));
+    const actual = new TokenRepository({ insert, update } as never);
+    container.register(TokenRepository, actual);
+    const service = new SHCAuthService();
+    const session = await service.login('admin@example.test', 'disposable-password');
+    expect(session.refreshToken).toBeTruthy(); expect(insert).not.toHaveBeenCalled();
+    await service.logout('admin-1');
+    expect(rows[0]?.revoked).toBe(true); expect(rows[1]?.revoked).toBe(false); expect(update).toHaveBeenCalledTimes(1);
   });
   it('absorbs repository revocation failure at the service boundary', async () => {
     repo.revokeAll.mockRejectedValueOnce(new Error('isolated repository outage'));

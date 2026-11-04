@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SignJWT } from 'jose';
 
 import { proxyRequest } from '../proxy';
+import { resolveTrustedRequestBrand } from '../request-brand';
 import { authenticateRequest } from '../../middleware/auth';
 
 describe('B08-T06 gateway proxy transport', () => {
@@ -26,6 +27,26 @@ describe('B08-T06 gateway proxy transport', () => {
       shadowUserId: result.payload.shadowUserId, brand: result.requestBrand, portal: result.portal,
     });
     expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('x-user-id')).toBe('local-original');
+  });
+
+  it.each(['valid', 'invalid', 'missing', 'conflict'])('composes trusted host and signed dispatch: %s', async mode => {
+    const secret = 'gateway-disposable-secret-32-bytes';
+    const token = await new SignJWT({ userId: 'payload-user', originalUserId: 'local-original', shadowUserId: 'distinct-shadow', brand: mode === 'conflict' ? 'realtutorialhub' : 'skillup', tokenType: 'user', roles: ['student'] })
+      .setProtectedHeader({ alg: 'HS256' }).setSubject('distinct-shadow').setAudience('user').sign(new TextEncoder().encode(secret));
+    const headers = new Headers({ authorization: `Bearer ${token}`, 'x-forwarded-host': 'user.skillupitacademy.com' });
+    if (mode !== 'missing') headers.set('x-internal-secret', mode === 'invalid' ? 'invalid' : 'trusted-key');
+    const request = new Request('https://common.example.test/api/tutorial/progress', { headers });
+    const context = { env: { INTERNAL_GATEWAY_SECRET: 'trusted-key' }, req: { url: request.url, header: (name: string) => headers.get(name) ?? undefined } };
+    const resolved = resolveTrustedRequestBrand(context as never);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 204 }));
+    if (!resolved) { expect(['invalid', 'missing']).toContain(mode); expect(fetchMock).not.toHaveBeenCalled(); return; }
+    const result = await authenticateRequest(request, { JWT_SECRET: secret, ADMIN_JWT_SECRET: secret } as never, { prefix: '/api/tutorial' }, resolved.brand);
+    if (result instanceof Response) { expect(mode).toBe('conflict'); expect(fetchMock).not.toHaveBeenCalled(); return; }
+    expect(mode).toBe('valid');
+    await proxyRequest(request, 'https://upstream.invalid', { requestId: 'fixture', gatewaySecret: 'trusted-key', userId: result.payload.originalUserId, originalUserId: result.payload.originalUserId, shadowUserId: result.payload.shadowUserId, brand: result.requestBrand, portal: result.portal });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const forwarded = new Headers(fetchMock.mock.calls[0][1]?.headers);
+    expect(forwarded.get('x-user-id')).toBe('local-original'); expect(forwarded.get('x-brand')).toBe('skillup');
   });
 
   it('forwards reconstructed distinct identity fields, tenant, portal and inherited credentials', async () => {

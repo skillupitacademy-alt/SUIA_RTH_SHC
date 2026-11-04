@@ -147,4 +147,3 @@ function isExportTriggerBody(value: unknown): value is { examId: string; format:
     isExportFormat(record.format)
   );
 }
-
