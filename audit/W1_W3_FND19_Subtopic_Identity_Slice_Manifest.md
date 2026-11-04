@@ -1,0 +1,5 @@
+# FND19 subtopic identity slice manifest
+
+Baseline 4e8219f6; SHC-IDENTITY-001 / RC-CONTRACT-01. Actual `SubtopicTable` retrieves API rows and substitutes `crypto.randomUUID()` for missing IDs, then uses row IDs for select/edit/delete. Allowed production file `apps/skillhubcore-admin/src/components/questions/SubtopicTable.tsx`, adjacent tests. Reject a response containing absent, blank or duplicate IDs; clear listed data and selected actions on failure. Preserve real IDs and current API shape. No role, backend, schema or taxonomy behavior redesign. Mounted table tests use isolated API/hierarchy hooks and blocked fetch for valid and malformed rows. No browser/service/store execution. Sol review required.
+
+Verification: repository root with DB/cache/queue keys removed, programmatic Vitest `config: false`, jsdom, React plugin and explicit SHC `@` alias selecting `subtopic-identity.test.tsx`: exit 0, 4 passed for valid/missing/blank/duplicate IDs. Actual table uses stub API/hierarchy hooks and blocked fetch; no backend/browser. SHC `pnpm exec tsc --noEmit` exit 0; diff whitespace passed. Asynchronous owner/race semantics are not established. IMPLEMENTED_UNVERIFIED.
