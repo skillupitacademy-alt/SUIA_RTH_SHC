@@ -7,7 +7,7 @@ interface ReportHeaderProps {
   examSubjectName: string;
   examDateStr: string;
   formattedTotalTime: string;
-  isPassed: boolean;
+  isPassed: boolean | null;
   primaryColor?: string;
   secondaryColor?: string;
 }
@@ -73,7 +73,7 @@ export function ReportHeader({
           <div className="text-left">
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider leading-none">Overall Result</p>
             <p className={`text-xs sm:text-sm font-black uppercase mt-0.5 ${isPassed ? 'text-[#ff0055]' : 'text-red-400'}`}>
-              {isPassed ? 'PASS' : 'RETRY'}
+              {isPassed === null ? 'Unavailable' : isPassed ? 'PASS' : 'RETRY'}
             </p>
           </div>
         </div>

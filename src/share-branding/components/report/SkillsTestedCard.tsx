@@ -18,18 +18,15 @@ export function SkillsTestedCard({ skillList }: SkillsTestedCardProps) {
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center items-start">
           {skillList.map((skill, index) => {
             const gaugeColor =
-              skill.accuracy >= 80
+              (skill.accuracy ?? -1) >= 80
                 ? '#059669'
-                : skill.accuracy >= 60
+                : (skill.accuracy ?? -1) >= 60
                 ? '#2563eb'
-                : skill.accuracy > 0
+                : (skill.accuracy ?? -1) > 0
                 ? '#f97316'
                 : '#cbd5e1';
 
-            const displayAccuracy =
-              skill.accuracy > 0
-                ? `${skill.accuracy.toFixed(skill.accuracy % 1 === 0 ? 0 : 1)}%`
-                : '0%';
+            const displayAccuracy = skill.accuracy === null ? 'Unavailable' : `${skill.accuracy.toFixed(skill.accuracy % 1 === 0 ? 0 : 1)}%`;
 
             return (
               <div key={index} className="flex flex-col items-center">
@@ -47,7 +44,7 @@ export function SkillsTestedCard({ skillList }: SkillsTestedCardProps) {
 
                 {/* Circular Progress Gauge */}
                 <DonutGauge
-                  percentage={skill.accuracy}
+                  percentage={skill.accuracy ?? 0}
                   size={54}
                   strokeWidth={6}
                   color={gaugeColor}
@@ -60,7 +57,7 @@ export function SkillsTestedCard({ skillList }: SkillsTestedCardProps) {
 
                 {/* Score / Total */}
                 <div className="text-[11px] font-bold text-gray-700 mt-2">
-                  {skill.score} / {skill.total}
+                  {skill.score ?? 'Unavailable'} / {skill.total ?? 'Unavailable'}
                 </div>
               </div>
             );
