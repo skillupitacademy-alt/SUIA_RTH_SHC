@@ -72,6 +72,10 @@ The model names below follow the available models stated by the project owner. T
 | **Tera** | Secondary analysis / verification worker | Repository search, checklist validation, documentation reconciliation, routine verification where available | Final architectural approval; unbounded refactor | Evidence checklist, comparison, verification notes |
 | **Luna** | Fast routine worker | Documentation updates; ticket bookkeeping; dead-code removal; small tests; simple cleanup; low-risk typing/lint fixes | Security architecture, identity changes, major data-model decisions | Small patch or register update with concise evidence |
 
+### Batch 08 owner-directed model assignment
+
+For the twenty-package continuation in `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md`, Terra (Tera in the matrix) is the single implementation/evidence worker, with batch-specific authorization for the narrow proxy correction and listed tests. Sol retains independent architectural review and final acceptance. This owner-requested assignment overrides the historical default implementation worker for this batch. No concurrent implementation of the same files is assigned.
+
 ## Model Hierarchy
 
 ```text
@@ -850,7 +854,7 @@ and no new cookie/deprecation metadata; tested strictly offline via `sess-04-log
 **Sol disposition:** `audit/W1.2_Batch_08_Containment_Sol_Disposition.md` reviews b5a760b5. Progress JWT authentication and existing-job non-owner export-status containment VERIFIED within offline assertions. Full tenant-resource ownership remains open.
 **Evidence:** Submitted matrix independently reproduced as 67 passed before Sol restored the bad-internal-key denial assertion. Original Sol probe has 2 passed and 3 failed, with 21 filtered cases. Seven additional containment/compatibility controls passed. API typecheck and submitted whitespace range passed. Counts qualify their actual fixture layers.
 **Accepted scope:** B08-B lifecycle and B08-C session/credential isolation are accepted within their isolated service/repository adapters. B08-D helper/proxy assertions have limited acceptance, with request/resource context and downstream linkage still pending. Actual B08-H cache/consumer qualification remains NOT EXECUTED.
-**Remaining assignment:** `audit/W1.2_Batch_08_Remaining_Boundaries_Task.md` assigns six linked packages, including the narrow explicit-invalid-internal-key proxy correction, caller/resource evidence, authoritative export ownership design, source map, SHC policy and integrated gates.
+**Remaining assignment:** `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md` assigns twenty packages B08-T01 through B08-T20 to Terra under the owner-requested model change. It supersedes the six-package task. Sol independently reviews and accepts. Scope covers the narrow proxy correction, real caller/guard/resource controls, progress/export ownership designs, SHC consumer/policy work, client fixture requirements and integrated gates. Runtime authority remains confined to the explicit proxy correction and progress import ordering.
 **SHC decision:** Current issuance/cookie compatibility retained while the lifecycle design is corrected. Future sliding refresh, cookie removal, TTL/schema changes and session-family policy require separately reviewed decisions.
 **Authority:** FinalAechitecture.md and accepted independent tenant identity. Parent RC-ID-01/BROWSER-01 remain IN_PROGRESS, with deployment attribution and formal Wave 8 requirements open. Existing prior closures retain their scopes. Application sequence remains Wave 4 SHC, Wave 5 SUIA and Wave 6 RTH.
 
