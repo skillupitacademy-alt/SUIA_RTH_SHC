@@ -26,4 +26,3 @@ describe('B08-T05 actual shared auth BFF forwarding', () => {
     expect(forwarded.get('x-brand')).toBe(brand);
   });
 });
-
