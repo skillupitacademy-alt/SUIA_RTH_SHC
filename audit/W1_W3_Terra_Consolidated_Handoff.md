@@ -9,7 +9,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND03 | PARTIAL: `e6113cad` consolidates signed-subject, projection, private-store, export provenance, admin and publication recommendations; Sol policy/deployment disposition remains pending. |
 | FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
 | FND05 | BLOCKED on FND03 private owner/store authority; four evidence lanes remain separately qualified in Batch 08 handoff. |
-| FND06 | BLOCKED on FND03 admin resource classification; accepted previous containment remains in place. |
+| FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
 | FND07 | IMPLEMENTED_UNVERIFIED for J-R1/J-R2 only, commit `995e1f35`, manifest `W1_W3_FND07_Lifecycle_Slice_Manifest.md`; broader continuously mounted auth-owner/cache requirements remain open. |
 | FND08 | NOT COMPLETE: real Project LLM actor ingress and persistence need inventory and controls. |
 | FND09 | NOT COMPLETE: depends on FND08 and selected approval authority. |
