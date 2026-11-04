@@ -646,7 +646,7 @@ separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
 **Status:** `IN_PROGRESS` (Preparation, SHC API control, SUIA/RTH normal logout and the corrected local SUIA/RTH/SHC dashboard-cookie checks independently VERIFIED within their recorded scopes. PROXY-01 same-origin login-default correction CLOSED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` and prior logout acceptances. Unsupported lifecycle/tenant/cache/SHC-refresh fixtures, broader resource qualification and formal Wave 8 remain open.)
-**Current bounded assignment:** `audit/W1.2_Browser_Learner_Purpose_Smoke_Task.md` for attributable SUIA/RTH GUI purpose smoke after accepted Batch 07 offline gates. Existing live-Neon authorization applies. Unsupported negative fixtures and formal Wave 8 retain their separate gates.
+**Learner-purpose smoke:** `VERIFIED` within reviewed assertions at f4643656. Sol independently passed captured SUIA and RTH GUI purpose journeys plus 8 offline sentinels. Exact aud:user and boolean isAdmin:false are required in decoded access/refresh payloads. See `audit/W1.2_Browser_Learner_Purpose_Sol_Acceptance.md` for repeated-attempt disclosure, live authentication writes and qualified dev/HMR provenance. Unsupported negative fixtures, deployment attribution and formal Wave 8 retain their gates.
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
