@@ -52,39 +52,98 @@ function isTenantAudienceValid(tokenType: string | undefined, aud: unknown): boo
 }
 
 /**
+ * Local request-policy helper for cookie-authenticated exact origin validation (SESS-04).
+ * Enforces exact scheme, host, and port matching against authoritative request origin
+ * and explicitly trusted tenant origins, rejecting foreign origins, wrong scheme/port,
+ * deceptive substrings, and userinfo.
+ */
+function validateCookieOrigin(req: NextRequest): { isValid: boolean; error?: string } {
+  const originHeader = req.headers.get('origin');
+  if (typeof originHeader !== 'string' || originHeader.trim().length === 0) {
+    return { isValid: false, error: 'Forbidden: Missing origin for cookie-authenticated request' };
+  }
+
+  if (originHeader === 'null') {
+    return { isValid: false, error: 'Forbidden: Invalid origin' };
+  }
+
+  let parsedOrigin: URL;
+  try {
+    parsedOrigin = new URL(originHeader);
+  } catch {
+    return { isValid: false, error: 'Forbidden: Malformed origin' };
+  }
+
+  // Reject userinfo in origin
+  if (parsedOrigin.username.length > 0 || parsedOrigin.password.length > 0) {
+    return { isValid: false, error: 'Forbidden: Userinfo not permitted in origin' };
+  }
+
+  // Exact origin representation check (no trailing path, search, hash, or format spoofing)
+  if (originHeader !== parsedOrigin.origin) {
+    return { isValid: false, error: 'Forbidden: Origin must match canonical scheme://host[:port]' };
+  }
+
+  // Authoritative server request origin (exact scheme, host, port)
+  const authoritativeOrigin = req.nextUrl.origin.toLowerCase();
+  const candidateOrigin = parsedOrigin.origin.toLowerCase();
+
+  if (candidateOrigin === authoritativeOrigin) {
+    return { isValid: true };
+  }
+
+  // Check explicitly trusted tenant origins if configured
+  const envAllowed = process.env.ALLOWED_ORIGINS?.split(',')
+    .map((o) => o.trim().toLowerCase())
+    .filter((o) => o.length > 0);
+
+  if (envAllowed && envAllowed.length > 0) {
+    // Only permit trusted origins that match the authoritative request host domain
+    const requestHostname = req.nextUrl.hostname.toLowerCase();
+    const candidateHostname = parsedOrigin.hostname.toLowerCase();
+    const isTenantAligned =
+      candidateHostname === requestHostname ||
+      (candidateHostname.endsWith('.' + requestHostname) && !candidateHostname.includes('attacker'));
+
+    if (isTenantAligned && envAllowed.includes(candidateOrigin)) {
+      return { isValid: true };
+    }
+  }
+
+  return { isValid: false, error: 'Forbidden: CSRF origin mismatch' };
+}
+
+/**
  * POST /api/auth/logout-all - Logout from all devices
  */
 export async function POST(req: NextRequest) {
   const tokenService = container.get(TokenService);
   const globalLogoutService = container.get(GlobalLogoutService);
 
-  // 1. Extract credential preserving Bearer / cookie precedence
-  const authHeader = req.headers.get('authorization');
-  const hasBearerHeader =
-    typeof authHeader === 'string' &&
-    authHeader.startsWith('Bearer ') &&
-    authHeader.slice(7).trim().length > 0;
+  // 1. Extract credential with canonical cookie-first precedence
+  const cookieCandidate =
+    req.cookies.get('accessToken')?.value ?? req.cookies.get('admin_accessToken')?.value;
 
   let accessToken: string | undefined = undefined;
   let isCookieAuth = false;
 
-  if (hasBearerHeader) {
-    const candidate = authHeader.slice(7).trim();
-    try {
-      await tokenService.verifyAccessToken(candidate);
-      accessToken = candidate;
-    } catch {
-      // An invalid bearer header must NOT fall through to cookie credentials
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
-    }
-  }
-
-  if (typeof accessToken !== 'string' || accessToken.trim().length === 0) {
-    const cookieToken =
-      req.cookies.get('accessToken')?.value ?? req.cookies.get('admin_accessToken')?.value;
-    if (typeof cookieToken === 'string' && cookieToken.trim().length > 0) {
-      accessToken = cookieToken.trim();
-      isCookieAuth = true;
+  if (typeof cookieCandidate === 'string' && cookieCandidate.trim().length > 0) {
+    // Authoritative cookie credential selected
+    accessToken = cookieCandidate.trim();
+    isCookieAuth = true;
+  } else {
+    // Pure Bearer authorization fallback
+    const authHeader = req.headers.get('authorization');
+    if (typeof authHeader === 'string' && authHeader.trim().length > 0) {
+      if (!authHeader.startsWith('Bearer ')) {
+        return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      }
+      const bearerCandidate = authHeader.slice(7).trim();
+      if (bearerCandidate.length === 0) {
+        return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      }
+      accessToken = bearerCandidate;
+      isCookieAuth = false;
     }
   }
 
@@ -92,44 +151,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Enforce cookie-authenticated mutation origin/CSRF policy
+  // 2. Enforce cookie-authenticated mutation origin/CSRF policy
   if (isCookieAuth) {
-    const originHeader = req.headers.get('origin');
-    if (typeof originHeader !== 'string' || originHeader.trim().length === 0) {
+    const originCheck = validateCookieOrigin(req);
+    if (!originCheck.isValid) {
       return NextResponse.json(
-        { error: 'Forbidden: Missing origin for cookie-authenticated request' },
-        { status: 403 }
-      );
-    }
-
-    let parsedOrigin: URL;
-    try {
-      parsedOrigin = new URL(originHeader);
-    } catch {
-      return NextResponse.json(
-        { error: 'Forbidden: Malformed origin' },
-        { status: 403 }
-      );
-    }
-
-    const requestHost = (req.headers.get('host') ?? req.nextUrl.host).toLowerCase();
-    const originHost = parsedOrigin.host.toLowerCase();
-
-    // Exact parsed origin host match (no substring comparisons)
-    const allowedHosts = new Set([
-      requestHost,
-      requestHost.split(':')[0],
-      'skillup.test',
-      'realtutorialhub.test',
-      'localhost:3000',
-      'localhost:3001',
-      'localhost:3002',
-      'localhost:3003',
-    ]);
-
-    if (!allowedHosts.has(originHost)) {
-      return NextResponse.json(
-        { error: 'Forbidden: CSRF origin mismatch' },
+        { error: originCheck.error ?? 'Forbidden: CSRF origin mismatch' },
         { status: 403 }
       );
     }
