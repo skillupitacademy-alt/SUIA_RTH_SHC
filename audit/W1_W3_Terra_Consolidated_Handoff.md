@@ -22,7 +22,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: MKT-030 newsletter corrected in shared home footer; other form/action inventory and controls remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | NOT COMPLETE: identity contract work depends on W1 authority decisions. |
-| FND19 | NOT COMPLETE: taxonomy ingress/egress drift and controls require inventory. |
+| FND19 | PARTIAL / IMPLEMENTED_UNVERIFIED: bc891c17 removes a fabricated domain delete failure cause; other taxonomy consumers, canonical ingress/egress and compatibility remain open. |
 | FND20 | PARTIAL / IMPLEMENTED_UNVERIFIED: 45947f8c contains invalid question resource IDs at the mounted consumer; canonical runtime contract, round-trip and historical compatibility remain open. |
 | FND21 | NOT COMPLETE: tutorial contract consolidation depends on W1 owner authority and reviewed membership. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
