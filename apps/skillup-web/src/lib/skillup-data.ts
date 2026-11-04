@@ -201,9 +201,9 @@ export async function getSkillupStudentDashboard(userId: string) {
     return {
       summary: {
         name: profile.name ?? profile.email,
-        batchName: batchContext?.batchName ?? 'SkillUp Batch',
-        facultyName: batchContext?.facultyName ?? 'SkillUp Faculty',
-        currentTopic: batchContext?.sessions.find((session) => session.status === 'scheduled')?.title ?? batchContext?.sessions[0]?.title ?? 'SkillUp session',
+        batchName: batchContext?.batchName ?? 'Unavailable',
+        facultyName: batchContext?.facultyName ?? 'Unavailable',
+        currentTopic: 'Unavailable',
         attendancePercent,
         progressPercent,
         paymentDue,

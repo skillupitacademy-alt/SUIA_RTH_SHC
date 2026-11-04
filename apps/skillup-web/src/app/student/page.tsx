@@ -68,27 +68,15 @@ export default async function StudentDashboardPage() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Attendance', value: `${summary.attendancePercent}%`, accent: 'emerald' },
-          { label: 'Progress', value: `${summary.progressPercent}%`, accent: 'cyan' },
-          { label: 'Upcoming sessions', value: summary.upcomingSessions, accent: 'amber' },
-          { label: 'Job matches', value: summary.placementMatches, accent: 'rose' },
+          { label: 'Attendance', value: sessions.length > 0 ? `${summary.attendancePercent}%` : 'Unavailable' },
+          { label: 'Progress', value: sessions.length > 0 ? `${summary.progressPercent}%` : 'Unavailable' },
+          { label: 'Upcoming sessions', value: summary.upcomingSessions },
+          { label: 'Open jobs', value: summary.placementMatches },
         ].map((stat) => (
           <article key={stat.label} className="surface-card rounded-3xl p-5">
             <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-500">{stat.label}</p>
             <p className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">{stat.value}</p>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full ${
-                  stat.accent === 'emerald'
-                    ? 'w-[86%] bg-emerald-500'
-                    : stat.accent === 'cyan'
-                      ? 'w-[68%] bg-cyan-500'
-                      : stat.accent === 'amber'
-                        ? 'w-[54%] bg-amber-500'
-                        : 'w-[62%] bg-rose-500'
-                }`}
-              />
-            </div>
+
           </article>
         ))}
       </section>

@@ -8,6 +8,7 @@ import BatchesPage from '../../app/batches/page';
 import MyBatchPage from '../../app/student/my-batch/page';
 import ProgramsPage from '../../app/programs/page';
 import FacultyPage from '../../app/faculty/page';
+import StudentDashboardPage from '../../app/student/page';
 beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
 afterEach(() => { cleanup(); fetchData.mockReset(); vi.unstubAllGlobals(); });
 it('shows no enrollment in both batch entry pages', async () => {
@@ -27,4 +28,16 @@ it('shows empty program and faculty states', async () => {
   render(await FacultyPage());
   expect(screen.getByText('No active faculty are currently available.')).toBeTruthy();
   expect(screen.getByText('0')).toBeTruthy();
+});
+
+it('distinguishes missing session percentages from measured zero and calls open jobs by their source', async () => {
+  const summary = { nextSessionAt: null, paymentDue: 0, outstandingInstallments: 0, attendancePercent: 0, progressPercent: 0, upcomingSessions: 0, placementMatches: 4, facultyName: 'Unavailable', batchName: 'Unavailable', currentTopic: 'Unavailable' };
+  fetchData.mockResolvedValueOnce({ summary, sessions: [] }).mockResolvedValueOnce({ summary, sessions: [{ id: 's', date: '2026-01-01T00:00:00Z', title: 'Session', mode: 'online', status: 'completed' }] });
+  const first = render(await StudentDashboardPage());
+  expect(screen.getAllByText('Unavailable').length).toBeGreaterThan(1);
+  expect(screen.getByText('Open jobs')).toBeTruthy();
+  expect(screen.queryByText('Job matches')).toBeNull();
+  first.unmount();
+  render(await StudentDashboardPage());
+  expect(screen.getAllByText('0%')).toHaveLength(2);
 });
