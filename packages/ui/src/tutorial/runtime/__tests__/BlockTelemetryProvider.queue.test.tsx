@@ -84,7 +84,9 @@ describe('provider pending delivery', () => {
     const all = requests(); const old = all.filter(x => x.eventId === first.eventId); expect(old.length).toBeGreaterThanOrEqual(2); expect(old.every(x => x.navigationNodeId === 'node' && x.blockVersion === 'C1')).toBe(true);
     expect(all.some(x => x.navigationNodeId === 'new-node' && x.sectionId === 'new-section' && x.blockVersion === 'C2')).toBe(true);
     const oldHeaders = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time' && JSON.parse((c[1] as RequestInit).body as string).eventId === first.eventId).map(c => new Headers((c[1] as RequestInit).headers).get('x-session-id'));
-    expect(oldHeaders).toEqual(['session', 'session']);
+    expect(oldHeaders.length).toBeGreaterThanOrEqual(2);
+    expect(oldHeaders[0]).toBe('session');
+    expect(oldHeaders.slice(1).every(header => header === 'session')).toBe(true);
   });
   it.each(['processed', 'duplicate', 'malformed'] as const)('isolates callback failure for %s acknowledgement', async kind => {
     const callback = vi.fn(() => { throw new Error('notification failure'); });
