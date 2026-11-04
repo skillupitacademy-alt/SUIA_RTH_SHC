@@ -5,8 +5,8 @@ import { POST as central } from '../block-active-time/route';
 const fixture = vi.hoisted(() => ({ writes: [] as any[] }));
 vi.mock('@quiz/db-tutorial', async original => {
   const actual = await original<typeof import('@quiz/db-tutorial')>();
-  class Section { async getTutorialByPageIdentity() { return { id: 'section', content: { schemaVersion: 1, blocks: [] } }; } }
-  class Events { withDb() { return this; } async claimEvent(input: any) { return input; } }
+  class Section { async getTutorialByPageIdentity() { return { id: 'section', content: { schemaVersion: 1, blocks: [{ id: 'block', type: 'definition', version: 'D1', content: {} }] } }; } }
+  class Events { withDb() { return this; } async findByEventId() { return null; } async claimEvent(input: any) { return input; } }
   class State { withDb() { return this; } async upsert(input: any) { fixture.writes.push(input); return input; } }
   return { ...actual, TutorialNavigationProgressRepository: class {}, TutorialSectionRepository: Section, BlockLearningStateRepository: State, BlockTelemetryEventRepository: Events, db: {} };
 });
@@ -24,13 +24,19 @@ describe('learner BFF to central ILS service', () => {
   it.each(['skillup', 'realtutorialhub'] as const)('forwards signed %s subject to the real central service', async brand => {
     const bff = brand === 'skillup' ? await import('../../../../../../../skillup-web/src/app/api/tutorial/ils/block-active-time/route') : await import('../../../../../../../realtutorialhub-web/src/app/api/tutorial/ils/block-active-time/route');
     const signed = await tokens.generateAccessToken({ userId: 'local-user', originalUserId: 'original-user', shadowUserId: 'shadow-user', brand, roles: ['student'], tokenType: 'user', aud: 'user' });
-    globalThis.fetch = vi.fn(async (_url, options) => central(new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: options?.headers, body: options?.body as string })));
-    const incoming = new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: { authorization: `Bearer ${signed}` }, body: JSON.stringify(body) });
+    let forwardedSession: string | null = null;
+    globalThis.fetch = vi.fn(async (_url, options) => { forwardedSession = new Headers(options?.headers).get('x-session-id'); return central(new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: options?.headers, body: options?.body as string })); });
+    const incoming = new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: { authorization: `Bearer ${signed}`, 'x-session-id': 'browser-session' }, body: JSON.stringify(body) });
     expect((await bff.POST(incoming)).status).toBe(200);
     expect(fixture.writes).toHaveLength(1);
+    expect(forwardedSession).toBeNull();
+    expect(fixture.writes[0]).not.toHaveProperty('sessionId');
     expect(fixture.writes[0].userId).toBe(brand === 'skillup' ? 'shadow-user' : 'local-user');
     const invalid = new NextRequest(incoming.url, { method: 'POST', headers: { authorization: 'Bearer invalid' }, body: JSON.stringify(body) });
     expect((await bff.POST(invalid)).status).toBe(401);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    const wrongVersion = new NextRequest(incoming.url, { method: 'POST', headers: { authorization: `Bearer ${signed}`, 'x-session-id': 'browser-session' }, body: JSON.stringify({ ...body, blockVersion: 'D2' }) });
+    expect((await bff.POST(wrongVersion)).status).toBe(400);
+    expect(fixture.writes).toHaveLength(1);
   });
 });

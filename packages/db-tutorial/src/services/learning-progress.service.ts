@@ -630,6 +630,8 @@ export class LearningProgressService {
       throw error;
     }
 
+    await validateCompletionMembership(this.sectionRepository, subtopicId, navigationNodeId, identity, blockId, blockVersion, true);
+
     // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
     // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Fetching tutorial content', {
     //   subtopicId,
@@ -775,8 +777,13 @@ export class LearningProgressService {
       const txBlockTelemetryRepo = this.blockTelemetryEventRepository.withDb(tx as never);
       const txBlockStateRepo = this.blockLearningStateRepository.withDb(tx as never);
 
-      // Attempt to claim event atomically
-      const claimedEvent = await txBlockTelemetryRepo.claimEvent({
+      // An exact recorded retry remains valid after publication changes. New events
+      // require current content membership before any ledger or state mutation.
+      const existingBeforeClaim = await txBlockTelemetryRepo.findByEventId(eventId);
+      if (!existingBeforeClaim) {
+        await validateCompletionMembership(this.sectionRepository, subtopicId, navigationNodeId, identity, blockId, blockVersion, true);
+      }
+      const claimedEvent = existingBeforeClaim ? null : await txBlockTelemetryRepo.claimEvent({
         eventId,
         userId: identity.userId,
         navigationNodeId,
@@ -800,7 +807,7 @@ export class LearningProgressService {
         return { state: updatedState, wasProcessed: true, wasAlreadyProcessed: false };
       } else {
         // DUPLICATE EVENT: Validate payload immutability
-        const existingEvent = await txBlockTelemetryRepo.findByEventId(eventId);
+        const existingEvent = existingBeforeClaim ?? await txBlockTelemetryRepo.findByEventId(eventId);
 
         if (!existingEvent) {
           // Should never happen (claimEvent returned null but event doesn't exist)

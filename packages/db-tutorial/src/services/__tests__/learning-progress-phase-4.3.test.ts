@@ -31,6 +31,7 @@ import type { TutorialSection } from '../../schema/tutorial-sections';
 // Mock section repository for hierarchy validation
 class MockSectionRepository {
   private sections: Map<string, TutorialSection> = new Map();
+  version = 'D1';
 
   async getTutorialByPageIdentity(
     subtopicId: string,
@@ -38,7 +39,9 @@ class MockSectionRepository {
     brandId: string = 'shared'
   ): Promise<TutorialSection | undefined> {
     const key = `${subtopicId}:${navigationNodeId}:${brandId}`;
-    return this.sections.get(key);
+    const section = this.sections.get(key);
+    if (section) section.content = { schemaVersion: 1, blocks: [{ id: 'block-1', type: 'definition', version: this.version, content: {} }] } as never;
+    return section;
   }
 
   registerSection(
@@ -379,6 +382,7 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
         'session-1'
       );
 
+      mockSectionRepo.version = 'D2';
       const v2 = await service.recordBlockVisit(
         testIdentity,
         'node-1',

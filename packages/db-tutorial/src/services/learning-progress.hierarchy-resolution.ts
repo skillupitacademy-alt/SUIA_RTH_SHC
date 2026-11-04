@@ -22,6 +22,11 @@ import type { AuthenticatedIdentity } from './learning-progress.types';
 import { InvalidBlockCompletionError, InvalidNavigationHierarchyError } from './learning-progress.types';
 import type { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
 
+const UNVERSIONED_STRUCTURAL_TYPES = new Set([
+  'heading', 'paragraph', 'list', 'code', 'table', 'image', 'callout', 'example',
+  'quote', 'diagram', 'comparison', 'two-column', 'three-column', 'card-grid', 'timeline',
+]);
+
 /** Validate an ID/version against the resolved document, including supported containers. */
 export async function validateCompletionMembership(
   sectionRepository: TutorialSectionRepository,
@@ -30,6 +35,7 @@ export async function validateCompletionMembership(
   identity: AuthenticatedIdentity,
   blockId: string,
   blockVersion: string,
+  allowStructural = false,
 ): Promise<void> {
   const section = await sectionRepository.getTutorialByPageIdentity(subtopicId, navigationNodeId, identity.brand);
   const document = section?.content as unknown;
@@ -54,7 +60,11 @@ export async function validateCompletionMembership(
       if (block.version !== undefined && (typeof block.version !== 'string' || !block.version.trim())) return fail();
       if (seen.has(block.id)) return fail();
       seen.add(block.id);
-      if (block.id === blockId && block.version === blockVersion) matches++;
+      const matchesVersion = block.version === blockVersion ||
+        (allowStructural && block.version === undefined && blockVersion === 'unversioned' &&
+          UNVERSIONED_STRUCTURAL_TYPES.has(block.type) &&
+          (block.progressRole === undefined || block.progressRole === 'structural'));
+      if (block.id === blockId && matchesVersion) matches++;
       if (block.type === 'two-column') {
         const content = record(block.content);
         walk(record(content.left).blocks, depth + 1);
