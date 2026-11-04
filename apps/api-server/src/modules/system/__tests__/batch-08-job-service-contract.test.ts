@@ -23,4 +23,3 @@ describe('real jobs service storage contract', () => {
 
   });
 });
-

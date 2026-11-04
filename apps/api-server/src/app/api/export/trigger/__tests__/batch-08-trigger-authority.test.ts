@@ -41,4 +41,3 @@ describe('export trigger resource authority (isolated saga boundary)', () => {
     expect(ExportSaga.start).not.toHaveBeenCalled();
   });
 });
-

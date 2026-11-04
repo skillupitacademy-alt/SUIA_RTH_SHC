@@ -31,4 +31,3 @@ describe('admin user actual entry effect boundary', () => {
     expect(response.status).toBeGreaterThanOrEqual(400); expect(db.query.users.findFirst).not.toHaveBeenCalled();
   });
 });
-
