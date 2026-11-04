@@ -62,7 +62,7 @@ async function getHandler(request: NextRequest) {
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
-          ...(process.env.INTERNAL_API_KEY ? { 'x-internal-key': process.env.INTERNAL_API_KEY } : {}),
+          'x-internal-key': process.env.INTERNAL_API_KEY || '',
         },
         cache: 'no-store'
       }
@@ -118,7 +118,7 @@ async function postHandler(request: NextRequest) {
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
-          ...(process.env.INTERNAL_API_KEY ? { 'x-internal-key': process.env.INTERNAL_API_KEY } : {}),
+          'x-internal-key': process.env.INTERNAL_API_KEY || '',
         },
         body: JSON.stringify(parsed.data),
         cache: 'no-store'
