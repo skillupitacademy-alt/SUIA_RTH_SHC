@@ -16,7 +16,7 @@ describe('B08-T06 gateway proxy transport', () => {
     const result = await authenticateRequest(request, { JWT_SECRET: secret, ADMIN_JWT_SECRET: secret } as never, { prefix: '/api/tutorial' }, 'skillup');
     expect(result).not.toBeInstanceOf(Response);
     if (result instanceof Response) return;
-    expect(result.payload.userId).toBe('payload-user');
+    expect(result.payload).toHaveProperty('userId', 'payload-user');
     expect(result.payload.originalUserId).toBe('local-original');
     expect(result.payload.shadowUserId).toBe('distinct-shadow');
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 204 }));
