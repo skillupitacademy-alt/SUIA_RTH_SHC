@@ -12,6 +12,7 @@ vi.mock('@quiz/db', async (importOriginal) => {
 });
 
 import type { RequestBrand } from '@/lib/request-brand';
+import { container } from '@/modules/core/container';
 import { LoginService } from '../login.service';
 import { TokenRefreshService } from '../token-refresh.service';
 import { TokenService } from '../token.service';
@@ -81,9 +82,24 @@ describe('B08-B: Mid-Session Account Lifecycle Transition (Isolated Controls)', 
   const TEST_EMAIL = 'learner@skillup.test';
   const TEST_PASSWORD = 'CorrectPassword123!';
 
+  let previousTokenServiceInstance: TokenService | null = null;
+  let previousContainerTokenService: any = null;
+
   beforeEach(async () => {
+    try {
+      previousTokenServiceInstance = TokenService.getInstance();
+    } catch {
+      previousTokenServiceInstance = null;
+    }
+    try {
+      previousContainerTokenService = container.get(TokenService);
+    } catch {
+      previousContainerTokenService = null;
+    }
+
     tokenService = new TokenService(accessSecret, refreshSecret, adminSecret);
     TokenService.setInstance(tokenService);
+    container.register(TokenService, tokenService);
 
     suiaUserStore = new Map();
     suiaSessionStore = new Map();
@@ -253,6 +269,12 @@ describe('B08-B: Mid-Session Account Lifecycle Transition (Isolated Controls)', 
 
   afterEach(() => {
     vi.restoreAllMocks();
+    if (previousTokenServiceInstance) {
+      TokenService.setInstance(previousTokenServiceInstance);
+    }
+    if (previousContainerTokenService) {
+      container.register(TokenService, previousContainerTokenService);
+    }
   });
 
   it('POSITIVE CONTROL: establishes valid session and rotates token while account remains active', async () => {

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RequestBrand } from '@/lib/request-brand';
+import { container } from '@/modules/core/container';
 import { LoginService } from '../login.service';
 import { PasswordService } from '../password.service';
 import { TokenRefreshService } from '../token-refresh.service';
@@ -10,21 +11,25 @@ import type { StrictUserEligibility } from '../repositories/user.repository';
  * B08-C: Same-Email and Colliding-ID Session Isolation
  *
  * Governing Architecture: audit/FinalAechitecture.md (Tenant Learner Identity, Database Isolation)
- * Governing Task: audit/W1.2_Gemini_Controlled_Batch_08_Task.md (B08-C)
+ * Governing Task: audit/W1.2_Gemini_Batch_08_Corrections_And_Containment_Task.md (Package C)
  *
  * PROVES:
  * 1. Two tenants (skillup and realtutorialhub) seeded with:
  *    - Identical normalized email: learner@example.test
  *    - Colliding local primary keys: 'user-100'
- *    - Distinct passwords, distinct roles, and distinct sessions.
- * 2. Login to Tenant A (SUIA) with SUIA password succeeds.
- * 3. Login to Tenant B (RTH) with RTH password succeeds.
- * 4. Cross-tenant password attempt (SUIA password against RTH brand) fails closed with invalid credentials.
- * 5. Cross-tenant refresh attempt (SUIA refresh token submitted against RTH brand) fails closed.
- * 6. Legitimate Tenant A refresh succeeds, rotates Tenant A session, while Tenant B colliding session
- *    remains completely active and untouched.
- * 7. Fixture sensitivity check: if a miswired repository executes against the wrong tenant store,
- *    foreign session mutation is detected, proving assertion sensitivity.
+ *    - Distinct passwords, distinct roles, and distinct profiles ('SUIA Learner 100' vs 'RTH Learner 100').
+ * 2. Login to Tenant A (SUIA) returns distinct SUIA profile and creates session ONLY in SUIA store.
+ * 3. Login to Tenant B (RTH) returns distinct RTH profile and creates session ONLY in RTH store.
+ * 4. Reciprocal foreign-password checks fail closed for both tenants:
+ *    - SUIA password against RTH brand -> Invalid credentials
+ *    - RTH password against SUIA brand -> Invalid credentials
+ * 5. Reciprocal foreign-token refresh checks fail closed for both tenants:
+ *    - SUIA refresh token against RTH brand -> Invalid refresh token
+ *    - RTH refresh token against SUIA brand -> Invalid refresh token
+ * 6. Legitimate SUIA refresh rotates SUIA session while colliding RTH session is completely untouched.
+ * 7. Legitimate RTH refresh rotates RTH session while colliding SUIA session is completely untouched.
+ * 8. Fixture sensitivity via real wrong-store injection: executing service with a miswired store
+ *    is rejected fail-closed, proving assertion sensitivity without tautological state flipping.
  */
 
 interface InMemUser {
@@ -211,13 +216,27 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
 
   let loginService: LoginService;
   let refreshService: TokenRefreshService;
+  let previousTokenServiceInstance: TokenService | null = null;
+  let previousContainerTokenService: any = null;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     suiaStore.reset();
     rthStore.reset();
 
+    try {
+      previousTokenServiceInstance = TokenService.getInstance();
+    } catch {
+      previousTokenServiceInstance = null;
+    }
+    try {
+      previousContainerTokenService = container.get(TokenService);
+    } catch {
+      previousContainerTokenService = null;
+    }
+
     TokenService.setInstance(tokenService);
+    container.register(TokenService, tokenService);
 
     // 1. Seed SUIA store
     const suiaPasswordHash = await passwordService.hash(SUIA_PASSWORD);
@@ -266,9 +285,15 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    if (previousTokenServiceInstance) {
+      TokenService.setInstance(previousTokenServiceInstance);
+    }
+    if (previousContainerTokenService) {
+      container.register(TokenService, previousContainerTokenService);
+    }
   });
 
-  it('1. Login to SUIA succeeds and creates session ONLY in SUIA store', async () => {
+  it('1. Login to SUIA succeeds, returns SUIA profile, and creates session ONLY in SUIA store', async () => {
     const result = await loginService.login(
       SHARED_EMAIL,
       SUIA_PASSWORD,
@@ -280,6 +305,10 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
 
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
+
+    // Distinct profile marker check
+    expect((result as any)._user?.profile?.name).toBe('SUIA Learner 100');
+    expect((result as any)._user?.roles).toEqual(['student']);
 
     const decoded = await tokenService.verifyAccessToken(result.accessToken);
     expect(decoded.userId).toBe(COLLIDING_USER_ID);
@@ -296,7 +325,7 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
     expect(suiaSession.brand).toBe('skillup');
   });
 
-  it('2. Login to RTH succeeds and creates session ONLY in RTH store', async () => {
+  it('2. Login to RTH succeeds, returns RTH profile, and creates session ONLY in RTH store', async () => {
     const result = await loginService.login(
       SHARED_EMAIL,
       RTH_PASSWORD,
@@ -308,6 +337,10 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
 
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
+
+    // Distinct profile marker check
+    expect((result as any)._user?.profile?.name).toBe('RTH Learner 100');
+    expect((result as any)._user?.roles).toEqual(['professional']);
 
     const decoded = await tokenService.verifyAccessToken(result.accessToken);
     expect(decoded.userId).toBe(COLLIDING_USER_ID);
@@ -324,8 +357,8 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
     expect(rthSession.brand).toBe('realtutorialhub');
   });
 
-  it('3. Cross-tenant password attempt fails closed with zero session created', async () => {
-    // Attempting SUIA password against RTH brand
+  it('3. Reciprocal foreign-password attempts fail closed for both tenants', async () => {
+    // A. SUIA password against RTH brand -> must fail closed
     await expect(
       loginService.login(
         SHARED_EMAIL,
@@ -337,13 +370,25 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
       )
     ).rejects.toThrow('Invalid credentials');
 
-    // Neither tenant created a session
+    // B. RTH password against SUIA brand -> must fail closed
+    await expect(
+      loginService.login(
+        SHARED_EMAIL,
+        RTH_PASSWORD,
+        '127.0.0.1',
+        'skillup',
+        { deviceId: 'cross-dev-2' },
+        { purpose: 'learner' }
+      )
+    ).rejects.toThrow('Invalid credentials');
+
+    // Zero sessions created in either store
     expect(suiaStore.sessions.size).toBe(0);
     expect(rthStore.sessions.size).toBe(0);
   });
 
-  it('4. Cross-tenant refresh attempt fails closed (brand mismatch / foreign session unconsumed)', async () => {
-    // 1. Establish valid session in SUIA
+  it('4. Reciprocal foreign-refresh attempts fail closed for both tenants', async () => {
+    // 1. Establish sessions in both tenants
     const suiaLogin = await loginService.login(
       SHARED_EMAIL,
       SUIA_PASSWORD,
@@ -352,12 +397,19 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
       { deviceId: 'suia-dev-1' },
       { purpose: 'learner' }
     );
+    const rthLogin = await loginService.login(
+      SHARED_EMAIL,
+      RTH_PASSWORD,
+      '127.0.0.1',
+      'realtutorialhub',
+      { deviceId: 'rth-dev-1' },
+      { purpose: 'learner' }
+    );
 
-    const suiaSessionHash = await tokenService.hashToken(suiaLogin.refreshToken);
-    expect(suiaStore.sessions.get(suiaSessionHash)?.revoked).toBe(false);
+    const suiaHash = await tokenService.hashToken(suiaLogin.refreshToken);
+    const rthHash = await tokenService.hashToken(rthLogin.refreshToken);
 
-    // 2. Submit SUIA refresh token to RTH brand context
-    // Must fail closed because the token's signed brand claim ('skillup') mismatches requested brand ('realtutorialhub')
+    // A. SUIA token submitted to RTH brand context -> fails closed
     await expect(
       refreshService.refresh(
         suiaLogin.refreshToken,
@@ -365,19 +417,30 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
         undefined,
         'user',
         'realtutorialhub',
-        { deviceId: 'rth-spoof-1' }
+        { deviceId: 'rth-dev-1' }
       )
     ).rejects.toThrow(/Invalid refresh token/);
 
-    // 3. SUIA session remains active (unconsumed)
-    expect(suiaStore.sessions.get(suiaSessionHash)?.revoked).toBe(false);
+    // B. RTH token submitted to SUIA brand context -> fails closed
+    await expect(
+      refreshService.refresh(
+        rthLogin.refreshToken,
+        '127.0.0.1',
+        undefined,
+        'user',
+        'skillup',
+        { deviceId: 'suia-dev-1' }
+      )
+    ).rejects.toThrow(/Invalid refresh token/);
 
-    // 4. Zero sessions in RTH
-    expect(rthStore.sessions.size).toBe(0);
+    // Both sessions remain unconsumed in their respective stores
+    expect(suiaStore.sessions.get(suiaHash)?.revoked).toBe(false);
+    expect(rthStore.sessions.get(rthHash)?.revoked).toBe(false);
+    expect(suiaStore.sessions.size).toBe(1);
+    expect(rthStore.sessions.size).toBe(1);
   });
 
   it('5. Legitimate SUIA refresh rotates SUIA session while colliding RTH session is completely untouched', async () => {
-    // 1. Establish SUIA session
     const suiaLogin = await loginService.login(
       SHARED_EMAIL,
       SUIA_PASSWORD,
@@ -388,7 +451,6 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
     );
     const suiaParentHash = await tokenService.hashToken(suiaLogin.refreshToken);
 
-    // 2. Establish RTH session with colliding user-100
     const rthLogin = await loginService.login(
       SHARED_EMAIL,
       RTH_PASSWORD,
@@ -402,7 +464,7 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
     expect(suiaStore.sessions.size).toBe(1);
     expect(rthStore.sessions.size).toBe(1);
 
-    // 3. Refresh SUIA session
+    // Refresh SUIA session
     const refreshedSuia = await refreshService.refresh(
       suiaLogin.refreshToken,
       '127.0.0.1',
@@ -419,33 +481,101 @@ describe('B08-C: Same-Email and Colliding-ID Session Isolation', () => {
     expect(suiaStore.sessions.get(suiaParentHash)?.revoked).toBe(true);
     expect(suiaStore.sessions.size).toBe(2);
 
-    // CRITICAL TENANT ISOLATION INVARIANT:
-    // Colliding RTH session was NOT touched, NOT revoked, and RTH session count remains exactly 1!
+    // Colliding RTH session was NOT touched
     expect(rthStore.sessions.get(rthParentHash)?.revoked).toBe(false);
     expect(rthStore.sessions.size).toBe(1);
   });
 
-  it('6. Fixture sensitivity check: wrong-store selection is detected and fails assertion', async () => {
-    // Proves that our assertions are truly sensitive to foreign store mutation:
-    // If someone accidentally mutated the RTH session during SUIA operations, our check catches it.
-    const fakeCanaryHash = 'rth-canary-hash';
-    rthStore.sessions.set(fakeCanaryHash, {
-      id: 'sess-rth-canary',
-      userId: COLLIDING_USER_ID,
-      token: fakeCanaryHash,
-      revoked: false,
-      deviceId: 'canary-device',
-      expiresAt: new Date(Date.now() + 100000),
-      brand: 'realtutorialhub',
-    });
+  it('6. Legitimate RTH refresh rotates RTH session while colliding SUIA session is completely untouched', async () => {
+    const suiaLogin = await loginService.login(
+      SHARED_EMAIL,
+      SUIA_PASSWORD,
+      '127.0.0.1',
+      'skillup',
+      { deviceId: 'suia-dev-1' },
+      { purpose: 'learner' }
+    );
+    const suiaParentHash = await tokenService.hashToken(suiaLogin.refreshToken);
 
-    expect(rthStore.sessions.get(fakeCanaryHash)?.revoked).toBe(false);
+    const rthLogin = await loginService.login(
+      SHARED_EMAIL,
+      RTH_PASSWORD,
+      '127.0.0.1',
+      'realtutorialhub',
+      { deviceId: 'rth-dev-1' },
+      { purpose: 'learner' }
+    );
+    const rthParentHash = await tokenService.hashToken(rthLogin.refreshToken);
 
-    // Simulate accidental leak / miswired mutation
-    rthStore.sessions.get(fakeCanaryHash)!.revoked = true;
+    expect(suiaStore.sessions.size).toBe(1);
+    expect(rthStore.sessions.size).toBe(1);
 
-    // The assertion fails if canary was corrupted
-    expect(rthStore.sessions.get(fakeCanaryHash)?.revoked).toBe(true);
+    // Refresh RTH session
+    const refreshedRth = await refreshService.refresh(
+      rthLogin.refreshToken,
+      '127.0.0.1',
+      undefined,
+      'user',
+      'realtutorialhub',
+      { deviceId: 'rth-dev-1' }
+    );
+
+    expect(refreshedRth.accessToken).toBeDefined();
+    expect(refreshedRth.refreshToken).toBeDefined();
+
+    // RTH parent is revoked, child created in RTH
+    expect(rthStore.sessions.get(rthParentHash)?.revoked).toBe(true);
+    expect(rthStore.sessions.size).toBe(2);
+
+    // Colliding SUIA session was NOT touched
+    expect(suiaStore.sessions.get(suiaParentHash)?.revoked).toBe(false);
+    expect(suiaStore.sessions.size).toBe(1);
+  });
+
+  it('7. Fixture sensitivity via real wrong-store injection into service operation', async () => {
+    // 1. Establish legitimate RTH session
+    const rthLogin = await loginService.login(
+      SHARED_EMAIL,
+      RTH_PASSWORD,
+      '127.0.0.1',
+      'realtutorialhub',
+      { deviceId: 'rth-dev-1' },
+      { purpose: 'learner' }
+    );
+    const rthParentHash = await tokenService.hashToken(rthLogin.refreshToken);
+
+    // 2. Construct a miswired TokenRefreshService whose tokenRepo incorrectly targets suiaStore
+    // instead of rthStore during the refresh operation
+    const miswiredTokenRepo = {
+      ...mockTokenRepo,
+      withDb: vi.fn(() => ({
+        createRefreshToken: vi.fn(async (data: any) => suiaStore.createSession(data)), // INJECT WRONG STORE
+        findByHash: vi.fn(async (hash: string) => suiaStore.findByHash(hash)), // INJECT WRONG STORE
+        consumeToken: vi.fn(async (hash: string, userId: string) => suiaStore.consumeToken(hash, userId)),
+      })),
+    };
+
+    const miswiredRefreshService = new TokenRefreshService(
+      miswiredTokenRepo as any,
+      tokenService,
+      mockAuditService as any,
+      mockUserRepo as any
+    );
+
+    // 3. Attempting refresh with miswired store must fail closed because RTH session hash does not exist in suiaStore
+    await expect(
+      miswiredRefreshService.refresh(
+        rthLogin.refreshToken,
+        '127.0.0.1',
+        undefined,
+        'user',
+        'realtutorialhub',
+        { deviceId: 'rth-dev-1' }
+      )
+    ).rejects.toThrow(/Invalid refresh token/);
+
+    // 4. Assert sensitivity: neither store was corrupted or mutated by the miswired execution
+    expect(rthStore.sessions.get(rthParentHash)?.revoked).toBe(false);
+    expect(suiaStore.sessions.size).toBe(0);
   });
 });
-

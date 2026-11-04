@@ -3,7 +3,7 @@ import { JobStatus } from '@quiz/types';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ApiError, unauthorized } from '@/lib/api-error';
+import { ApiError, forbidden, unauthorized } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
 import { storage } from '@/lib/storage';
@@ -108,6 +108,9 @@ export async function GET(
     }
 
     const job = await JobsService.getJobStatus(jobId);
+    if (job && !isInternal && job.userId !== userId) {
+      throw forbidden('Forbidden');
+    }
     const jobFormat = normalizeFormat(
       (job?.payload as Record<string, unknown> | null | undefined)?.format as string | null | undefined
       ?? (job?.result as { format?: string } | null | undefined)?.format

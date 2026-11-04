@@ -4,20 +4,37 @@ import { fetchCurrentUserState, loginUser, logoutUser } from '../authLoader';
 import * as validateModule from '../validateAuthState';
 
 /**
- * B08-H: Isolated Account-Switching & Private Client State Residue
+ * B08-H: Account-Switching & State Boundary (Transport Wrapper Controls)
  *
  * Governing Architecture: audit/FinalAechitecture.md (Client State Lifecycle, Tenant Identity)
- * Governing Task: audit/W1.2_Gemini_Controlled_Batch_08_Task.md (B08-H)
+ * Governing Task: audit/W1.2_Gemini_Batch_08_Corrections_And_Containment_Task.md (Package H)
  *
- * SCOPE:
- * 1. Sequential Account Switching: User A login/read -> User A logout -> User B login/read in the same environment.
- * 2. Invariant: User A's private markers and profile state do not linger or leak into User B's session.
- * 3. Mid-flight / Delayed Response Handling: A delayed background response belonging to User A arriving
- *    after User B has logged in must not overwrite User B's active client session state.
- * 4. Boundary Documentation: Identifies client-side storage fixture requirements for full AQ-09 browser qualification.
+ * STATUS & QUALIFICATION DISCLOSURE:
+ * -----------------------------------
+ * This test file exercises transport-level client wrappers (`authLoader`, `validateAuthState` mock).
+ *
+ * REAL BROWSER DOM/CACHE EVICTION QUALIFICATION: [NOT EXECUTED]
+ *
+ * Reason:
+ * As identified in Sol's independent review (audit/W1.2_Batch_08_Sol_Review_cabe42ef.md),
+ * unit mocks using MockClientContext in mocked unifiedFetch do NOT exercise actual browser DOM,
+ * storage boundaries, or production state consumers.
+ * Real qualification requires live browser / Playwright harness fixtures currently not mounted:
+ * 1. Live browser runtime (Chromium headless context).
+ * 2. Mounted React component tree with actual production state consumers (e.g., AuthProvider, SWR/React Query caches).
+ * 3. Browser-enforced storage barriers (localStorage, sessionStorage, IndexedDB, CacheStorage).
+ * 4. Browser cookie jar enforcing HttpOnly / SameSite lifecycle across page navigations.
+ *
+ * Until these browser harness fixtures are authorized and provisioned under AQ-09 / BROWSER-01,
+ * real client cache eviction remains NOT EXECUTED.
+ *
+ * SCOPE EXERCISED HERE (BOUNDARY WRAPPER CONTROLS):
+ * 1. Sequential Account Switching: User A login/read -> User A logout -> User B login/read in transport wrapper.
+ * 2. Transport Invariant: User A's private markers and profile state do not linger in wrapper session.
+ * 3. Race condition wrapper: Out-of-order promise resolution does not override active client state.
  */
 
-// Simulated client cookie jar and storage boundary
+// Simulated client cookie jar and storage boundary for transport wrapper checks
 class MockClientContext {
   cookies: Map<string, string> = new Map();
   currentUser: {
@@ -96,7 +113,7 @@ vi.mock('../../lib/unifiedFetch', () => ({
   }),
 }));
 
-describe('B08-H: Isolated Account-Switching & Private Client State Residue', () => {
+describe('B08-H: Account-Switching & State Boundary (Transport Wrapper Controls)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clientContext.reset();
@@ -117,7 +134,7 @@ describe('B08-H: Isolated Account-Switching & Private Client State Residue', () 
     vi.restoreAllMocks();
   });
 
-  it('1. User A login establishes User A client state and private markers', async () => {
+  it('1. WRAPPER CONTROL: User A login establishes User A client state and private markers in transport wrapper', async () => {
     const loginResult = await loginUser({
       email: 'user-a@skillup.test',
       password: 'PasswordA123!',
@@ -134,7 +151,7 @@ describe('B08-H: Isolated Account-Switching & Private Client State Residue', () 
     expect(state.onboardingCompleted).toBe(true);
   });
 
-  it('2. Logout clears User A state; subsequent state fetch returns unauthenticated', async () => {
+  it('2. WRAPPER CONTROL: Logout clears User A state; subsequent state fetch returns unauthenticated in transport wrapper', async () => {
     // Login User A
     await loginUser({
       email: 'user-a@skillup.test',
@@ -152,7 +169,7 @@ describe('B08-H: Isolated Account-Switching & Private Client State Residue', () 
     expect(state.onboardingCompleted).toBe(false);
   });
 
-  it('3. Account switching (A -> Logout -> B): User B state replaces A with zero private residue', async () => {
+  it('3. WRAPPER CONTROL: Account switching (A -> Logout -> B) in transport wrapper replaces A with zero private residue', async () => {
     // 1. User A logs in
     const userALogin = await loginUser({
       email: 'user-a@skillup.test',
@@ -185,13 +202,13 @@ describe('B08-H: Isolated Account-Switching & Private Client State Residue', () 
     const userBState = await fetchCurrentUserState();
     expect(userBState.onboardingCompleted).toBe(false);
 
-    // INVARIANT: Zero User A private markers remain in client state
+    // INVARIANT: Zero User A private markers remain in wrapper client state
     expect(clientContext.currentUser?.id).not.toBe('user-a-uuid-101');
     expect(clientContext.currentUser?.name).not.toContain('Alice');
     expect(clientContext.cookies.get('accessToken')).toBe('mock-user-b-access-token');
   });
 
-  it('4. Delayed / out-of-order User A response race: User B session remains authoritative', async () => {
+  it('4. WRAPPER CONTROL: Delayed out-of-order User A response race: User B session remains authoritative', async () => {
     // Simulate User A logging in
     await loginUser({
       email: 'user-a@skillup.test',
@@ -223,7 +240,7 @@ describe('B08-H: Isolated Account-Switching & Private Client State Residue', () 
     });
     await delayedUserAPromise;
 
-    // Verify active session remains strictly User B
+    // Verify active session remains strictly User B in transport wrapper
     const activeState = await fetchCurrentUserState();
     expect(clientContext.currentUser?.id).toBe('user-b-uuid-202');
     expect(activeState.onboardingCompleted).toBe(false);

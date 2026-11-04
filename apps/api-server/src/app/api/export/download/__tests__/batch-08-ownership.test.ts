@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { GET } from '../route';
@@ -9,13 +10,22 @@ import { GET } from '../route';
  * B08-F: Private Export Download Ownership & Tenant Isolation
  *
  * Governing Architecture: audit/FinalAechitecture.md (Tenant Isolation, Resource Authorization)
- * Governing Task: audit/W1.2_Gemini_Controlled_Batch_08_Task.md (B08-F)
+ * Governing Task: audit/W1.2_Gemini_Batch_08_Corrections_And_Containment_Task.md (Package F)
  *
  * Verifies that GET /api/export/download:
  * 1. Positive Control: Legitimate job owner can download their completed export (HTTP 200).
  * 2. Ownership Control: Another user from the same tenant cannot download the job (HTTP 403).
  * 3. Authentication Control: Anonymous request without valid token is denied (HTTP 401).
- * 4. Exam Ownership Control: Legitimate exam owner can download; non-owner is denied (HTTP 403).
+ * 4. Zero Storage Reads: Unauthorized requests (non-owner, anonymous) never trigger storage.getReadUrl.
+ * 5. Exam Ownership Control: Legitimate exam owner can download; non-owner is denied (HTTP 403).
+ * 6. Missing/Stale Job Control: 404 returned without invoking storage.
+ *
+ * NOTE ON FOREIGN BRAND COLLIDING ID:
+ * In accordance with Package F, the download route (apps/api-server/src/app/api/export/download/route.ts)
+ * is NOT authorized for runtime edit in this batch.
+ * The foreign-brand colliding ID defect (where identical user IDs across brands bypass tenant boundaries)
+ * is preserved as a documented open invariant in audit/W1.2_Batch_08_Handoff.md and reproduced in
+ * Sol's standalone probe (sol-b08-collision.test.ts), requiring an architectural schema migration.
  */
 
 const TEST_SECRET = new TextEncoder().encode('export-download-test-secret-32b!');
@@ -36,7 +46,6 @@ vi.mock('@quiz/db', () => ({
     query: {
       exams: {
         findFirst: vi.fn(async ({ where }: any) => {
-          // Return exam matching mockExams
           return Array.from(mockExams.values())[0] ?? null;
         }),
       },
@@ -127,13 +136,14 @@ describe('B08-F: Private Export Download Ownership', () => {
     const res = await GET(req);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toBe('application/json');
+    expect(storage.getReadUrl).toHaveBeenCalledWith('exports/owner-report.json');
   });
 
-  it('OWNERSHIP ENFORCEMENT: another user attempting to download owner export receives 403 Forbidden', async () => {
+  it('OWNERSHIP ENFORCEMENT: non-owner receives 403 and zero storage reads occur', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/download?jobId=${JOB_ID}`, {
       method: 'GET',
       headers: {
-        authorization: `Bearer ${attackerToken}`, // Attacker token!
+        authorization: `Bearer ${attackerToken}`,
       },
     });
 
@@ -141,15 +151,56 @@ describe('B08-F: Private Export Download Ownership', () => {
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.message ?? body.error).toBe('Forbidden');
+    // Critical security invariant: storage read URL is NOT generated on ownership failure
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
   });
 
-  it('AUTHENTICATION ENFORCEMENT: anonymous request without token receives 401 Unauthorized', async () => {
+  it('AUTHENTICATION ENFORCEMENT: anonymous request receives 401 and zero storage reads occur', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/download?jobId=${JOB_ID}`, {
       method: 'GET',
-      // No authorization header
     });
 
     const res = await GET(req);
     expect(res.status).toBe(401);
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
+  });
+
+  it('EXAM OWNERSHIP: legitimate exam owner can download exam report (200)', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/download?examId=${EXAM_ID}&format=json`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${ownerToken}`,
+      },
+    });
+
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    expect(storage.getReadUrl).toHaveBeenCalledWith('exports/exam-report.json');
+  });
+
+  it('EXAM OWNERSHIP ENFORCEMENT: non-owner exam access receives 403 and zero storage reads occur', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/download?examId=${EXAM_ID}&format=json`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${attackerToken}`,
+      },
+    });
+
+    const res = await GET(req);
+    expect(res.status).toBe(403);
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
+  });
+
+  it('MISSING JOB: non-existent jobId receives 404 and zero storage reads occur', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/download?jobId=non-existent-job`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${ownerToken}`,
+      },
+    });
+
+    const res = await GET(req);
+    expect(res.status).toBe(404);
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
   });
 });
