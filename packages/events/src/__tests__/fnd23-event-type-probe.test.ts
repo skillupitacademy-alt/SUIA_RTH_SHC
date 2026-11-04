@@ -25,3 +25,13 @@ it('allows a verified message matching the registered event type', async () => {
   expect(response.ok).toBe(true);
   expect(effect).toHaveBeenCalledOnce();
 });
+
+it('rejects an unverified message before invoking the handler', async () => {
+  const effect = vi.fn();
+  const handler = createQStashHandler(PlatformEventTypes.PROJECT_SUBMITTED, effect, {
+    receiver: { verify: async () => { throw new Error('invalid signature'); } } as never,
+  });
+  const request = new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'invalid' }, body: '{}' });
+  await expect(handler(request)).rejects.toThrow('invalid signature');
+  expect(effect).not.toHaveBeenCalled();
+});
