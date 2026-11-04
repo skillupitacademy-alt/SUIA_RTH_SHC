@@ -95,3 +95,4 @@ test.describe('SUIA Learner-Purpose Browser Smoke Qualification', () => {
     assertValueMatchesSafely(profileEmail, creds.email, 'Profile email matches authenticated user credentials');
   });
 });
+

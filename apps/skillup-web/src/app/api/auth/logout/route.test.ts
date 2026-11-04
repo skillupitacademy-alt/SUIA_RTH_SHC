@@ -160,3 +160,4 @@ describe('SUIA normal logout BFF route (POST /api/auth/logout)', () => {
     expect(body).toEqual({ error: 'Session expired' });
   });
 });
+

@@ -52,7 +52,7 @@ test.describe('SUIA Learner Authentication & Dashboard Qualification', () => {
     await expect(auth.page).toHaveURL(`${baseOrigin}/dashboard`, { timeout: 15000 });
 
     // Wait for hydration and network to settle
-    await auth.page.waitForLoadState('networkidle').catch(() => {});
+    await auth.page.waitForLoadState('networkidle').catch(() => { });
     await auth.page.waitForTimeout(2000);
 
     // 6. Assert source-grounded visible dashboard content
@@ -76,7 +76,7 @@ test.describe('SUIA Learner Authentication & Dashboard Qualification', () => {
 
     // 8. Reload /dashboard and verify it still renders
     await auth.page.reload();
-    await auth.page.waitForLoadState('networkidle').catch(() => {});
+    await auth.page.waitForLoadState('networkidle').catch(() => { });
     await auth.page.waitForTimeout(2000);
     await expect(auth.page).toHaveURL(`${baseOrigin}/dashboard`, { timeout: 15000 });
     await expect(dashboardHeading).toBeVisible({ timeout: 15000 });
