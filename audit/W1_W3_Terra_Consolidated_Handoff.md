@@ -83,7 +83,7 @@ Additional marketing truth slice `c718179c` removes an unsupported shared-footer
 
 `f9621da5` extends the FND20 QuestionTable identity containment to duplicate IDs within a page; the mounted table selection passed 4 tests with mocked API and blocked fetch, and SHC typecheck passed. Cross-page identity, backend validation and canonical question contracts remain open.
 
-Crosswalk working index through the subtopic identity slice has thirteen source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
+Crosswalk working index through the subtopic identity slice has fourteen source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
 
 `634af2bc` adds two isolated real-schema question controls: current valid single/bulk inputs pass and unknown type/empty options are denied. This confirms the exercised schema only, not the SHC client/API/persistence round trip or historical data support; all FND20 acceptance gates remain open.
 
@@ -203,3 +203,5 @@ Offline guard follow-up additionally blocks common Node DNS lookup/resolve metho
 `2451039b` source-checks SU-ILS-003: visit/block-visit BFFs forward client session metadata and the central block-visit handler copies the header into identity without demonstrated ownership validation. The separate active-time BFF omission remains as previously reviewed. Physical browser/session ownership remains NOT EXECUTED.
 
 FND05 bounded caller-compatibility slice `86137202` omits `x-internal-key` from SkillUp progress GET/POST when configuration is absent/empty; configured keys are still sent and the central proxy's explicit-invalid/empty-key denial is unchanged. Actual BFF outgoing controls initially had 1 failure / 4 passes and after correction passed 5 tests under the offline guard; SkillUp typecheck and targeted lint passed. These controls mock student authentication and upstream transport. Actual BFF-to-central-proxy composition, gateway/browser and private tenant progress remain NOT EXECUTED; no empty privileged key is accepted by this change.
+
+`1bb61df7` source-checks SU-TUTORIAL-002 against the current BFF and central learner-auth path, retaining prior Sol credential-forwarding scope and marking the newer optional-key slice unverified. Physical tenant ownership and actual key-omission BFF-to-proxy composition remain NOT EXECUTED.
