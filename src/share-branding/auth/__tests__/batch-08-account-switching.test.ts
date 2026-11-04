@@ -260,12 +260,15 @@ describe.skipIf(typeof document === 'undefined')('B08-T18 mounted learner state 
 
   it('does not commit delayed learner A progress after logout and learner B login', async () => {
     const React = await import('react');
-    const { render, waitFor, cleanup } = await import('@testing-library/react');
+    const { render, waitFor, cleanup, act } = await import('@testing-library/react');
+    const { useQueryClient } = await import('@tanstack/react-query');
     const { QueryProvider } = await import('../../../../apps/realtutorialhub-web/src/components/providers/QueryProvider');
     const { LearnerProgressPanel } = await import('../../../../apps/realtutorialhub-web/src/components/content/LearnerProgressPanel');
     const id = '11111111-1111-4111-8111-111111111111';
     let release!: (response: Response) => void;
     const delayed = new Promise<Response>((resolve) => { release = resolve; });
+    let queryClient: ReturnType<typeof useQueryClient> | undefined;
+    function CaptureClient() { queryClient = useQueryClient(); return null; }
     class Observer { observe() {} unobserve() {} disconnect() {} }
     vi.stubGlobal('IntersectionObserver', Observer);
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
@@ -281,16 +284,69 @@ describe.skipIf(typeof document === 'undefined')('B08-T18 mounted learner state 
     }));
     try {
       await loginUser({ email: 'user-a@skillup.test', password: 'disposable', brand: 'skillup' });
-      render(React.createElement(QueryProvider, null, React.createElement(LearnerProgressPanel, {
-        subtopicId: id, subtopicName: 'Fixture', theme: { sidebarAccent: '#123456' } as never, blockOrder: ['notes'],
-      })));
+      render(React.createElement(QueryProvider, null, React.createElement(React.Fragment, null,
+        React.createElement(CaptureClient), React.createElement(LearnerProgressPanel, {
+          subtopicId: id, subtopicName: 'Fixture', theme: { sidebarAccent: '#123456' } as never, blockOrder: ['notes'],
+        }))));
       await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/tutorial/progress'), expect.anything()));
       await logoutUser();
       await loginUser({ email: 'user-b@skillup.test', password: 'disposable', brand: 'skillup' });
       expect(clientContext.currentUser?.id).toBe('user-b-uuid-202');
-      release(Response.json({ data: { blocksViewed: ['notes'], completionPercent: 100, assignmentUnlocked: true } }));
+      await act(async () => {
+        release(Response.json({ data: { blocksViewed: ['notes'], completionPercent: 100, assignmentUnlocked: true } }));
+        await delayed;
+      });
       const key = `tutorial-progress:${id}`;
-      await waitFor(() => expect(window.localStorage.getItem(key)).toContain('notes'));
+      await waitFor(() => expect(queryClient?.getQueryState(['tutorial-progress', id])?.status).toBe('success'));
+      await act(async () => {});
+      expect(window.localStorage.getItem(key)).not.toContain('notes');
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('keeps B progress when A resolves after teardown and remount', async () => {
+    const React = await import('react');
+    const { render, waitFor, cleanup, act } = await import('@testing-library/react');
+    const { QueryProvider } = await import('../../../../apps/realtutorialhub-web/src/components/providers/QueryProvider');
+    const { LearnerProgressPanel } = await import('../../../../apps/realtutorialhub-web/src/components/content/LearnerProgressPanel');
+    const id = '11111111-1111-4111-8111-111111111111';
+    let release!: (response: Response) => void;
+    const delayed = new Promise<Response>((resolve) => { release = resolve; });
+    class Observer { observe() {} unobserve() {} disconnect() {} }
+    vi.stubGlobal('IntersectionObserver', Observer);
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith('/api/tutorial/progress')) {
+        if (clientContext.currentUser?.id === 'user-a-uuid-101') return delayed;
+        return Response.json({ data: { blocksViewed: ['code'], completionPercent: 50, assignmentUnlocked: false } });
+      }
+      if (url.startsWith('/api/tutorial/assignments/')) return Response.json({ data: {
+        locked: true, assignments: [], tierStatus: {
+          simple: {status:'not_started', isUnlocked:false}, mixed: {status:'not_started', isUnlocked:false},
+          intermediate: {status:'not_started', isUnlocked:false}, expert: {status:'not_started', isUnlocked:false},
+        },
+      } });
+      throw new Error('Unexpected outbound transport');
+    }));
+    const mount = () => render(React.createElement(QueryProvider, null, React.createElement(LearnerProgressPanel, {
+      subtopicId: id, subtopicName: 'Fixture', theme: { sidebarAccent: '#123456' } as never, blockOrder: ['notes', 'code'],
+    })));
+    try {
+      await loginUser({ email: 'user-a@skillup.test', password: 'disposable', brand: 'skillup' });
+      const first = mount();
+      await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/tutorial/progress'), expect.anything()));
+      await logoutUser();
+      first.unmount(); // Represents the TopBar's full navigation; jsdom does not navigate.
+      await loginUser({ email: 'user-b@skillup.test', password: 'disposable', brand: 'skillup' });
+      mount();
+      const key = `tutorial-progress:${id}`;
+      await waitFor(() => expect(window.localStorage.getItem(key)).toContain('code'));
+      await act(async () => {
+        release(Response.json({ data: { blocksViewed: ['notes'], completionPercent: 50, assignmentUnlocked: false } }));
+        await delayed;
+      });
+      expect(window.localStorage.getItem(key)).toContain('code');
       expect(window.localStorage.getItem(key)).not.toContain('notes');
     } finally {
       cleanup();
