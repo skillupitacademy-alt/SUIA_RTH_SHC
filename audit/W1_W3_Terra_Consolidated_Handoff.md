@@ -104,3 +104,5 @@ FND26 targeted lint: from `apps/skillhubcore-admin`, with `ESLINT_USE_FLAT_CONFI
 Marketing targeted lint limitation: from `packages/marketing-site`, `pnpm exec eslint src/components/footer/FooterBrand.tsx` exited 1 because ESLint 8.57.1 could not find a configuration file. No configuration was added or diagnostics suppressed. Both consuming marketing apps previously passed `pnpm exec tsc --noEmit`; marketing build and test lint remain NOT EXECUTED.
 
 `pnpm exec tsc --noEmit` from `apps/api-server` exited 0 after the isolated FND20 schema control was added. Test inclusion is determined by the existing tsconfig and is not assumed; no full test-type gate was established.
+
+`pnpm run type-check` from `packages/events` exited 0; the intentionally failing event security/retry tests remain separate. No package-wide test pass is claimed.
