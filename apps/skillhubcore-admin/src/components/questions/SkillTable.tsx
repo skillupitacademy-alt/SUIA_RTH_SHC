@@ -95,9 +95,15 @@ export function SkillTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSkills(currentCursor, pageSize, debouncedSearch || undefined);
+            if (Array.isArray(response.data)) {
+                const ids = response.data.map((item) => (item as { id?: unknown } | null)?.id);
+                if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0) || new Set(ids).size !== ids.length) {
+                    throw new Error('Response contains invalid identifiers');
+                }
+            }
             const skills: SkillRow[] = Array.isArray(response.data)
                 ? (response.data as Skill[]).map((s) => ({
-                    id: String(s.id),
+                    id: s.id,
                     name: s.name ?? '',
                     description: s.description ?? '',
                     category: normalizeSkillCategory((s as { category?: string }).category),
@@ -115,6 +121,8 @@ export function SkillTable() {
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch skills', { error: error instanceof Error ? error.message : 'unknown' });
+            setData([]);
+            setSelectedIds(new Set());
             setErrorMessage('Connection Error: Unable to load skills at this time.');
         } finally {
             setIsLoading(false);

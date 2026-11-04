@@ -93,8 +93,14 @@ export function SubjectTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getSubjects(currentCursor, pageSize, undefined, debouncedSearch || undefined);
+            if (Array.isArray(response.data)) {
+                const ids = response.data.map((item) => (item as { id?: unknown } | null)?.id);
+                if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0) || new Set(ids).size !== ids.length) {
+                    throw new Error('Response contains invalid identifiers');
+                }
+            }
             const mapped: SubjectItem[] = (Array.isArray(response.data) ? response.data : []).map((s) => ({
-                id: String(s.id),
+                id: s.id,
                 name: s.name ?? '',
                 domainId: s.domainId ?? '',
                 description: s.description ?? null,
@@ -120,6 +126,8 @@ export function SubjectTable() {
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subjects', { error: error instanceof Error ? error.message : 'unknown' });
+            setData([]);
+            setSelectedIds(new Set());
             setErrorMessage('Connection Error: Unable to load subjects.');
         } finally {
             setIsLoading(false);
