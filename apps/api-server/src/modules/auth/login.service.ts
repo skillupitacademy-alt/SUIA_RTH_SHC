@@ -19,6 +19,19 @@ function normalizeRoleName(role: string | null | undefined): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
+export type LoginPurpose = 'learner';
+
+export interface LoginOptions {
+  purpose?: LoginPurpose;
+}
+
+export class InvalidPurposeError extends Error {
+  constructor(message = 'Unsupported login purpose') {
+    super(message);
+    this.name = 'InvalidPurposeError';
+  }
+}
+
 export class LoginService {
   constructor(
     private userRepo = container.get(UserRepository),
@@ -64,7 +77,14 @@ export class LoginService {
     }
   }
 
-  async login(email: string, password: string, ip: string = 'unknown', brand: RequestBrand = 'realtutorialhub', deviceContext?: { deviceId?: string; userAgent?: string; deviceName?: string }) {
+  async login(
+    email: string,
+    password: string,
+    ip: string = 'unknown',
+    brand: RequestBrand = 'realtutorialhub',
+    deviceContext?: { deviceId?: string; userAgent?: string; deviceName?: string },
+    options?: LoginOptions
+  ) {
     const perfStart = Date.now();
     const timings = {
       start: perfStart,
@@ -171,10 +191,33 @@ export class LoginService {
     await brandSecurityService.trackLoginAttempt(ip, email, true, brand);
     await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
 
-    const roleNames = user.userRoles
+    const rawRoleNames = user.userRoles
       .map((ur) => normalizeRoleName(ur.role.name))
       .filter((role): role is string => role !== null);
-    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
+
+    const isLearnerPurpose = options?.purpose === 'learner';
+    if (options?.purpose !== undefined && !isLearnerPurpose) {
+      throw new InvalidPurposeError(`Unsupported login purpose: ${String(options.purpose)}`);
+    }
+
+    let roleNames: string[];
+    let isAdmin: boolean;
+
+    if (isLearnerPurpose) {
+      // Learner purpose: strip administrative roles without synthesizing 'student'
+      roleNames = rawRoleNames.filter(
+        (role) => !['admin', 'super_admin', 'infrastructure'].includes(role)
+      );
+      isAdmin = false;
+    } else {
+      // Legacy / default caller behavior
+      roleNames = rawRoleNames;
+      isAdmin =
+        roleNames.includes('admin') ||
+        roleNames.includes('super_admin') ||
+        roleNames.includes('infrastructure');
+    }
+
     const shadowUserId = await this.ensureShadowUserId(user, brand);
 
     timings.afterShadowUser = Date.now();
@@ -202,12 +245,17 @@ export class LoginService {
       timestamp: new Date().toISOString(),
     }));
 
-    const refreshToken = await this.tokenService.generateRefreshToken(user.id, isAdmin, isAdmin ? 'admin' : 'user', {
-      tokenType: isAdmin ? 'admin' : 'user',
-      brand,
-      originalUserId: user.id,
-      shadowUserId,
-    });
+    const refreshToken = await this.tokenService.generateRefreshToken(
+      user.id,
+      isAdmin,
+      isAdmin ? 'admin' : 'user',
+      {
+        tokenType: isAdmin ? 'admin' : 'user',
+        brand,
+        originalUserId: user.id,
+        shadowUserId,
+      }
+    );
     const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
     timings.afterTokenGen = Date.now();
