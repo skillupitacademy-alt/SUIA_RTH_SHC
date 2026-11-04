@@ -195,6 +195,11 @@ export function QuestionTable() {
                     throw new Error('Question response is missing a valid identifier');
                 }
 
+                const questionIds = responseQuestions.map((q: RawQuestion) => q.id);
+                if (new Set(questionIds).size !== questionIds.length) {
+                    throw new Error('Question response contains duplicate identifiers');
+                }
+
                 const mappedQuestions: QuestionData[] = responseQuestions.map((q: RawQuestion, idx: number) => ({
                     id: q.id!,
                     questionText: (q.questionText != null && q.questionText !== '') ? q.questionText : (q.text ?? ''),

@@ -23,3 +23,10 @@ it.each([undefined, '   '])('rejects a question page with an absent or blank res
   expect(await screen.findByText(/Question response is missing a valid identifier/)).toBeTruthy();
   expect(screen.queryByText(/q-0/)).toBeNull();
 });
+
+it('rejects duplicate IDs instead of presenting ambiguous actions', async () => {
+  getQuestions.mockResolvedValue({ questions: [{ id: 'same', questionText: 'First' }, { id: 'same', questionText: 'Second' }], total: 2 });
+  render(<QuestionTable />);
+  expect(await screen.findByText(/Question response contains duplicate identifiers/)).toBeTruthy();
+  expect(screen.queryByText(/same: Unknown/)).toBeNull();
+});
