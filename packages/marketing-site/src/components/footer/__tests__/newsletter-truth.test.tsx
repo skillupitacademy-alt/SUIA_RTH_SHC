@@ -8,6 +8,8 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('does not collect emails or claim a nonexistent subscription', () => {
   render(<FooterBrand />);
   expect(screen.getByText('Newsletter subscriptions are currently unavailable.')).toBeTruthy();
+  expect(screen.getByText('Explore our programs and learning resources.')).toBeTruthy();
+  expect(screen.queryByText(/successfully launched/)).toBeNull();
   expect(screen.queryByRole('textbox')).toBeNull();
   expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
 });

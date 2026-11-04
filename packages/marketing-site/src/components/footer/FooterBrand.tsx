@@ -2,11 +2,10 @@
 'use client';
 
 import React from 'react';
-import { useBrand, useMarketingContent } from '@quiz/marketing-site';
+import { useBrand } from '@quiz/marketing-site';
 
 const FooterBrand: React.FC = () => {
   const brand = useBrand();
-  const { footer } = useMarketingContent();
 
   return (
     <div className="lg:col-span-2">
@@ -15,7 +14,7 @@ const FooterBrand: React.FC = () => {
           {brand.name}
         </h2>
         <p className="text-gray-600">
-          Join <span className="font-bold" style={{ color: "var(--brand-primary)" }}>{footer.brand.studentCount}</span> students who have successfully launched their tech careers with our expert-led programs and placement support.
+          Explore our programs and learning resources.
         </p>
       </div>
 
