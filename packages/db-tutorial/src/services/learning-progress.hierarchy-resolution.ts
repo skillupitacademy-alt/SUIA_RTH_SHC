@@ -39,14 +39,15 @@ export async function validateCompletionMembership(
     return value as Record<string, unknown>;
   };
   const root = record(document);
-  if (root.schemaVersion !== 1 || !Array.isArray(root.blocks)) return fail();
+  if (root.schemaVersion !== 1 || !Array.isArray(root.blocks) || root.blocks.length > MAX_BLOCKS_PER_DOCUMENT) return fail();
   const seen = new Set<string>();
-  let count = 0;
+  const seenArrays = new WeakSet<object>();
   let matches = 0;
   const walk = (blocks: unknown, depth: number): void => {
     if (!Array.isArray(blocks) || depth > MAX_NESTING_DEPTH) return fail();
+    if (seenArrays.has(blocks)) return fail();
+    seenArrays.add(blocks);
     for (const value of blocks) {
-      if (++count > MAX_BLOCKS_PER_DOCUMENT) return fail();
       const block = record(value);
       if (typeof block.id !== 'string' || !block.id.trim() || typeof block.type !== 'string' || !block.type.trim()) return fail();
       record(block.content);
@@ -61,13 +62,14 @@ export async function validateCompletionMembership(
       } else if (block.type === 'three-column' || block.type === 'card-grid' || block.type === 'timeline') {
         const content = record(block.content);
         const entries = block.type === 'three-column' ? content.columns : block.type === 'card-grid' ? content.cards : content.items;
-        if (!Array.isArray(entries) || entries.length > MAX_BLOCKS_PER_DOCUMENT || (block.type === 'three-column' && entries.length !== 3)) return fail();
+        if (!Array.isArray(entries) || (block.type === 'three-column' && entries.length !== 3)) return fail();
         for (const entry of entries) {
           const child = record(entry);
           if (block.type !== 'timeline' || child.blocks !== undefined) walk(child.blocks, depth + 1);
         }
       }
     }
+    seenArrays.delete(blocks);
   };
   walk(root.blocks, 0);
   if (matches !== 1) fail();

@@ -7,6 +7,15 @@ import { TutorialBlockRenderer } from '../TutorialBlockRenderer';
 import { ActiveBlockProvider } from '../runtime/ActiveBlockContext';
 import { createD1Fixture } from '../../../../db-tutorial/src/services/__tests__/test-fixtures';
 
+const childContext = vi.hoisted(() => vi.fn());
+vi.mock('../blocks/DefinitionBlock', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../blocks/DefinitionBlock')>();
+  return { ...original, DefinitionBlock: (props: React.ComponentProps<typeof original.DefinitionBlock>) => {
+    childContext(props.runtimeContext);
+    return <original.DefinitionBlock {...props} />;
+  } };
+});
+
 it('nested child has its own DOM identity while the observer retains top-level selection', async () => {
   const observed: Element[] = [];
   const created = vi.fn();
@@ -59,4 +68,9 @@ it.each([true, false])('preserves nested and sibling identities with runtime con
     expect(container.querySelectorAll(`[data-block-id="${id}"]`)).toHaveLength(1);
   }
   expect(container.querySelector('[data-block-id="instructional-child"]')?.getAttribute('data-block-version')).toBe('D1');
+  if (withContext) {
+    expect(childContext).toHaveBeenCalledWith({ ...runtimeContext, blockId: 'instructional-child', blockType: 'definition', blockVersion: 'D1' });
+  } else {
+    expect(childContext).toHaveBeenCalledWith(undefined);
+  }
 });

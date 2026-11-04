@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { LearningProgressService } from '../learning-progress.service';
 import { createD1Fixture } from './test-fixtures';
+import { TutorialDocumentSchema, validateDocumentForSection } from '@quiz/types';
 
 const identity = { userId: 'learner-1', brand: 'skillup' };
 const section = {
@@ -28,6 +29,39 @@ function fixture(content: unknown = section.content) {
 }
 
 describe('B08-T08 canonical block membership', () => {
+  it('allows 500 valid root blocks plus a nested child through the actual service', async () => {
+    const document = { schemaVersion: 1 as const, blocks: [
+      ...Array.from({ length: 499 }, (_, i) => ({ id: `leaf-${i}`, type: 'paragraph' as const, content: { text: 'text' } })),
+      { id: 'container', type: 'two-column' as const, content: { left: { blocks: [createD1Fixture({ id: 'nested-child' })] }, right: { blocks: [] } } },
+    ] };
+    expect(TutorialDocumentSchema.safeParse(document).success).toBe(true);
+    expect(validateDocumentForSection(document, 'notes').valid).toBe(true);
+    const f = fixture(document);
+    await f.service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', 'section-1', 'nested-child', 'technical', 'D1');
+    expect(f.repo.markBlockCompleted).toHaveBeenCalledOnce();
+  });
+  it.each([3, 4])('enforces supported nesting boundary at depth %i', async (depth) => {
+    let block: unknown = createD1Fixture({ id: 'deep-child' });
+    for (let i = 0; i < depth; i++) block = { id: `container-${i}`, type: 'two-column', content: { left: { blocks: [block] }, right: { blocks: [] } } };
+    const f = fixture({ schemaVersion: 1, blocks: [block] });
+    const call = f.service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', 'section-1', 'deep-child', 'definition', 'D1');
+    if (depth === 3) {
+      await expect(call).resolves.toBeDefined();
+      expect(f.repo.markBlockCompleted).toHaveBeenCalledOnce();
+    } else {
+      await expect(call).rejects.toThrow();
+      expect(f.repo.createProgress).not.toHaveBeenCalled();
+      expect(f.repo.markBlockCompleted).not.toHaveBeenCalled();
+    }
+  });
+  it('rejects cyclic content before any progress write', async () => {
+    const blocks: unknown[] = [];
+    blocks.push({ id: 'cycle', type: 'two-column', content: { left: { blocks }, right: { blocks: [] } } });
+    const f = fixture({ schemaVersion: 1, blocks });
+    await expect(f.service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', 'section-1', 'cycle', 'definition', 'D1')).rejects.toThrow();
+    expect(f.repo.createProgress).not.toHaveBeenCalled();
+    expect(f.repo.markBlockCompleted).not.toHaveBeenCalled();
+  });
   it.each(['block-a', 'block-b'])('accepts distinct stored blocks sharing a type: %s', async (block) => {
     const f = fixture();
     await f.service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', 'section-1', block, 'definition', 'D1');
