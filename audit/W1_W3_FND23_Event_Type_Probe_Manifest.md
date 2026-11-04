@@ -7,3 +7,5 @@ Verification from root with DB/cache/queue environment keys removed: programmati
 Follow-up positive control: the same command with matching registered/custom event type now reports 1 passed, 1 failed (exit 1); the foreign-type denial and no-effect assertions remain failing. The positive proves the fixture can invoke a matching event, not a real signature or queue.
 
 An invalid-signature verifier control was added and passes with zero handler effects. Same isolated selection now exits 1: 2 passed, 1 failed; the registered-type negative remains red. Fake verifier behavior is not cryptographic signature testing.
+
+The negative control accepts either non-OK response or thrown parser rejection as denial and still requires zero effects. Rerun under the same isolated command remains exit 1, 2 passed / 1 failed; current behavior returned OK and invoked the handler. This accommodates legitimate error transport without weakening the invariant.

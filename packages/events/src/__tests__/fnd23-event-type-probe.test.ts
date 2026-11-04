@@ -10,8 +10,14 @@ it('does not invoke a registered handler for a different custom-schema event typ
     receiver: { verify: async () => true } as never,
     schema: z.object({ type: z.literal('project.approved'), correlationId: z.string(), id: z.string() }),
   });
-  const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.approved', correlationId: 'fixture', id: 'fixture' }) }));
-  expect.soft(response.ok).toBe(false);
+  let accepted = false;
+  try {
+    const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.approved', correlationId: 'fixture', id: 'fixture' }) }));
+    accepted = response.ok;
+  } catch {
+    // A parser rejection is also a denial; the handler must still have no effects.
+  }
+  expect.soft(accepted).toBe(false);
   expect.soft(effect).not.toHaveBeenCalled();
 });
 
