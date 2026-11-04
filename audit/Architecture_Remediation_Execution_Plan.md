@@ -646,6 +646,7 @@ separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
 **Status:** `IN_PROGRESS` (Preparation, SHC API control, SUIA/RTH normal logout and the corrected local SUIA/RTH/SHC dashboard-cookie checks independently VERIFIED within their recorded scopes. PROXY-01 same-origin login-default correction CLOSED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` and prior logout acceptances. Unsupported lifecycle/tenant/cache/SHC-refresh fixtures, broader resource qualification and formal Wave 8 remain open.)
+**Current bounded assignment:** `audit/W1.2_Browser_Learner_Purpose_Smoke_Task.md` for attributable SUIA/RTH GUI purpose smoke after accepted Batch 07 offline gates. Existing live-Neon authorization applies. Unsupported negative fixtures and formal Wave 8 retain their separate gates.
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
@@ -820,7 +821,7 @@ one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, 
 `rbac.service.test.ts` (16 tests passing) and `admin-01-proxy.test.ts` (10 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of final Package 3 boundary corrections. Distinct-key constructor order corrected to access/refresh/admin, public login/signup route forwarding and cookie selection verified, dedicated admin issuer tested, and refresh claims asserted. Verified offline by 10 tests in login-01-purpose.test.ts.)
+**Status:** `CLOSED` (Sol accepts reviewed bcbb094c within implemented source and offline ingress/service/crypto/cookie scope. Public login/signup linked controls, corrected distinct/shared keys, empty-role principal, device/IP and generic skillhubcore compatibility inspected and independently tested. See `audit/W1.2_Batch_07_Final_Sol_Acceptance.md`. Fresh learner-purpose browser smoke remains separately scoped under BROWSER-01.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Package 3.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -832,7 +833,7 @@ Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-
 (10 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of final Package 1 & 2 boundary corrections. Canonical cookie-first precedence restored, full exact-origin policy grounded in authoritative request context, brand-partitioned store with independent brand-bound repository adapters, passing persistent canary, commit-then-throw and real AuditService absorption proven offline in 23 tests in sess-04-logout-all.test.ts and 4/4 probes in Remaining Sol Probe.)
+**Status:** `CLOSED` (Sol accepts reviewed bcbb094c within offline adapter/service/request-policy scope. Cookie-first selection, exact tested origins, audience/class gate, corrected tenant canary, unknown revocation, presence failure and real absorbed audit failure independently checked. 85 tests plus both four-case probes passed. See `audit/W1.2_Batch_07_Final_Sol_Acceptance.md` for fixture/deployment limits. No live all-device acceptance.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Packages 1 and 2.
 **Implementer / acceptance:** Gemini / independent Sol review.
