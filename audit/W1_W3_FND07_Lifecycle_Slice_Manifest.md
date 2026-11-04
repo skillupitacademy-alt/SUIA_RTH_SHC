@@ -1,0 +1,7 @@
+# FND07 lifecycle slice manifest
+
+Baseline df81a5c0; parent FND02/FND07/FND25, root causes RC-ID-01 / RC-TUTORIAL-01, independent review findings J-R1 and J-R2 in W1.2_Terra_J01_J20_Sol_Review_95bba4c3.md. FinalAechitecture.md requires truthful accounting, source ownership, scoped minimal corrections and explicit test boundaries.
+
+Allowed production: `packages/ui/src/tutorial/runtime/BlockTelemetryProvider.tsx`; `blockTelemetryDelivery.ts` only if necessary. Allowed tests: existing UI runtime `__tests__`, specifically `sol-session-transition-lifecycle.test.tsx` and existing provider/queue tests. No BFF, auth, repository, schema, dependency or configuration changes. Actual callers are ActiveBlockContext, provider session/visibility props, BlockTelemetryDeliveryQueue and ILS visit/active-time fetch transport.
+
+Invariants: hidden intervals never accrue; new timing starts paused when document hidden and resumes on visibility; session metadata remains captured by interval; teardown invalidates deferred visit only, retaining best-effort accrued-time flush; active mounted transitions and StrictMode effect replay do not duplicate or lose credited seconds. Tests: Sol's three exact controls, hidden-to-visible and null/enabled cutovers, deferred teardown settlement, and StrictMode/effect replay with isolated clocks/transport. No physical browser or server authority claim. Status IN_PROGRESS pending independent Sol review.

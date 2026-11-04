@@ -14,13 +14,14 @@ const initialBlock = { blockId: 'block-a', blockType: 'code', blockVersion: 'C1'
 const originalVisibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
 let visibility: 'visible' | 'hidden';
 
-function provider(sessionId: string) {
+function provider(sessionId: string | null, enabled = true) {
   return (
     <BlockTelemetryProvider
       navigationNodeId="node"
       subtopicId="subtopic"
       sectionId="section"
       sessionId={sessionId}
+      enabled={enabled}
       heartbeatIntervalMs={30000}
     >
       <div>Learning content</div>
@@ -97,6 +98,46 @@ describe('Sol session transition lifecycle', () => {
       0,
     );
     expect(creditedSeconds).toBe(5);
+  });
+
+  it('resumes only visible time after a hidden null-session cutover', async () => {
+    const view = render(provider('session-a'));
+    await act(async () => {});
+    clock.mockReturnValue(5000);
+    await act(async () => { visibility = 'hidden'; document.dispatchEvent(new Event('visibilitychange')); });
+    clock.mockReturnValue(10000);
+    await act(async () => { view.rerender(provider(null)); });
+    clock.mockReturnValue(20000);
+    await act(async () => { view.rerender(provider('session-b')); });
+    clock.mockReturnValue(40000);
+    await act(async () => { visibility = 'visible'; document.dispatchEvent(new Event('visibilitychange')); });
+    clock.mockReturnValue(47000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(activeTimeRequests().map(({ session, body }) => [session, body.activeTimeSec])).toEqual([['session-a', 5], ['session-b', 7]]);
+  });
+
+  it('starts enabled timing paused while hidden and resumes only after visibility', async () => {
+    const view = render(provider('session-a', false));
+    await act(async () => {});
+    clock.mockReturnValue(10000);
+    await act(async () => { visibility = 'hidden'; document.dispatchEvent(new Event('visibilitychange')); });
+    await act(async () => { view.rerender(provider('session-a', true)); });
+    clock.mockReturnValue(40000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(activeTimeRequests()).toHaveLength(0);
+    await act(async () => { visibility = 'visible'; document.dispatchEvent(new Event('visibilitychange')); });
+    clock.mockReturnValue(44000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(activeTimeRequests().map(item => item.body.activeTimeSec)).toEqual([4]);
+  });
+
+  it('preserves one interval under StrictMode effect replay', async () => {
+    const view = render(<React.StrictMode>{provider('session-a')}</React.StrictMode>);
+    await act(async () => {});
+    clock.mockReturnValue(5000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    expect(activeTimeRequests().reduce((sum, item) => sum + item.body.activeTimeSec, 0)).toBe(5);
+    view.unmount();
   });
 
   it('does not emit a deferred new-block visit after provider teardown', async () => {

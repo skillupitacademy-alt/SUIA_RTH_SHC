@@ -373,7 +373,7 @@ export function BlockTelemetryProvider({
       blockVersion,
       startTime: performance.now(),
       accumulatedMs: 0,
-      isPaused: false,
+      isPaused: document.visibilityState === 'hidden',
     };
   }, []);
   
@@ -464,6 +464,7 @@ export function BlockTelemetryProvider({
    */
   useEffect(() => {
     return () => {
+      transitionGenerationRef.current++;
       // Phase D-2: Final flush using snapshot/swap
       void flushAllPending();
     };
