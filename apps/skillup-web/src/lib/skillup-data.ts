@@ -285,7 +285,7 @@ export async function getSkillupAttendance(userId: string) {
 export async function getSkillupPayments(userId: string) {
     const paymentPoolClient = getPaymentPool();
     if (paymentPoolClient === null) {
-      return { installments: [] };
+      throw new Error('Payment data unavailable');
     }
 
     const { rows: installments } = await paymentPoolClient.query<{

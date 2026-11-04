@@ -10,6 +10,7 @@ import ProgramsPage from '../../app/programs/page';
 import FacultyPage from '../../app/faculty/page';
 import StudentDashboardPage from '../../app/student/page';
 import AttendancePage from '../../app/student/attendance/page';
+import PaymentsPage from '../../app/student/payments/page';
 beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
 afterEach(() => { cleanup(); fetchData.mockReset(); vi.unstubAllGlobals(); });
 it('shows no enrollment in both batch entry pages', async () => {
@@ -52,4 +53,18 @@ it('distinguishes absent attendance records from measured zero', async () => {
   render(await AttendancePage());
   expect(screen.getByText('0%')).toBeTruthy();
   expect(screen.getByText('Details unavailable')).toBeTruthy();
+});
+
+it('shows an empty payment history without unsupported payment actions', async () => {
+  fetchData.mockResolvedValue({ installments: [] });
+  render(await PaymentsPage());
+  expect(screen.getByText('No installments found.')).toBeTruthy();
+  expect(screen.getByText('Online payment and receipt actions are currently unavailable.')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /pay overdue/i })).toBeNull();
+});
+
+it('does not present a paid historical installment as overdue', async () => {
+  fetchData.mockResolvedValue({ installments: [{ id: 'paid', label: 'Paid installment', dueDate: '2020-01-01', amount: 0, status: 'paid' }] });
+  render(await PaymentsPage());
+  expect(screen.getByText('Paid installment').closest('.rounded-3xl')?.className).not.toContain('border-rose-200');
 });

@@ -27,9 +27,10 @@ export default async function PaymentsPage() {
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <article className="surface-panel rounded-[2rem] p-6">
+          {installments.length === 0 && <p className="text-sm text-slate-600">No installments found.</p>}
           <div className="space-y-4">
             {installments.map((installment) => {
-              const overdue = installment.status === 'overdue' || isPastDue(installment.dueDate);
+              const overdue = installment.status !== 'paid' && (installment.status === 'overdue' || isPastDue(installment.dueDate));
 
               return (
                 <div
@@ -69,14 +70,7 @@ export default async function PaymentsPage() {
 
         <aside className="surface-panel rounded-[2rem] p-6">
           <p className="section-kicker text-slate-500">Actions</p>
-          <div className="mt-6 space-y-4">
-            <button className="w-full rounded-full bg-cyan-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-cyan-600">
-              Pay overdue installment
-            </button>
-            <button className="w-full rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-300 hover:bg-cyan-50">
-              Download receipt
-            </button>
-          </div>
+          <p className="mt-6 text-sm text-slate-600">Online payment and receipt actions are currently unavailable.</p>
         </aside>
       </section>
     </section>
