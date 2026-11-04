@@ -96,3 +96,5 @@ Event probe refinement `d516ca63` accepts either a non-OK response or thrown par
 `74242830` rejects missing, blank or duplicate subtopic response IDs rather than generating IDs used in actions. Four isolated mounted controls and SHC typecheck pass. Async races and backend identity remain unverified; Sol review pending.
 
 `70b6e78d` retains a second VERIFICATION_FAILED event probe: after an actual shared consumer handler fails, its fixture marker causes a subsequent identical retry to skip the handler (1 pass / 1 fail, exit 1); sequential duplicate following success passes. The store and verifier are simulated, not physical Redis/QStash/transaction evidence. This probe and the registered-type probe both intentionally remain failing until Sol selects compatible remediation.
+
+`7063c7c4` links the actual publisher and consumer in a mocked QStash transport: valid enrolled event and malformed envelope controls pass 2/2 with fake verifier and blocked fetch. This positive is not physical queue, cryptographic or store evidence and does not supersede the two retained event failures.
