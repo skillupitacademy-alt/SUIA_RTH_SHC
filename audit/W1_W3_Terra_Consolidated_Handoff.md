@@ -30,7 +30,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND24 | NOT COMPLETE: domain-specific caller controls depend on FND18–FND23. |
 | FND25 | PARTIAL: mounted report truth and lifecycle adverse controls run; remaining domain invariants and infrastructure-sensitive controls open. |
 | FND26 | PARTIAL: affected UI and learner-app typechecks and whitespace checks pass; other package lint/build gates not executed. |
-| FND27 | PARTIAL: the two manifests constrain affected callers and scope; per-group compatibility and principle evidence remains. |
+| FND27 | PARTIAL: `63d56dff` maps source-backed compatibility and principle evidence for G1-G9; complete group-specific regressions and Sol review remain. |
 | FND28 | NOT COMPLETE: independent re-audit depends on complete finding reconciliation and Sol review. |
 | FND29 | PARTIAL: d042ffdd provides a provisional W4.1–W4.6 dependency matrix; Sol validation, acceptance and any exceptions remain. No W4 readiness is asserted. |
 | FND30 | PARTIAL: this handoff records all task and group dispositions; outstanding deliverables above remain. |
