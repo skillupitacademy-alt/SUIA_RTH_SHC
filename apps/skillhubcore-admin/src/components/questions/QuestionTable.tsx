@@ -17,7 +17,7 @@ interface QuestionData {
     type: string;
     difficulty: string;
     status: string;
-    createdAt: string;
+    createdAt?: string;
     mappingType?: string;
     explanation?: string;
     correctAnswer?: string;
@@ -197,7 +197,7 @@ export function QuestionTable() {
                     type: q.type ?? 'single',
                     difficulty: q.difficulty ?? 'intermediate',
                     status: q.status ?? 'draft',
-                    createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
+                    createdAt: q.createdAt,
                     mappingType: (q as { mappingType?: string }).mappingType,
                     explanation: q.explanation,
                     correctAnswer: q.correctAnswer,
