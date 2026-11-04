@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { db } from '@quiz/db';
+import { storage } from '@/lib/storage';
 import { GET } from '../route';
 
 /**
@@ -168,5 +170,23 @@ describe('B08-F: Private Export Status Ownership', () => {
     });
     const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, { headers: { authorization: `Bearer ${token}` } });
     expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(403);
+  });
+
+  it('recovers missing-job status from an authorized owner exam', async () => {
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { analytics_json: 'private-ref' } } as never);
+    const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${ownerToken}` } });
+    const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
+    expect(response.status).toBe(200);
+    expect((await response.json()).status).toBe('completed');
+    expect(storage.exists).toHaveBeenCalledOnce();
+  });
+
+  it('missing-job fallback denies a foreign tenant with a colliding owner before storage', async () => {
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { analytics_json: 'private-ref' } } as never);
+    const token = await testTokenService.generateAccessToken({ userId: OWNER_USER_ID, roles: ['student'], brand: 'realtutorialhub', tokenType: 'user', aud: 'user' });
+    const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${token}` } });
+    const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
+    expect.soft(response.status).toBe(403);
+    expect(storage.exists).not.toHaveBeenCalled();
   });
 });
