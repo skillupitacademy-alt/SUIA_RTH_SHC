@@ -32,11 +32,17 @@ export async function GET(req: NextRequest) {
     }
 
     // Authenticate
-    const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
-    if (token === null || token === undefined) {
+    const tokenService = container.get(TokenService);
+    const token = tokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
       throw unauthorized('Unauthorized');
     }
-    const payload = await container.get(TokenService).verifyUserAccessToken(token);
+    let payload;
+    try {
+      payload = await tokenService.verifyUserAccessToken(token);
+    } catch {
+      throw unauthorized('Unauthorized');
+    }
     if (!payload?.userId) {
       throw unauthorized('Unauthorized');
     }

@@ -2,8 +2,10 @@ import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { storage } from '@/lib/storage';
+import { db } from '@quiz/db';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { JobsService } from '@/modules/system/jobs.service';
 import { GET } from '../route';
 
 /**
@@ -22,10 +24,10 @@ import { GET } from '../route';
  *
  * NOTE ON FOREIGN BRAND COLLIDING ID:
  * In accordance with Package F, the download route (apps/api-server/src/app/api/export/download/route.ts)
- * is NOT authorized for runtime edit in this batch.
+ * is not authorized for tenant-resource runtime edits in this batch.
  * The foreign-brand colliding ID defect (where identical user IDs across brands bypass tenant boundaries)
  * is preserved as a documented open invariant in audit/W1.2_Batch_08_Handoff.md and reproduced in
- * Sol's standalone probe (sol-b08-collision.test.ts), requiring an architectural schema migration.
+ * Sol's standalone probe (sol-b08-collision.test.ts), requiring an authoritative ownership decision.
  */
 
 const TEST_SECRET = new TextEncoder().encode('export-download-test-secret-32b!');
@@ -187,6 +189,38 @@ describe('B08-F: Private Export Download Ownership', () => {
       expect(globalThis.fetch).not.toHaveBeenCalled();
     });
   }
+
+  it.each(['expired', 'wrong-class', 'invalid-signature'])('rejects %s credential before resource effects', async (kind) => {
+    const otherKey = new TextEncoder().encode('separate-disposable-signing-key-32b');
+    const signer = kind === 'invalid-signature' ? new TokenService(otherKey, otherKey, otherKey) : testTokenService;
+    const admin = kind === 'wrong-class';
+    const token = await signer.generateAccessToken({
+      userId: OWNER_USER_ID, roles: admin ? ['admin'] : ['student'], brand: 'skillup',
+      tokenType: admin ? 'admin' : 'user', aud: admin ? 'admin' : 'user', isAdmin: admin,
+    }, kind === 'expired' ? '-1h' : undefined);
+    const req = new NextRequest(`https://skillup.test/api/export/download?jobId=${JOB_ID}`, { headers: { authorization: `Bearer ${token}` } });
+    expect((await GET(req)).status).toBe(401);
+    expect(JobsService.getJobStatus).not.toHaveBeenCalled();
+    expect(db.query.exams.findFirst).not.toHaveBeenCalled();
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('does not disguise a job repository outage as invalid credentials', async () => {
+    vi.mocked(JobsService.getJobStatus).mockRejectedValueOnce(new Error('fixture repository failure'));
+    const req = new NextRequest(`https://skillup.test/api/export/download?jobId=${JOB_ID}`, { headers: { authorization: `Bearer ${ownerToken}` } });
+    expect((await GET(req)).status).toBe(500);
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
+  });
+
+  it('honors the non-owner cookie when an owner bearer is also supplied', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/download?jobId=${JOB_ID}`, {
+      headers: { cookie: `accessToken=${attackerToken}`, authorization: `Bearer ${ownerToken}` },
+    });
+    expect((await GET(req)).status).toBe(403);
+    expect(storage.getReadUrl).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
 
   it('EXAM OWNERSHIP: legitimate exam owner can download exam report (200)', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/download?examId=${EXAM_ID}&format=json`, {

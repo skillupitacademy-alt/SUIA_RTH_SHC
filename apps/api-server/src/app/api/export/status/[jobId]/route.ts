@@ -98,18 +98,41 @@ export async function GET(
 
     let userId: string | undefined;
     if (!isInternal) {
-      const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
+      const tokenService = container.get(TokenService);
+      const token = tokenService.getAccessToken(req, { scope: 'user' });
       if (token === undefined || token === null || token === '') {
         throw unauthorized('Unauthorized');
       }
 
-      const payload = await container.get(TokenService).verifyUserAccessToken(token);
+      let payload;
+      try {
+        payload = await tokenService.verifyUserAccessToken(token);
+      } catch {
+        throw unauthorized('Unauthorized');
+      }
+      if (!isNonEmptyString(payload.userId)) throw unauthorized('Unauthorized');
       userId = payload.userId;
     }
 
     const job = await JobsService.getJobStatus(jobId);
     if (job && !isInternal && job.userId !== userId) {
       throw forbidden('Forbidden');
+    }
+    if (!job) {
+      if (examId === '') return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, examId), columns: { userId: true, exportUrls: true },
+      });
+      if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
+      if (!isInternal && exam.userId !== userId) throw forbidden('Forbidden');
+      const artifact = await resolveExamFallbackArtifact({ examId, format: requestedFormat, userId, exam });
+      if (artifact && await storage.exists(artifact.fileRef).catch(() => false)) {
+        return NextResponse.json({
+          jobId, status: 'completed', stage: 'ready',
+          downloadUrl: buildProxyDownloadUrl({ examId, format: requestedFormat }), error: null, progress: 100,
+        });
+      }
+      return NextResponse.json({ jobId, status: 'failed', error: 'Export job not found' });
     }
     const jobFormat = normalizeFormat(
       (job?.payload as Record<string, unknown> | null | undefined)?.format as string | null | undefined
@@ -118,7 +141,7 @@ export async function GET(
     );
 
     const staleThresholdMs = 2 * 60 * 1000;
-    if (job && (job.status === 'processing' || job.status === 'pending') && job.updatedAt !== null && job.updatedAt !== undefined) {
+    if ((job.status === 'processing' || job.status === 'pending') && job.updatedAt !== null && job.updatedAt !== undefined) {
       const updatedAt = new Date(job.updatedAt).getTime();
       const elapsed = Date.now() - updatedAt;
       if (elapsed > staleThresholdMs) {
@@ -172,36 +195,6 @@ export async function GET(
       inferredProgress = mapped.progress;
     } catch (error: unknown) {
       log.warn({ err: error, jobId }, 'Failed to read export workflow state');
-    }
-
-    if (!job) {
-      if (examId !== '') {
-        const recovered = await resolveReadyExportArtifact({
-          jobId,
-          examId,
-          format: requestedFormat,
-          job: undefined,
-          requestUserId: userId,
-        });
-        if (recovered !== null) {
-          return NextResponse.json({
-            jobId,
-            status: 'completed',
-            stage: 'ready',
-            downloadUrl: recovered.proxyDownloadUrl,
-            error: null,
-            progress: 100,
-          });
-        }
-
-        return NextResponse.json({
-          jobId,
-          status: 'failed',
-          error: 'Export job not found',
-        });
-      }
-
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
     const readyArtifact = await resolveReadyExportArtifact({
@@ -309,14 +302,16 @@ async function resolveExamFallbackArtifact({
   examId,
   format,
   userId,
+  exam: authorizedExam,
 }: {
   examId: string;
   format: ExportFormat;
   userId?: string;
+  exam?: { userId: string; exportUrls: unknown };
 }): Promise<{ fileRef: string } | null> {
   if (examId === '') return null;
 
-  const exam = await db.query.exams.findFirst({
+  const exam = authorizedExam ?? await db.query.exams.findFirst({
     where: eq(exams.id, examId),
     columns: { userId: true, exportUrls: true },
   });

@@ -6,6 +6,7 @@ import { container } from '@/modules/core/container';
 import { db } from '@quiz/db';
 import { storage } from '@/lib/storage';
 import { redis } from '@/lib/redis';
+import { JobsService } from '@/modules/system/jobs.service';
 import { GET } from '../route';
 
 /**
@@ -139,6 +140,50 @@ describe('B08-F: Private Export Status Ownership', () => {
 
     const res = await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) });
     expect(res.status).toBe(401);
+    expect(JobsService.getJobStatus).not.toHaveBeenCalled();
+    expect(redis.get).not.toHaveBeenCalled();
+  });
+
+  it.each(['malformed', 'expired', 'wrong-class', 'invalid-signature'])('rejects %s before resource effects', async (kind) => {
+    const otherKey = new TextEncoder().encode('separate-disposable-signing-key-32b');
+    const signer = kind === 'invalid-signature' ? new TokenService(otherKey, otherKey, otherKey) : testTokenService;
+    const admin = kind === 'wrong-class';
+    const token = kind === 'malformed' ? 'invalid.test.signature' : await signer.generateAccessToken({
+      userId: OWNER_USER_ID, roles: admin ? ['admin'] : ['student'], brand: 'skillup',
+      tokenType: admin ? 'admin' : 'user', aud: admin ? 'admin' : 'user', isAdmin: admin,
+    }, kind === 'expired' ? '-1h' : undefined);
+    const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, { headers: { authorization: `Bearer ${token}` } });
+    expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(401);
+    expect(JobsService.getJobStatus).not.toHaveBeenCalled();
+    expect(db.query.exams.findFirst).not.toHaveBeenCalled();
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
+    expect(JobsService.updateJobStatus).not.toHaveBeenCalled();
+  });
+
+  it('preserves a job repository failure as an operational error', async () => {
+    vi.mocked(JobsService.getJobStatus).mockRejectedValueOnce(new Error('fixture repository failure'));
+    const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, { headers: { authorization: `Bearer ${ownerToken}` } });
+    expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(500);
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
+  });
+
+  it('preserves an exam repository failure as an operational error', async () => {
+    vi.mocked(db.query.exams.findFirst).mockRejectedValueOnce(new Error('fixture exam failure'));
+    const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${ownerToken}` } });
+    expect((await GET(req, { params: Promise.resolve({ jobId: 'missing' }) })).status).toBe(500);
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
+  });
+
+  it('does not replace a non-owner cookie with an owner bearer token', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, {
+      headers: { cookie: `accessToken=${attackerToken}`, authorization: `Bearer ${ownerToken}` },
+    });
+    expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(403);
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
   });
 
   /**
@@ -180,6 +225,54 @@ describe('B08-F: Private Export Status Ownership', () => {
     expect(response.status).toBe(200);
     expect((await response.json()).status).toBe('completed');
     expect(storage.exists).toHaveBeenCalledOnce();
+    expect(db.query.exams.findFirst).toHaveBeenCalledOnce();
+    expect(redis.get).not.toHaveBeenCalled();
+  });
+
+  it.each([['json', 'analytics_json'], ['csv', 'analytics_csv'], ['student-insight-pdf', 'student_insight_pdf']] as const)(
+    'recovers owned missing-job %s without workflow state', async (format, key) => {
+      vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { [key]: 'private-ref' } } as never);
+      const req = new NextRequest(`https://skillup.test/api/export/status/missing?examId=exam-1&format=${format}`, { headers: { authorization: `Bearer ${ownerToken}` } });
+      const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
+      expect(response.status).toBe(200);
+      expect((await response.json()).status).toBe('completed');
+      expect(db.query.exams.findFirst).toHaveBeenCalledOnce();
+      expect(redis.get).not.toHaveBeenCalled();
+      expect(JobsService.updateJobStatus).not.toHaveBeenCalled();
+    },
+  );
+
+  it('returns 404 for missing job without an exam or with an absent exam', async () => {
+    const call = (query: string) => GET(new NextRequest(`https://skillup.test/api/export/status/missing${query}`, { headers: { authorization: `Bearer ${ownerToken}` } }), { params: Promise.resolve({ jobId: 'missing' }) });
+    expect((await call('')).status).toBe(404);
+    expect((await call('?examId=absent')).status).toBe(404);
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
+  });
+
+  it('keeps an owned exam without an artifact in the failed/not-ready state', async () => {
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: {} } as never);
+    const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${ownerToken}` } });
+    const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
+    expect(response.status).toBe(200);
+    expect((await response.json()).status).toBe('failed');
+    expect(redis.get).not.toHaveBeenCalled();
+    expect(storage.exists).not.toHaveBeenCalled();
+  });
+
+  it('preserves trusted internal missing-job exam recovery', async () => {
+    const previous = process.env.INTERNAL_API_KEY;
+    process.env.INTERNAL_API_KEY = 'disposable-status-internal';
+    try {
+      vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { analytics_json: 'private-ref' } } as never);
+      const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { 'x-internal-key': 'disposable-status-internal' } });
+      expect((await GET(req, { params: Promise.resolve({ jobId: 'missing' }) })).status).toBe(200);
+      expect(redis.get).not.toHaveBeenCalled();
+      expect(storage.exists).toHaveBeenCalledOnce();
+    } finally {
+      if (previous === undefined) delete process.env.INTERNAL_API_KEY;
+      else process.env.INTERNAL_API_KEY = previous;
+    }
   });
 
   it('missing-job fallback denies a foreign tenant with a colliding owner before storage', async () => {
