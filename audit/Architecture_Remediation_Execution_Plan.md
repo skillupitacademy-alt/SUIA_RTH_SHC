@@ -808,7 +808,7 @@ including database admin-role changes and query ordering. No live negative probe
 production policy change, universal API certification or browser AQ-10 closure.
 
 ### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
-**Status:** `IMPLEMENTED_UNVERIFIED`
+**Status:** `VERIFICATION_FAILED` (Low-level controls pass, but required actual proxy/caller matrix and changed route-helper eligibility/permission evidence are missing. Review: `audit/W1.2_Batch_07_Sol_Review_2affa37b.md`; correction assignment `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`. No complete ADMIN-01 runtime acceptance.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -820,7 +820,7 @@ one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, 
 `rbac.service.test.ts` (16 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `IMPLEMENTED_UNVERIFIED`
+**Status:** `VERIFICATION_FAILED` (Generic skillhubcore/default-DB purpose compatibility regressed; unsupported purpose validation follows success-side effects; linked route/refresh/disposable-key evidence incomplete. Independently reproduced in offline probe. See Batch 07 review/corrections; no runtime closure.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -832,7 +832,7 @@ Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-
 (5 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `IMPLEMENTED_UNVERIFIED`
+**Status:** `VERIFICATION_FAILED` (Actual signed infra audience passes type-only gate; cookie-authenticated foreign Origin reaches stub revocation without a local/upstream CSRF boundary. Real engine/stateful outcome controls are also missing. Offline review probe reproduces defects; no live all-device test. See `audit/W1.2_Batch_07_Sol_Review_2affa37b.md` and correction assignment.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
