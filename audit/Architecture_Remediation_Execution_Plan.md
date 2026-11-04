@@ -845,6 +845,13 @@ origin CSRF verification, and brand-partitioned tenant store. Preserves canonica
 and no new cookie/deprecation metadata; tested strictly offline via `sess-04-logout-all.test.ts`
 (23 tests passing).
 
+### Controlled Batch 08 - Negative Authorization and Isolation Qualification
+**Status:** `PLANNED` under IN_PROGRESS RC-ID-01 and BROWSER-01.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_08_Task.md` assigns ten packages B08-A through B08-J to Gemini in one batch. Source trust-boundary mapping, isolated lifecycle/session/guard/progress/export/internal-auth/client-state qualification, SHC lifecycle design and integrated evidence are included.
+**Authority:** FinalAechitecture.md security, independent tenant identity and coding requirements, Wave 1 critical authorization and accepted Batch 06/07 dispositions.
+**Scope:** New isolated tests and bounded audit evidence only. Runtime defects return as explicit failing invariants and separately scoped correction proposals. Existing accepted closures retain their scopes. Unsupported browser fixtures, physical database isolation, serving-build attribution and formal Wave 8 require their own evidence.
+**Acceptance:** Sol independently reviews submitted packages. Application implementation sequence remains Wave 4 SHC, Wave 5 SUIA and Wave 6 RTH, with operational/concurrency qualification in later program gates.
+
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
 **Root cause:** `RC-ID-01` / `RC-DB-01`
