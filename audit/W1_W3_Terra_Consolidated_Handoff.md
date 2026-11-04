@@ -23,7 +23,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | NOT COMPLETE: identity contract work depends on W1 authority decisions. |
 | FND19 | NOT COMPLETE: taxonomy ingress/egress drift and controls require inventory. |
-| FND20 | NOT COMPLETE: assessment contract drift and historical compatibility require inventory. |
+| FND20 | PARTIAL / IMPLEMENTED_UNVERIFIED: 45947f8c contains invalid question resource IDs at the mounted consumer; canonical runtime contract, round-trip and historical compatibility remain open. |
 | FND21 | NOT COMPLETE: tutorial contract consolidation depends on W1 owner authority and reviewed membership. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
 | FND23 | NOT COMPLETE: analytics contracts require event-specific domain ownership and linked controls. |
@@ -32,7 +32,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND26 | PARTIAL: affected UI and learner-app typechecks and whitespace checks pass; other package lint/build gates not executed. |
 | FND27 | PARTIAL: the two manifests constrain affected callers and scope; per-group compatibility and principle evidence remains. |
 | FND28 | NOT COMPLETE: independent re-audit depends on complete finding reconciliation and Sol review. |
-| FND29 | NOT COMPLETE: W4 dependency matrix and Sol exceptions remain. No W4 readiness is asserted. |
+| FND29 | PARTIAL: d042ffdd provides a provisional W4.1–W4.6 dependency matrix; Sol validation, acceptance and any exceptions remain. No W4 readiness is asserted. |
 | FND30 | PARTIAL: this handoff records all task and group dispositions; outstanding deliverables above remain. |
 
 Groups G1 and G3 have narrowly scoped IMPLEMENTED_UNVERIFIED slices and remain IN_PROGRESS. G2 and G4–G9 are NOT COMPLETE; no group is accepted or closed. Existing Batch 08 T/J and historical records remain authoritative for their own scopes; this handoff does not replace them.
