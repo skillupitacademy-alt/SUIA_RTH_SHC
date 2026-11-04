@@ -846,21 +846,13 @@ and no new cookie/deprecation metadata; tested strictly offline via `sess-04-log
 (23 tests passing).
 
 ### Controlled Batch 08 - Negative Authorization and Isolation Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Follow-up Corrections and Bounded Containment Submitted for Sol Independent Review).
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_08_Task.md` and follow-up `audit/W1.2_Gemini_Batch_08_Corrections_And_Containment_Task.md` cover packages B08-A through B08-J.
-**Authority:** `audit/FinalAechitecture.md` security, independent tenant identity and coding requirements, Wave 1 critical authorization and accepted Batch 06/07 dispositions.
-**Scope & Containment Delivered:**
-- **B08-A:** Boundary and fixture map corrected with exact file/line references, distinct header mappings (`x-internal-key`, `x-internal-secret`, legacy `x-gateway-secret`, `GATEWAY_TRUST_SECRET`), tutorial progress CSRF handling, and absent tenant discriminators.
-- **B08-B:** Mid-session account lifecycle transition tests corrected with `TokenService` singleton restoration in `afterEach`, linked service controls retained, and narrowed in-memory canary attribution.
-- **B08-C:** Same-email and colliding-ID session isolation tests corrected with real wrong-store injection, reciprocal foreign password/token checks, and distinct returned profile markers (`profile.name`).
-- **B08-D:** Resource guard boundary tests updated with two canonical brands (`skillup` vs `realtutorialhub`), mixed audience arrays (`['admin', 'user']`, `['admin', 'infra']`, `['admin', 'internal']`), isolated `tokenType: 'admin'` with `isAdmin: false`, and downstream query assertions.
-- **B08-E:** Bounded containment in `apps/api-server/src/app/api/tutorial/progress/route.ts` via `authenticateLearnerRequest`; cryptographic JWT identity binding enforced, forged headers rejected (401), cross-brand mismatches rejected (403), silent RTH fallback eliminated. Sol probe controls `SOL-B08-E` pass 100%.
-- **B08-F:** Bounded containment in `apps/api-server/src/app/api/export/status/[jobId]/route.ts` enforcing `job.userId !== userId` (403 Forbidden) before workflow recovery or status disclosure. Status tests pass. Download route foreign-brand colliding ID remains documented as an open defect (`VERIFICATION_FAILED`) requiring separate resource design.
-- **B08-G:** Internal auth anti-downshift tests retained with real signed learner token proxy evaluation; proxy anti-downshift defect (`proxy.ts` falling through to user auth on bad internal key) documented as `VERIFICATION_FAILED` with minimal runtime correction proposal.
-- **B08-H:** Transport wrapper tests labeled; real browser DOM/cache eviction reported as `NOT EXECUTED` with concrete missing Playwright/browser harness requirements documented.
-- **B08-I:** SHC session policy decision document revised against source facts (8h default access expiry, `people_db` vs `defaultDb`, unmounted refresh routes, client screen lock) and presented as an undecided contract decision for owner selection.
-- **B08-J:** Integrated verification and handoff delivered in `audit/W1.2_Batch_08_Handoff.md`.
-**Acceptance:** Submitted for independent Sol verification. Zero remote push, zero main merge. Pre-existing working tree edits preserved.
+**Status:** `IN_PROGRESS` with qualified containment acceptance and unresolved `VERIFICATION_FAILED` resource/proxy controls.
+**Sol disposition:** `audit/W1.2_Batch_08_Containment_Sol_Disposition.md` reviews b5a760b5. Progress JWT authentication and existing-job non-owner export-status containment VERIFIED within offline assertions. Full tenant-resource ownership remains open.
+**Evidence:** Submitted matrix independently reproduced as 67 passed before Sol restored the bad-internal-key denial assertion. Original Sol probe has 2 passed and 3 failed, with 21 filtered cases. Seven additional containment/compatibility controls passed. API typecheck and submitted whitespace range passed. Counts qualify their actual fixture layers.
+**Accepted scope:** B08-B lifecycle and B08-C session/credential isolation are accepted within their isolated service/repository adapters. B08-D helper/proxy assertions have limited acceptance, with request/resource context and downstream linkage still pending. Actual B08-H cache/consumer qualification remains NOT EXECUTED.
+**Remaining assignment:** `audit/W1.2_Batch_08_Remaining_Boundaries_Task.md` assigns six linked packages, including the narrow explicit-invalid-internal-key proxy correction, caller/resource evidence, authoritative export ownership design, source map, SHC policy and integrated gates.
+**SHC decision:** Current issuance/cookie compatibility retained while the lifecycle design is corrected. Future sliding refresh, cookie removal, TTL/schema changes and session-family policy require separately reviewed decisions.
+**Authority:** FinalAechitecture.md and accepted independent tenant identity. Parent RC-ID-01/BROWSER-01 remain IN_PROGRESS, with deployment attribution and formal Wave 8 requirements open. Existing prior closures retain their scopes. Application sequence remains Wave 4 SHC, Wave 5 SUIA and Wave 6 RTH.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`

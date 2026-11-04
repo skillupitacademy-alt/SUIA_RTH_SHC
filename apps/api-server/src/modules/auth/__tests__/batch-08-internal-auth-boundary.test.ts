@@ -171,7 +171,7 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
     expect(body.message).toContain('Direct API access is not allowed');
   });
 
-  it('7. ACTUAL API PROXY QUALIFICATION: bad internal key behavior on real signed learner token', async () => {
+  it('7. SECURITY INVARIANT: bad internal key is denied with a real signed learner token', async () => {
     const testSecret = new TextEncoder().encode('b08g-disposable-secret-32b-key!');
     const tokenService = new TokenService(testSecret, testSecret, testSecret);
     container.register(TokenService, tokenService);
@@ -207,7 +207,7 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
       },
     });
     const resWithBadKey = await proxy(reqWithBadKey);
-    // Real source proxy behavior: downshifts to user token and passes (200)
-    expect(resWithBadKey.status).toBe(200);
+    // Explicitly rejected privileged credentials must fail closed before learner fallback.
+    expect(resWithBadKey.status).toBe(403);
   });
 });
