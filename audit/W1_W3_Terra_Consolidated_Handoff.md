@@ -187,3 +187,5 @@ node --input-type=module -e "import { startVitest } from 'vitest/node'; const v 
 ```
 
 Exit 1: 2 files failed / 1 passed; 2 tests failed / 5 passed. The required mismatched-type denial and retry-after-handler-failure assertions remain red; no real QStash, Redis, database or cryptographic verification was performed.
+
+With DB/cache/queue keys removed and `setupFiles: ['audit/W1_W3_Offline_Test_Network_Guard.ts']`, the combined isolated Project LLM specification-review, workflow-details and explorer page selections exited 0: 3 files / 6 tests passed. The actual pages run with mocked client/context/router/registry; no FastAPI, real approval or browser execution. This does not change FND08/FND09 status.
