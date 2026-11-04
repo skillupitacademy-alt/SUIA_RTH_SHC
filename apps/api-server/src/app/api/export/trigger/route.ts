@@ -1,4 +1,6 @@
+import { db, exams } from '@quiz/db';
 import { JobType } from '@quiz/types';
+import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ExportSaga } from '@/lib/export/export.saga';
@@ -36,9 +38,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await tokenService.verifyUserAccessToken(token);
+    let payload: Awaited<ReturnType<TokenService['verifyUserAccessToken']>>;
+    try {
+      payload = await tokenService.verifyUserAccessToken(token);
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!payload || !payload.userId) {
+    if (payload === null || payload === undefined || !payload.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -57,6 +64,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { examId, format } = body;
+    const exam = await db.query.exams.findFirst({
+      where: eq(exams.id, examId),
+      columns: { userId: true },
+    });
+    if (!exam) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (exam.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     log.info({ examId, format, userId }, 'Triggering analytical export');
 
@@ -112,9 +125,8 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal Server Error';
     log.error({ err: error }, 'Failed to trigger export');
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -135,3 +147,4 @@ function isExportTriggerBody(value: unknown): value is { examId: string; format:
     isExportFormat(record.format)
   );
 }
+
