@@ -83,7 +83,7 @@ Additional marketing truth slice `c718179c` removes an unsupported shared-footer
 
 `f9621da5` extends the FND20 QuestionTable identity containment to duplicate IDs within a page; the mounted table selection passed 4 tests with mocked API and blocked fetch, and SHC typecheck passed. Cross-page identity, backend validation and canonical question contracts remain open.
 
-Crosswalk working index through `e0d41c69` has eight source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
+Crosswalk working index through the subtopic identity slice has nine source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
 
 `634af2bc` adds two isolated real-schema question controls: current valid single/bulk inputs pass and unknown type/empty options are denied. This confirms the exercised schema only, not the SHC client/API/persistence round trip or historical data support; all FND20 acceptance gates remain open.
 
@@ -92,3 +92,5 @@ Crosswalk working index through `e0d41c69` has eight source-checked rows with sc
 Latest retained event probe selection after `1ee6bc7c` and `e6f0983d`: 2 passed, 1 failed, exit 1. Matching registered-type positive and fake-verifier invalid-signature negative pass; mismatched type still returns OK and invokes the handler. Fixture signatures are not cryptographic verification.
 
 Event probe refinement `d516ca63` accepts either a non-OK response or thrown parser rejection as denial while retaining the zero-handler-effects assertion. Latest selection remains exit 1, 2 passed / 1 failed: current mismatch receives OK and invokes the handler. Source-only identity adapter observations are in inventory commit `cd6057b3`; they do not establish a bypass. The complete assignment and all group acceptances remain open.
+
+`74242830` rejects missing, blank or duplicate subtopic response IDs rather than generating IDs used in actions. Four isolated mounted controls and SHC typecheck pass. Async races and backend identity remain unverified; Sol review pending.
