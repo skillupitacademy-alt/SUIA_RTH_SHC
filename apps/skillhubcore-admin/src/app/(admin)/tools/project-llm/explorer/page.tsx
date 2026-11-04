@@ -26,7 +26,7 @@ interface VersionDetail {
   accessibility: string;
   responsive: string;
   renderer: string;
-  runtimeStatus: 'VERIFIED' | 'CANDIDATE_PILOT' | 'DOCUMENTED';
+  runtimeStatus: 'REFERENCE' | 'CANDIDATE_PILOT' | 'DOCUMENTED';
 }
 
 const INTRODUCTION_VERSIONS: Record<string, VersionDetail> = {
@@ -39,7 +39,7 @@ const INTRODUCTION_VERSIONS: Record<string, VersionDetail> = {
     accessibility: 'ARIA heading level 2, compliant landmark roles, 4.5:1 contrast ratio, keyboard focusable.',
     responsive: 'Single-column on mobile (<640px), balanced 2-column hero on tablet/desktop.',
     renderer: 'TutorialBlockRenderer (packages/ui/src/tutorial/blocks/IntroductionBlock.tsx)',
-    runtimeStatus: 'VERIFIED',
+    runtimeStatus: 'REFERENCE',
   },
   I2: {
     id: 'I2',
@@ -137,7 +137,7 @@ export default function FamilyVersionExplorerPage() {
               Family → Version Explorer
             </h1>
             <p className="mt-1 text-xs text-slate-500 max-w-2xl">
-              Inspect specific block versions within their canonical family hierarchy. Enforces intra-family relationships and engineering contracts.
+              Reference descriptions only; they do not verify runtime behavior or authorize governance actions.
             </p>
           </div>
 
@@ -218,7 +218,7 @@ export default function FamilyVersionExplorerPage() {
                       }`}
                     >
                       {v === 'I1' || v === 'C1' || v === 'D1'
-                        ? 'VERIFIED'
+                        ? 'REFERENCE'
                         : v === 'I2'
                         ? 'PHASE 1 PILOT'
                         : 'DOCUMENTED'}
@@ -348,7 +348,7 @@ export default function FamilyVersionExplorerPage() {
                     <span>{versionDetail.renderer}</span>
                   </div>
                   <span className="font-mono text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
-                    NO DUPLICATE CANONICAL ARTIFACT
+                    REFERENCE ONLY
                   </span>
                 </div>
               </div>
