@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({ rows: [] as Array<Record<string, unknown>>, fail: false }));
 vi.mock('@quiz/db-people', () => {
@@ -13,6 +13,8 @@ vi.mock('@quiz/db-people', () => {
 vi.mock('@quiz/db-placement', () => ({ db: {}, findJobsForStudent: vi.fn(), jobListings: {}, studentPlacementProfiles: {} }));
 import { getSkillupProgramBySlug, getSkillupProgramDetail, getSkillupPrograms } from '../skillup-data';
 
+beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
+afterEach(() => { vi.unstubAllGlobals(); });
 describe('program data truth', () => {
   beforeEach(() => { state.rows = []; state.fail = false; });
   it('returns empty results and no invented slug when the store has no rows', async () => {

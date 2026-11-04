@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({ results: [] as Array<Array<Record<string, unknown>>>, fail: false }));
 vi.mock('@quiz/db-people', () => {
   const columns = new Proxy({}, { get: () => ({}) });
@@ -9,6 +9,8 @@ vi.mock('@quiz/db-people', () => {
 });
 vi.mock('@quiz/db-placement', () => ({ db: {}, findJobsForStudent: vi.fn(), jobListings: {}, studentPlacementProfiles: {} }));
 import { getSkillupBatches, getSkillupMyBatch } from '../skillup-data';
+beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
+afterEach(() => { vi.unstubAllGlobals(); });
 describe.each([getSkillupBatches, getSkillupMyBatch])('batch data truth', (load) => {
   beforeEach(() => { state.results = []; state.fail = false; });
   it('returns no batch when there is no active enrollment', async () => {

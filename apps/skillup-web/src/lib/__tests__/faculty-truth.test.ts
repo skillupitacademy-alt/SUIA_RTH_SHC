@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({ rows: [] as Array<Record<string, unknown>>, fail: false }));
 vi.mock('@quiz/db-people', () => {
   const columns = { id: {}, name: {}, userId: {}, status: {}, availabilityType: {} };
@@ -11,6 +11,8 @@ vi.mock('@quiz/db-people', () => {
 });
 vi.mock('@quiz/db-placement', () => ({ db: {}, findJobsForStudent: vi.fn(), jobListings: {}, studentPlacementProfiles: {} }));
 import { getSkillupFaculty } from '../skillup-data';
+beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
+afterEach(() => { vi.unstubAllGlobals(); });
 describe('faculty data truth', () => {
   beforeEach(() => { state.rows = []; state.fail = false; });
   it('reports empty faculty and zero active count without sample people', async () => {
