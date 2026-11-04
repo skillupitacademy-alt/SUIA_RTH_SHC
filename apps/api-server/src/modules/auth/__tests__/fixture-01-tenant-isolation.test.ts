@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RequestBrand } from '@/lib/request-brand';
 import { LoginService } from '../login.service';
 import { PasswordService } from '../password.service';
@@ -13,6 +13,8 @@ import { TokenService } from '../token.service';
  * - Colliding local user ID: '100' on both tenants.
  * - Distinct disposable test passwords & profile markers.
  * - Isolated in-memory tenant stores/adapters.
+ * - Self-contained: explicit disposable cryptographic keys injected into TokenService.
+ * - Fail-fast outbound transport guard installed to prevent external calls.
  * - Verified controls:
  *   1. SUIA credentials succeed and resolve SUIA profile/marker.
  *   2. RTH credentials succeed and resolve RTH profile/marker.
@@ -20,6 +22,7 @@ import { TokenService } from '../token.service';
  *   4. Denied attempts create zero sessions.
  *   5. Store isolation: writes in SUIA cannot alter RTH store.
  *   6. Fixture sensitivity check: wrong-store selection is detected.
+ *   7. Shadow user ID fast-path assertion: identity bridge is NOT invoked.
  */
 
 interface InMemUser {
@@ -106,6 +109,16 @@ class InMemTenantStore {
 const suiaStore = new InMemTenantStore('skillup');
 const rthStore = new InMemTenantStore('realtutorialhub');
 
+// Mock identity bridge to spy on sync calls
+const mockIdentityBridgeSync = vi.fn();
+vi.mock('@quiz/identity-bridge', () => ({
+  UserIdentityBridgeService: vi.fn().mockImplementation(() => ({
+    syncUser: mockIdentityBridgeSync,
+    updateShadowUserId: vi.fn(),
+    grantPlatformAccess: vi.fn(),
+  })),
+}));
+
 // Mock brand-db module to bind brand context to our in-memory tenant stores
 vi.mock('@/modules/auth/brand-db', () => ({
   shouldUseBrandBinding: vi.fn(() => true),
@@ -122,8 +135,14 @@ vi.mock('@/modules/auth/brand-db', () => ({
 }));
 
 describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
+  // Explicit disposable cryptographic keys (minimum 32 bytes)
+  const disposableAccessSecret = new TextEncoder().encode('fixture-01-disposable-access-secret-32b!');
+  const disposableRefreshSecret = new TextEncoder().encode('fixture-01-disposable-refresh-secret-32b!');
+  const disposableAdminSecret = new TextEncoder().encode('fixture-01-disposable-admin-secret-32b!!');
+
   const passwordService = new PasswordService();
-  const tokenService = new TokenService();
+  // Self-contained TokenService with explicit test keys injected directly
+  const tokenService = new TokenService(disposableAccessSecret, disposableRefreshSecret, disposableAdminSecret);
 
   const mockAuditService = {
     log: vi.fn().mockResolvedValue(undefined),
@@ -139,10 +158,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
 
   // Adapter repository wrapping tenant store
   const mockUserRepo = {
-    findWithDetails: vi.fn(async (email: string) => {
-      // Default placeholder; overridden by withDb
-      return undefined;
-    }),
+    findWithDetails: vi.fn(async (_email: string) => undefined),
     updateLastActive: vi.fn().mockResolvedValue(undefined),
     withDb: vi.fn((dbStore: InMemTenantStore) => {
       return {
@@ -169,10 +185,18 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
   const SUIA_PASSWORD = 'Password-SUIA-Secret!1';
   const RTH_PASSWORD = 'Password-RTH-Secret!2';
 
+  const originalFetch = globalThis.fetch;
+
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockIdentityBridgeSync.mockReset();
     suiaStore.reset();
     rthStore.reset();
+
+    // Install fail-fast outbound network guard
+    globalThis.fetch = vi.fn(() => {
+      throw new Error('Outbound network transport blocked in isolated fixture');
+    });
 
     // Seed SUIA account with colliding ID and shared email
     const suiaPasswordHash = await passwordService.hash(SUIA_PASSWORD);
@@ -201,6 +225,11 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     });
   });
 
+  afterEach(() => {
+    // Restore global fetch
+    globalThis.fetch = originalFetch;
+  });
+
   it('Control 1: SUIA credentials authenticate against SUIA store and resolve SUIA profile only', async () => {
     const loginService = new LoginService(
       mockUserRepo as any,
@@ -222,8 +251,12 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Verify resolved principal
     expect(result._user.id).toBe(COLLIDING_LOCAL_USER_ID);
     expect(result._user.email).toBe(SHARED_SYNTHETIC_EMAIL);
-    expect(result._user.profile[0].name).toBe('SUIA Learner Profile');
+    expect(result._user.profile?.[0]?.name).toBe('SUIA Learner Profile');
     expect(result.isAdmin).toBe(false);
+    expect(result.shadowUserId).toBe('shadow-suia-100');
+
+    // Invariant: Identity bridge is NOT invoked because shadowUserId is prepopulated
+    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
 
     // Verify session stored ONLY in SUIA store
     expect(suiaStore.sessions.length).toBe(1);
@@ -255,8 +288,12 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Verify resolved principal
     expect(result._user.id).toBe(COLLIDING_LOCAL_USER_ID);
     expect(result._user.email).toBe(SHARED_SYNTHETIC_EMAIL);
-    expect(result._user.profile[0].name).toBe('RTH Learner Profile');
+    expect(result._user.profile?.[0]?.name).toBe('RTH Learner Profile');
     expect(result.isAdmin).toBe(false);
+    expect(result.shadowUserId).toBe('shadow-rth-100');
+
+    // Invariant: Identity bridge is NOT invoked because shadowUserId is prepopulated
+    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
 
     // Verify session stored ONLY in RTH store
     expect(rthStore.sessions.length).toBe(1);
@@ -289,6 +326,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Assert zero sessions created in either store
     expect(suiaStore.sessions.length).toBe(0);
     expect(rthStore.sessions.length).toBe(0);
+    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
   });
 
   it('Control 4: Cross-tenant password attempt (RTH with SUIA password) fails fail-closed', async () => {
@@ -313,6 +351,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Assert zero sessions created in either store
     expect(suiaStore.sessions.length).toBe(0);
     expect(rthStore.sessions.length).toBe(0);
+    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
   });
 
   it('Control 5: Denied attempt creates no sessions where the contract requires', async () => {
@@ -331,6 +370,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
 
     expect(suiaStore.sessions.length).toBe(0);
     expect(rthStore.sessions.length).toBe(0);
+    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
   });
 
   it('Control 6: Store isolation: sequential writes to SUIA do not alter or contaminate RTH store', async () => {

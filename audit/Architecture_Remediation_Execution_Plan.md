@@ -745,7 +745,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
-**Status:** `VERIFICATION_FAILED` (Tasks A/B require correction: actual infra factory/analytics caller compatibility and non-invented learner purpose/entitlement contracts. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Tasks A/B corrections complete per audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md: source-backed matrix across admin/factory/analytics-admin prefixes and caller portal classes with minimal proxy routing adaptation specified; learner-purpose contract corrected without manufactured roles; empty-role baseline and owner choice defined. Scoping only; no runtime code changes. Pending Sol review and acceptance.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
 separate tenant-admin helper/caller compatibility and server-fixed learner-login
 implementation scopes. Documentation/scoping only; runtime protections require their
@@ -774,7 +774,7 @@ choosing bounded delegation/decommissioning. Do not create duplicate endpoints o
 assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
-**Status:** `VERIFICATION_FAILED` (Task C requires correction to current signing/TTL/error/cookie facts and legacy adapter principal/count/partial-failure compatibility. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Task C corrections complete per audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md: corrected HS256/8h signing, executed middleware TODO facts, caught error behavior, and canonical cookie facts; defined permitted principal classes, pre-operation snapshot counting, and partial-failure semantics. Architectural decision only; no runtime code changes or live calls. Pending Sol review and acceptance.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
 existing legacy logout-all scope, qualify compatibility uncertainty and propose a
 bounded implementation. No live all-device call, runtime patch or endpoint removal.
@@ -788,7 +788,7 @@ deletion or live deployment is authorized by this planned entry. Single-session 
 revocation safe no-op and stateless access-token limits remain unchanged.
 
 ### W1.2-FIXTURE-01 - Isolated Same-Email and Colliding-ID Backend Qualification
-**Status:** `VERIFICATION_FAILED` (Task D baseline 7 controls independently passed, but explicit disposable keys/transport containment and accurate bridge/repository evidence are required. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Task D corrections complete per audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md: self-contained disposable TokenService keys, fail-fast outbound network guard, identity-bridge fast-path assertion (0 bridge calls), clean teardown; in-memory adapter boundaries and non-closure of AQ-08 explicitly documented. 7/7 passed. Pending Sol review and acceptance.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task D.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -798,7 +798,7 @@ production policy change or browser AQ-08 closure. Explicitly disclose stubbed l
 test-environment branches and physical/deployed isolation limitations.
 
 ### W1.2-FIXTURE-02 - Isolated Signed-Principal Admin-Guard Qualification
-**Status:** `VERIFICATION_FAILED` (Task E baseline 10 controls independently passed, but shared-key audience/class isolation, query-entry assertions and container teardown are required. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Task E corrections complete per audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md: isolated audience and token-class boundaries under shared-key fallback; promoted learner fails strictly on audience mismatch with 0 DB queries; query-entry spied; clean container singleton restoration; sensitivity check added; helper chain limits documented. 12/12 passed. Pending Sol review and acceptance.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task E.
 **Implementer / acceptance:** Gemini / independent Sol review.
