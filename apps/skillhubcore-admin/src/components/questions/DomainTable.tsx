@@ -245,7 +245,7 @@ export function DomainTable() {
             void fetchDomains();
         } catch (error) {
             clientLogger.error('Failed to delete domain', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This domain is currently linked to active subjects or topics and cannot be removed.');
+            setErrorMessage('Unable to delete the domain. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
