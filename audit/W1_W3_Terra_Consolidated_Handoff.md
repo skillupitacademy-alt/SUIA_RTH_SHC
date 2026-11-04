@@ -237,3 +237,5 @@ node --input-type=module -e "import { startVitest } from 'vitest/node'; import p
 ```
 
 `FILES` is the literal JavaScript array of the exact paths listed for each selection above; each ran separately. This runner does not use the db-tutorial Vitest config or ignored environment files.
+
+FND02 ILS caller lane: with DB/cache/queue keys removed, pre-import offline guard, `config: false`, app-specific `@` resolution plus explicit package aliases and worktree exclusion, `batch-08-bff-composed.test.ts` exited 0, 1 file / 2 tests passed. It invokes both actual learner BFFs and actual central handler/service with signed disposable tokens, intercepted transport and isolated repositories. It preserves the documented SkillUp shadow versus RTH local subject and active-time session-header omission. It is not physical gateway/browser or tenant-store evidence and overlaps prior accepted I selection.
