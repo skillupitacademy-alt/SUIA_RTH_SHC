@@ -808,39 +808,40 @@ including database admin-role changes and query ordering. No live negative probe
 production policy change, universal API certification or browser AQ-10 closure.
 
 ### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
-**Status:** `VERIFICATION_FAILED` (Low-level controls pass, but required actual proxy/caller matrix and changed route-helper eligibility/permission evidence are missing. Review: `audit/W1.2_Batch_07_Sol_Review_2affa37b.md`; correction assignment `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`. No complete ADMIN-01 runtime acceptance.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Strict tenant-admin helper, shared non-privileged account eligibility, proxy routing branches across admin/factory/analytics, and requireAdminRouteAccess verified offline by 10 tests in admin-01-proxy.test.ts and 16 tests in rbac.service.test.ts.)
 **Root cause:** RC-ID-01
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
-**Commit:** `a7d59877`
+**Commits:** `a7d59877`, `b14c8059`
 Implemented strict tenant-admin preconditions and shared non-privileged account
 eligibility (`_verifyActiveAccount`), with proxy infra factory/analytics adaptation preserving
 existing blocked/missing-account denial and actual handler permissions. Integrated as
 one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, and verified by
-`rbac.service.test.ts` (16 tests passing).
+`rbac.service.test.ts` (16 tests passing) and `admin-01-proxy.test.ts` (10 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `VERIFICATION_FAILED` (Generic skillhubcore/default-DB purpose compatibility regressed; unsupported purpose validation follows success-side effects; linked route/refresh/disposable-key evidence incomplete. Independently reproduced in offline probe. See Batch 07 review/corrections; no runtime closure.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Scoped learner purpose strictly to tenant ingress while preserving generic skillhubcore default-DB admin detection. Fail-fast purpose validation before DB/hash/audit. Offline verified by 6 tests in login-01-purpose.test.ts and Sol Probe 4.)
 **Root cause:** RC-ID-01
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
-**Commits:** `b967e6be`, `1fe36579`
+**Commits:** `b967e6be`, `1fe36579`, `e34e899e`
 Implemented server-fixed learner purpose, consistent access/refresh claims (`aud: 'user'`,
 `tokenType: 'user'`, `isAdmin: false`), empty-role principal baseline (`roles: []`) without
 invented roles, existing session schema, and fifth `deviceContext` / third IP precedence.
 Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-purpose.test.ts`
-(5 tests passing).
+(6 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `VERIFICATION_FAILED` (Actual signed infra audience passes type-only gate; cookie-authenticated foreign Origin reaches stub revocation without a local/upstream CSRF boundary. Real engine/stateful outcome controls are also missing. Offline review probe reproduces defects; no live all-device test. See `audit/W1.2_Batch_07_Sol_Review_2affa37b.md` and correction assignment.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Audience gate strictly rejects excluded/infra audiences; exact parsed origin/CSRF enforcement stops cookie-authenticated cross-origin mutations; real GlobalLogoutService stage failure, collision, and idempotent retry proved offline in 17 tests in sess-04-logout-all.test.ts and Sol Probes 2 & 3.)
 **Root cause:** RC-ID-01
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
-**Commit:** `c1f10081`
+**Commits:** `c1f10081`, `59c464d8`
 Implemented a verified tenant owner/user-admin adapter over the existing `GlobalLogoutService`
-engine, legacy snapshot-count response, and safe service-stage failure attribution
-(`RevocationStageError` vs `PresenceStageError`). Preserves canonical consumers and no new
-cookie/deprecation metadata; tested strictly offline via `sess-04-logout-all.test.ts` (9 tests passing).
+engine, legacy snapshot-count response, safe service-stage failure attribution
+(`RevocationStageError` vs `PresenceStageError`), exact parsed origin CSRF verification,
+and strict tenant audience checking. Preserves canonical consumers and no new cookie/deprecation
+metadata; tested strictly offline via `sess-04-logout-all.test.ts` (17 tests passing).
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
