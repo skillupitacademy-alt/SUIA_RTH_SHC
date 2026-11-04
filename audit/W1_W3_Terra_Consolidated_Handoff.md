@@ -129,3 +129,17 @@ FND19 follow-ups `413339cd` and `cc36506e` contain missing/blank/duplicate ident
 `e4763745` source-checks SU-AUTH-024: the shared learner auth proxy currently returns true from `hasValidGatewaySecret` when its configured secret is absent for applicable API routes. This is not a complete route or deployment exploitability finding; runtime reachability is NOT EXECUTED and policy-dependent correction remains open.
 
 Latest identity-file lint after all six table changes: from `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/components/questions/DomainTable.tsx' 'src/components/questions/SubjectTable.tsx' 'src/components/questions/TopicTable.tsx' 'src/components/questions/SkillTable.tsx' 'src/components/questions/SubtopicTable.tsx' 'src/components/questions/QuestionTable.tsx'` exited 0, no output. Test-file lint remains unexecuted.
+
+## Exact isolated runner templates for later slices
+
+All commands below ran from the repository root in a fresh PowerShell process after `$envKeys = Get-ChildItem Env: | Where-Object { $_.Name -match 'DATABASE|REDIS|UPSTASH|NEON|QSTASH' }; $envKeys | ForEach-Object { Remove-Item -LiteralPath ("Env:" + $_.Name) }`. Tests which touch fetch install a throwing fixture guard; mocks and limits are in each test/manifest. Each explicit file selection is attributable, not a whole-suite pass.
+
+For SHC mounted component selections the exact runner form was:
+
+```powershell
+node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v = await startVitest('test', [FILE], { run: true, config: false, environment: 'jsdom' }, { resolve: { alias: { '@': path.resolve('apps/skillhubcore-admin/src') } }, plugins: [react()] }); if (!v) process.exit(1); await v.close();"
+```
+
+Here `FILE` was replaced literally in the JavaScript array with one of `apps/skillhubcore-admin/src/components/questions/__tests__/question-timestamp-truth.test.tsx` (4 pass), `domain-error-truth.test.tsx` (4 pass), `subtopic-identity.test.tsx` (4 pass), `subject-skill-identity.test.tsx` (8 pass), or `topic-identity.test.tsx` (4 pass), all in that same questions test directory. Earlier counts in slice manifests describe earlier revisions. The SHC static events and audit/metrics/user pages used the same command without the alias and selected the respective test paths in their manifests; their counts are 1, 2 and 4 passes.
+
+For event controls the exact runner form was `node --input-type=module -e "import { startVitest } from 'vitest/node'; const v = await startVitest('test', [FILE], { run: true, config: false }); if (!v) process.exit(1); await v.close();"`. `FILE` was the literal path `packages/events/src/__tests__/fnd23-linked-transport.test.ts` (2 pass, exit 0), `fnd23-event-type-probe.test.ts` (2 pass / 1 fail, exit 1), or `fnd23-event-retry-probe.test.ts` (1 pass / 1 fail, exit 1), respectively. These are three separate selections, not one aggregate.
