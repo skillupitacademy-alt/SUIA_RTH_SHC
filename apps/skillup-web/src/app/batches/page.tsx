@@ -12,16 +12,20 @@ type BatchesResponse = {
     name: string;
     faculty: string;
     currentTopic: string;
-    nextSession: string;
+    nextSession: string | null;
     studentCount: number;
     schedule: Array<{ day: string; time: string; topic: string; mode: string }>;
     materials: string[];
-  };
+  } | null;
   sessions: SkillupSession[];
 };
 
 export default async function BatchesPage() {
   const { batch, sessions } = await fetchSkillupApi<BatchesResponse>('/api/batches');
+
+  if (!batch) {
+    return <section className="mx-auto max-w-7xl px-6 py-8"><p>No active batch enrollment is available.</p></section>;
+  }
 
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
@@ -54,7 +58,7 @@ export default async function BatchesPage() {
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
               { label: 'Learners', value: batch.studentCount.toString(), icon: Users2 },
-              { label: 'Next class', value: formatDateTime(batch.nextSession), icon: CalendarDays },
+              { label: 'Next class', value: batch.nextSession ? formatDateTime(batch.nextSession) : 'Unavailable', icon: CalendarDays },
               { label: 'Modules', value: batch.materials.length.toString(), icon: LayoutGrid },
             ].map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">

@@ -97,7 +97,7 @@ export function SessionCalendar({ sessions }: SessionCalendarProps) {
               </div>
               <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:col-span-2">
                 <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Recording</p>
-                <p className="mt-2 text-sm font-semibold text-slate-800">{sessions[activeIndex].recording ?? 'Available after the session is completed'}</p>
+                <p className="mt-2 text-sm font-semibold text-slate-800">{sessions[activeIndex].recording ?? 'Recording unavailable'}</p>
               </div>
             </div>
           </>

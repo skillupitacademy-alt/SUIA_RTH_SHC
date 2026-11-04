@@ -34,27 +34,6 @@ function getPaymentPool() {
 
   return paymentPool;
 }
-const FALLBACK_BATCH = {
-  batch: {
-    name: 'SkillUp FS-24 Morning',
-    faculty: 'Asha Iyer',
-    currentTopic: 'React state patterns',
-    nextSession: '2026-03-24T09:30:00+05:30',
-    studentCount: 28,
-    schedule: [
-      { day: 'Mon', time: '09:30 AM', topic: 'React components', mode: 'offline' },
-      { day: 'Wed', time: '09:30 AM', topic: 'API integration', mode: 'online' },
-      { day: 'Fri', time: '09:30 AM', topic: 'Project review', mode: 'hybrid' },
-    ],
-    materials: ['React component guide', 'API error handling notes', 'Project review rubric'],
-  },
-  sessions: [
-    { id: 'session-1', date: '2026-03-24T09:30:00+05:30', title: 'React state patterns and component design', mode: 'offline', status: 'upcoming' },
-    { id: 'session-2', date: '2026-03-22T09:30:00+05:30', title: 'REST API integration and error handling', mode: 'online', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/rest-api-integration' },
-    { id: 'session-3', date: '2026-03-20T09:30:00+05:30', title: 'Project review and feedback clinic', mode: 'hybrid', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/project-review' },
-  ],
-};
-
 const FALLBACK_PLACEMENT = {
   profile: {
     roleGoal: 'Frontend Developer',
@@ -214,7 +193,7 @@ export async function getSkillupStudentDashboard(userId: string) {
       .filter((item) => item.status !== 'paid')
       .reduce((sum, item) => sum + item.amount, 0);
 
-    const nextSession = sessions.find((session) => session.status === 'scheduled') ?? sessions[0];
+    const nextSession = sessions.find((session) => session.status === 'scheduled');
 
     const attendancePercent = sessions.length > 0 ? Math.round((presentCount.length / sessions.length) * 100) : 0;
     const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
@@ -229,7 +208,7 @@ export async function getSkillupStudentDashboard(userId: string) {
         progressPercent,
         paymentDue,
         outstandingInstallments: installments.filter((item) => item.status !== 'paid').length,
-        nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
+        nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         upcomingSessions: sessions.filter((session) => session.status === 'scheduled').length,
         placementMatches: (
           await placementDb
@@ -244,21 +223,19 @@ export async function getSkillupStudentDashboard(userId: string) {
         title: session.title ?? 'SkillUp session',
         mode: formatSessionMode(session.mode ?? 'hybrid'),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
 
 export async function getSkillupMyBatch(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
-    const profile = await getStudentProfile(userId);
 
     if (batchContext === null) {
-      return FALLBACK_BATCH;
+      return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled') ?? batchContext.sessions[0];
-    const currentTopic = nextSession?.title ?? 'SkillUp session';
+    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled');
+    const currentTopic = 'Unavailable';
     const schedule = batchContext.sessions.slice(0, 3).map((session) => ({
       day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
       time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
@@ -269,12 +246,12 @@ export async function getSkillupMyBatch(userId: string) {
     return {
       batch: {
         name: batchContext.batchName,
-        faculty: batchContext.facultyName ?? profile.name ?? 'SkillUp Faculty',
+        faculty: batchContext.facultyName ?? 'Unavailable',
         currentTopic,
-        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
+        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
         schedule,
-        materials: batchContext.sessions.slice(0, 3).map((session) => session.title ?? 'Session notes'),
+        materials: [],
       },
       sessions: batchContext.sessions.map((session) => ({
         id: session.id,
@@ -282,7 +259,6 @@ export async function getSkillupMyBatch(userId: string) {
         title: session.title ?? 'SkillUp session',
         mode: formatSessionMode(session.mode ?? 'hybrid'),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
@@ -453,18 +429,18 @@ export async function getSkillupBatches(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
 
     if (batchContext === null) {
-      return FALLBACK_BATCH;
+      return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled') ?? batchContext.sessions[0];
-    const materials = batchContext.sessions.slice(0, 3).map((session) => session.title ?? 'Session notes');
+    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled');
+    const materials: string[] = [];
 
     return {
       batch: {
         name: batchContext.batchName,
         faculty: batchContext.facultyName ?? 'SkillUp Faculty',
-        currentTopic: nextSession?.title ?? 'SkillUp session',
-        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
+        currentTopic: 'Unavailable',
+        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
         schedule: batchContext.sessions.slice(0, 3).map((session) => ({
           day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
@@ -480,7 +456,6 @@ export async function getSkillupBatches(userId: string) {
         title: session.title ?? 'SkillUp session',
         mode: formatSessionMode(session.mode ?? 'hybrid'),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
