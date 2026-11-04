@@ -5,7 +5,7 @@ import { forbidden, unauthorized } from '@/lib/api-error';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { container } from '@/modules/core/container';
 
-import { _verifyAdmin } from './rbac.service';
+import { _verifyActiveAccount, _verifyAdmin } from './rbac.service';
 import { TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra' | 'shc-admin';
@@ -62,6 +62,11 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
   const { payload, audience } = await verifyAdminOrInfraToken(_req);
 
   if (audience === 'shc-admin') {
+    if (route.startsWith('/api/analytics/admin')) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'shc_analytics_denied' });
+      recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'shc_analytics_denied' });
+      throw forbidden('SkillHubCore admin access not permitted for tenant analytics');
+    }
     const roles = Array.isArray(payload.roles) ? payload.roles.map((role) => role.toLowerCase()) : [];
     const hasSkillHubCoreAdminAccess =
       payload.brand === 'skillhubcore' &&
@@ -73,7 +78,16 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
       recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'rbac_denied' });
       throw forbidden('SkillHubCore admin access only');
     }
-  } else if (audience !== 'infra') {
+  } else if (audience === 'infra') {
+    if (route.startsWith('/api/factory') || route.startsWith('/api/analytics/admin')) {
+      const isAccountActive = await _verifyActiveAccount(payload.userId, payload.brand ?? '');
+      if (!isAccountActive) {
+        recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'tenant_account_inactive' });
+        recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'tenant_account_inactive' });
+        throw forbidden('Forbidden: Tenant account is inactive or missing');
+      }
+    }
+  } else {
     const hasAdminAccess = await _verifyAdmin(payload);
     if (!hasAdminAccess) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'rbac_denied' });
