@@ -32,7 +32,7 @@ interface InMemUser {
   isBlocked: boolean;
   emailVerified: boolean;
   userRoles: { role: { name: string } }[];
-  profile: { name: string; educationLevel?: string; professionalStatus?: string }[];
+  profile: { name: string; educationLevel?: string; professionalStatus?: string } | null;
   lastActiveAt?: Date;
   shadowUserId?: string | null;
 }
@@ -205,7 +205,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
       isBlocked: false,
       emailVerified: true,
       userRoles: [{ role: { name: 'student' } }],
-      profile: [{ name: 'SUIA Learner Profile', educationLevel: 'College', professionalStatus: 'Student' }],
+      profile: { name: 'SUIA Learner Profile', educationLevel: 'College', professionalStatus: 'Student' },
       shadowUserId: 'shadow-suia-100',
     });
 
@@ -218,7 +218,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
       isBlocked: false,
       emailVerified: true,
       userRoles: [{ role: { name: 'student' } }],
-      profile: [{ name: 'RTH Learner Profile', educationLevel: 'Graduate', professionalStatus: 'Developer' }],
+      profile: { name: 'RTH Learner Profile', educationLevel: 'Graduate', professionalStatus: 'Developer' },
       shadowUserId: 'shadow-rth-100',
     });
   });
@@ -249,7 +249,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Verify resolved principal
     expect(result._user.id).toBe(COLLIDING_LOCAL_USER_ID);
     expect(result._user.email).toBe(SHARED_SYNTHETIC_EMAIL);
-    expect(result._user.profile?.[0]?.name).toBe('SUIA Learner Profile');
+    expect(result._user.profile?.name).toBe('SUIA Learner Profile');
     expect(result.isAdmin).toBe(false);
     expect(result.shadowUserId).toBe('shadow-suia-100');
 
@@ -286,7 +286,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     // Verify resolved principal
     expect(result._user.id).toBe(COLLIDING_LOCAL_USER_ID);
     expect(result._user.email).toBe(SHARED_SYNTHETIC_EMAIL);
-    expect(result._user.profile?.[0]?.name).toBe('RTH Learner Profile');
+    expect(result._user.profile?.name).toBe('RTH Learner Profile');
     expect(result.isAdmin).toBe(false);
     expect(result.shadowUserId).toBe('shadow-rth-100');
 
