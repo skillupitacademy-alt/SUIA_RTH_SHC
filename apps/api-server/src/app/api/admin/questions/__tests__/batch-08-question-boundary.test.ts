@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryBus } from '@/lib/cqrs';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { GET } from '../route';
+import { GET, POST } from '../route';
+import { AdminQuestionEngine } from '@/modules/admin-engine/admin.question.engine';
 
 vi.mock('@/modules/auth/rbac.service', () => ({ _verifyAdmin: vi.fn(), _verifyActiveAccount: vi.fn() }));
 vi.mock('@/lib/cqrs', () => ({ bootstrapCQRS: vi.fn(), GetQuestionsQuery: class { constructor(..._args: unknown[]) {} }, queryBus: { dispatch: vi.fn() } }));
@@ -23,6 +24,20 @@ describe('admin question CQRS handler effect boundary', () => {
   it('allows SHC admin to dispatch one question query', async () => {
     const response = await GET(await request('admin'), undefined);
     expect(response.status).toBe(200); expect(queryBus.dispatch).toHaveBeenCalledTimes(1);
+  });
+  it('denies learner mutation and propagates the verified SHC actor on valid create', async () => {
+    const createQuestion = vi.fn(async () => ({ id: 'question' }));
+    const previousEngine = container.get(AdminQuestionEngine);
+    container.register(AdminQuestionEngine, { createQuestion } as never);
+    try {
+      const invoke = async (type: 'admin' | 'user') => {
+        const base = await request(type);
+        return POST(new NextRequest(base.url, { method: 'POST', headers: base.headers, body: JSON.stringify({ topicId: '11111111-1111-4111-8111-111111111111', questionText: 'Question', options: ['A'] }) }), undefined);
+      };
+      expect((await invoke('user')).status).toBe(401); expect(createQuestion).not.toHaveBeenCalled();
+      expect((await invoke('admin')).status).toBe(200);
+      expect(createQuestion).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ questionText: 'Question' }), 'principal');
+    } finally { container.register(AdminQuestionEngine, previousEngine); }
   });
   it('denies learner before query dispatch', async () => {
     const response = await GET(await request('user'), undefined);

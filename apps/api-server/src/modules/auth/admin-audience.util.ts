@@ -28,7 +28,8 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
   const startedAt = Date.now();
   const expectedAud = getAdminAudience(_req);
   const route = _req.nextUrl.pathname;
-  const scopedToken = token ?? container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
+  const tokenService = container.get(TokenService);
+  const scopedToken = token ?? tokenService.getAccessToken(_req, { scope: 'admin' });
 
   if (scopedToken === undefined || scopedToken === null || scopedToken.trim() === '') {
     recordCounter(METRICS.AUTH.FAILURE, 1, { scope: expectedAud, route, reason: 'missing_token' });
@@ -36,11 +37,9 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
     throw unauthorized('Unauthorized');
   }
 
+  let payload: Awaited<ReturnType<TokenService['verifyAdminAccessToken']>>;
   try {
-    const payload = await container.get(TokenService).verifyAdminAccessToken(scopedToken, { audience: expectedAud });
-    recordCounter(METRICS.AUTH.LOGIN + '.verify', 1, { scope: expectedAud, route, outcome: 'success' });
-    recordTimer(METRICS.AUTH.LOGIN + '.verify.duration', Date.now() - startedAt, { scope: expectedAud, route, outcome: 'success' });
-    return { payload, audience: expectedAud };
+    payload = await tokenService.verifyAdminAccessToken(scopedToken, { audience: expectedAud });
   } catch (error) {
     recordCounter(METRICS.AUTH.FAILURE, 1, {
       scope: expectedAud,
@@ -52,8 +51,11 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
       route,
       reason: error instanceof Error ? error.message : 'token_invalid',
     });
-    throw error;
+    throw unauthorized('Unauthorized');
   }
+  recordCounter(METRICS.AUTH.LOGIN + '.verify', 1, { scope: expectedAud, route, outcome: 'success' });
+  recordTimer(METRICS.AUTH.LOGIN + '.verify.duration', Date.now() - startedAt, { scope: expectedAud, route, outcome: 'success' });
+  return { payload, audience: expectedAud };
 }
 
 export async function requireAdminRouteAccess(_req: NextRequest) {
