@@ -846,10 +846,11 @@ and no new cookie/deprecation metadata; tested strictly offline via `sess-04-log
 (23 tests passing).
 
 ### Controlled Batch 08 - Negative Authorization and Isolation Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` pending Sol review.
+**Status:** `VERIFICATION_FAILED` for reproduced progress/export/proxy boundary controls. B08-B accepted within isolated linked-service scope. Remaining package acceptance is qualified or corrections-required under `audit/W1.2_Batch_08_Sol_Review_cabe42ef.md`. Independently 56 passed and 2 failed across the submitted 58-test matrix, plus five failing Sol probe controls. Account-switch/cache isolation remains NOT EXECUTED at the actual consumer boundary.
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_08_Task.md` assigns ten packages B08-A through B08-J to Gemini in one batch. Source trust-boundary mapping, isolated lifecycle/session/guard/progress/export/internal-auth/client-state qualification, SHC lifecycle design and integrated evidence are included.
 **Authority:** FinalAechitecture.md security, independent tenant identity and coding requirements, Wave 1 critical authorization and accepted Batch 06/07 dispositions.
 **Scope:** New isolated tests and bounded audit evidence only. Runtime defects return as explicit failing invariants and separately scoped correction proposals. Existing accepted closures retain their scopes. Unsupported browser fixtures, physical database isolation, serving-build attribution and formal Wave 8 require their own evidence.
+**Correction assignment:** `audit/W1.2_Gemini_Batch_08_Corrections_And_Containment_Task.md` supplies ten follow-up packages, including narrowly scoped tutorial-progress authentication and export-status ownership containment. Full tenant-resource binding and internal-auth correction designs retain separate review gates.
 **Acceptance:** Sol independently reviews submitted packages. Application implementation sequence remains Wave 4 SHC, Wave 5 SUIA and Wave 6 RTH, with operational/concurrency qualification in later program gates.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
