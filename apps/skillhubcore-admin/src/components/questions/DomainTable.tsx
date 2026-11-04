@@ -84,9 +84,15 @@ export function DomainTable() {
         setIsLoading(true);
         try {
             const response = await apiClient.admin.getDomains(currentCursor, pageSize, debouncedSearch || undefined);
+            if (Array.isArray(response.data)) {
+                const ids = response.data.map((item) => (item as { id?: unknown } | null)?.id);
+                if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0) || new Set(ids).size !== ids.length) {
+                    throw new Error('Domain response contains invalid identifiers');
+                }
+            }
             const domains: Domain[] = Array.isArray(response.data)
                 ? response.data.map((d) => ({
-                    id: String(d.id),
+                    id: d.id,
                     name: d.name ?? '',
                     description: d.description ?? null,
                     category: d.category ?? null,
@@ -103,6 +109,8 @@ export function DomainTable() {
             setSelectedIds(new Set()); // Reset selection on refresh
         } catch (error) {
             clientLogger.error('Failed to fetch domains', { error: error instanceof Error ? error.message : 'unknown' });
+            setData([]);
+            setSelectedIds(new Set());
             setErrorMessage('Connection Error: Unable to load the domain catalog at this time.');
         } finally {
             setIsLoading(false);

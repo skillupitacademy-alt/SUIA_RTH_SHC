@@ -27,3 +27,10 @@ it('does not invent a dependency conflict when a delete request fails', async ()
   expect(screen.queryByText(/linked to active subjects/)).toBeNull();
   expect(api.deleteDomain).toHaveBeenCalledWith('domain-1');
 });
+
+it.each([[{ name: 'Missing' }], [{ id: ' ', name: 'Blank' }], [{ id: 'same', name: 'First' }, { id: 'same', name: 'Second' }]])('rejects invalid domain resource identities', async (...data) => {
+  api.getDomains.mockResolvedValue({ data, total: data.length });
+  render(<DomainTable />);
+  expect(await screen.findByText('Connection Error: Unable to load the domain catalog at this time.')).toBeTruthy();
+  expect(screen.queryByText('Select domain for deletion')).toBeNull();
+});
