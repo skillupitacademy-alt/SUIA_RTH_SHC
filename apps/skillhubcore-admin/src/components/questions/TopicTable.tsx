@@ -254,7 +254,7 @@ export function TopicTable() {
             void fetchTopics();
         } catch (error) {
             clientLogger.error('Failed to delete topic', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This topic is linked to subtopics or questions and cannot be removed.');
+            setErrorMessage('Unable to delete the topic. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

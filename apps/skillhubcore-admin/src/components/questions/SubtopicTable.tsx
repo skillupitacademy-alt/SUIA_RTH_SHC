@@ -247,7 +247,7 @@ export function SubtopicTable() {
             void fetchSubtopics();
         } catch (error) {
             clientLogger.error('Failed to delete subtopic', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This subtopic is currently in use and cannot be removed.');
+            setErrorMessage('Unable to delete the subtopic. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

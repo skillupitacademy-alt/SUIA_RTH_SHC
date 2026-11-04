@@ -282,7 +282,7 @@ export function SubjectTable() {
             void fetchSubjects();
         } catch (error) {
             clientLogger.error('Failed to delete subject', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This subject is linked to active topics.');
+            setErrorMessage('Unable to delete the subject. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

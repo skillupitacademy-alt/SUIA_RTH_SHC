@@ -260,7 +260,7 @@ export function SkillTable() {
             void fetchSkills();
         } catch (error) {
             clientLogger.error('Failed to delete skill', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This skill is currently assigned to questions and cannot be removed.');
+            setErrorMessage('Unable to delete the skill. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
