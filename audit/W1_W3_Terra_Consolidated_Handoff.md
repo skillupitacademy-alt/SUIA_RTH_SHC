@@ -606,3 +606,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND01 candidate index: RTH-FE-007 source remains confirmed but its exact AITutorBlock is not executed (separate hook probe fails); RTH-AI-003 completion-after-lookup is source-confirmed but completion policy and physical progress remain open. No finding closed.
+
+FND07 actual AITutorBlock retry sensitivity (manifest `W1_W3_FND07_AI_Tutor_Block_Retry_Manifest.md`, baseline 1572c119): guarded mounted component with intercepted 429 Retry-After=1 and fake timers exited 1 (1 failed); input remains disabled after interval. React emitted a `jsx` non-boolean attribute warning from the isolated non-Next renderer. This supersedes the earlier source-only qualification for RTH-FE-007; no browser/API/store execution or policy correction. VERIFICATION_FAILED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/realtutorialhub-web/src/components/content/__tests__/ai-tutor-retry-control.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
