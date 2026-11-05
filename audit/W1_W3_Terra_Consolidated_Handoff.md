@@ -86,7 +86,7 @@ Exit 0, 2 files / 8 tests passed: named complexity preservation, legacy numeric 
 | FND19 | IMPLEMENTED_UNVERIFIED: SHC domain numeric-name ingress (b4135fbb) rejects before persistence; complete taxonomy schema contracts pass 27 validation cases; named topic complexity and delete failures previously corrected. Historical numeric complexity mapping, SHC client/API/schema/engine round-trip for other taxonomy routes, and physical database validation remain open. |
 | FND20 | IMPLEMENTED_UNVERIFIED: question identity contracts (dcc9629d): ID/label/text resolution, legacy stored answers, bulk ingestion validation complete. Multi-select delimiter VERIFICATION_FAILED documented in compatibility constraint; DO NOT fix scoring without Sol approval. SHC client round-trip, API route validation, schema controls pass 52 tests. Physical database, deployed routes, historical migration and delimiter fix remain open. |
 | FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
-| FND22 | VERIFICATION_FAILED: backend artifact SHA-256 schema accepts 64 non-hex characters; actor/approval and historical contract compatibility remain open. |
+| FND22 | IMPLEMENTED_UNVERIFIED: backend artifact SHA-256 hex pattern validation complete; BindArtifactRequest enforces 64-hex pattern with case normalization (lowercase). Schema validation passes 13 test cases including non-hex rejection, case handling, and edge cases. HTTP route, JWT authorization, governance service binding, historical hash migration, and physical database persistence NOT EXECUTED. Sol review required. |
 | FND23 | VERIFICATION_FAILED: event registered-type and retry probes remain red; analytics HTTP failure correction and tracker fixture pass pending review; durable delivery and event authority remain open. |
 | FND24 | PARTIAL / IMPLEMENTED_UNVERIFIED: isolated assignment-help route/service composition tested; full domain caller controls depend on FND18–FND23. |
 | FND25 | PARTIAL: mounted report truth and lifecycle adverse controls run; remaining domain invariants and infrastructure-sensitive controls open. |
@@ -279,6 +279,42 @@ FND19 follow-ups `413339cd` and `cc36506e` contain missing/blank/duplicate ident
 `e4763745` source-checks SU-AUTH-024: the shared learner auth proxy currently returns true from `hasValidGatewaySecret` when its configured secret is absent for applicable API routes. This is not a complete route or deployment exploitability finding; runtime reachability is NOT EXECUTED and policy-dependent correction remains open.
 
 Latest identity-file lint after all six table changes: from `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/components/questions/DomainTable.tsx' 'src/components/questions/SubjectTable.tsx' 'src/components/questions/TopicTable.tsx' 'src/components/questions/SkillTable.tsx' 'src/components/questions/SubtopicTable.tsx' 'src/components/questions/QuestionTable.tsx'` exited 0, no output. Test-file lint remains unexecuted.
+
+## FND22 artifact SHA-256 validation completion (current commit)
+
+**PROBLEM**: FND22 artifact hash test 52b9365b VERIFICATION_FAILED (exit 1: 1 passed / 1 failed). Project AI `BindArtifactRequest` schema enforced length 64 but accepted non-hex characters like `'z' * 64`, violating SHA-256 hex contract. Case normalization, historical stored hash compatibility, and comprehensive hex pattern validation remained incomplete.
+
+**SOLUTION**: Added `SHA256_HEX_PATTERN` regex (`^[a-fA-F0-9]{64}$`) to `services/project-ai/app/api/schemas/workflow.py`. Implemented `@field_validator("artifact_sha256")` with hex pattern enforcement and lowercase normalization for consistent storage. Validation accepts both uppercase and lowercase hex input (for historical compatibility) but normalizes to lowercase before storage. Expanded `tests/foundation/test_artifact_hash_contract.py` from 2 to 13 test cases covering:
+
+1. Valid lowercase hex (64 'a' characters) - accepted
+2. Non-hex characters (64 'z' characters) - rejected with clear error
+3. Uppercase hex normalization - accepted and converted to lowercase
+4. Mixed case hex normalization - accepted and converted to lowercase
+5. Real SHA-256 hash (empty file hash) - accepted
+6. Too short (63 characters) - rejected
+7. Too long (65 characters) - rejected
+8. Empty string - rejected
+9. Hash with spaces - rejected
+10. Hash with special characters - rejected
+11. Hash with non-hex letters (g-z) - rejected
+12. All valid hex digits (0-9, a-f, A-F) - accepted and normalized
+13. Artifact type validation independence - confirmed
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and pre-created event loop with socket/DNS guard before imports:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; $env:PYTHONPATH='.'; python -c "import asyncio,builtins,socket,dotenv; loop=asyncio.new_event_loop(); builtins._foundation_test_loop=loop; deny=lambda *a,**k: (_ for _ in ()).throw(RuntimeError('offline guard')); socket.socket.connect=deny; socket.create_connection=deny; socket.getaddrinfo=deny; dotenv.load_dotenv=lambda *a,**k: False; import pytest; result=pytest.main(['-q','tests/foundation/test_artifact_hash_contract.py']); loop.close(); raise SystemExit(result)"
+```
+
+Exit 0, 13 passed, 2 warnings (pytest asyncio config warnings are expected with PYTEST_DISABLE_PLUGIN_AUTOLOAD). Primary FND22 control now passes: non-hex 64-character input rejected with ValidationError. All 13 contract validation cases pass. No HTTP route, JWT authentication, governance service binding, or database persistence executed.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: Schema validation applies at Pydantic model ingress only; actual HTTP POST `/workflows/{workflow_id}/artifacts` endpoint, JWT contract_admin authorization, `WorkflowGovernanceService.bind_artifact` method, and workflow artifact persistence NOT EXECUTED. Historical stored artifact hashes in existing workflow records not migrated or validated; this change enforces hex pattern for new ingress only. Case normalization to lowercase may differ from existing stored hashes if uppercase hashes exist in database; compatibility assessment and migration strategy not executed. Artifact type validation (`contract`/`candidate`/`manifest`/`snapshot`) remains at service layer as documented in D5 guidance, not enforced by Pydantic schema. Approval/signature verification and Gate 1 authority (FND09) remain separate concerns; hash presence does not imply approval status. Physical database queries, deployed route behavior, and browser/UI evidence NOT EXECUTED. FND22 status: IMPLEMENTED_UNVERIFIED; Sol review required for acceptance and any historical hash migration.
 
 ## Exact isolated runner templates for later slices
 

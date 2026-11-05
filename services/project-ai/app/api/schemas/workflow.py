@@ -7,9 +7,13 @@ These schemas define the shape of requests and responses for workflow
 management endpoints, ensuring type safety and validation.
 """
 
+import re
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Any, Union
+
+# SHA-256 hex pattern: exactly 64 hexadecimal characters (case-insensitive)
+SHA256_HEX_PATTERN = re.compile(r'^[a-fA-F0-9]{64}$')
 
 
 class WorkflowArtifact(BaseModel):
@@ -136,12 +140,30 @@ class BindArtifactRequest(BaseModel):
     Associates an artifact (contract, candidate, manifest, snapshot) with the workflow
     and records its SHA-256 hash for integrity verification.
     """
-    
+
     artifact_type: str = Field(
         description="Artifact type: 'contract', 'candidate', 'manifest', or 'snapshot'"
     )
     artifact_id: str = Field(min_length=1, description="Artifact identifier")
     artifact_sha256: str = Field(min_length=64, max_length=64, description="SHA-256 hash (hex)")
+
+    @field_validator("artifact_sha256")
+    @classmethod
+    def validate_sha256_hex(cls, v: str) -> str:
+        """
+        Validate that artifact_sha256 is exactly 64 hexadecimal characters.
+
+        Case normalization: lowercase is preferred for storage consistency,
+        but both uppercase and lowercase hex are accepted as input.
+        Historical compatibility: existing stored hashes are preserved;
+        this validation applies only to ingress.
+        """
+        if not SHA256_HEX_PATTERN.match(v):
+            raise ValueError(
+                f"artifact_sha256 must be exactly 64 hexadecimal characters, got: {v[:20]}..."
+            )
+        # Normalize to lowercase for consistent storage and comparison
+        return v.lower()
 
 
 class FinalApprovalRequest(BaseModel):
