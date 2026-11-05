@@ -35,8 +35,8 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | --- | --- |
 | FND01 | PARTIAL: `W1_W3_Terra_Foundation_Register.md` records a source-backed initial slice; full crosswalk enumeration remains outstanding. |
 | FND02 | PARTIAL: affected UI controls and retained Sol probes were run; full ILS/repository/BFF selections remain to be reproduced. Both foreign-tenant export probes fail as recorded below. |
-| FND03 | PARTIAL: `e6113cad` consolidates signed-subject, projection, private-store, export provenance, admin and publication recommendations; Sol policy/deployment disposition remains pending. |
-| FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
+| FND03 | PARTIAL: Sol selected verified tenant + local subject and unknown-provenance denial; non-executable progress/export migration drafts exist, while physical routing, provenance, full consumers and rollout remain pending. |
+| FND04 | VERIFICATION_FAILED: equal-local-ID jobId/examId controls fail in both fixture directions; tenant provenance/schema deployment and compatible migration remain unresolved. |
 | FND05 | VERIFICATION_FAILED: SkillUp denied-read fallback, RTH help error and AI tutor cross-brand/content probes fail; legacy progress isolation and authority decisions remain open. |
 | FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
 | FND07 | VERIFICATION_FAILED: RTH AI tutor parent omits subtopic identity; J-R1/J-R2 slice remains implemented-unverified and broader auth-owner/cache requirements remain open. |
