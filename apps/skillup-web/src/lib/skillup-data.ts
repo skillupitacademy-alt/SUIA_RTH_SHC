@@ -63,12 +63,13 @@ function toDateString(value: string | Date | null | undefined): string {
 function formatSessionStatus(status: string): SkillupSession['status'] {
   if (status === 'scheduled') return 'upcoming';
   if (status === 'cancelled') return 'cancelled';
-  return 'completed';
+  if (status === 'completed') return 'completed';
+  return 'unavailable';
 }
 
 function formatSessionMode(mode: string): SkillupSession['mode'] {
   if (mode === 'offline' || mode === 'online' || mode === 'hybrid') return mode;
-  return 'hybrid';
+  return 'unavailable';
 }
 
 async function getStudentProfile(userId: string) {
@@ -223,7 +224,7 @@ export async function getSkillupStudentDashboard(userId: string) {
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
       })),
     };
@@ -260,7 +261,7 @@ export async function getSkillupMyBatch(userId: string) {
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
       })),
     };
@@ -453,7 +454,7 @@ export async function getSkillupBatches(userId: string) {
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
       })),
     };

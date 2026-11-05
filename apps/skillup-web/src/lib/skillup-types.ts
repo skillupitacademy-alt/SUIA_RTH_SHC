@@ -22,8 +22,8 @@ export type SkillupSession = {
   id: string;
   date: string;
   title: string;
-  mode: 'online' | 'offline' | 'hybrid';
-  status: 'completed' | 'upcoming' | 'cancelled';
+  mode: 'online' | 'offline' | 'hybrid' | 'unavailable';
+  status: 'completed' | 'upcoming' | 'cancelled' | 'unavailable';
   recording?: string;
 };
 
