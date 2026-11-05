@@ -415,3 +415,10 @@ Exact successful test from repository root:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['audit/__tests__/recovery-acknowledgement.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:[{find:'@quiz/config/src/brands',replacement:path.resolve('packages/config/src/brands/index.ts')},{find:'@',replacement:path.resolve('apps/realtutorialhub-web/src')}]},plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND23 actual tracker/provider HTTP composition (manifest `W1_W3_FND23_Tracker_Provider_Composition_Manifest.md`, baseline 8301bcd9): guarded config-free jsdom control exited 0 (1 passed), using actual tracker and internal provider, intercepted HTTP responses and a consent/config fixture. A 503 increments provider failure health; a subsequent 202 does not add a failure. This establishes the in-memory error branch, not physical provider delivery, durable retry, consent implementation, queue or browser. No production change; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact command from repository root:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/marketing-site/src/lib/analytics/__tests__/tracker-provider-http.test.ts'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
