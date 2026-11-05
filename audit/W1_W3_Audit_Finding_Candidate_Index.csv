@@ -85,7 +85,7 @@ RTH-FE-003,26997,no,"UNVERIFIED: inspect finding, wave, active source and accept
 RTH-FE-004,26998,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-005,26999,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-006,27042,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-FE-007,27104,no,VERIFICATION_FAILED: actual mounted AITutorBlock remains disabled after fixture Retry-After interval; real browser/API NOT EXECUTED.
+RTH-FE-007,27104,no,IMPLEMENTED_UNVERIFIED: valid Retry-After lifecycle corrected in 04faea91; guarded mounted controls pass; missing-header policy and real browser/API remain open.
 RTH-FE-008,27105,no,VERIFICATION_FAILED: mounted BlockRenderer omits supplied subtopic ID; child source uses fixed fallback. Actual browser/request NOT EXECUTED.
 RTH-FE-009,27106,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-010,27211,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
@@ -342,7 +342,7 @@ SHC-COMPOSER-PIPELINE-001,10797,no,"UNVERIFIED: inspect finding, wave, active so
 SHC-COMPOSER-TYPE-002,10331,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-CONTENT-GOV-TRUTH-001,14997,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-CONTENT-GOV-TRUTH-002,15036,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-SHC-CONTRACT-001,2844,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+SHC-CONTRACT-001,2844,no,VERIFICATION_FAILED: actual SHC domain POST fixture accepts numeric name; central API schemas are separate; 81f5414e retains assertion.
 SHC-CONTRACT-002,3208,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DASH-DATA-001,14903,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DATA-BOUNDARY-001,2688,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
@@ -493,7 +493,7 @@ SHC-TEST-002,17736,no,"UNVERIFIED: inspect finding, wave, active source and acce
 SHC-TEST-003,17930,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-TEST-BALANCE-001,15245,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-TYPE-001,2393,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-SHC-TYPE-002,2846,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+SHC-TYPE-002,2846,no,PARTIAL source evidence: SHC direct domain routes lack runtime type validation; numeric-name control fails; other routes and full contract remain open.
 SHC-TYPE-003,3122,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-TYPE-004,4084,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-TYPE-005,10418,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
