@@ -29,3 +29,18 @@ it('permits the intended brand to reach the isolated vector path', async () => {
   expect(result.status).toBe(200);
   expect(f.vector).toHaveBeenCalledOnce();
 });
+it.each([undefined, ''])('denies missing or empty brand before effects', async (brand) => {
+  f.verify.mockResolvedValue({ userId: 'fixture', brand, roles: ['student'] });
+  const result = await POST(req());
+  expect(result.status).toBe(403);
+  expect(f.incr).not.toHaveBeenCalled();
+  expect(f.vector).not.toHaveBeenCalled();
+  expect(f.complete).not.toHaveBeenCalled();
+});
+it('denies missing verified subject before effects', async () => {
+  f.verify.mockResolvedValue({ userId: '', brand: 'realtutorialhub', roles: ['student'] });
+  const result = await POST(req());
+  expect(result.status).toBe(401);
+  expect(f.incr).not.toHaveBeenCalled();
+  expect(f.complete).not.toHaveBeenCalled();
+});

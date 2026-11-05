@@ -84,6 +84,7 @@ describe('ai-tutor query route', () => {
     mocks.tokenGetAccess.mockReturnValue(token);
     mocks.tokenVerifyAccess.mockResolvedValue({
       userId,
+      brand: 'realtutorialhub',
       email: 'student@example.com',
       roles: ['student'],
     });

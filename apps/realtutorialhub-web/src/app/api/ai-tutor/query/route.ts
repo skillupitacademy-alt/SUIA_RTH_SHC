@@ -95,15 +95,16 @@ const rateLimitQuery = async (
   };
 };
 
-const getSessionUserId = async (request: Request): Promise<string | null> => {
+const getSessionUserId = async (request: Request): Promise<string | 401 | 403> => {
   const token = tokenService.getAccessToken(request, { scope: 'user' });
-  if (token === undefined) return null;
+  if (token === undefined) return 401;
 
   try {
     const payload = await TokenService.verifyAccessToken(token, { audience: 'user', isAdmin: false });
-    return payload.userId;
+    if (payload.brand !== 'realtutorialhub') return 403;
+    return typeof payload.userId === 'string' && payload.userId.trim() ? payload.userId : 401;
   } catch {
-    return null;
+    return 401;
   }
 };
 
@@ -145,8 +146,8 @@ async function processAiTutorQuery(
   deps: QueryDeps = defaultDeps
 ): Promise<Response> {
   const userId = await getSessionUserId(request);
-  if (userId === null) {
-    return new Response('Unauthorized', { status: 401 });
+  if (userId === 401 || userId === 403) {
+    return new Response(userId === 403 ? 'Forbidden' : 'Unauthorized', { status: userId });
   }
 
   let body: unknown;
