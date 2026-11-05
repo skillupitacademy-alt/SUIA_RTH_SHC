@@ -1,5 +1,19 @@
 # FND19 Taxonomy Validation Review Submission
 
+## Independent Sol disposition on 2026-11-06
+
+See FND19_Sol_Scoped_Review_60684170.md. Both submitted files independently pass,
+29 tests total. Numeric-type domain POST rejection is VERIFIED at the isolated handler
+boundary, with the admin guard and database mocked. The 27 schema assertions pass.
+FND19 group scope and canonical contract consolidation remain incomplete.
+
+Corrections to the historical coverage descriptions below apply throughout this manifest.
+The domain schema rejects JSON numeric name 42 but accepts nonempty string "42".
+The actual skill schema/tests cover name, category and mappingType, with no topicId,
+skillIds or URL fields. UUID claims apply only where a schema declares those fields.
+The route gets its DB adapter before parsing and denies invalid numeric input before
+insertion effects. No physical server, authentication or database behavior is established.
+
 **Repository:** e:/onlinewebsites/quiz-platform
 **Branch:** remediation/w1-2-batch-05-targeted
 **Submission HEAD:** 4c206898dab130f2979a8acb2676b99fc2603778
