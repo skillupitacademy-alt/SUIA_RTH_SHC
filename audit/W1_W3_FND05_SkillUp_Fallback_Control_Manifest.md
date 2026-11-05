@@ -1,0 +1,3 @@
+# FND05 SkillUp read fallback boundary sensitivity manifest
+
+Baseline 513783ba. Existing `fetchSkillupApi` catches denied or failed program/faculty HTTP and calls local DB helpers. Those BFF routes require learner auth and brand validation; owner/public policy and static build compatibility remain undecided. Add isolated actual helper test with mocked DB helpers, request headers and fetch: accepted HTTP preserves payload; 401/403 must not reach direct data fallback. Retain failing assertions until Sol selects compatible access/build policy. No production edits, network/browser/DB. Pre-import offline guard; Sol review required.

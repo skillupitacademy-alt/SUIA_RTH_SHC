@@ -500,3 +500,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/marketing-site/src/lib/analytics/__tests__/ingest-failure-behavior.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND05 SkillUp program/faculty fallback boundary (manifest `W1_W3_FND05_SkillUp_Fallback_Control_Manifest.md`, baseline 513783ba): guarded actual `fetchSkillupApi` with mocked transport/DB helpers exited 1 (1 passed / 2 failed). An HTTP 200 returns upstream payload without fallback; program 401 and faculty 403 instead invoke direct data helpers and resolve fixture data. Existing routes require authenticated, brand-validated access. This establishes the isolated bypass of the observed HTTP denials, not physical network/DB reachability or classification of content as private. Public/static build access policy and safe fallback design need Sol decision; assertions retained VERIFICATION_FAILED, no runtime changes.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/read-fallback-boundary.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
