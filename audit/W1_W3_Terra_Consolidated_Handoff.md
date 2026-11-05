@@ -565,3 +565,10 @@ FND05 catalog classification refinement: shared proxy lists program paths public
 FND05 helper origin follow-up: source permits absolute URL while forwarding identity/cookie/gateway secret; current scoped call sites are relative, deployment origin and redirect behavior unverified. No exfiltration claim or network execution.
 
 FND22 source trace: opening compliance brief calls a client read that auto-POSTs contract generation on 404; backend POST has contract-admin authorization. Intended automatic generation and viewer-versus-writer contract remain decision-pending, no workflow operation executed.
+
+FND22 contract client read behavior (manifest `W1_W3_FND22_Contract_Read_Control_Manifest.md`, baseline 44078178): guarded actual client with intercepted fetch exited 0 (2 passed). Existing contract returns after one GET; 404 triggers a POST generation attempt. This is descriptive, not approval of implicit writes or proof of backend authorization/persistence; actual workflow and browser remain NOT EXECUTED. Sol must select read/generation semantics. No production change; IMPLEMENTED_UNVERIFIED.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/lib/project-llm/api/__tests__/contract-read-behavior.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
