@@ -37,7 +37,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND02 | PARTIAL: affected UI controls and retained Sol probes were run; full ILS/repository/BFF selections remain to be reproduced. Both foreign-tenant export probes fail as recorded below. |
 | FND03 | PARTIAL: `e6113cad` consolidates signed-subject, projection, private-store, export provenance, admin and publication recommendations; Sol policy/deployment disposition remains pending. |
 | FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
-| FND05 | VERIFICATION_FAILED: SkillUp denied-read fallback and RTH help error-boundary probes fail; legacy progress isolation, private owner authority and public/static build policy remain open. |
+| FND05 | VERIFICATION_FAILED: SkillUp denied-read fallback, RTH help error and AI tutor cross-brand/content probes fail; legacy progress isolation and authority decisions remain open. |
 | FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
 | FND07 | IMPLEMENTED_UNVERIFIED for J-R1/J-R2 only, commit `995e1f35`, manifest `W1_W3_FND07_Lifecycle_Slice_Manifest.md`; broader continuously mounted auth-owner/cache requirements remain open. |
 | FND08 | NOT COMPLETE: real Project LLM actor ingress and persistence need inventory and controls. |
