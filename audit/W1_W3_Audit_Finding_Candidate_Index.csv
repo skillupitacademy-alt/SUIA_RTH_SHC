@@ -11,12 +11,12 @@ RTH-ACTIVE-005,27620,no,"SOURCE CONFIRMED, POLICY OPEN: validated delivery retur
 RTH-ACTIVE-006,27640,no,"SOURCE CONFIRMED, OPEN: delivery service still limits eligible tutorial to one without explicit ordering; physical store selection NOT EXECUTED."
 RTH-ACTIVE-007,27642,no,"SOURCE CONFIRMED, POLICY OPEN: approved and deployed both eligible; intended publication stage not established."
 RTH-ACTIVE-008,27644,no,"SOURCE PARTIAL: deprecated getTutorialBySlug remains defined; scoped direct-call search found no callers, dynamic invocation and active delivery path NOT EXECUTED."
-RTH-AI-001,27101,no,VERIFICATION_FAILED: isolated actual route accepts fixture other-brand user; real JWT/proxy/deployment NOT EXECUTED.
-RTH-AI-002,27102,no,VERIFICATION_FAILED: isolated actual route returns global seed Q&A for unrelated fixture subtopic; real content/store NOT EXECUTED.
+RTH-AI-001,27101,no,IMPLEMENTED_UNVERIFIED: verified RTH brand denial in f73d3484 passes isolated route controls; real JWT/gateway not executed.
+RTH-AI-002,27102,no,IMPLEMENTED_UNVERIFIED: unscoped global demo Q&A removed in 41d0409c; isolated unrelated-subtopic assertion passes; vector provenance not executed.
 RTH-AI-003,27103,no,"SOURCE CONFIRMED, POLICY OPEN: query calls completion after seed/vector lookup; distinct learning completion authority and physical progress NOT EXECUTED."
-RTH-AI-004,27161,no,VERIFICATION_FAILED: actual-route fixture cross-brand denial control fails; real JWT/proxy NOT EXECUTED.
+RTH-AI-004,27161,no,IMPLEMENTED_UNVERIFIED: cross-brand route denial passes isolated fixtures after f73d3484; real JWT/proxy not executed.
 RTH-AI-005,27167,no,SOURCE CONFIRMED: hook and block duplicate submit/rate state; abstraction decision remains open.
-RTH-AI-006,27175,no,VERIFICATION_FAILED: both actual mounted hook and block remain rate limited after fixture Retry-After; real browser/API NOT EXECUTED.
+RTH-AI-006,27175,no,IMPLEMENTED_UNVERIFIED: valid retry interval controls pass for both mounted owners after 04faea91; invalid-header policy and real browser/API open.
 RTH-API-001,26202,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-API-002,26547,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-API-003,26548,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
