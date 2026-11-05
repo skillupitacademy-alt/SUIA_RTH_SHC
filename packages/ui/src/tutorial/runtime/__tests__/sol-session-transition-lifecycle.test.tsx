@@ -140,6 +140,20 @@ describe('Sol session transition lifecycle', () => {
     view.unmount();
   });
 
+  it('emits the initial block visit once under StrictMode effect replay', async () => {
+    render(<React.StrictMode>{provider('session-a')}</React.StrictMode>);
+    await act(async () => {});
+
+    const visits = vi.mocked(fetch).mock.calls.filter(([url]) => (
+      url === '/api/tutorial/ils/block-visit'
+    ));
+    expect(visits).toHaveLength(1);
+    expect(JSON.parse(visits[0][1]!.body as string)).toMatchObject({
+      blockId: initialBlock.blockId,
+      sessionId: 'session-a',
+    });
+  });
+
   it('does not emit a deferred new-block visit after provider teardown', async () => {
     let release!: (response: Response) => void;
     const deferred = new Promise<Response>(resolve => { release = resolve; });

@@ -42,6 +42,15 @@ Terra's J submission through 95bba4c3 received PARTIAL independent disposition i
 cutover credit and post-teardown visit controls failed. FND07 prioritizes those bounded
 lifecycle corrections. Existing accepted scopes retain their recorded meanings.
 
+The subsequent consolidated submission f6f698a7 has PARTIAL checkpoint disposition in
+`audit/W1_W3_Sol_Review_f6f698a7.md`. The original two lifecycle controls now pass, while
+an added StrictMode initial-visit control fails. A new report control also retains old
+exam data during a new selection's pending request. Selected truth and contract tests
+pass at isolated seams. Four event/schema/analytics failures and seven export/admin
+failures reproduce. All nine groups remain incomplete. The thirty-task assignment now
+records bounded correction priorities, schema/backend inspection scope and tenant-local
+ownership policy, with migration/runtime dependencies explicit.
+
 ---
 
 ## 2. Non-Negotiable Governance Rules

@@ -111,6 +111,70 @@ only. Missing physical/browser evidence remains an explicit dependent gate.
 
 ## Thirty actionable tasks
 
+### Current Sol checkpoint and decisions
+
+W1_W3_Sol_Review_f6f698a7.md records PARTIAL independent review of the first foundation
+submission. All thirty FND tasks below remain active with individual dispositions.
+The original hidden-time and post-teardown regressions pass. Whole provider correction
+acceptance now depends on preserving initial visit emission during StrictMode replay.
+The shared report also retains the previous exam result while a new exam request is
+pending. Sol's new assertions must remain required. Continue independent tasks while
+those focused corrections await review.
+
+Apply these decisions within the existing FND task structure.
+
+- FND07 may correct provider effect replay so exactly one initial visit is emitted while
+  actual teardown cancels deferred visits. Preserve the six prior lifecycle positives,
+  time accounting, header capture and queue semantics. Runtime paths remain the provider
+  and delivery files, with their existing test directory.
+- FND14 may key or reset report data, loading and retry state to the selected examId.
+  A previous exam must disappear while a different exam is pending, missing or failed.
+  Keep server aggregates, unknown-value disclosures and obsolete-response cancellation.
+  Include actual child components and the new Sol report boundary assertion.
+- FND23 may correct InternalAnalyticsProvider.track to reject non-OK HTTP responses
+  with a sanitized error. Preserve 2xx success, timeout and transport rejection behavior.
+  This authorizes the existing internal.provider.ts and provider/tracker tests under
+  packages/marketing-site/src/lib/analytics. New retry scheduling remains separately gated.
+- FND19/FND20 now explicitly include apps/api-server/src/schemas and exact linked API
+  validation/caller files. Reject unsupported named topic complexity rather than silently
+  discarding it until a source-backed mapping is selected. Preserve numeric complexityLevel
+  compatibility and return the existing validation error shape through actual ingress.
+- FND03/FND18 select verified tenant plus tenant-local subject as learner ownership.
+  SHC projection IDs remain references. Unknown historical provenance denies access.
+  Deliver an exact schema/deployment/consumer manifest and draft compatible migration for
+  stored-key changes before dependent rollout. No guessed backfill or physical migration.
+- FND23 selects registered/payload event type equality before effects and failure remaining
+  retryable. Before shared idempotency edits, supply exact producer/consumer registration
+  compatibility and claim/commit/crash/replay semantics, including worker-owned markers.
+  Do not represent a moved marker write or marker deletion as atomic processing.
+- FND08/FND09 may now inspect and add isolated tests under services/project-ai/app and its
+  existing tests. Trace the verified principal and actual transition permission first.
+  After that trace, a bounded audit-actor correction may derive the actor solely from the
+  existing verified principal, preserving the public request shape and permission checks.
+  Gate 1 permission/state-machine redesign still requires the explicit decision record.
+- FND11 may now inspect and add isolated tests under apps/skillup-admin/src for the
+  admission route and email-join consumers. Inspect credential-bearing files through
+  redacted/boolean output only. Deliver exact invitation/reset compatibility and scope
+  manifest before runtime admission/account changes. No credential value may enter tests,
+  logs or reports. Existing credential-derived account validity/remediation remains unverified.
+- FND01/FND12 must reconcile 91 existing crosswalk rows and 696 candidate identifiers to
+  unique findings with evidence. Candidate IDs are triage inputs, with no inferred count
+  of distinct confirmed defects or automatic closure from source inspection.
+- FND15 must record the functional impact of unavailable prototype management/detail
+  pages. Preserve verified real data/actions if discovered. Whole-page acceptance needs
+  caller/feature coverage, beyond a test that the unavailable text renders.
+- FND25/FND26 must install the pre-import network/socket/DNS guard for all isolated
+  runners and validate interception before app code runs. Record the earlier attempted
+  configured GET and tracked-credential output incidents with their unknown exposure.
+  Correct the existing EOF whitespace finding during the next affected test edit.
+
+These additions provide authority within the thirty-task assignment. They create no new
+program tickets or group closure. The review's 66 submitted UI passes, 56 SHC mounted
+passes, 22 SkillUp passes and eight report/newsletter passes retain their isolated layers.
+The additional lifecycle and report assertions fail. Four event/schema/analytics and
+seven export/admin adverse cases remain failed. Complete FND task acceptance before
+requesting independent closure of the corresponding group.
+
 ### FND01 Build the foundation completion register
 
 Parent all nine groups / existing RC IDs. Depends on baseline capture. Allowed paths

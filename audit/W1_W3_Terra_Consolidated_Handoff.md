@@ -1,5 +1,34 @@
 # W1–W3 consolidated implementation handoff
 
+## Independent Sol checkpoint at f6f698a7
+
+The independent disposition is PARTIAL in W1_W3_Sol_Review_f6f698a7.md. All nine groups
+and the thirty-task assignment remain incomplete. Sol reproduced the submitted 66 UI
+passes, 56 changed SHC mounted passes, 22 SkillUp helper/page passes and eight report/
+newsletter passes. Six affected package typechecks pass with their configured inclusions.
+These sets overlap other recorded selections and retain their isolated infrastructure limits.
+
+Sol added a required StrictMode initial-visit assertion to the lifecycle file. The file
+now has six passes and one failure because effect replay emits zero initial visits.
+The original hidden-time and teardown controls pass. A separate mounted report assertion
+fails because the previous exam remains visible while another exam request is pending.
+Whole provider/report correction acceptance remains partial. Sol changed tests and audit
+records only during this checkpoint.
+
+The adverse event/schema/analytics selection reports nine passes and four failures.
+The export/admin selection reports sixty passes and seven failures, including six export
+tenant denials and conflicting admin context. Submitted review-range whitespace retains
+an EOF blank line in the analytics HTTP-failure test. Physical store/browser evidence and
+complete finding reconciliation remain open.
+
+The active consolidated assignment retains FND01-FND30. Its current checkpoint section
+prioritizes the two added regressions, selects sanitized non-OK analytics failure and
+explicit unsupported-complexity validation, and clarifies API schema, Project AI backend
+and admission consumer inspection/test scope. Persisted key/migration and approval-policy
+dependencies retain explicit gates. The configured-fetch and tracked-credential-output
+incidents remain recorded with unknown exposure, and the pre-import network guard is
+mandatory. No group is closed by this checkpoint.
+
 Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was clean at the start of this assignment. Independent Sol review and acceptance remain required. No push, live browser, physical database or deployment was performed. BROWSER-01 and RC-ID-01 remain IN_PROGRESS.
 
 | Task | Disposition and remaining work |
