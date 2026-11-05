@@ -29,6 +29,7 @@ export interface PremiumCertificateProps {
   branding: CertificateBranding;
   data: CertificateData;
   fitToViewport?: boolean;
+  isPreview?: boolean;
   certificateRef?: React.Ref<HTMLDivElement>;
 }
 

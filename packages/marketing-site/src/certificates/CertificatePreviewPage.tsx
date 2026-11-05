@@ -205,7 +205,7 @@ function PreviewShell({
         </button>
       </div>
 
-      <PremiumCertificate branding={branding} data={data} />
+      <PremiumCertificate branding={branding} data={data} isPreview />
 
       <div
         style={{
@@ -220,6 +220,7 @@ function PreviewShell({
           branding={branding}
           data={data}
           fitToViewport={false}
+          isPreview
           certificateRef={exportRef}
         />
       </div>
@@ -236,7 +237,7 @@ export function CertificatePreviewFallback({
   const branding = getCertificateBranding(brand);
   const data = buildPreviewCertificateData(branding);
 
-  return <PremiumCertificate branding={branding} data={data} />;
+  return <PremiumCertificate branding={branding} data={data} isPreview />;
 }
 
 export function CertificatePreviewPage({
