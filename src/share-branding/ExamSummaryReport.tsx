@@ -34,8 +34,18 @@ function ExamSummaryReportForExam({ brand, examId }: ExamSummaryReportProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [loadedExamId, setLoadedExamId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    // FND14: Reset state immediately when examId changes to prevent stale result display
+    if (loadedExamId !== examId) {
+      setResult(null);
+      setLoading(true);
+      setError(null);
+      setRetryCount(0);
+      setLoadedExamId(examId);
+    }
+
     if (!examId) {
       setError('Missing exam ID');
       setLoading(false);
