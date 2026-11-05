@@ -269,3 +269,15 @@ Test typecheck scope clarification from existing configs: `packages/ui/tsconfig.
 `b00c053a` follows up FND14 after tracing actual ReportEngine output: the shared report retains server aggregate score/total, does not derive incorrect/skipped from incomplete or unevaluated detail, and maps only explicit passed/failed labels. Guarded mounted report tests pass 7/7 and both learner app typechecks pass. The result API's own per-question `timeSpent` fallback to zero and full source truth remain open; no scoring/backend behavior was changed.
 
 `e313613e` provides the FND23 decision input for compatible event-type migration and durable retry/commit semantics across actual project workers. It is a recommendation, not approval or implementation; both required isolated negative probes remain VERIFICATION_FAILED and no physical queue/store evidence is implied.
+
+### FND20 mounted bulk caller follow-up (baseline 1c907369)
+
+`apps/skillhubcore-admin/src/components/entry/__tests__/bulk-caller-contract.test.tsx` mounts the real panel, reads disposable JSON files through jsdom FileReader, and intercepts the API client. Both `text` and `questionText` aliases reach the mocked client as `questionText`; an empty question causes an error and zero calls. The first run exited 1 (1 passed, 2 failed) because the test clicked the initially disabled button before asynchronous file validation; after waiting for the displayed question the guarded rerun exited 0 (3 passed). No production behavior changed. This establishes only UI-to-mocked-client composition, not central HTTP, persistence, browser, or DB execution; multi-select contract remains a decision gap.
+
+Exact rerun from repository root, PowerShell, after clearing DATABASE_URL, DIRECT_URL and NEON_DATABASE_URL:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/components/entry/__tests__/bulk-caller-contract.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Status IMPLEMENTED_UNVERIFIED pending independent Sol review; previously documented security failures remain VERIFICATION_FAILED.
