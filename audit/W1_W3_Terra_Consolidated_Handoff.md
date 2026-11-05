@@ -339,3 +339,5 @@ Exact command from repository root:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['apps/api-server/src/schemas/__tests__/topic-complexity-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+Final cumulative diff follow-up: `git diff HEAD~10 --check` found a trailing blank line in the dashboard test introduced by its Windows file creation. Removed that blank line; no test behavior changed. The cumulative diff check was repeated after staging.

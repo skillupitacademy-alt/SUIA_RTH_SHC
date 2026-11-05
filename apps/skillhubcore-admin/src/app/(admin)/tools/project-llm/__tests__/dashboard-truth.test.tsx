@@ -12,4 +12,3 @@ it('marks unsourced dashboard evidence unavailable and keeps tool navigation', (
   expect(screen.getByRole('link', { name: 'Registry' }).getAttribute('href')).toBe('/tools/project-llm/registry');
   expect(screen.getByRole('link', { name: 'Mix & match' }).getAttribute('href')).toBe('/tools/project-llm/mix-match');
 });
-
