@@ -37,3 +37,25 @@ it('hides a previous exam result while the next exam response is pending', async
   expect(await screen.findByText('Current exam subject')).toBeTruthy();
   expect(previousResultStillVisible).toBe(false);
 });
+it('does not restore an obsolete response after switching exams', async () => {
+  let release!: (response: Response) => void;
+  const pending = new Promise<Response>(resolve => { release = resolve; });
+  vi.stubGlobal('fetch', vi.fn().mockReturnValueOnce(pending).mockResolvedValueOnce(Response.json({ status: 'completed', score: 1, total: 1, percentage: 100, lineage: { subject: 'Current subject' } })));
+  const view = render(<ExamSummaryReport brand={brand} examId="exam-a" />);
+  view.rerender(<ExamSummaryReport brand={brand} examId="exam-b" />);
+  expect(await screen.findByText('Current subject')).toBeTruthy();
+  await act(async () => { release(Response.json({ status: 'completed', score: 1, total: 1, percentage: 100, lineage: { subject: 'Obsolete subject' } })); await pending; });
+  expect(screen.queryByText('Obsolete subject')).toBeNull();
+  expect(screen.getByText('Current subject')).toBeTruthy();
+});
+it('does not show a previous result when the new exam ID is missing or fails', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(Response.json({ status: 'completed', score: 1, total: 1, percentage: 100, lineage: { subject: 'Old subject' } })).mockResolvedValueOnce(new Response(null, { status: 503 })));
+  const view = render(<ExamSummaryReport brand={brand} examId="exam-a" />);
+  expect(await screen.findByText('Old subject')).toBeTruthy();
+  view.rerender(<ExamSummaryReport brand={brand} examId="exam-b" />);
+  expect(await screen.findByText('Error Loading Results')).toBeTruthy();
+  expect(screen.queryByText('Old subject')).toBeNull();
+  view.rerender(<ExamSummaryReport brand={brand} examId="" />);
+  expect(await screen.findByText('Missing exam ID')).toBeTruthy();
+  expect(screen.queryByText('Old subject')).toBeNull();
+});

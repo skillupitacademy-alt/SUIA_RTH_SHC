@@ -25,7 +25,11 @@ async function fetchExamResult(examId: string): Promise<ExamSummaryData> {
   return await response.json();
 }
 
-export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportProps) {
+export default function ExamSummaryReport(props: ExamSummaryReportProps) {
+  return <ExamSummaryReportForExam key={props.examId ?? ''} {...props} />;
+}
+
+function ExamSummaryReportForExam({ brand, examId }: ExamSummaryReportProps) {
   const [result, setResult] = useState<ExamSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
