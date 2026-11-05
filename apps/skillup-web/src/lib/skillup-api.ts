@@ -22,6 +22,8 @@ function toAbsoluteUrl(path: string): string {
   return new URL(path, resolveSkillupOrigin()).toString();
 }
 
+class SkillupAuthorizationError extends Error {}
+
 export async function fetchSkillupApi<T>(path: string): Promise<T> {
   const forwardedHeaders = new Headers();
   try {
@@ -55,12 +57,16 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
       headers: forwardedHeaders,
     });
 
+    if (response.status === 401 || response.status === 403) {
+      throw new SkillupAuthorizationError('SkillUp data access denied');
+    }
     if (!response.ok) {
       throw new Error(`Failed to load SkillUp data from ${path}`);
     }
 
     return (await response.json()) as T;
-  } catch {
+  } catch (error) {
+    if (error instanceof SkillupAuthorizationError) throw error;
     if (path === '/api/programs') {
       return (await getSkillupPrograms()) as T;
     }
