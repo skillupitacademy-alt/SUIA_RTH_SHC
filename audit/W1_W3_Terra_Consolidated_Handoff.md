@@ -590,3 +590,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/ai-tutor/query/__tests__/tenant-content-boundary.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND07 RTH AI tutor parent identity (manifest `W1_W3_FND07_AI_Tutor_Subtopic_Control_Manifest.md`, baseline 9920e273): actual mounted BlockRenderer with mocked AI child and other renderers exited 1 (1 failed): supplied parent ID arrives as missing, and actual child source defaults missing ID to fixed UUID. Initial guarded runner stalled during imports and was interrupted; rerun with additional child mocks yielded the retained failure. This is RTH-FE-008 source/fixture evidence, not actual learner auth, browser, request or progress write. Legacy compatibility and actual ID authority require Sol review; no production edit.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/components/content/__tests__/ai-tutor-subtopic.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```

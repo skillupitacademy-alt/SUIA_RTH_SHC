@@ -86,7 +86,7 @@ RTH-FE-004,26998,no,"UNVERIFIED: inspect finding, wave, active source and accept
 RTH-FE-005,26999,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-006,27042,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-007,27104,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-FE-008,27105,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+RTH-FE-008,27105,no,VERIFICATION_FAILED: mounted BlockRenderer omits supplied subtopic ID; child source uses fixed fallback. Actual browser/request NOT EXECUTED.
 RTH-FE-009,27106,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-010,27211,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-GEN-023,28044,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
