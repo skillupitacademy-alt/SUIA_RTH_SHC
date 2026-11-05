@@ -341,3 +341,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 Final cumulative diff follow-up: `git diff HEAD~10 --check` found a trailing blank line in the dashboard test introduced by its Windows file creation. Removed that blank line; no test behavior changed. The cumulative diff check was repeated after staging.
+
+FND26 API static check after topic schema probe: `pnpm exec tsc --noEmit` from `apps/api-server` exited 0. Existing tsconfig determines test inclusion; this does not establish a comprehensive test-type gate or alter the retained FND19 failure.
