@@ -43,7 +43,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND08 | NOT COMPLETE: real Project LLM actor ingress and persistence need inventory and controls. |
 | FND09 | NOT COMPLETE: depends on FND08 and selected approval authority. |
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
-| FND11 | NOT COMPLETE: consumer inventory, equal-email ambiguity controls and uniqueness decision remain; migration separate. |
+| FND11 | VERIFICATION_FAILED: isolated admission route accepts foreign-platform equal-email fixture; consumer inventory, uniqueness/invitation decision and migration remain open. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
 | FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty and batch/recording slices committed; placement, remaining dashboard truth, HTTP and physical evidence remain. |
 | FND14 | PARTIAL / IMPLEMENTED_UNVERIFIED: shared result-report and SkillUp assessment-list truth slices implemented; full assessment/result coverage remains open. |
