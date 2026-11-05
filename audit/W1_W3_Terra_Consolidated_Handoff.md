@@ -493,3 +493,10 @@ FND13 unknown session status/mode slice (manifest `W1_W3_FND13_Session_Unknown_M
 FND13 session mode follow-up: batch schedule projections also now use the unavailable-aware mode formatter, with a future scheduled null-mode fixture. Guarded actual-helper selection 13/13, SkillUp typecheck and targeted helper lint exit 0. Commands and fixture limits match prior session-unknown entry; no DB/browser execution.
 
 FND13 remaining date truth: helper substitutes current time for null date across session, attendance and payment paths; DB schema non-null constraints and real data quality/consumer compatibility are not established at the fixture boundary. Missing-date representation decision and tests remain open.
+
+FND23 marketing ingest failure behavior (manifest `W1_W3_FND23_Ingest_Failure_Control_Manifest.md`, baseline 4f3380eb): guarded actual pipeline with fixture config, intercepted rejecting provider fetch and mocked internal publisher exited 0 (1 passed). The first event returns accepted while adding one in-memory dead letter; an immediate identical retry returns accepted/deduped and does not redispatch. This is a descriptive behavior control, not evidence of durable acceptance or an endorsement of loss/retry semantics. Physical providers, queue, store and process restart NOT EXECUTED; owner must select acknowledgment and retry contract. No production change. IMPLEMENTED_UNVERIFIED pending Sol review; event retry security failure remains VERIFICATION_FAILED.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/marketing-site/src/lib/analytics/__tests__/ingest-failure-behavior.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
