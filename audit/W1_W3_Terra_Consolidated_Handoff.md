@@ -438,3 +438,5 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/types/src/tutorial-rich-document/__tests__/nested-schema-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND20 multi-select follow-up traces current flagged-option joining, comma splitting, partial credit and 0.8 boolean threshold in the crosswalk. Comma-containing option text, intended grading policy and actual scorer round-trip remain open; no algorithm, import or scoring execution changed.
