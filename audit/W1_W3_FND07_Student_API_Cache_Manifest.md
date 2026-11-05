@@ -1,0 +1,3 @@
+# FND07 SkillUp student API cache-control manifest
+
+Baseline 90b047a8. Original SU-DATA-008: authenticated dashboard/attendance API responses omit explicit private no-store. Add that header to successful responses from the two existing routes; preserve auth-denial responses and existing data/error behavior. Do not change service worker, cache storage or assume this header controls custom Cache API. Test actual route GETs with fixture auth/data, valid and denied cases under offline guard. Physical browser, service worker and database NOT EXECUTED. Private rendered navigations/service-worker account switching remain separate FND07 evidence lanes.
