@@ -399,3 +399,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/admin/topics/__tests__/complexity-route.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
 Earlier red FND19 and MKT-018 probes are superseded for these isolated boundaries only. Other tenant and event failures remain VERIFICATION_FAILED; no aggregate pass is asserted.
+
+FND19 correction limitation: historical numeric complexity strings can fall outside the named API-client union and domain service sorts stored text; see inventory. No physical data, migration or interpretation has been established.
