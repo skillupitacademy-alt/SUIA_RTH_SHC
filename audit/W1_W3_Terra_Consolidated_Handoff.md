@@ -509,3 +509,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND05 decision input traces program detail/list/metadata/static params, faculty and sitemap paths: auth-required BFF policy conflicts with requestless local data consumers. Sol must select public catalog vs protected policy and build behavior; no guessed public access or production change.
+
+FND23 producer inventory: RTH assignment help casts an unregistered event through shared publisher, fires after repository create and suppresses publish rejection. Consumer and durable delivery are not established; global publisher validation requires compatible caller migration and owner policy.
