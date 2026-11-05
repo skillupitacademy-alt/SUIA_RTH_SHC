@@ -198,7 +198,7 @@ export async function getSkillupStudentDashboard(userId: string) {
     const nextSession = upcomingSessions[0];
 
     const attendancePercent = null;
-    const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
+    const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : null;
 
     return {
       summary: {

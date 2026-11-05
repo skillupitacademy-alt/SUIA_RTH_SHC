@@ -10,7 +10,7 @@ type DashboardResponse = {
     paymentDue: number;
     outstandingInstallments: number;
     attendancePercent: number | null;
-    progressPercent: number;
+    progressPercent: number | null;
     upcomingSessions: number;
     placementMatches: number;
     facultyName: string;
@@ -69,7 +69,7 @@ export default async function StudentDashboardPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           { label: 'Attendance', value: summary.attendancePercent !== null ? `${summary.attendancePercent}%` : 'Unavailable' },
-          { label: 'Progress', value: sessions.length > 0 ? `${summary.progressPercent}%` : 'Unavailable' },
+          { label: 'Progress', value: summary.progressPercent !== null ? `${summary.progressPercent}%` : 'Unavailable' },
           { label: 'Upcoming sessions', value: summary.upcomingSessions },
           { label: 'Open jobs', value: summary.placementMatches },
         ].map((stat) => (

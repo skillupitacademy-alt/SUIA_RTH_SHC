@@ -20,6 +20,7 @@ describe('dashboard source truth', () => {
     const result = await getSkillupStudentDashboard('learner');
     expect(result.summary).toMatchObject({ batchName: 'Unavailable', facultyName: 'Unavailable', currentTopic: 'Unavailable', nextSessionAt: null, placementMatches: 1 });
     expect(result.sessions).toEqual([]);
+    expect(result.summary.progressPercent).toBeNull();
   });
 });
 
@@ -29,4 +30,11 @@ it('does not publish an attendance percentage without a defined current-batch ca
   expect(result.summary.attendancePercent).toBeNull();
   expect(result.summary.upcomingSessions).toBe(1);
   expect(result.sessions.map((session) => session.id)).toEqual(['current-session']);
+});
+
+it('retains progress when completed history exists but no future session exists', async () => {
+  state.results = [[{ id: 'learner', name: 'Learner', email: 'fixture@example.invalid' }], [{ batchId: 'batch', batchName: 'Batch' }], [{ id: 'done', scheduledAt: new Date(Date.now() - 60000), status: 'completed' }], [], []];
+  const result = await getSkillupStudentDashboard('learner');
+  expect(result.summary.progressPercent).toBe(100);
+  expect(result.sessions).toEqual([]);
 });
