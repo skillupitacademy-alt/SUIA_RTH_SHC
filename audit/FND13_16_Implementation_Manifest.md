@@ -1,8 +1,8 @@
 # FND13-16 Implementation Manifest
 
-**Authority:** audit/FND13_16_Implementation_Review.json, audit/W1_W3_Terra_Consolidated_Implementation_Task.md  
-**Baseline:** cc100f47 (remediation/w1-2-batch-05-targeted)  
-**Completed:** 2026-01-12  
+**Authority:** audit/FND13_16_Implementation_Review.json, audit/W1_W3_Terra_Consolidated_Implementation_Task.md
+**Baseline:** cc100f47 (remediation/w1-2-batch-05-targeted)
+**Completed:** 2026-01-12
 **Status:** PARTIAL - Test environment fixed, decision brief created, blockers documented
 
 ---

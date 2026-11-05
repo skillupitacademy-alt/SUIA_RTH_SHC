@@ -1,8 +1,8 @@
 # FND13: Placement Zero-Vector Scoring Decision Brief
 
-**Authority:** audit/FND13_16_Implementation_Review.json (HIGH severity blocker)  
-**Baseline:** cc100f47 (remediation/w1-2-batch-05-targeted)  
-**Status:** BLOCKED - Awaiting Sol product decision  
+**Authority:** audit/FND13_16_Implementation_Review.json (HIGH severity blocker)
+**Baseline:** cc100f47 (remediation/w1-2-batch-05-targeted)
+**Status:** BLOCKED - Awaiting Sol product decision
 **Date:** 2026-01-12
 
 ---
