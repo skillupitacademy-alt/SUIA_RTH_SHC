@@ -45,7 +45,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
 | FND11 | VERIFICATION_FAILED: isolated admission route accepts foreign-platform equal-email fixture; consumer inventory, uniqueness/invitation decision and migration remain open. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
-| FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty and batch/recording slices committed; placement, remaining dashboard truth, HTTP and physical evidence remain. |
+| FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty, batch/recording and placement HTTP/date truth slices committed; remaining dashboard truth and physical evidence remain. |
 | FND14 | PARTIAL / IMPLEMENTED_UNVERIFIED: shared result-report and SkillUp assessment-list truth slices implemented; full assessment/result coverage remains open. |
 | FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM truth slices committed; other governance consumers and authority remain. |
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter and recovery acknowledgement slices committed; other form/action inventory and controls remain. |
@@ -759,3 +759,39 @@ Runner from root: `$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_
 FND13 placement zero-score characterization (manifest `74dcf59d`, test `b6e4e571`): guarded actual `getSkillupPlacement` with fixture profile/job/vector exited 0, 1 passed, confirming vector score 0 is returned as match 1 by current clamp. This descriptive test does not accept the fabricated percentage or establish calibrated score semantics; actual DB/vector, external clients and browser NOT EXECUTED. Owner-selected response/legacy contract remains required; no production change. `git diff --check` exited 0.
 
 Runner from root: `$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/placement-zero-control.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"`
+
+FND13 placement HTTP truth and date controls (`3d5de543`): added `apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts` with 8 isolated tests covering placement data source failures and date field verification. Database profile query failure, job listing query failure, vector service failure with fallback to DB-ordered jobs (readinessScore-based match), vector service success with score-based ranking, missing profile fallback to FALLBACK_PLACEMENT constant, empty job listings, null deadline handling (schema declares notNull but runtime may differ), and verification that no synthetic date fields (nextSessionAt, recordingUrl) are fabricated. Mocked `@quiz/db-placement` adapter with state-driven query responses and error injection via Error instances. Vector service unavailable falls back to `jobs.map((job, index) => ({ match: readinessScore - index*3 }))`. Combined selection with zero-control test: 2 files, 9 tests passed. From `apps/skillup-web`: `pnpm exec tsc --noEmit` exited 0. `git diff --check` exited 0. These tests exercise mocked adapters, not physical Postgres, Upstash Vector or HTTP route `/api/student/placement`. Deadline ordering behavior and vector match ID resolution tested but not exhaustive. No Pool-based payment query evidence. Status: IMPLEMENTED_UNVERIFIED pending Sol review of compatibility and HTTP/auth propagation.
+
+Runner from root after clearing DATABASE|REDIS|UPSTASH|NEON|QSTASH environment keys: `node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/placement-zero-control.test.ts','apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"`
+
+## Claude Sonnet 4.5 continuation from a239ca39
+
+### Priority 1 regressions resolved (2026-11-05)
+
+**FND07 StrictMode initial visit emission - RESOLVED**
+
+Commit: b5a4e05d
+Problem: Sol lifecycle assertion 'emits the initial block visit once under StrictMode effect replay' failed (0 visits vs required 1). StrictMode runs effect setup/cleanup/remount; generation guard caused deferred visit to be suppressed.
+Solution: Emit initial visit immediately (not deferred) when currentState is null (initial mount). Subsequent block changes continue using deferred emission after flush to preserve ordering.
+Verification:
+- packages/ui: pnpm exec vitest run sol-session-transition-lifecycle
+- Exit 0: 8/8 passed including StrictMode visit assertion
+- git diff --check: exit 0
+- Six existing lifecycle passes preserved
+Limitations: Mounted React/jsdom, isolated transport; no live browser or authenticated owner; UI typecheck NOT executed (timeout)
+
+**FND14 exam selection state reset - RESOLVED**
+
+Commit: c16ad550
+Problem: Sol boundary control 'hides a previous exam result while the next exam response is pending' failed. Component displayed old exam's subject/lineage while new exam fetch was pending.
+Solution: Track loadedExamId in state; reset result/loading/error/retryCount immediately when examId changes before async effect runs.
+Verification:
+- sol-report-truth-boundaries.test.tsx: 3/3 passed
+- exam-summary-truth.test.tsx: 7/7 passed
+- git diff --check: exit 0
+- Covers: previous exam hidden during pending, obsolete response rejected, missing/failed clears previous, all original truth tests
+Limitations: Mounted React/jsdom with intercepted fetch; no live API/browser/database; combined typecheck NOT executed
+
+Both regressions from Sol checkpoint f6f698a7 are now resolved. Mounted isolated controls pass. Independent Sol review required for acceptance.
+
+Next priorities: Policy-gated decisions (FND03/09/11/20/23) and W2 truth completion per handoff Section "Architectural disposition and continuation".
