@@ -443,11 +443,19 @@ export function BlockTelemetryProvider({
       lastVisitIdentityRef.current = null;
     }
     startTiming(activeBlock.blockId, blockVersion, nextSession);
-    void pending.then(async () => {
-      if (transitionGenerationRef.current === generation) {
-        await emitVisit(activeBlock.blockId, blockVersion, nextSession);
-      }
-    }).catch(error => console.error('[BlockTelemetry] Transition failed:', error));
+
+    // FND07: Emit initial visit immediately for the first block (not deferred)
+    // This ensures StrictMode effect replay emits exactly one visit
+    if (!currentState) {
+      void emitVisit(activeBlock.blockId, blockVersion, nextSession);
+    } else {
+      // For subsequent block changes, wait for old flush to complete
+      void pending.then(async () => {
+        if (transitionGenerationRef.current === generation) {
+          await emitVisit(activeBlock.blockId, blockVersion, nextSession);
+        }
+      }).catch(error => console.error('[BlockTelemetry] Transition failed:', error));
+    }
   }, [activeBlock, enabled, propSessionId, flushAllPending, emitVisit, startTiming]);
 
   /**
