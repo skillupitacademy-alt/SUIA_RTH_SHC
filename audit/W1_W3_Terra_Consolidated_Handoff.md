@@ -429,3 +429,5 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/auth/src/__tests__/signed-tenant-claims.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+Cumulative diff check found whitespace on the added SubtopicTable test line in cdaf9db8; corrected without behavior change. Repeat cumulative `git diff HEAD~5 --check` exited 0.

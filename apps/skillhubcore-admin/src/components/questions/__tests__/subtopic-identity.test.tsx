@@ -34,7 +34,7 @@ it('reports a failed subtopic delete without inventing a cause', async () => {
   const button = row!.querySelector('svg.lucide-trash-2')?.closest('button');
   expect(button).toBeTruthy();
   fireEvent.click(button!);
-  
+
   expect(await screen.findByText('Unable to delete the subtopic. Please try again.')).toBeTruthy();
   expect(deleteSubtopic).toHaveBeenCalledWith('real-id');
 });
