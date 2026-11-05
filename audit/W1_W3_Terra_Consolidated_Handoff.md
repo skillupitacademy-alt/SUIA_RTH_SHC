@@ -41,7 +41,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
 | FND07 | VERIFICATION_FAILED: RTH AI tutor parent omits subtopic identity; J-R1/J-R2 slice remains implemented-unverified and broader auth-owner/cache requirements remain open. |
 | FND08 | VERIFICATION_FAILED: actual transition handler forwards fixture client actor instead of verified principal; real JWT/persistence and actor policy remain open. |
-| FND09 | NOT COMPLETE: depends on FND08 and selected approval authority. |
+| FND09 | VERIFICATION_FAILED: isolated real governance service advances Gate 1 without approval evidence; selected approval authority and actual persistence remain open. |
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
 | FND11 | VERIFICATION_FAILED: isolated admission route accepts foreign-platform equal-email fixture; consumer inventory, uniqueness/invitation decision and migration remain open. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
