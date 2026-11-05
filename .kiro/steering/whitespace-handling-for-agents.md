@@ -211,7 +211,7 @@ When reviewing commits:
 
 **Problem**: Overly aggressive text processing can delete actual content.
 
-**Solution**: 
+**Solution**:
 - Use the exact regex: `rb"[ \t]+(?=\r?\n|\Z)"`
 - Test on a copy first
 - Verify file content after cleaning: `(Get-Content file.md).Count`
@@ -220,7 +220,7 @@ When reviewing commits:
 
 **Problem**: Some Markdown uses trailing spaces for line breaks.
 
-**Solution**: 
+**Solution**:
 - In this repository, prefer explicit `<br>` tags
 - Document any intentional formatting exceptions
 - Don't silently remove formatting the author intended
