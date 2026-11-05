@@ -46,3 +46,20 @@ it('labels static requirements as reference rather than gate evidence', () => {
   fireEvent.click(screen.getByRole('button', { name: /View as Checklist/ }));
   expect(screen.queryByText('Mandatory Contract')).toBeNull();
 });
+
+it('does not reuse a previously loaded contract while the new workflow fails', async () => {
+  let rejectB!: (reason: Error) => void;
+  state.get.mockImplementation((id: string) => id === 'A'
+    ? Promise.resolve({ contract_hash: 'A_HASH', target: { family: 'A_FAMILY', version: 'A1' } })
+    : new Promise((_, reject) => { rejectB = reject; }));
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: state.write } });
+  const view = render(<Page />);
+  await waitFor(() => expect((screen.getByRole('button', { name: /Copy Full Brief/ }) as HTMLButtonElement).disabled).toBe(false));
+  state.workflowId = 'B'; view.rerender(<Page />);
+  await waitFor(() => expect(state.get).toHaveBeenCalledWith('B'));
+  expect((screen.getByRole('button', { name: /Copy Full Brief/ }) as HTMLButtonElement).disabled).toBe(true);
+  rejectB(new Error('unavailable'));
+  await screen.findByText(/Current contract unavailable/);
+  expect((screen.getByRole('button', { name: /Copy Full Brief/ }) as HTMLButtonElement).disabled).toBe(true);
+  expect(state.write).not.toHaveBeenCalled();
+});

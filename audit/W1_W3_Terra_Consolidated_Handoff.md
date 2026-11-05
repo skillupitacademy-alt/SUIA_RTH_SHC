@@ -343,3 +343,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 Final cumulative diff follow-up: `git diff HEAD~10 --check` found a trailing blank line in the dashboard test introduced by its Windows file creation. Removed that blank line; no test behavior changed. The cumulative diff check was repeated after staging.
 
 FND26 API static check after topic schema probe: `pnpm exec tsc --noEmit` from `apps/api-server` exited 0. Existing tsconfig determines test inclusion; this does not establish a comprehensive test-type gate or alter the retained FND19 failure.
+
+FND15 compliance switching additional control (manifest `W1_W3_FND15_Compliance_Existing_Contract_Control_Manifest.md`, baseline f0d7c53b): guarded mounted selection now passes 4 tests, including already loaded A followed by pending and failed B, where copy remains disabled and no clipboard call occurs. Same exact command and mock limitations as the prior compliance control; no production change or physical backend/browser. IMPLEMENTED_UNVERIFIED pending Sol review.
