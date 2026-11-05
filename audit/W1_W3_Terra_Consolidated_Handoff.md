@@ -48,7 +48,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty, batch/recording and placement HTTP/date truth slices committed; remaining dashboard truth and physical evidence remain. |
 | FND14 | PARTIAL / IMPLEMENTED_UNVERIFIED: shared result-report and SkillUp assessment-list truth slices implemented; full assessment/result coverage remains open. |
 | FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM dashboard/registry/mix-match/compliance truth slices committed; certificate authority, integration-certification/workflow-details/specification-review truth committed; other governance consumers and certificate issuance/verification authority remain. |
-| FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter (shared+RTH), recovery acknowledgement and enquiry edit slices committed; admission event delivery, AuthPage semantics documentation and broader form inventory remain. |
+| FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter (shared+RTH), recovery acknowledgement slices committed; admission event delivery, AuthPage semantics documentation and broader form inventory remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | VERIFICATION_FAILED: absent gateway-secret configuration passes isolated proxy check; signed tenant claim control passes, resource identity authority remains open. |
 | FND19 | VERIFICATION_FAILED: SHC direct domain create accepts numeric name in isolated route fixture; named topic ingress and taxonomy delete slices remain IMPLEMENTED_UNVERIFIED. Historical numeric representation, canonical round-trip and other consumers remain open. |
