@@ -11,8 +11,8 @@ RTH-ACTIVE-005,27620,no,"SOURCE CONFIRMED, POLICY OPEN: validated delivery retur
 RTH-ACTIVE-006,27640,no,"SOURCE CONFIRMED, OPEN: delivery service still limits eligible tutorial to one without explicit ordering; physical store selection NOT EXECUTED."
 RTH-ACTIVE-007,27642,no,"SOURCE CONFIRMED, POLICY OPEN: approved and deployed both eligible; intended publication stage not established."
 RTH-ACTIVE-008,27644,no,"SOURCE PARTIAL: deprecated getTutorialBySlug remains defined; scoped direct-call search found no callers, dynamic invocation and active delivery path NOT EXECUTED."
-RTH-AI-001,27101,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-AI-002,27102,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+RTH-AI-001,27101,no,VERIFICATION_FAILED: isolated actual route accepts fixture other-brand user; real JWT/proxy/deployment NOT EXECUTED.
+RTH-AI-002,27102,no,VERIFICATION_FAILED: isolated actual route returns global seed Q&A for unrelated fixture subtopic; real content/store NOT EXECUTED.
 RTH-AI-003,27103,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-AI-004,27161,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-AI-005,27167,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
