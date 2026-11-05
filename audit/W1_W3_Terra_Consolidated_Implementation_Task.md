@@ -113,6 +113,15 @@ only. Missing physical/browser evidence remains an explicit dependent gate.
 
 ### Current Sol checkpoint and decisions
 
+The subsequent workflow submission e6121f40 has a bounded placement decision in
+FND13_Placement_Truth_Sol_Decision_e6121f40.md. FND13 may now implement unavailable
+matching/profile metrics with explicit nullable types/status, persisted job browsing
+and matched consumer compatibility under that exact scope. A numeric floor of one
+is not an approved substitute for unknown matching quality. The submitted FND12/FND17
+exhaustive coverage claims remain unaccepted and require row/count/source reconciliation.
+All FND01-FND30 tasks below remain active, with checkpoint submission and continued
+independent implementation authorized. No repeat-loop verdict confers group acceptance.
+
 W1_W3_Sol_Review_f6f698a7.md records PARTIAL independent review of the first foundation
 submission. All thirty FND tasks below remain active with individual dispositions.
 The original hidden-time and post-teardown regressions pass. Whole provider correction
