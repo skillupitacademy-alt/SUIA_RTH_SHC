@@ -631,3 +631,10 @@ Exact command from `services/project-ai`:
 ```powershell
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; $env:PYTHONPATH='.'; $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; python -c "import asyncio,builtins,socket,dotenv; loop=asyncio.new_event_loop(); builtins._foundation_test_loop=loop; deny=lambda *a,**k: (_ for _ in ()).throw(RuntimeError('offline guard')); socket.socket.connect=deny; socket.create_connection=deny; socket.getaddrinfo=deny; dotenv.load_dotenv=lambda *a,**k: False; import pytest; result=pytest.main(['-q','tests/foundation/test_workflow_actor_boundary.py']); loop.close(); raise SystemExit(result)"
 ```
+
+FND09 Gate 1 actual service sensitivity (manifest `W1_W3_FND09_Gate1_Service_Control_Manifest.md`, baseline 41a8c4f3): direct real governance service with fixture workflow/repositories exited 1 (1 failed): AWAITING_GATE_1 to GUI_APPROVED without approval evidence invokes fixture workflow upsert. No real JWT, HTTP route, database, commit or approval executed. Python guard/loop limitations and two pytest config warnings match FND08; initial invocation missed file because it was created under an unintended nested relative path and was moved before rerun. Gate permission and state-machine correction remain Sol-selected policy; VERIFICATION_FAILED.
+
+Exact command from `services/project-ai`:
+```powershell
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; $env:PYTHONPATH='.'; $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; python -c "import asyncio,builtins,socket,dotenv; loop=asyncio.new_event_loop(); builtins._foundation_test_loop=loop; deny=lambda *a,**k: (_ for _ in ()).throw(RuntimeError('offline guard')); socket.socket.connect=deny; socket.create_connection=deny; socket.getaddrinfo=deny; dotenv.load_dotenv=lambda *a,**k: False; import pytest; result=pytest.main(['-q','tests/foundation/test_gate1_boundary.py']); loop.close(); raise SystemExit(result)"
+```
