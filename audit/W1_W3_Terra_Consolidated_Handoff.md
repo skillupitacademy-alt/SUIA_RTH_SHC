@@ -51,7 +51,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter and recovery acknowledgement slices committed; other form/action inventory and controls remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | VERIFICATION_FAILED: absent gateway-secret configuration passes isolated proxy check; signed tenant claim control passes, resource identity authority remains open. |
-| FND19 | PARTIAL / IMPLEMENTED_UNVERIFIED: named topic ingress and taxonomy delete controls implemented; historical numeric representation, canonical round-trip and other consumers remain open. |
+| FND19 | VERIFICATION_FAILED: SHC direct domain create accepts numeric name in isolated route fixture; named topic ingress and taxonomy delete slices remain IMPLEMENTED_UNVERIFIED. Historical numeric representation, canonical round-trip and other consumers remain open. |
 | FND20 | PARTIAL / IMPLEMENTED_UNVERIFIED: question identity and bulk caller/schema controls implemented; full HTTP/persistence round-trip and historical compatibility remain open. |
 | FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
