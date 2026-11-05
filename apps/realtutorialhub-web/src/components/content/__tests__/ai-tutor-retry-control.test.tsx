@@ -16,3 +16,15 @@ it('reenables question entry after the server retry interval', async () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(input.disabled).toBe(false);
 });
+it('cancels its retry timer on unmount', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 429, headers: { 'retry-after': '30' } })));
+  const view = render(<AITutorBlock data={{ greeting: 'Hello', qa_pairs: [] }} theme={{ blockAITutor: '', blockAITutorHeader: '' }} subtopicId="topic" />);
+  const input = screen.getByRole('textbox') as HTMLTextAreaElement;
+  fireEvent.change(input, { target: { value: 'Question' } });
+  await act(async () => { fireEvent.keyDown(input, { key: 'Enter' }); });
+  expect(input.disabled).toBe(true);
+  expect(vi.getTimerCount()).toBe(1);
+  view.unmount();
+  expect(vi.getTimerCount()).toBe(0);
+});

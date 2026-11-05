@@ -12,3 +12,15 @@ it('permits retry after the server retry interval', async () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(result.current.isRateLimited).toBe(false);
 });
+it('cancels a pending retry when the subtopic changes', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 429, headers: { 'retry-after': '30' } })));
+  const { result, rerender, unmount } = renderHook(({ id }) => useAiTutor('Hello', id, 'Topic'), { initialProps: { id: 'a' } });
+  act(() => result.current.setQuestion('Question'));
+  await act(async () => { await result.current.submitQuestion(); });
+  expect(vi.getTimerCount()).toBe(1);
+  rerender({ id: 'b' });
+  expect(result.current.isRateLimited).toBe(false);
+  expect(vi.getTimerCount()).toBe(0);
+  unmount();
+});

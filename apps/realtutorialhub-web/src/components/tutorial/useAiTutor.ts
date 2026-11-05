@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type AiTutorChunk = { blockType: string; content: string; score?: number };
 
@@ -45,6 +45,15 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRateLimited, setIsRateLimited] = useState(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setIsRateLimited(false);
+    return () => {
+      if (retryTimer.current !== null) clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    };
+  }, [subtopicId]);
   const [questionsLeft, setQuestionsLeft] = useState<number | null>(null);
 
   const canSubmit = question.trim().length >= 3 && !isLoading && !isRateLimited;
@@ -81,7 +90,16 @@ export function useAiTutor(initialGreeting: string, subtopicId: string, subtopic
       });
 
       if (response.status === 429) {
+        const retryAfter = response.headers.get('retry-after');
+        const seconds = retryAfter !== null && /^\d+$/.test(retryAfter) ? Number(retryAfter) : NaN;
+        if (retryTimer.current !== null) clearTimeout(retryTimer.current);
         setIsRateLimited(true);
+        if (Number.isFinite(seconds) && seconds > 0 && seconds <= 2147483) {
+          retryTimer.current = setTimeout(() => {
+            retryTimer.current = null;
+            setIsRateLimited(false);
+          }, seconds * 1000);
+        }
         setMessages((current) => [
           ...current,
           {
