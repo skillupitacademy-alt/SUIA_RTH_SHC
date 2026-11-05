@@ -31,6 +31,38 @@ mandatory. No group is closed by this checkpoint.
 
 Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was clean at the start of this assignment. Independent Sol review and acceptance remain required. No push, live browser, physical database or deployment was performed. BROWSER-01 and RC-ID-01 remain IN_PROGRESS.
 
+## FND19 taxonomy validation completion (commit b4135fbb)
+
+**PROBLEM**: FND19 numeric domain name test 81f5414e VERIFICATION_FAILED; SHC domain route accepted numeric name `42` returning 201 instead of required 400 rejection. Named complexity 097886b0 and delete failures ac6d302d were previously corrected, but complete taxonomy schema contracts, historical numeric complexity mapping, and SHC client/API/schema/engine round-trip evidence remained incomplete.
+
+**SOLUTION**: Created `apps/skillhubcore-admin/src/schemas/hierarchy.schemas.ts` with complete domain/subject/topic/subtopic/skill Zod contracts matching api-server schemas. Added `apps/skillhubcore-admin/src/lib/sanitize.ts` for consistent validation utilities. Modified domain POST route to sanitize input, validate JSON depth/size, parse with `domainSchema.safeParse()`, and reject invalid payloads before persistence. Created comprehensive `hierarchy-contract.test.ts` with 27 schema validation cases covering all taxonomy entities.
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/api/admin/domains/__tests__/foundation-validation.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 2 tests passed: valid domain name creates (201 + insert called), numeric name `42` rejected (400, zero inserts). Mocked admin guard and DB chain; no live authentication, database or browser.
+
+```powershell
+node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/schemas/__tests__/hierarchy-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 27 tests passed: domain (4), subject (5), topic (8), subtopic (4), skill (6) schema contracts validate name types, UUID formats, enum constraints, numeric/empty/invalid rejections, optional field handling, URL validation.
+
+Previously corrected complexity tests remain passing:
+
+```powershell
+node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/admin/topics/__tests__/complexity-route.test.ts','apps/api-server/src/schemas/__tests__/topic-complexity-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 2 files / 8 tests passed: named complexity preservation, legacy numeric input acceptance, malformed/conflicting rejection with zero engine calls. Mocked auth/engine/sync; no live API or database.
+
+`git diff --check` exit 0. All tests use pre-import offline guard and config-free Vitest.
+
+**LIMITATIONS**: Historical numeric complexity strings stored in existing database rows not migrated; backward-compatible representation preserves legacy decimal strings but domain service text-based sorting retains numeric ambiguity. SHC client → HTTP → API → engine → persistence round-trip for subject/subtopic/skill routes not executed in this slice; only domain ingress and schema contracts verified. Other FND19 identity/delete/sync controls remain separate. Complete `apps/api-server` typecheck with clean .next rebuild interrupted at 180s timeout; targeted validation passed. Physical database constraints, cross-taxonomy consistency, and deployed route behavior NOT EXECUTED. FND19 status: IMPLEMENTED_UNVERIFIED; Sol review required.
+
 | Task | Disposition and remaining work |
 | --- | --- |
 | FND01 | PARTIAL: `W1_W3_Terra_Foundation_Register.md` records a source-backed initial slice; full crosswalk enumeration remains outstanding. |
@@ -51,7 +83,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter (shared+RTH), recovery acknowledgement slices committed; admission event delivery, AuthPage semantics documentation and broader form inventory remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | VERIFICATION_FAILED: absent gateway-secret configuration passes isolated proxy check; signed tenant claim control passes, resource identity authority remains open. |
-| FND19 | VERIFICATION_FAILED: SHC direct domain create accepts numeric name in isolated route fixture; named topic ingress and taxonomy delete slices remain IMPLEMENTED_UNVERIFIED. Historical numeric representation, canonical round-trip and other consumers remain open. |
+| FND19 | IMPLEMENTED_UNVERIFIED: SHC domain numeric-name ingress (b4135fbb) rejects before persistence; complete taxonomy schema contracts pass 27 validation cases; named topic complexity and delete failures previously corrected. Historical numeric complexity mapping, SHC client/API/schema/engine round-trip for other taxonomy routes, and physical database validation remain open. |
 | FND20 | VERIFICATION_FAILED: actual exam resolver/evaluator gives incorrect option partial credit on comma-containing correct text; question identity and bulk caller controls remain IMPLEMENTED_UNVERIFIED. Full HTTP/persistence and historical compatibility remain open. |
 | FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
 | FND22 | VERIFICATION_FAILED: backend artifact SHA-256 schema accepts 64 non-hex characters; actor/approval and historical contract compatibility remain open. |
