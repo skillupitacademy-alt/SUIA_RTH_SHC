@@ -1,0 +1,3 @@
+# FND05 AI tutor brand denial manifest
+
+Baseline 93b2916e, clean tree. Sol selected verified tenant plus local subject. Actual AI tutor route verifies user token but ignores verified brand; RTH assignment-auth independently rejects other brands. Bound correction to actual route's existing verifier: deny valid non-RTH or absent brand with 403 before rate/vector/progress; retain 401 for invalid/missing token and user subject, ordinary RTH paths unchanged. No new role/ownership/completion policy; no guessed ID mapping. Preserve unrelated seeded-answer failure and real JWT/store limitations. Update isolated fixtures only to reflect actual intended brand; guarded focused route and relevant regressions, no physical network/DB/browser.
