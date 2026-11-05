@@ -644,3 +644,10 @@ FND03 private progress migration draft `W1_W3_FND03_Private_Progress_Migration_D
 FND03 export provenance migration draft `W1_W3_FND03_Export_Provenance_Migration_Draft.md` maps current job/exam user ownership and proposed tenant-qualified producer/reader, cache/storage, quarantine and safe rollback requirements. Non-executable, no DB/Redis/storage/network operations. Both existing cross-tenant download failures remain VERIFICATION_FAILED; physical routing/provenance and full consumers require Sol disposition.
 
 FND23 event compatibility decision input expanded with actual project producer, three worker registrations, schema mismatches, transaction/publish ordering and staged migration/replay controls. Selected equality remains pending compatible rollout; retained probes remain red. No physical infrastructure.
+
+FND04 reverse-direction download fixture (manifest `W1_W3_FND04_Reverse_Export_Control_Manifest.md`, baseline 565b2b63): guarded actual route selection exited 1 (13 passed / 4 failed). Both RTH-token and SkillUp-token equal-local-ID jobId/examId denial expectations receive 200 and reach mocked storage/fetch. The fixture records contain no tenant field, so the two directions are hypothetical owner scenarios rather than proof of persisted tenant provenance or actual physical leakage. Existing two failures are preserved; no production change, DB/storage/network execution. Tenant-qualified provenance/migration remains required; VERIFICATION_FAILED.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/export/download/__tests__/batch-08-ownership.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
