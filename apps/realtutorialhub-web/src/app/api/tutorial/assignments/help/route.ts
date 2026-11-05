@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withObservability } from '@/middleware/observability.middleware';
-import { requireStudent } from '@/lib/assignment-auth';
+import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 import { assignmentHelpSchema, assignmentService } from '@/lib/assignment';
 
 export const dynamic = 'force-dynamic';
@@ -30,11 +30,14 @@ async function handler(req: NextRequest) {
       );
 
       return NextResponse.json({ data: request }, { status: 201 });
-    } catch (error) {
-      return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+    } catch {
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 401 });
+    if (error instanceof AssignmentAuthError) {
+      return NextResponse.json({ error: error.statusCode === 403 ? 'Forbidden' : 'Unauthorized' }, { status: error.statusCode });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 

@@ -3,7 +3,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 const f = vi.hoisted(() => ({ get: vi.fn(), create: vi.fn(), publish: vi.fn(), auth: vi.fn() }));
 vi.mock('@quiz/events', () => ({ publishEvent: f.publish }));
 vi.mock('@quiz/db-tutorial', () => ({ db: {}, AssignmentRepository: class { getAssignments = f.get; createHelpRequest = f.create; }, TutorialProgressRepository: class {} }));
-vi.mock('@/lib/assignment-auth', () => ({ requireStudent: f.auth }));
+vi.mock('@/lib/assignment-auth', () => ({ requireStudent: f.auth, AssignmentAuthError: class extends Error { constructor(message: string, public statusCode: number) { super(message); } } }));
 vi.mock('@/middleware/observability.middleware', () => ({ withObservability: (handler: unknown) => handler }));
 import { POST } from '../route';
 const valid = { subtopicId: '11111111-1111-4111-8111-111111111111', assignmentId: '22222222-2222-4222-8222-222222222222', question: 'Help' };
