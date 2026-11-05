@@ -124,6 +124,7 @@ export function BlockTelemetryProvider({
   // Current timing state (actively accumulating for current block)
   const timingStateRef = useRef<TimingState | null>(null);
   const transitionGenerationRef = useRef(0);
+  const transitionPendingRef = useRef<Promise<void>>(Promise.resolve());
   
   // Phase D-2: Production delivery queue
   const deliveryQueueRef = useRef<BlockTelemetryDeliveryQueue | null>(null);
@@ -422,11 +423,19 @@ export function BlockTelemetryProvider({
     if (currentState && nextSession && activeBlock &&
         currentState.blockId === activeBlock.blockId &&
         currentState.blockVersion === blockVersion &&
-        currentState.sessionId === nextSession) return;
+        currentState.sessionId === nextSession) {
+      void transitionPendingRef.current.then(async () => {
+        if (transitionGenerationRef.current === generation) {
+          await emitVisit(activeBlock.blockId, blockVersion, nextSession);
+        }
+      }).catch(error => console.error('[BlockTelemetry] Transition failed:', error));
+      return;
+    }
 
     // Snapshot synchronously at the cutover, before awaiting any network request.
     // Fractional time belongs to the old interval and is not transferred.
     const pending = currentState ? flushAllPending() : Promise.resolve();
+    transitionPendingRef.current = pending;
     timingStateRef.current = null;
     if (!nextSession || !activeBlock) return;
 

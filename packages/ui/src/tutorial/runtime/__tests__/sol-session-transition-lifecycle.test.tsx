@@ -180,4 +180,19 @@ describe('Sol session transition lifecycle', () => {
     ));
     expect(newBlockVisits).toHaveLength(0);
   });
+  it('keeps a replayed same-block visit behind the pending old interval', async () => {
+    let release!: (response: Response) => void;
+    const deferred = new Promise<Response>(resolve => { release = resolve; });
+    vi.mocked(fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' ? deferred : acknowledgedResponse());
+    const view = render(provider('session-a'));
+    await act(async () => {});
+    clock.mockReturnValue(5000);
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: { blockId: 'block-b', blockType: 'code', blockVersion: 'C1' } });
+    await act(async () => { view.rerender(provider('session-b')); });
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: { blockId: 'block-b', blockType: 'code', blockVersion: 'C1' } });
+    await act(async () => { view.rerender(provider('session-b')); });
+    expect(vi.mocked(fetch).mock.calls.filter(([url, init]) => url === '/api/tutorial/ils/block-visit' && JSON.parse(init!.body as string).blockId === 'block-b')).toHaveLength(0);
+    await act(async () => { release(acknowledgedResponse()); await deferred; });
+    expect(vi.mocked(fetch).mock.calls.filter(([url, init]) => url === '/api/tutorial/ils/block-visit' && JSON.parse(init!.body as string).blockId === 'block-b')).toHaveLength(1);
+  });
 });
