@@ -527,3 +527,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/__tests__/route-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND24 assignment help route-to-service composition (manifest `W1_W3_FND24_Assignment_Help_Composition_Manifest.md`, baseline b019e6cf): guarded actual route, schema and service with fixture auth, repository and publisher exited 0 (2 passed). Valid principal reaches write; malformed UUID stops before read and nonmember stops before write/publish (current route returns 500 for that service error). Real verifier, progress policy, DB, queue and browser NOT EXECUTED. No production change; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/__tests__/route-service-composition.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
