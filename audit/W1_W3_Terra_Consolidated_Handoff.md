@@ -559,3 +559,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND12 active consumer trace: SkillUp student layout links the corrected learn/exams pages. This source link establishes portal navigation, not real-browser or auth execution.
+
+FND05 catalog classification refinement: shared proxy lists program paths public but faculty protected, while program BFF enforces authentication; Sol must resolve field-level public contract and static generation. The conflicting source policies do not authorize fallback after a denial.
