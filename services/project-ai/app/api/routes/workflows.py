@@ -295,7 +295,7 @@ async def transition_workflow(
         workflow = await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=to_state,
-            triggered_by=request.triggered_by,
+            triggered_by=user["user_id"],
             evidence_id=request.evidence_id,
             reason=request.reason
         )
