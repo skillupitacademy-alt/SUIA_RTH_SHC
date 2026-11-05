@@ -184,9 +184,9 @@ describe('FND20 bulk question route validation', () => {
     });
 
     it('propagates skillIds array when provided', async () => {
-      const withSkills = { 
-        ...validPayload, 
-        skillIds: ['33333333-3333-4333-8333-333333333333'] 
+      const withSkills = {
+        ...validPayload,
+        skillIds: ['33333333-3333-4333-8333-333333333333']
       };
       await makeRequest(withSkills);
       expect(mockAdminQuestionEngine.bulkCreateQuestionsWithContext).toHaveBeenCalledWith(

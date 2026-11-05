@@ -1,7 +1,7 @@
 # FND21 Nested Schema Compatibility Constraint
 
-**Finding**: FND21 nested document schema accepts unknown child blocks  
-**Status**: VERIFICATION_FAILED (intentional - pending compatibility assessment)  
+**Finding**: FND21 nested document schema accepts unknown child blocks
+**Status**: VERIFICATION_FAILED (intentional - pending compatibility assessment)
 **Baseline commits**: 1d510f14 (nested schema), 6ae971b9 (authoring truth)
 
 ## Problem Statement
@@ -126,7 +126,7 @@ Both preview normalization and storage preparation use the same functions:
   1. Store exactly what author provided (sparse JSON)
   2. Fill missing fields with empty/null values
   3. Reject incomplete blocks (require validation before save)
-  
+
 **Current Risk**: `useTutorialBlockEditor.ts` calls `prepareBlockForStorage` which injects examples into persisted state.
 
 ## Compatible Schema Tightening Strategy (NOT IMPLEMENTED)
@@ -152,7 +152,7 @@ export const TutorialBlockSchemaLazy: TutorialBlockSchemaType = z.lazy(() => Tut
 
 **Change**: Keep z.any() for schema v1, introduce stricter nested validation for v2:
 ```typescript
-export const TutorialBlockSchemaLazy: TutorialBlockSchemaType = z.lazy(() => 
+export const TutorialBlockSchemaLazy: TutorialBlockSchemaType = z.lazy(() =>
   z.union([TutorialBlockSchema, z.any()]) // Lenient for backward compat
 );
 ```
@@ -177,7 +177,7 @@ Add validation at service layer for new documents only.
 function prepareDefinitionD1ForStorage(payload: unknown): DefinitionD1StorageContent {
   const raw = isRecord(payload) ? payload : {};
   const page = isRecord(raw.page) ? raw.page : raw;
-  
+
   return {
     page: {
       title: typeof page.title === 'string' ? page.title : undefined,
@@ -196,14 +196,14 @@ function prepareDefinitionD1ForStorage(payload: unknown): DefinitionD1StorageCon
 {
   type: 'definition',
   version: 'D1',
-  normalizePreview: (payload) => ({ 
+  normalizePreview: (payload) => ({
     content: normalizeDefinitionD1Payload(payload), // Keep example filling for preview
-    memoryModelWarning: '' 
+    memoryModelWarning: ''
   }),
-  prepareForStorage: (payload) => ({ 
+  prepareForStorage: (payload) => ({
     content: prepareDefinitionD1ForStorage(payload), // NEW: no example injection
-    payloadFormat: 'legacy', 
-    memoryModelWarning: '' 
+    payloadFormat: 'legacy',
+    memoryModelWarning: ''
   }),
 }
 ```

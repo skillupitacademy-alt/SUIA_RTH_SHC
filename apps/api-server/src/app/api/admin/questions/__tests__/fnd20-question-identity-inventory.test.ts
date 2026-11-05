@@ -89,7 +89,7 @@ describe('FND20 question identity inventory', () => {
       ] };
       const correct = engine.resolveCorrectAnswerForScoring(question);
       const incorrectAnswerText = engine.resolveAnswerForScoring(question, '2');
-      
+
       // VERIFICATION_FAILED: parseAnswer splits on comma, so 'red, blue' becomes ['red', 'blue']
       // and incorrectly matches 'red' from option 2, giving partial credit
       const score = evaluator.evaluate(correct, incorrectAnswerText);

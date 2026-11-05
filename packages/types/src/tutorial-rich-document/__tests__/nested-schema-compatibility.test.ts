@@ -1,12 +1,12 @@
 /**
  * FND21 Nested Schema Compatibility Test
- * 
+ *
  * Tests nested document schema validation with focus on compatibility.
  * Baseline: 1d510f14 - nested unknown child test VERIFICATION_FAILED
- * 
+ *
  * PROBLEM: TutorialBlockSchemaLazy resolves to z.any(), accepting any nested content
  * including unknown block types that should be rejected.
- * 
+ *
  * This test documents current behavior and expected behavior for compatible
  * schema tightening without breaking historical documents.
  */

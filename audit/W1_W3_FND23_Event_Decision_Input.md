@@ -1,8 +1,8 @@
 # FND23 Event Type Registration and HTTP Analytics — Decision Input for Sol
 
-**Status**: VERIFICATION_FAILED (4 tests remain failing as required)  
-**Prepared**: 2025-01-19  
-**Branch**: `remediation/w1-2-batch-05-targeted`  
+**Status**: VERIFICATION_FAILED (4 tests remain failing as required)
+**Prepared**: 2025-01-19
+**Branch**: `remediation/w1-2-batch-05-targeted`
 **Authority**: `audit/FinalAechitecture.md`, `audit/W1_W3_Terra_Consolidated_Handoff.md`, `Claude_Sonnet45_W1_W3_Detailed_Implementation_Handover_a239ca39.md`
 
 ## Executive Summary
@@ -120,18 +120,18 @@ const handler = createQStashHandler(
   effect,
   {
     receiver: { verify: async () => true },
-    schema: z.object({ 
+    schema: z.object({
       type: z.literal('project.approved'),  // Custom schema with different type
-      correlationId: z.string(), 
-      id: z.string() 
+      correlationId: z.string(),
+      id: z.string()
     })
   }
 );
 
-const request = { 
+const request = {
   type: 'project.approved',  // Mismatched type
-  correlationId: 'fixture', 
-  id: 'fixture' 
+  correlationId: 'fixture',
+  id: 'fixture'
 };
 
 // CURRENT: Handler accepts and processes (HTTP 200, effect called once)
@@ -152,8 +152,8 @@ const effect = vi.fn()
   .mockRejectedValueOnce(new Error('failed'))  // First attempt fails
   .mockResolvedValueOnce(undefined);           // Second attempt succeeds
 
-const handler = createQStashHandler(type, effect, { 
-  idempotencyStore: store() 
+const handler = createQStashHandler(type, effect, {
+  idempotencyStore: store()
 });
 
 await expect(handler(request())).rejects.toThrow('failed');  // First attempt
@@ -253,10 +253,10 @@ export function createQStashHandler<TType extends PlatformEventType>(
 ) {
   return async (request: Request): Promise<Response> => {
     // ... signature verification ...
-    
+
     const parsed = (options.schema ?? PlatformEventEnvelopeSchemas[type])
       .parse(JSON.parse(body)) as EventEnvelope<TType, unknown>;
-    
+
     // NEW: Validate parsed type matches registration
     if (parsed.type !== type) {
       return new Response(
@@ -264,13 +264,13 @@ export function createQStashHandler<TType extends PlatformEventType>(
         { status: 400 }
       );
     }
-    
+
     // ... continue with idempotency and handler ...
   };
 }
 ```
 
-**Compatibility**: 
+**Compatibility**:
 - ✓ Existing correct handlers unaffected (type already matches)
 - ✓ Rejects malicious/misconfigured custom schemas
 - ✓ No data migration required
@@ -287,9 +287,9 @@ export function createQStashHandler<TType extends PlatformEventType>(
 export function createQStashHandler<TType extends PlatformEventType>(...) {
   return async (request: Request): Promise<Response> => {
     // ... signature, parse, type validation ...
-    
+
     const idempotencyKey = `${options.keyPrefix ?? 'event'}:${parsed.id}`;  // Changed from correlationId
-    
+
     if (options.idempotencyStore !== undefined) {
       const alreadyProcessed = await options.idempotencyStore.get(idempotencyKey);
       if (alreadyProcessed !== null && alreadyProcessed !== undefined) {
@@ -297,17 +297,17 @@ export function createQStashHandler<TType extends PlatformEventType>(...) {
         return new Response('Duplicate event ignored', { status: 200 });
       }
     }
-    
+
     // NEW: Invoke handler BEFORE storing marker
     const response = await handler(parsed);
-    
+
     // NEW: Store marker only after successful execution
     if (options.idempotencyStore !== undefined) {
       await options.idempotencyStore.set(idempotencyKey, 'processed', {
         ex: options.idempotencyTtlSeconds ?? 86_400,
       });
     }
-    
+
     if (response instanceof Response) return response;
     return new Response('OK', { status: 200 });
   };
@@ -328,30 +328,30 @@ const idempotencyKey = `${options.keyPrefix ?? 'event'}:${parsed.id}`;
 
 if (options.idempotencyStore !== undefined) {
   const status = await options.idempotencyStore.get(idempotencyKey);
-  
+
   if (status === 'processed') {
     return new Response('Already processed', { status: 200 });
   }
-  
+
   if (status === 'processing') {
     // Concurrent delivery or retry during execution
     return new Response('Processing in progress', { status: 202 });
   }
-  
+
   // Claim event for processing
   await options.idempotencyStore.set(idempotencyKey, 'processing', { ex: 300 });  // 5 min claim
 }
 
 try {
   const response = await handler(parsed);
-  
+
   // Mark as successfully processed
   if (options.idempotencyStore !== undefined) {
     await options.idempotencyStore.set(idempotencyKey, 'processed', {
       ex: options.idempotencyTtlSeconds ?? 86_400,
     });
   }
-  
+
   return response instanceof Response ? response : new Response('OK', { status: 200 });
 } catch (error) {
   // Release claim on failure (allow retry)
@@ -369,7 +369,7 @@ try {
 - ⚠️ Requires `del` method in `ConsumerRedisLike` interface (breaking change to interface)
 - ⚠️ Existing markers (simple string) incompatible with status values
 
-**Decision required**: 
+**Decision required**:
 1. Approve Proposal A (simple, race condition acceptable) or Proposal B (complex, race-safe)?
 2. If Proposal B: approve `del` interface addition and migration strategy for existing markers?
 3. Accept potential race window (seconds) or require distributed lock?
@@ -389,7 +389,7 @@ const idempotencyKey = `${options.keyPrefix ?? 'event'}:${parsed.correlationId}`
 const idempotencyKey = `${options.keyPrefix ?? 'event'}:${parsed.id}`;
 ```
 
-**Rationale**: 
+**Rationale**:
 - `id` is globally unique per event (UUID from publisher)
 - `correlationId` groups related events in same transaction/workflow
 - Idempotency should prevent duplicate **deliveries of same event**, not related events
@@ -447,7 +447,7 @@ return `${event.context.brandId}:${contentHash}`;
 
 Easier debugging, same behavior.
 
-**Decision required**: 
+**Decision required**:
 1. Approve brand inclusion in dedupe key?
 2. Prefer hash-included or prefix approach?
 3. Accept one-time reprocessing during 60-second window?
@@ -485,7 +485,7 @@ interface EventEnvelope<TType, TPayload> {
   occurredAt: string;
   version: number;
   data: TPayload;
-  
+
   // NEW: Ownership and identity
   tenant: {
     tenantId: string;      // Verified tenant (e.g., 'realtutorialhub', 'skillupitacademy')
@@ -548,7 +548,7 @@ interface EventEnvelope<TType, TPayload> {
 - ✓ Prevents duplicate during concurrent delivery
 - ✓ Automatic recovery after claim timeout
 
-**Decision required**: 
+**Decision required**:
 1. Acceptable claim timeout duration? (5 min, 10 min, handler-specific?)
 2. QStash retry schedule compatible with claim timeout?
 3. Monitoring/alerting for expired claims (potential stuck handlers)?
@@ -563,26 +563,26 @@ interface EventEnvelope<TType, TPayload> {
 ```typescript
 if (options.idempotencyStore !== undefined) {
   const existing = await options.idempotencyStore.get(idempotencyKey);
-  
+
   if (existing !== null) {
     // If integrity hash present, verify immutability
     if (parsed.integrity?.payloadHash) {
       const currentHash = createHash('sha256')
         .update(JSON.stringify(parsed.data))
         .digest('hex');
-      
+
       if (currentHash !== parsed.integrity.payloadHash) {
         // Payload mutation detected
         return new Response('Payload integrity violation', { status: 400 });
       }
     }
-    
+
     return new Response('Duplicate event ignored', { status: 200 });
   }
 }
 ```
 
-**Decision required**: 
+**Decision required**:
 1. Require immutability verification for all events?
 2. Reject mutated duplicates or log and accept?
 3. Store original payload hash in Redis for comparison?
@@ -720,7 +720,7 @@ git diff --check
 
 After Sol decision, update `audit/W1_W3_Terra_Consolidated_Handoff.md` FND23 row:
 
-**Current**: 
+**Current**:
 ```
 | FND23 | VERIFICATION_FAILED: event registered-type and retry probes remain red; analytics HTTP failure correction and tracker fixture pass pending review; durable delivery and event authority remain open. |
 ```

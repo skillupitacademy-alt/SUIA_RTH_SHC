@@ -30,7 +30,7 @@ export function clampString(input: string, maxLength: number = MAX_STRING_LENGTH
  */
 export function validateJsonDepth(obj: unknown, maxDepth: number = MAX_JSON_DEPTH, currentDepth: number = 0): boolean {
     if (currentDepth > maxDepth) return false;
-    
+
     if (obj !== null && typeof obj === 'object') {
         if (Array.isArray(obj)) {
             return obj.every(item => validateJsonDepth(item, maxDepth, currentDepth + 1));
@@ -38,7 +38,7 @@ export function validateJsonDepth(obj: unknown, maxDepth: number = MAX_JSON_DEPT
             return Object.values(obj).every(value => validateJsonDepth(value, maxDepth, currentDepth + 1));
         }
     }
-    
+
     return true;
 }
 

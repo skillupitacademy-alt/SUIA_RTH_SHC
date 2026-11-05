@@ -1,13 +1,13 @@
 /**
  * FND21 Storage Preparation Truth Control
- * 
+ *
  * Tests that prepareBlockForStorage does not fill incomplete author content
  * with example lesson claims. Baseline: 6ae971b9 - D1/I1 authoring truth VERIFICATION_FAILED
- * 
+ *
  * PROBLEM: normalizeDefinitionD1Payload and normalizeIntroductionI1Payload fill
  * missing fields with example content (definitionD1Example, introductionI1Example),
  * causing unrelated lesson titles to acquire example educational claims in persisted storage.
- * 
+ *
  * REQUIREMENT: Separate preview/sample defaults (for UI rendering) from persisted
  * authored content. Real saved lessons must not contain demo text.
  */
@@ -32,11 +32,11 @@ describe('FND21 Storage Preparation Truth', () => {
 
       // KNOWN FAILURE: currently fills missing fields with example content
       // DO NOT FIX without separating preview vs storage normalization
-      
+
       // Must not contain example definition text about arrays
       expect(JSON.stringify(content)).not.toContain('collection of items');
       expect(JSON.stringify(content)).not.toContain('ordered sequence');
-      
+
       // Must not contain example explanation points
       expect(JSON.stringify(content)).not.toContain('Arrays provide');
       expect(JSON.stringify(content)).not.toContain('efficiently');
@@ -66,10 +66,10 @@ describe('FND21 Storage Preparation Truth', () => {
 
       // KNOWN FAILURE: missing fields get filled with example content
       // Should either: (a) leave fields missing, or (b) use empty defaults, NOT example content
-      
+
       // Must not inject example explanation about arrays
       expect(content.page?.explanation).not.toContain('Arrays provide');
-      
+
       // Must not inject example code
       if (content.page?.example) {
         expect(content.page.example.code).not.toContain('const numbers');
@@ -125,11 +125,11 @@ describe('FND21 Storage Preparation Truth', () => {
       expect(content.page?.subtitle).toBe('Web framework fundamentals');
 
       // KNOWN FAILURE: currently fills missing fields with example content
-      
+
       // Must not contain example learning goal about arrays
       expect(JSON.stringify(content)).not.toContain('Master arrays');
       expect(JSON.stringify(content)).not.toContain('fundamental data structure');
-      
+
       // Must not contain example topic description
       expect(JSON.stringify(content)).not.toContain('ordered collection');
       expect(JSON.stringify(content)).not.toContain('dynamic resizing');
@@ -159,15 +159,15 @@ describe('FND21 Storage Preparation Truth', () => {
       expect(content.page?.learningGoal).toBe('Learn to design and implement RESTful APIs.');
 
       // KNOWN FAILURE: missing fields get filled with example content
-      
+
       // Must not inject example motto about arrays
       if (content.page?.motto?.lines) {
         expect(content.page.motto.lines.join(' ')).not.toContain('Master Arrays');
       }
-      
+
       // Must not inject example topic description
       expect(JSON.stringify(content.page?.topic || {})).not.toContain('ordered collection');
-      
+
       // Must not inject example code
       if (content.page?.solution?.code) {
         expect(content.page.solution.code.code).not.toContain('const numbers');
@@ -215,8 +215,8 @@ describe('FND21 Storage Preparation Truth', () => {
 
     it('returns correct payload format for code C1', () => {
       const payload = {
-        page: { 
-          type: 'CODE + EXPLANATION', 
+        page: {
+          type: 'CODE + EXPLANATION',
           title: 'Example',
           introduction: 'Test code block'
         },
@@ -231,10 +231,10 @@ describe('FND21 Storage Preparation Truth', () => {
     it('documents that preview normalization currently fills defaults', () => {
       // This test documents current behavior: preview normalization SHOULD fill
       // defaults for UI rendering, but storage preparation should NOT.
-      // 
+      //
       // Current issue: both use the same normalizer functions
       // (normalizeDefinitionD1Payload, normalizeIntroductionI1Payload)
-      // 
+      //
       // Required fix: separate normalizePreview from prepareForStorage logic
       expect(true).toBe(true); // Documentation test
     });
