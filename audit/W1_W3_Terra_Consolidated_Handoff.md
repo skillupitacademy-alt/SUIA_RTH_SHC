@@ -50,10 +50,10 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM truth slices committed; other governance consumers and authority remain. |
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter and recovery acknowledgement slices committed; other form/action inventory and controls remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
-| FND18 | NOT COMPLETE: identity contract work depends on W1 authority decisions. |
+| FND18 | PARTIAL / IMPLEMENTED_UNVERIFIED: signed tenant claim control passes; resource identity contracts depend on W1 authority decisions. |
 | FND19 | PARTIAL / IMPLEMENTED_UNVERIFIED: named topic ingress and taxonomy delete controls implemented; historical numeric representation, canonical round-trip and other consumers remain open. |
 | FND20 | PARTIAL / IMPLEMENTED_UNVERIFIED: question identity and bulk caller/schema controls implemented; full HTTP/persistence round-trip and historical compatibility remain open. |
-| FND21 | NOT COMPLETE: tutorial contract consolidation depends on W1 owner authority and reviewed membership. |
+| FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
 | FND23 | VERIFICATION_FAILED: event registered-type and retry probes remain red; analytics HTTP failure correction and tracker fixture pass pending review; durable delivery and event authority remain open. |
 | FND24 | NOT COMPLETE: domain-specific caller controls depend on FND18–FND23. |
