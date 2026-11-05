@@ -16,7 +16,7 @@ export class InternalAnalyticsProvider implements AnalyticsProvider {
       return;
     }
 
-    await fetch(this.config.brand.internalCollectionEndpoint, {
+    const response = await fetch(this.config.brand.internalCollectionEndpoint, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -26,5 +26,8 @@ export class InternalAnalyticsProvider implements AnalyticsProvider {
       keepalive: true,
       signal: AbortSignal.timeout(this.config.requestTimeoutMs),
     });
+    if (!response.ok) {
+      throw new Error(`Internal analytics request failed (${response.status})`);
+    }
   }
 }
