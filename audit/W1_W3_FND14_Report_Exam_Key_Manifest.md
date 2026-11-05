@@ -1,0 +1,3 @@
+# FND14 exam report identity lifecycle correction manifest
+
+Baseline 722d4b13. Current Sol checkpoint explicitly authorizes examId-keyed report state/loading/retry and requires old exam hidden during pending/missing/failed switch with stale responses cancelled. Scope only `src/share-branding/ExamSummaryReport.tsx` and its existing isolated controls. Use keyed inner report instance per exam ID to reset result/error/loading/retry atomically and preserve cleanup; retain aggregate and unknown-value behavior. Run Sol boundary and affected report regressions with offline guard, real child components and intercepted fetch; no real browser/API/DB.
