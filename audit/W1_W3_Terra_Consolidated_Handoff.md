@@ -449,3 +449,10 @@ Exact repository-root test:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillup-web/src/app/student/exams/__tests__/listing-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND13 SkillUp learning workspace truth (manifest `W1_W3_FND13_SkillUp_Learn_Truth_Manifest.md`, baseline 4c78cafd): active `/student/learn` used literal React/Next/API modules as the current path and asserted notes/recordings/support availability without a data source. Replaced the fabricated presentation with unavailable and kept batch-details navigation. Guarded combined learning and exam mounted tests exited 0 (2 files / 2 passed), mocked Link; no real curriculum, browser, API or DB. From `apps/skillup-web`, `pnpm exec tsc --noEmit` and `ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint 'src/app/student/learn/page.tsx'` exited 0, no warnings. No educational service or content added; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root test:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillup-web/src/app/student/learn/__tests__/learning-truth.test.tsx','apps/skillup-web/src/app/student/exams/__tests__/listing-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
