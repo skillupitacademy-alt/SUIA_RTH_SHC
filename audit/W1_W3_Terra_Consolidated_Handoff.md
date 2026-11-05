@@ -581,3 +581,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND18 gateway probe qualification and additional control: the synthetic `/api/private-fixture` is outside explicit `PROTECTED_PREFIXES`. With missing configured gateway secret, the actual proxy also forwards this synthetic path without a user token. The guarded rerun exited 1 (1 passed / 2 failed); this supersedes the earlier blanket statement that separate user authentication always applies. Protected prefixes do enforce authentication, but no real handler was identified or executed for the synthetic path; deployment configuration, real route-level authentication and exploitability remain unverified. Exact command matches the preceding gateway probe. No production change.
+
+FND18 real-route sample: faculty independently enforces auth/brand, retired content-manager returns 410; no unprotected live handler established by the synthetic proxy probe. Broader route inventory remains open.
