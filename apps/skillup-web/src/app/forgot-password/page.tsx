@@ -29,19 +29,14 @@ export default function ForgotPasswordPage() {
         }),
       });
 
-      if (response.ok || response.status === 404) {
+      if (response.ok) {
         setSubmitted(true);
         return;
       }
 
-      const payload = (await response.json()) as {
-        error?: { message?: string };
-        message?: string;
-      };
-
-      throw new Error(payload.error?.message ?? payload.message ?? 'Unable to send reset email.');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to send reset email.');
+      throw new Error('Unable to confirm the request. Please try again.');
+    } catch {
+      setError('Unable to confirm the request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,8 +84,7 @@ export default function ForgotPasswordPage() {
                         Check your email
                       </h2>
                       <p className="mt-2 text-sm leading-7 text-slate-600">
-                        If an account exists for <span className="font-semibold text-slate-800">{email}</span>,
-                        we sent password reset instructions.
+                        Request received. If eligible, check your email for reset instructions; delivery is not confirmed.
                       </p>
                     </div>
 
