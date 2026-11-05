@@ -479,3 +479,5 @@ Exact test from repository root:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/batch-truth.test.ts','apps/skillup-web/src/lib/__tests__/dashboard-truth.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND13 next-session scope limitation: dashboard upcoming count still counts scheduled status without a time check; batch schedule remains descending history. Their intended semantics remain open and were not fixed by the next-session slice.
