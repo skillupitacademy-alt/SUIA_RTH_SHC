@@ -422,3 +422,10 @@ Exact command from repository root:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/marketing-site/src/lib/analytics/__tests__/tracker-provider-http.test.ts'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND18 signed-claim control (manifest `W1_W3_FND18_Signed_Tenant_Claims_Manifest.md`, baseline 921256f4): guarded actual TokenService signing and verification exited 0 (1 passed). Equal local ID/email under SkillUp and RTH retained distinct brand and shadow claims; wrong audience denied. Disposable keys; no API/gateway, resource ownership, projection store or physical browser execution. This is claim preservation only, not proof of tenant access isolation or selected authority. IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/auth/src/__tests__/signed-tenant-claims.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
