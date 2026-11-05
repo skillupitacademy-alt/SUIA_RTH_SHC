@@ -4,10 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles,
-  CheckCircle2,
   ArrowRight,
   Check,
-  XCircle,
 } from 'lucide-react';
 import { BLOCK_CORPUS_REGISTRY } from '@/lib/project-llm';
 import type { BlockFamilyReference } from '@quiz/types';
@@ -62,17 +60,7 @@ export default function MixAndMatchBuilderPage() {
     );
   };
 
-  const compatibilityChecks = [
-    { label: 'Same Family Invariant', valid: true, note: `All sources belong to ${currentFamily.familyName} (${currentFamily.familyId})` },
-    { label: 'Semantic Compatibility', valid: selectedComponents.length >= 2, note: 'Components form a cohesive pedagogical flow' },
-    { label: 'Contract Compatibility', valid: true, note: 'UBRC attributes and property signatures align' },
-    { label: 'Renderer Compatibility', valid: true, note: 'Renders through canonical TutorialBlockRenderer' },
-    { label: 'Responsive Model', valid: true, note: 'Adaptive 1-to-3 column responsive breakpoints' },
-    { label: 'Accessibility (WCAG AA)', valid: true, note: 'Semantic headings, landmark roles, and ARIA labels' },
-    { label: 'Brand Independence', valid: true, note: 'Zero hardcoded colors or brand-specific text' },
-  ];
-
-  const allChecksValid = compatibilityChecks.every((c) => c.valid);
+  const hasMinimumSelection = selectedComponents.length >= 2;
 
   const handleGenerateSpec = () => {
     router.push(
@@ -234,49 +222,26 @@ export default function MixAndMatchBuilderPage() {
           <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl space-y-5">
             <div>
               <h3 className="text-base font-bold text-slate-900 font-outfit">
-                Compatibility & Invariant Verification
+                Compatibility evidence unavailable
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Real-time validation against Project LLM architectural guardrails.
+                These selections are a local draft. Contract, renderer, accessibility and other compatibility checks have not been verified here.
               </p>
-            </div>
-
-            <div className="space-y-2.5">
-              {compatibilityChecks.map((check) => (
-                <div
-                  key={check.label}
-                  className="rounded-xl border border-slate-100 bg-slate-50/70 p-3 flex items-start gap-2.5"
-                >
-                  <div className="mt-0.5 shrink-0">
-                    {check.valid ? (
-                      <CheckCircle2 size={16} className="text-emerald-500" />
-                    ) : (
-                      <XCircle size={16} className="text-rose-500" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 font-outfit leading-tight">
-                      {check.label}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{check.note}</p>
-                  </div>
-                </div>
-              ))}
             </div>
 
             <div className="pt-3 border-t border-slate-100">
               <button
                 type="button"
-                disabled={!allChecksValid}
+                disabled={!hasMinimumSelection}
                 onClick={handleGenerateSpec}
                 className={`w-full py-3 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all ${
-                  allChecksValid
+                  hasMinimumSelection
                     ? 'bg-gradient-to-r from-pink-500 to-orange-500 shadow-pink-500/25 hover:scale-[1.02] active:scale-95'
                     : 'bg-slate-300 cursor-not-allowed'
                 }`}
               >
                 <Sparkles size={15} />
-                <span>Generate Derived Specification for {targetVersionId}</span>
+                <span>Open specification review for {targetVersionId}</span>
                 <ArrowRight size={14} />
               </button>
             </div>
