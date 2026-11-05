@@ -20,3 +20,10 @@ it('does not treat absent gateway configuration as valid', async () => {
   const proxy = await proxyWithSecret('');
   expect((await proxy(request())).status).toBe(403);
 });
+
+it('does not forward an unauthenticated nonpublic API when gateway secret is unconfigured', async () => {
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
+  const proxy = await proxyWithSecret('');
+  const response = await proxy(new NextRequest('https://user.skillupitacademy.com/api/private-fixture', { headers: { host: 'user.skillupitacademy.com' } }));
+  expect(response.status).toBe(403);
+});
