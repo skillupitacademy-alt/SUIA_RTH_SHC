@@ -33,6 +33,8 @@ describe.each([getSkillupBatches, getSkillupMyBatch])('batch data truth', (load)
       ]];
       const result = await load('learner');
       expect(result.batch).toMatchObject({ faculty: 'Stored faculty', nextSession: '2026-01-03T00:00:00.000Z' });
+      expect(result.batch!.schedule).toHaveLength(2);
+      expect(result.sessions).toHaveLength(3);
     } finally { vi.useRealTimers(); }
   });
   it('propagates storage failure', async () => {

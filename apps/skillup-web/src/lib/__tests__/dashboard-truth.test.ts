@@ -24,8 +24,9 @@ describe('dashboard source truth', () => {
 });
 
 it('does not publish an attendance percentage without a defined current-batch calculation', async () => {
-  state.results = [[{ id: 'learner', name: 'Learner', email: 'fixture@example.invalid' }], [{ batchId: 'batch', batchName: 'Batch' }], [{ id: 'current-session', scheduledAt: new Date(), status: 'scheduled' }], [], []];
+  state.results = [[{ id: 'learner', name: 'Learner', email: 'fixture@example.invalid' }], [{ batchId: 'batch', batchName: 'Batch' }], [{ id: 'current-session', scheduledAt: new Date(Date.now() + 60000), status: 'scheduled' }, { id: 'past', scheduledAt: new Date(Date.now() - 60000), status: 'scheduled' }, { id: 'done', scheduledAt: new Date(Date.now() + 120000), status: 'completed' }], [], []];
   const result = await getSkillupStudentDashboard('learner');
   expect(result.summary.attendancePercent).toBeNull();
-  expect(result.sessions).toHaveLength(1);
+  expect(result.summary.upcomingSessions).toBe(1);
+  expect(result.sessions.map((session) => session.id)).toEqual(['current-session']);
 });

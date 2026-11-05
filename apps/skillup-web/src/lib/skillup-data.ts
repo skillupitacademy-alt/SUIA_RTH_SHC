@@ -164,11 +164,11 @@ export async function getSkillupPrograms() {
   };
 }
 
-function findNextScheduledSession<T extends { status: string; scheduledAt: Date | string }>(sessions: T[]): T | undefined {
+function upcomingScheduledSessions<T extends { status: string; scheduledAt: Date | string }>(sessions: T[]): T[] {
   const now = Date.now();
   return sessions
     .filter((session) => session.status === 'scheduled' && new Date(session.scheduledAt).getTime() >= now)
-    .reduce<T | undefined>((nearest, session) => nearest === undefined || new Date(session.scheduledAt).getTime() < new Date(nearest.scheduledAt).getTime() ? session : nearest, undefined);
+    .sort((left, right) => new Date(left.scheduledAt).getTime() - new Date(right.scheduledAt).getTime());
 }
 
 export async function getSkillupStudentDashboard(userId: string) {
@@ -194,7 +194,8 @@ export async function getSkillupStudentDashboard(userId: string) {
       .filter((item) => item.status !== 'paid')
       .reduce((sum, item) => sum + item.amount, 0);
 
-    const nextSession = findNextScheduledSession(sessions);
+    const upcomingSessions = upcomingScheduledSessions(sessions);
+    const nextSession = upcomingSessions[0];
 
     const attendancePercent = null;
     const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
@@ -210,7 +211,7 @@ export async function getSkillupStudentDashboard(userId: string) {
         paymentDue,
         outstandingInstallments: installments.filter((item) => item.status !== 'paid').length,
         nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
-        upcomingSessions: sessions.filter((session) => session.status === 'scheduled').length,
+        upcomingSessions: upcomingSessions.length,
         placementMatches: (
           await placementDb
             .select({ id: placementJobListings.id })
@@ -218,7 +219,7 @@ export async function getSkillupStudentDashboard(userId: string) {
             .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
         ).length,
       },
-      sessions: sessions.map((session) => ({
+      sessions: upcomingSessions.map((session) => ({
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
@@ -235,9 +236,10 @@ export async function getSkillupMyBatch(userId: string) {
       return { batch: null, sessions: [] };
     }
 
-    const nextSession = findNextScheduledSession(batchContext.sessions);
+    const upcomingSessions = upcomingScheduledSessions(batchContext.sessions);
+    const nextSession = upcomingSessions[0];
     const currentTopic = 'Unavailable';
-    const schedule = batchContext.sessions.slice(0, 3).map((session) => ({
+    const schedule = upcomingSessions.slice(0, 3).map((session) => ({
       day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
       time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
       topic: session.title ?? 'SkillUp session',
@@ -428,7 +430,8 @@ export async function getSkillupBatches(userId: string) {
       return { batch: null, sessions: [] };
     }
 
-    const nextSession = findNextScheduledSession(batchContext.sessions);
+    const upcomingSessions = upcomingScheduledSessions(batchContext.sessions);
+    const nextSession = upcomingSessions[0];
     const materials: string[] = [];
 
     return {
@@ -438,7 +441,7 @@ export async function getSkillupBatches(userId: string) {
         currentTopic: 'Unavailable',
         nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
-        schedule: batchContext.sessions.slice(0, 3).map((session) => ({
+        schedule: upcomingSessions.slice(0, 3).map((session) => ({
           day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
           time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
           topic: session.title ?? 'SkillUp session',

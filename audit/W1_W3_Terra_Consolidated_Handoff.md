@@ -481,3 +481,7 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND13 next-session scope limitation: dashboard upcoming count still counts scheduled status without a time check; batch schedule remains descending history. Their intended semantics remain open and were not fixed by the next-session slice.
+
+FND13 upcoming session display follow-up (manifest `W1_W3_FND13_Upcoming_Session_Manifest.md`, baseline 46853be4): dashboard's upcoming count/list and both batch schedules now select future scheduled rows in ascending time, using the same criterion as the prior next-session fix. Batch `sessions` history remains unchanged. Guarded actual-helper forked selection exited 0 (2 files / 10 tests passed), including past/completed/future fixture and preserved history. `pnpm exec tsc --noEmit` and `ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint 'src/lib/skillup-data.ts' 'src/app/student/page.tsx'` from `apps/skillup-web` exited 0 without warnings; this also resolves the prior interrupted lint limitation for these production files. Physical DB/browser NOT EXECUTED; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact test command is the FND13 next-session forked command recorded immediately above; same two files and guard.
