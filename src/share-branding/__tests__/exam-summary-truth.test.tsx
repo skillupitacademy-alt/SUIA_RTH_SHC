@@ -34,3 +34,25 @@ it('does not treat a missing score as a measured zero', async () => {
   render(<ExamSummaryReport brand={brand} examId="exam" />);
   expect(await screen.findByText('Result data unavailable')).toBeTruthy();
 });
+
+it('uses aggregate values and marks partial question details unavailable', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ status: 'completed', score: 2, total: 4, percentage: 50, statusLabel: null, questions: [{ id: '1', userAnswer: 'A', isCorrect: true }] })));
+  render(<ExamSummaryReport brand={brand} examId="exam" />);
+  expect(await screen.findByText('Question details unavailable')).toBeTruthy();
+  expect(screen.getAllByText('2').length).toBeGreaterThan(0);
+  expect(screen.getByText('/ 4')).toBeTruthy();
+  expect(screen.queryByText('RETRY')).toBeNull();
+});
+it('does not report a measured incorrect count for unevaluated answers', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ status: 'completed', score: 0, total: 1, percentage: 0, questions: [{ id: '1', userAnswer: 'A', isCorrect: null }] })));
+  render(<ExamSummaryReport brand={brand} examId="exam" />);
+  expect(await screen.findByText('Incorrect: Unavailable')).toBeTruthy();
+  expect(screen.getByText('Skipped: 0')).toBeTruthy();
+});
+it('derives incorrect and skipped counts only from complete known answers', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ status: 'completed', score: 0, total: 2, percentage: 0, statusLabel: 'failed', questions: [{ id: '1', userAnswer: 'A', isCorrect: false }, { id: '2', userAnswer: null, isCorrect: null }] })));
+  render(<ExamSummaryReport brand={brand} examId="exam" />);
+  expect(await screen.findByText('Incorrect: 1')).toBeTruthy();
+  expect(screen.getByText('Skipped: 1')).toBeTruthy();
+  expect(screen.getAllByText('RETRY').length).toBeGreaterThan(0);
+});

@@ -108,24 +108,24 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
     return <div className="min-h-screen flex items-center justify-center">Result data unavailable</div>;
   }
 
-  // 1. Metric Calculations
+  // Aggregate score and total come from the report, not a potentially partial detail array.
   const allQuestions = result.questions ?? [];
-  const totalQuestions = allQuestions.length > 0 ? allQuestions.length : result.total;
-  
+  const totalQuestions = result.total;
+  const correctCount = result.score;
+  const hasCompleteQuestions = Array.isArray(result.questions) && allQuestions.length === totalQuestions;
+  const answerIsKnown = (question: typeof allQuestions[number]) =>
+    question.userAnswer === null || typeof question.userAnswer === 'string';
   const answeredQuestions = allQuestions.filter(
-    (q) => q.userAnswer !== null && q.userAnswer !== undefined && q.userAnswer !== ''
+    (question) => typeof question.userAnswer === 'string' && question.userAnswer !== ''
   );
-  
-  const correctCount = allQuestions.length > 0 ? answeredQuestions.filter((q) => q.isCorrect === true).length : result.score;
-  const hasQuestionDetails = Array.isArray(result.questions);
-  const incorrectCount = answeredQuestions.filter((q) => q.isCorrect === false).length;
-  const skippedCount = Math.max(0, totalQuestions - answeredQuestions.length);
-
-  const percentage = result.percentage !== undefined && result.percentage !== null
-    ? result.percentage
-    : totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
-
-  const isPassed = result.statusLabel === undefined ? null : result.statusLabel === 'passed';
+  const allAnswersKnown = hasCompleteQuestions && allQuestions.every(answerIsKnown);
+  const allCorrectnessKnown = allAnswersKnown && answeredQuestions.every(
+    (question) => typeof question.isCorrect === 'boolean'
+  );
+  const incorrectCount = allCorrectnessKnown ? answeredQuestions.filter((question) => question.isCorrect === false).length : null;
+  const skippedCount = allAnswersKnown ? totalQuestions - answeredQuestions.length : null;
+  const percentage = result.percentage;
+  const isPassed = result.statusLabel === 'passed' ? true : result.statusLabel === 'failed' ? false : null;
   const percentile = result.percentile ?? null;
 
   // 2. Difficulty & Concept Metrics
@@ -183,8 +183,8 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <OverallPerformanceCard
             correctCount={correctCount}
-            incorrectCount={hasQuestionDetails ? incorrectCount : null}
-            skippedCount={hasQuestionDetails ? skippedCount : null}
+            incorrectCount={incorrectCount}
+            skippedCount={skippedCount}
             totalQuestions={totalQuestions}
             percentage={percentage}
             isPassed={isPassed}
@@ -195,10 +195,10 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
             {difficultyData.map((metric, index) => <p key={metric.id ?? index}>{metric.name}: {metric.accuracy === undefined ? 'Unavailable' : `${metric.accuracy}%`}</p>)}
           </div> : <p>Difficulty performance unavailable</p>}
 
-          {hasQuestionDetails ? <div>
+          {hasCompleteQuestions && allAnswersKnown ? <div>
             <p>Correct: {correctCount}</p>
-            <p>Incorrect: {incorrectCount}</p>
-            <p>Skipped: {skippedCount}</p>
+            <p>Incorrect: {incorrectCount ?? 'Unavailable'}</p>
+            <p>Skipped: {skippedCount ?? 'Unavailable'}</p>
           </div> : <p>Question details unavailable</p>}
         </div>
 
@@ -221,7 +221,7 @@ export default function ExamSummaryReport({ brand, examId }: ExamSummaryReportPr
           slowestLabel={slowestLabel}
           deepestLevel={null}
           totalQuestions={totalQuestions}
-          attemptedQuestions={hasQuestionDetails ? answeredQuestions.length : null}
+          attemptedQuestions={allAnswersKnown ? answeredQuestions.length : null}
         />
 
         {/* ===================== 5. NEXT STEPS ACTIONS ===================== */}
