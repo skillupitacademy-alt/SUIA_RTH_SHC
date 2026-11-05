@@ -70,7 +70,7 @@ it('marks unsourced certification health and approval evidence unavailable witho
   expect(screen.queryByText(/WCAG.*AA.*verified/i)).toBeNull();
   expect(screen.queryByText(/6.*width.*passed/i)).toBeNull();
   expect(screen.queryByText(/Axe.*audit.*passed/i)).toBeNull();
-  
+
   // Page header should exist without fabricated certification claims
   expect(screen.getByText(/Integration.*Repository Certification/i)).toBeTruthy();
 });
