@@ -12,3 +12,7 @@ Source: `Architecture_Remediation_Execution_Plan.md` W4.1–W4.6 and consolidate
 | W4.6 observability/errors | FND26 supported quality gates and FND23 event semantics, plus applicable security boundaries and sanitized error evidence. No cross-domain aggregate pass is established. |
 
 G1–G9 remain open; no Sol exception has been recorded here. W4.1–W4.6 remain PLANNED. This matrix is a readiness input, not approval to start runtime restructuring.
+
+## Updated decision and evidence checkpoint
+
+The current Sol checkpoint selects verified tenant plus tenant-local subject for learner ownership, unknown historical provenance denial, and registered/payload event type equality; those decisions do not establish migrated storage or event processing atomicity. FND03 migration drafts and FND23 producer/consumer compatibility trace are review inputs only. FND08's bounded transition actor correction `488578ef` has isolated passing handler controls but remains IMPLEMENTED_UNVERIFIED; the separate Gate 1 actual service denial control still fails. FND11 admission, FND03 export tenant isolation and FND23 event-type controls remain failed. Consequently every W4 item above remains PENDING, and no exception or readiness is implied.
