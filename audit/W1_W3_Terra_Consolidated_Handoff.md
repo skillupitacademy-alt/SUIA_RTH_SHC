@@ -511,3 +511,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 FND05 decision input traces program detail/list/metadata/static params, faculty and sitemap paths: auth-required BFF policy conflicts with requestless local data consumers. Sol must select public catalog vs protected policy and build behavior; no guessed public access or production change.
 
 FND23 producer inventory: RTH assignment help casts an unregistered event through shared publisher, fires after repository create and suppresses publish rejection. Consumer and durable delivery are not established; global publisher validation requires compatible caller migration and owner policy.
+
+FND23 assignment help producer service control (manifest `W1_W3_FND23_Help_Producer_Control_Manifest.md`, baseline 36c69d6b): guarded actual AssignmentService with injected fixture repository and mocked publisher exited 0 (2 passed). Matching assignment returns the fixture-created help record despite rejected publish; nonmember assignment denies before write/publish. This describes current behavior, not durable notification, transactional outbox, physical DB or tenant ownership. No production changes; owner must select event contract and retry semantics. IMPLEMENTED_UNVERIFIED pending Sol review; shared event security failures remain open.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['apps/realtutorialhub-web/src/server/__tests__/help-event-boundary.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
