@@ -617,3 +617,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 FND01 RTH-AI-004/005/006 candidate reconciliation: isolated cross-brand route denial and both mounted retry controls fail; duplicated client state is source-confirmed but shared abstraction remains a design decision. No live JWT/browser or rate store execution; no finding closed.
 
 FND03 decision input now includes RTH AI tutor precise owners and discriminating controls; signed-subject/content/completion decisions remain pending and no authority was selected.
+
+FND11 SkillUp admission collision control (manifest `W1_W3_FND11_Admission_Collision_Control_Manifest.md`, baseline 548ded9b): guarded actual route with fixture auth/query/write adapter and mocked bcrypt/event exited 1 (1 passed / 1 failed). Same-platform fixture follows current success path; foreign-platform equal-email fixture is accepted, reaches simulated writes and emits an event. The adapter deliberately returns a foreign match to expose email-only selection; it does not model SQL predicates, physical DB constraints, real account state or actual event delivery. Credential-bearing source was inspected with redacted output, bcrypt input not captured, no credential value entered tests/reports. Runtime admission/invitation fix remains gated on identity/migration and credential remediation contract; VERIFICATION_FAILED.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
