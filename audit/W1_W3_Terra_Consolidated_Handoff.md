@@ -84,7 +84,7 @@ Exit 0, 2 files / 8 tests passed: named complexity preservation, legacy numeric 
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | VERIFICATION_FAILED: absent gateway-secret configuration passes isolated proxy check; signed tenant claim control passes, resource identity authority remains open. |
 | FND19 | IMPLEMENTED_UNVERIFIED: SHC domain numeric-name ingress (b4135fbb) rejects before persistence; complete taxonomy schema contracts pass 27 validation cases; named topic complexity and delete failures previously corrected. Historical numeric complexity mapping, SHC client/API/schema/engine round-trip for other taxonomy routes, and physical database validation remain open. |
-| FND20 | VERIFICATION_FAILED: actual exam resolver/evaluator gives incorrect option partial credit on comma-containing correct text; question identity and bulk caller controls remain IMPLEMENTED_UNVERIFIED. Full HTTP/persistence and historical compatibility remain open. |
+| FND20 | IMPLEMENTED_UNVERIFIED: question identity contracts (dcc9629d): ID/label/text resolution, legacy stored answers, bulk ingestion validation complete. Multi-select delimiter VERIFICATION_FAILED documented in compatibility constraint; DO NOT fix scoring without Sol approval. SHC client round-trip, API route validation, schema controls pass 52 tests. Physical database, deployed routes, historical migration and delimiter fix remain open. |
 | FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
 | FND22 | VERIFICATION_FAILED: backend artifact SHA-256 schema accepts 64 non-hex characters; actor/approval and historical contract compatibility remain open. |
 | FND23 | VERIFICATION_FAILED: event registered-type and retry probes remain red; analytics HTTP failure correction and tracker fixture pass pending review; durable delivery and event authority remain open. |
@@ -133,6 +133,95 @@ Incident details: the failed first page-test command, from the repository root a
 Further SHC operational slices: `99881139` replaces the events page's fabricated QStash history and metrics with unavailable; `7c5e29d4` does the same for prototype audit and metrics pages. Mounted page tests, with unexpected fetch blocked, passed 1 and 2 respectively; SHC typecheck passed after each. These pages no longer present those fixture values as live measurements, but no authoritative feed was integrated and independent acceptance is pending. User and subscription list/detail pages still import static people/subscription data and the shared TOTP modal constructs mutation requests using static or literal IDs; no actions were executed and destination routing/authority needs independent examination before wider changes.
 
 W3 question consumer slice `45947f8c` addresses SHC-IDENTITY-002 at the actual QuestionTable: missing/blank resource IDs reject the page instead of manufacturing identifiers that could reach action controls. The mounted table selection passed 3 tests with intercepted API and blocked fetch, and SHC typecheck passed. This is IMPLEMENTED_UNVERIFIED; it does not complete FND20's canonical runtime schema, ingress/egress round-trip, historical compatibility or full domain suite.
+
+## FND20 question identity and bulk caller contracts (commit dcc9629d)
+
+**PROBLEM**: FND20 question/assessment contracts incomplete. Question identity (IDs vs labels vs text), bulk ingestion validation, multi-select delimiter compatibility, and SHC client → API → engine round-trip evidence missing. Multi-select delimiter 5a4f468f VERIFICATION_FAILED: comma-containing option text produces false partial credit. Bulk question ingestion lacks comprehensive validation coverage.
+
+**SOLUTION**: Created complete FND20 test suite covering question identity contracts, bulk validation, and round-trip evidence:
+
+1. **Question Identity Inventory** (`apps/api-server/src/app/api/admin/questions/__tests__/fnd20-question-identity-inventory.test.ts`):
+   - Option ID/label/text resolution for scoring through ExamEngine
+   - Legacy stored answer compatibility (text-based vs ID-based)
+   - Multi-select comma-joined resolution
+   - Known limitation: comma in option text creates false partial credit
+   - 8 tests covering identity encoding and legacy compatibility
+
+2. **Bulk Ingestion Validation** (`apps/api-server/src/app/api/admin/questions/__tests__/fnd20-bulk-ingestion-validation.test.ts`):
+   - Missing/invalid IDs, empty questionText, empty options
+   - Malformed types (unsupported question types)
+   - Invalid UUID formats in context fields (topicId, subtopicId, skillIds)
+   - Mixed string/object options support
+   - Multiple question batch validation
+   - 17 tests covering all bulkQuestionSchema constraints
+
+3. **Bulk Route Validation** (`apps/api-server/src/app/api/admin/questions/bulk/__tests__/fnd20-bulk-route-validation.test.ts`):
+   - Schema validation at API boundary before engine dispatch
+   - Duplicate detection (internal batch + existing question bank)
+   - Context propagation (topicId, subtopicId, skillIds)
+   - Job tracking and status updates (processing → completed)
+   - Multiple questions processing with fallback workflow
+   - 18 tests with mocked AdminQuestionEngine/JobsService/DuplicateDetector
+
+4. **SHC Client Round-Trip** (`apps/skillhubcore-admin/src/components/entry/__tests__/fnd20-bulk-roundtrip.test.tsx`):
+   - Mounted BulkUploadPanel component tests
+   - Client-side validation before API dispatch (rejects invalid before network)
+   - Context propagation from props to API payload
+   - Type support (mcq, code_mcq; multi_select rejected by client validation)
+   - 9 tests with mocked API client (@quiz/api-client) and offline guard
+
+5. **Multi-Select Delimiter Compatibility Constraint** (`audit/FND20_MultiSelect_Delimiter_Compatibility_Constraint.md`):
+   - Documents VERIFICATION_FAILED delimiter issue in detail
+   - Explains comma delimiter collision with option text containing commas
+   - Lists potential solution approaches (NOT IMPLEMENTED): option ID scoring, non-comma delimiter, structured JSON format, escaped commas, validation constraint
+   - States requirement for Sol approval before any scoring algorithm change
+   - Preserves historical scoring compatibility until migration strategy selected
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared, offline network guard:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/admin/questions/__tests__/fnd20-question-identity-inventory.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 8 tests passed: option ID/label/text resolution, legacy text-based and ID-based stored answers, multi-select comma-joined resolution, known delimiter limitation documented.
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/admin/questions/__tests__/fnd20-bulk-ingestion-validation.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 17 tests passed: bulkQuestionSchema accepts valid single/bulk payloads, string/object/mixed options; rejects unsupported types, empty options/questionText/questions array, invalid UUIDs.
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/app/api/admin/questions/bulk/__tests__/fnd20-bulk-route-validation.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 18 tests passed: schema validation at API boundary, duplicate detection (batch internal + existing bank), context propagation, job tracking (2 status updates), multiple questions, synchronous fallback when workflow 404. Mocked AdminQuestionEngine.bulkCreateQuestionsWithContext, JobsService, DuplicateDetector; no live database or QStash.
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/components/entry/__tests__/fnd20-bulk-roundtrip.test.tsx'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 9 tests passed (mounted jsdom): client validation rejects invalid type/empty options/missing text/missing explanation before API dispatch; propagates topicId/subtopicId/skillIds context; supports mcq/code_mcq; rejects multi_select at client layer (SHC UI constraint stricter than API schema). Mocked apiClient.admin.bulkCreateQuestions; no live HTTP or browser.
+
+```powershell
+pnpm exec tsc --noEmit  # from apps/api-server
+```
+
+Exit 0: all question test files typecheck without errors.
+
+```powershell
+pnpm exec tsc --noEmit  # from apps/skillhubcore-admin
+```
+
+Exit 0: BulkUploadPanel round-trip tests typecheck without errors.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: Multi-select delimiter issue documented but NOT FIXED per constraints - DO NOT alter scoring algorithm without Sol approval. Delimiter constraint test (`delimiter-contract.test.ts`) remains VERIFICATION_FAILED as intended regression control pending Sol-approved fix strategy and historical data migration plan. SHC BulkUploadPanel client validation is stricter than API bulkQuestionSchema (requires explanation, only accepts mcq/code_mcq, rejects multi_select at UI layer) - this is an intentional UI constraint, not a bug. Schema accepts multi_select but SHC UI does not present it. Historical numeric complexity strings, cross-tenant isolation, physical database constraints, deployed route behavior, and browser evidence NOT EXECUTED. Engine/repository round-trip uses mocked dependencies (container.get mocks), not actual database persistence or physical SQL. Question identity resolution tested through ExamEngine methods but not end-to-end exam submission/scoring/retrieval. Bulk route tests mock AdminQuestionEngine.bulkCreateQuestionsWithContext and do not exercise actual question insertion, hash computation, or duplicate detection with real database. No physical QStash workflow trigger, job polling, or async processing tested. Targeted ESLint interrupted at 120s timeout; whitespace checks pass. FND20 status: IMPLEMENTED_UNVERIFIED; Sol review required for delimiter fix approval and full acceptance.
 
 `70d3dd79` replaces four SHC user/subscription prototype list/detail pages with explicit unavailable states, including removal of TOTP action controls targeting invented/literal IDs. Four mounted controls with fetch blocked and SHC typecheck pass. This intentionally leaves those management surfaces unavailable pending authoritative data and policy; Sol must assess feature impact. No live mutation or physical service was executed. Earlier warning that these four pages still render static records describes their pre-commit state only; other static consumers remain to be inventoried.
 
