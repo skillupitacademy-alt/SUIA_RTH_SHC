@@ -39,7 +39,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
 | FND05 | VERIFICATION_FAILED: SkillUp denied-read fallback, RTH help error and AI tutor cross-brand/content probes fail; legacy progress isolation and authority decisions remain open. |
 | FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
-| FND07 | IMPLEMENTED_UNVERIFIED for J-R1/J-R2 only, commit `995e1f35`, manifest `W1_W3_FND07_Lifecycle_Slice_Manifest.md`; broader continuously mounted auth-owner/cache requirements remain open. |
+| FND07 | VERIFICATION_FAILED: RTH AI tutor parent omits subtopic identity; J-R1/J-R2 slice remains implemented-unverified and broader auth-owner/cache requirements remain open. |
 | FND08 | NOT COMPLETE: real Project LLM actor ingress and persistence need inventory and controls. |
 | FND09 | NOT COMPLETE: depends on FND08 and selected approval authority. |
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
