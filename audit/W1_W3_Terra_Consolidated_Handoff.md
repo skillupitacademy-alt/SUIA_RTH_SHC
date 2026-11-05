@@ -283,3 +283,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 Status IMPLEMENTED_UNVERIFIED pending independent Sol review; previously documented security failures remain VERIFICATION_FAILED.
 
 FND11 source follow-up at b8996122 traces learner login, forgot-password, admin login and lockout email lookup to their conditional brand DB bindings in `W1_W3_Foundation_Crosswalk_And_Truth_Inventory.md`. The test-mode binding difference is an explicit limitation: no account, token, email or store operation was executed. Scoped search and source inspection only; complete consumer inventory and collision controls remain open.
+
+FND23 MKT-018 actual provider adverse control (manifest `W1_W3_FND23_Marketing_Provider_Control_Manifest.md`, baseline 572b03e1): config-free Vitest with the pre-import network guard and an intercepted fetch exited 1: 2 passed / 1 failed. Accepted HTTP 202 resolves and transport rejection propagates; HTTP 503 incorrectly resolves, violating the retained failure assertion. Tracker source marks a resolved provider dispatch healthy, but that tracker path, retry, durability and physical provider are NOT EXECUTED. Endpoint is `example.invalid`, and the mocked fetch makes no request. No production behavior changed; Sol must select acknowledged delivery and retry semantics. Status VERIFICATION_FAILED.
+
+Exact command from repository root in PowerShell:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/marketing-site/src/lib/analytics/providers/__tests__/internal-http-failure.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
