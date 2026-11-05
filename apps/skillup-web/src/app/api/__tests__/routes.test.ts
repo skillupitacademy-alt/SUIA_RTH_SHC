@@ -141,11 +141,11 @@ describe('SkillUp BFF routes', () => {
 
     mocks.getSkillupPlacement.mockResolvedValue({
       profile: {
-        roleGoal: 'Frontend Developer',
-        resumeStatus: 'Ready for review',
-        profileCompletion: 82,
-        interviewCount: 4,
+        roleGoal: null,
+        resumeStatus: null,
+        profileCompletion: null,
         skills: ['React', 'Next.js'],
+        readinessScore: 82,
       },
       jobs: [{ id: 'job-1', company: 'BrightStack', title: 'Junior Frontend Engineer', location: 'Bengaluru', match: 94 }],
     });
@@ -230,9 +230,10 @@ describe('SkillUp BFF routes', () => {
 
   it('returns placement data', async () => {
     const response = await getPlacement(new Request('http://localhost/api/student/placement') as Request);
-    const payload = await readJson<{ profile: { roleGoal: string }; jobs: unknown[] }>(response);
+    const payload = await readJson<{ profile: { skills: string[] } | null; jobs: unknown[] }>(response);
     expect(response.status).toBe(200);
-    expect(payload.profile.roleGoal).toBeTruthy();
+    expect(payload.profile).not.toBe(null);
+    expect(payload.profile?.skills).toBeTruthy();
     expect(payload.jobs.length).toBeGreaterThan(0);
     expect(mocks.getSkillupPlacement).toHaveBeenCalledWith('student-1');
   });

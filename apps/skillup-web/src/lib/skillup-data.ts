@@ -34,21 +34,6 @@ function getPaymentPool() {
 
   return paymentPool;
 }
-const FALLBACK_PLACEMENT = {
-  profile: {
-    roleGoal: 'Frontend Developer',
-    resumeStatus: 'Ready for review',
-    profileCompletion: 82,
-    interviewCount: 4,
-    skills: ['React', 'Next.js', 'TypeScript', 'REST APIs', 'Testing'],
-  },
-  jobs: [
-    { id: 'job-1', company: 'BrightStack', title: 'Junior Frontend Engineer', location: 'Bengaluru', match: 94 },
-    { id: 'job-2', company: 'Northwind Labs', title: 'Product Engineer Intern', location: 'Remote', match: 89 },
-    { id: 'job-3', company: 'BlueOrbit', title: 'Web Developer Associate', location: 'Pune', match: 87 },
-  ],
-};
-
 const attendanceDateFormatter = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
 
 function toDate(value: string | Date | null | undefined): Date {
@@ -360,67 +345,83 @@ export async function getSkillupPlacement(userId: string) {
       .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
       .orderBy(desc(placementJobListings.deadline), desc(placementJobListings.createdAt));
 
-    return {
-      profile: profileRows[0] !== undefined
-        ? {
-            roleGoal: profileRows[0].skills[0] ?? 'Placement-ready role',
-            resumeStatus: profileRows[0].status === 'active' ? 'Ready for review' : 'Paused',
-            profileCompletion: profileRows[0].readinessScore,
-            interviewCount: Math.max(1, Math.round(profileRows[0].readinessScore / 20)),
-            skills: profileRows[0].skills,
-          }
-        : FALLBACK_PLACEMENT.profile,
-      jobs: profileRows[0] === undefined
-        ? jobs.map((job, index) => ({
-            id: job.id,
-            company: job.companyName,
-            title: job.title,
-            location: job.location,
-            match: Math.max(60, 90 - index * 3),
-          }))
-        : await (async () => {
-            try {
-              const vectorMatches = await findJobsForStudent({
-                userId,
-                readinessScore: profileRows[0].readinessScore,
-                skills: profileRows[0].skills,
-                experienceSummary: profileRows[0].experienceSummary,
-                preferredLocation: profileRows[0].preferredLocation,
-                expectedCtc: profileRows[0].expectedCtc,
-              }, Math.max(2, jobs.length));
+    // Return null profile when no active profile exists (no fabricated data)
+    const profile = profileRows[0] !== undefined
+      ? {
+          roleGoal: null, // Unavailable until authoritative source established
+          resumeStatus: null, // Unavailable until authoritative source established
+          profileCompletion: null, // Unavailable until authoritative source established
+          skills: profileRows[0].skills,
+          readinessScore: profileRows[0].readinessScore,
+        }
+      : null;
 
-              const jobMap = new Map(jobs.map((job) => [job.id, job]));
-              const ranked = vectorMatches
-                .map((match) => {
-                  const job = jobMap.get(String(match.id));
-                  if (job === undefined) {
-                    return null;
-                  }
-                  return {
-                    id: job.id,
-                    company: job.companyName,
-                    title: job.title,
-                    location: job.location,
-                    match: Math.max(1, Math.round((match.score ?? 0) * 100)),
-                  };
-                })
-                .filter((item): item is { id: string; company: string; title: string; location: string; match: number } => item !== null);
+    // Process jobs: keep persisted jobs browsable in DB order, with null match when unavailable
+    const jobsWithMatches = await (async () => {
+      // Without profile, return jobs in DB order with null match (no matching available)
+      if (profileRows[0] === undefined) {
+        return jobs.map((job) => ({
+          id: job.id,
+          company: job.companyName,
+          title: job.title,
+          location: job.location,
+          match: null as number | null,
+        }));
+      }
 
-              if (ranked.length > 0) {
-                return ranked;
-              }
-            } catch {
-              // Fall back to DB ordering below.
+      // With profile, attempt vector matching
+      try {
+        const vectorMatches = await findJobsForStudent({
+          userId,
+          readinessScore: profileRows[0].readinessScore,
+          skills: profileRows[0].skills,
+          experienceSummary: profileRows[0].experienceSummary,
+          preferredLocation: profileRows[0].preferredLocation,
+          expectedCtc: profileRows[0].expectedCtc,
+        }, Math.max(2, jobs.length));
+
+        const jobMap = new Map(jobs.map((job) => [job.id, job]));
+        const ranked = vectorMatches
+          .map((match) => {
+            const job = jobMap.get(String(match.id));
+            if (job === undefined) {
+              return null;
             }
-
-            return jobs.map((job, index) => ({
+            // Return null for unavailable/zero scores (no calibrated measurement)
+            // Zero is valid when measured, but score is currently uncalibrated
+            const matchScore = match.score !== null && match.score !== undefined && match.score > 0
+              ? Math.round(match.score * 100)
+              : null;
+            return {
               id: job.id,
               company: job.companyName,
               title: job.title,
               location: job.location,
-              match: Math.max(60, profileRows[0].readinessScore - index * 3),
-            }));
-          })(),
+              match: matchScore,
+            };
+          })
+          .filter((item): item is { id: string; company: string; title: string; location: string; match: number | null } => item !== null);
+
+        if (ranked.length > 0) {
+          return ranked;
+        }
+      } catch {
+        // Vector service failed, fall through to DB ordering below
+      }
+
+      // Fall back to DB ordering with null match (matching unavailable)
+      return jobs.map((job) => ({
+        id: job.id,
+        company: job.companyName,
+        title: job.title,
+        location: job.location,
+        match: null as number | null,
+      }));
+    })();
+
+    return {
+      profile,
+      jobs: jobsWithMatches,
     };
 }
 

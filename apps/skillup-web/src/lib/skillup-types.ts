@@ -41,7 +41,20 @@ export type SkillupJobMatch = {
   company: string;
   title: string;
   location: string;
-  match: number;
+  match: number | null;
+};
+
+export type SkillupPlacementProfile = {
+  roleGoal: string | null;
+  resumeStatus: string | null;
+  profileCompletion: number | null;
+  skills: string[];
+  readinessScore: number;
+};
+
+export type SkillupPlacementResponse = {
+  profile: SkillupPlacementProfile | null;
+  jobs: SkillupJobMatch[];
 };
 
 export type SkillupFacultyMember = {
