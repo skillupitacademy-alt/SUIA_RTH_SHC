@@ -38,9 +38,10 @@ describe.each([getSkillupBatches, getSkillupMyBatch])('batch data truth', (load)
     } finally { vi.useRealTimers(); }
   });
   it('does not invent a mode or completed status for unknown stored values', async () => {
-    state.results = [[{ batchId: 'b', batchName: 'Batch', enrolledCount: 2 }], [{ id: 'unknown', scheduledAt: '2026-01-01T00:00:00Z', mode: null, status: 'unexpected' }]];
+    state.results = [[{ batchId: 'b', batchName: 'Batch', enrolledCount: 2 }], [{ id: 'unknown', scheduledAt: '2026-01-01T00:00:00Z', mode: null, status: 'unexpected' }, { id: 'future', scheduledAt: '2099-01-01T00:00:00Z', mode: null, status: 'scheduled' }]];
     const result = await load('learner');
     expect(result.sessions[0]).toMatchObject({ mode: 'unavailable', status: 'unavailable' });
+    expect(result.batch!.schedule[0].mode).toBe('unavailable');
   });
   it('propagates storage failure', async () => {
     state.fail = true;

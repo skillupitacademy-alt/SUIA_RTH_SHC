@@ -244,7 +244,7 @@ export async function getSkillupMyBatch(userId: string) {
       day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
       time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
       topic: session.title ?? 'SkillUp session',
-      mode: session.mode ?? 'hybrid',
+      mode: formatSessionMode(session.mode ?? ''),
     }));
 
     return {
@@ -446,7 +446,7 @@ export async function getSkillupBatches(userId: string) {
           day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
           time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
           topic: session.title ?? 'SkillUp session',
-          mode: session.mode ?? 'hybrid',
+          mode: formatSessionMode(session.mode ?? ''),
         })),
         materials,
       },
