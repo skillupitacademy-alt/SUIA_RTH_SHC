@@ -440,3 +440,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND20 multi-select follow-up traces current flagged-option joining, comma splitting, partial credit and 0.8 boolean threshold in the crosswalk. Comma-containing option text, intended grading policy and actual scorer round-trip remain open; no algorithm, import or scoring execution changed.
+
+FND26 targeted lint after topic and recovery corrections: with `ESLINT_USE_FLAT_CONFIG=false`, `pnpm exec eslint 'src/app/api/admin/topics/route.ts' 'src/app/api/admin/topics/[id]/route.ts' 'src/schemas/hierarchy.schemas.ts'` from `apps/api-server`, and `pnpm exec eslint 'src/app/forgot-password/page.tsx'` from each learner app, all exited 0 with no warnings. Test files and marketing provider lint were not included; marketing package's missing ESLint configuration was previously recorded.
