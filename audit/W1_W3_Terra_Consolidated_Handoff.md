@@ -304,3 +304,5 @@ Test command from repository root:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/dashboard-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND15/FND22 compliance-brief follow-up at edd64c22 records a static requirements-versus-backend-contract distinction and a potential stale asynchronous workflow contract in the crosswalk. No execution, authority conclusion or runtime change; actual contract, workflow race and downstream use remain NOT EXECUTED.
