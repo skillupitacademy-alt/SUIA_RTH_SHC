@@ -1,0 +1,3 @@
+# FND19 SHC direct domain ingress control manifest
+
+Baseline e1efdcdd, clean tree. Original SHC-CONTRACT-001/SHC-TYPE-002 concerns direct CRUD, distinct from central API schemas. Add only `apps/skillhubcore-admin/src/app/api/admin/domains/__tests__/foundation-validation.test.ts` exercising actual POST with fixture admin guard and fixture DB chain. Valid name/category should insert; numeric name should be rejected before insert. The adverse invariant reflects domain name type, not a claimed database effect. No production edit. Run config-free Vitest with pre-import offline guard and SHC alias; no ignored env, live network, DB, browser or authentication. Actual database constraints, other CRUD routes and cross-service contract remain unexecuted. Preserve any failure.
