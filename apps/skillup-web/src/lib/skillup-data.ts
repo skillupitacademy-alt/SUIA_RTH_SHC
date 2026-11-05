@@ -183,19 +183,13 @@ export async function getSkillupStudentDashboard(userId: string) {
 
     const sessions = batchContext?.sessions ?? [];
     const completedCount = sessions.filter((session) => session.status === 'completed').length;
-    const presentCount = await db
-      .select({ count: attendanceRecords.id })
-      .from(attendanceRecords)
-      .innerJoin(batchSessions, eq(batchSessions.id, attendanceRecords.sessionId))
-      .where(and(eq(attendanceRecords.studentUserId, userId), eq(attendanceRecords.status, 'present')));
-
     const paymentDue = installments
       .filter((item) => item.status !== 'paid')
       .reduce((sum, item) => sum + item.amount, 0);
 
     const nextSession = sessions.find((session) => session.status === 'scheduled');
 
-    const attendancePercent = sessions.length > 0 ? Math.round((presentCount.length / sessions.length) * 100) : 0;
+    const attendancePercent = null;
     const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
 
     return {
