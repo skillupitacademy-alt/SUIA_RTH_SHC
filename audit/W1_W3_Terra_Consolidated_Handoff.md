@@ -39,7 +39,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND04 | VERIFICATION_FAILED: equal-local-ID jobId/examId controls fail in both fixture directions; tenant provenance/schema deployment and compatible migration remain unresolved. |
 | FND05 | VERIFICATION_FAILED: SkillUp denied-read fallback, RTH help error and AI tutor cross-brand/content probes fail; legacy progress isolation and authority decisions remain open. |
 | FND06 | VERIFICATION_FAILED: guarded conflicting-tenant admin control is 8 passed / 1 failed; FND03 resource classification and Sol policy are pending. Earlier accepted containment retains its own scope. |
-| FND07 | VERIFICATION_FAILED: RTH AI tutor parent omits subtopic identity; J-R1/J-R2 slice remains implemented-unverified and broader auth-owner/cache requirements remain open. |
+| FND07 | PARTIAL / IMPLEMENTED_UNVERIFIED: tutor parent propagation and valid retry lifecycle controls now pass; J-R1/J-R2 and broader auth-owner/cache requirements remain open. Backend cross-brand/content failures remain FND05 VERIFICATION_FAILED. |
 | FND08 | PARTIAL / IMPLEMENTED_UNVERIFIED: generic transition actor now derives from verified principal in 488578ef; guarded handler controls pass. Real JWT/persistence, other actor paths and Sol review remain open. |
 | FND09 | VERIFICATION_FAILED: isolated real governance service advances Gate 1 without approval evidence; selected approval authority and actual persistence remain open. |
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
