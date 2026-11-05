@@ -572,3 +572,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/lib/project-llm/api/__tests__/contract-read-behavior.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND18 missing gateway secret control (manifest `W1_W3_FND18_Gateway_Secret_Control_Manifest.md`, baseline 0c169b88): actual shared proxy with fixture verified user and isolated env exited 1 (1 passed / 1 failed): configured matching credential passes, but absent configured secret also passes the gateway check instead of 403. The proxy still performs separate user/brand checks; this is not proof of user-auth bypass or real deployment configuration. Initial command failed before test creation due to missing test directory; next attempt failed import resolution for @quiz/types, corrected by explicit source alias. No production change; gateway secret policy/deployment and legitimate callers require Sol decision. VERIFICATION_FAILED for this guard invariant.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@quiz/types':path.resolve('packages/types/src/index.ts')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
