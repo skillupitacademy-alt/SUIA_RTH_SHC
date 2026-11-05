@@ -53,13 +53,13 @@ export default function BlockFamilyRegistryPage() {
                 SURFACE 02
               </span>
               <span className="text-xs font-semibold text-slate-400">•</span>
-              <span className="text-xs font-mono font-semibold text-slate-500">CANONICAL TAXONOMY</span>
+              <span className="text-xs font-mono font-semibold text-slate-500">REFERENCE CATALOG</span>
             </div>
             <h1 className="mt-1 text-2xl font-black text-slate-900 font-outfit">
               Block Family Registry
             </h1>
             <p className="mt-1 text-xs text-slate-500 max-w-2xl">
-              Canonical registry of educational block families. Sourced from repository specifications, runtime verifications, and architectural contracts.
+              Static reference catalog of educational block families. Runtime registration and verification are not established by this page.
             </p>
           </div>
 
@@ -85,11 +85,11 @@ export default function BlockFamilyRegistryPage() {
             <p className="mt-0.5 text-xl font-black text-purple-600 font-outfit">{totalVersions}</p>
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-            <p className="text-[10px] uppercase font-bold text-slate-400 font-mono">Active in Runtime</p>
-            <p className="mt-0.5 text-xl font-black text-emerald-600 font-outfit">{activeCount} (I1, C1, D1)</p>
+            <p className="text-[10px] uppercase font-bold text-slate-400 font-mono">Fixture marked integrated</p>
+            <p className="mt-0.5 text-xl font-black text-emerald-600 font-outfit">{activeCount}</p>
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-            <p className="text-[10px] uppercase font-bold text-slate-400 font-mono">Planned Families</p>
+            <p className="text-[10px] uppercase font-bold text-slate-400 font-mono">Other fixture entries</p>
             <p className="mt-0.5 text-xl font-black text-orange-600 font-outfit">{families.length - activeCount}</p>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function BlockFamilyRegistryPage() {
                 : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
             }`}
           >
-            Runtime Active ({activeCount})
+            Fixture marked integrated ({activeCount})
           </button>
           <button
             onClick={() => setStatusFilter('DOCUMENTED')}
@@ -137,7 +137,7 @@ export default function BlockFamilyRegistryPage() {
                 : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'
             }`}
           >
-            Documented ({families.length - activeCount})
+            Other fixture entries ({families.length - activeCount})
           </button>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function BlockFamilyRegistryPage() {
                         : 'bg-slate-100 text-slate-600 border-slate-200'
                     }`}
                   >
-                    {isActive ? 'RUNTIME ACTIVE' : 'DOCUMENTED'}
+                    {isActive ? 'FIXTURE: INTEGRATED' : 'FIXTURE: DOCUMENTED'}
                   </span>
                 </div>
 
@@ -189,13 +189,7 @@ export default function BlockFamilyRegistryPage() {
                     {family.documentedVersions.map((v) => (
                       <span
                         key={v}
-                        className={`text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded border ${
-                          (family.familyId === 'I' && v === 'I1') ||
-                          (family.familyId === 'C' && v === 'C1') ||
-                          (family.familyId === 'D' && v === 'D1')
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold'
-                            : 'bg-slate-50 text-slate-600 border-slate-200'
-                        }`}
+                        className="text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded border bg-slate-50 text-slate-600 border-slate-200"
                       >
                         {v}
                       </span>
