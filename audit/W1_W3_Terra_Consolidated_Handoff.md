@@ -281,3 +281,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 Status IMPLEMENTED_UNVERIFIED pending independent Sol review; previously documented security failures remain VERIFICATION_FAILED.
+
+FND11 source follow-up at b8996122 traces learner login, forgot-password, admin login and lockout email lookup to their conditional brand DB bindings in `W1_W3_Foundation_Crosswalk_And_Truth_Inventory.md`. The test-mode binding difference is an explicit limitation: no account, token, email or store operation was executed. Scoped search and source inspection only; complete consumer inventory and collision controls remain open.
