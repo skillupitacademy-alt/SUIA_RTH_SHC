@@ -563,3 +563,5 @@ FND12 active consumer trace: SkillUp student layout links the corrected learn/ex
 FND05 catalog classification refinement: shared proxy lists program paths public but faculty protected, while program BFF enforces authentication; Sol must resolve field-level public contract and static generation. The conflicting source policies do not authorize fallback after a denial.
 
 FND05 helper origin follow-up: source permits absolute URL while forwarding identity/cookie/gateway secret; current scoped call sites are relative, deployment origin and redirect behavior unverified. No exfiltration claim or network execution.
+
+FND22 source trace: opening compliance brief calls a client read that auto-POSTs contract generation on 404; backend POST has contract-admin authorization. Intended automatic generation and viewer-versus-writer contract remain decision-pending, no workflow operation executed.
