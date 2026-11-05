@@ -597,3 +597,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/components/content/__tests__/ai-tutor-subtopic.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND07 AI tutor retry control (manifest `W1_W3_FND07_AI_Tutor_Retry_Control_Manifest.md`, baseline 33379972): guarded mounted actual useAiTutor hook with fake time and intercepted 429 Retry-After=1 exited 1 (1 failed); rate-limit flag remains true after interval. RTH-FE-007 audit finding also concerns separate AITutorBlock; that component was source-inspected but not executed in this control. No real server/browser, production change or retry policy claim. VERIFICATION_FAILED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/realtutorialhub-web/src/components/tutorial/__tests__/ai-tutor-retry-control.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
