@@ -1,0 +1,3 @@
+# FND20 delimiter scorer control manifest
+
+Baseline 3bdf55a0. Current ExamEngine resolves selected IDs and flagged correct options to their text, joins with commas, then MultiSelectEvaluator splits on commas. Add isolated actual-engine resolver/evaluator control using fixture question whose correct option text contains a comma, plus non-comma positive and an incorrect option. Preserve assertion that selecting an incorrect option alone does not earn correctness; no scoring algorithm or authoring policy change. Mock DB/container/services, use config-free guarded Vitest, no live infrastructure or persistence. Private resolver is exercised only as a test seam; HTTP/exam transaction and scoring persistence remain unexecuted.
