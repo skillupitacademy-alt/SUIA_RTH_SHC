@@ -77,17 +77,17 @@ Exit 0, 2 files / 8 tests passed: named complexity preservation, legacy numeric 
 | FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
 | FND11 | VERIFICATION_FAILED: isolated admission route accepts foreign-platform equal-email fixture; consumer inventory, uniqueness/invitation decision and migration remain open. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
-| FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty, batch/recording and placement HTTP/date truth slices committed; remaining dashboard truth and physical evidence remain. |
+| FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty, batch/recording and placement HTTP/date truth slices committed (068fa5af); helper-layer evidence with isolated query adapters; mounted dashboard page, static build, physical HTTP route, deployed service NOT EXECUTED; remaining dashboard truth pending. |
 | FND14 | PARTIAL / IMPLEMENTED_UNVERIFIED: shared result-report and SkillUp assessment-list truth slices implemented; full assessment/result coverage remains open. |
-| FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM dashboard/registry/mix-match/compliance truth slices committed; certificate authority, integration-certification/workflow-details/specification-review truth committed; other governance consumers and certificate issuance/verification authority remain. |
-| FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter (shared+RTH), recovery acknowledgement slices committed; admission event delivery, AuthPage semantics documentation and broader form inventory remain. |
+| FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM dashboard/registry/mix-match/compliance truth slices committed; certificate authority, integration-certification/workflow-details/specification-review truth committed (178ad8b4); mounted component/mocked certificate store evidence; physical PKI, certificate issuance authority, governance workflow integration remain open. |
+| FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter (shared+RTH), recovery acknowledgement slices committed (9a107c39); form/action inventory manifest created; admission event delivery, AuthPage semantics documentation and broader form inventory remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | VERIFICATION_FAILED: absent gateway-secret configuration passes isolated proxy check; signed tenant claim control passes, resource identity authority remains open. |
 | FND19 | IMPLEMENTED_UNVERIFIED: SHC domain numeric-name ingress (b4135fbb) rejects before persistence; complete taxonomy schema contracts pass 27 validation cases; named topic complexity and delete failures previously corrected. Historical numeric complexity mapping, SHC client/API/schema/engine round-trip for other taxonomy routes, and physical database validation remain open. |
 | FND20 | IMPLEMENTED_UNVERIFIED: question identity contracts (dcc9629d): ID/label/text resolution, legacy stored answers, bulk ingestion validation complete. Multi-select delimiter VERIFICATION_FAILED documented in compatibility constraint; DO NOT fix scoring without Sol approval. SHC client round-trip, API route validation, schema controls pass 52 tests. Physical database, deployed routes, historical migration and delimiter fix remain open. |
-| FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
-| FND22 | IMPLEMENTED_UNVERIFIED: backend artifact SHA-256 hex pattern validation complete; BindArtifactRequest enforces 64-hex pattern with case normalization (lowercase). Schema validation passes 13 test cases including non-hex rejection, case handling, and edge cases. HTTP route, JWT authorization, governance service binding, historical hash migration, and physical database persistence NOT EXECUTED. Sol review required. |
-| FND23 | VERIFICATION_FAILED: event type mismatch (fnd23-event-type-probe), retry-after-handler-failure (fnd23-event-retry-probe), correlation collision (fnd23-correlation-collision), and brand dedupe (brand-dedupe-control) documented with compatible fix proposals in `audit/W1_W3_FND23_Event_Decision_Input.md`. All 4 security tests remain failing as required pending Sol architectural approval. HTTP 503 analytics provider correction and tracker fixture previously passed. Complete inventory: publisher, 3 worker registrations (1 actual STUDENT_ENROLLED + 17 placeholders), exact schemas for all 18 event types, signed envelope structure, idempotency architecture, and analytics dedupe documented. Decision inputs cover: atomic claim/commit vs processing states, correlation vs ID keying, brand-qualified dedupe, tenant verification, payload immutability, retry-after-crash, duplicate conflicts. DO NOT implement fixes without explicit Sol approval. |
+| FND21 | VERIFICATION_FAILED (intentional): nested document schema accepts unknown child (5bbd0f65); complete nested schema compatibility tests and storage preparation truth controls document z.any() permissiveness and example injection behavior as regression controls; compatibility constraint document provides Sol decision gates; NO implementation pending compatibility assessment, migration plan, and Sol approval. |
+| FND22 | IMPLEMENTED_UNVERIFIED: backend artifact SHA-256 hex pattern validation complete (d98c12c7); BindArtifactRequest enforces 64-hex pattern with case normalization (lowercase). Schema validation passes 13 test cases including non-hex rejection, case handling, and edge cases. HTTP route, JWT authorization, governance service binding, historical hash migration, and physical database persistence NOT EXECUTED. Sol review required. |
+| FND23 | VERIFICATION_FAILED (intentional): event type mismatch (fnd23-event-type-probe), retry-after-handler-failure (fnd23-event-retry-probe), correlation collision (fnd23-correlation-collision), and brand dedupe (brand-dedupe-control) documented with compatible fix proposals in `audit/W1_W3_FND23_Event_Decision_Input.md` (3ebeff90). All 4 security tests remain failing as required pending Sol architectural approval. HTTP 503 analytics provider correction and tracker fixture previously passed. Complete inventory: publisher, 18 worker registrations (1 actual STUDENT_ENROLLED + 17 placeholders), exact schemas for all 18 event types, signed envelope structure, idempotency architecture, and analytics dedupe documented. Decision inputs cover: atomic claim/commit vs processing states, correlation vs ID keying, brand-qualified dedupe, tenant verification, payload immutability, retry-after-crash, duplicate conflicts. DO NOT implement fixes without explicit Sol approval. |
 | FND24 | PARTIAL / IMPLEMENTED_UNVERIFIED: isolated assignment-help route/service composition tested; full domain caller controls depend on FND18–FND23. |
 | FND25 | PARTIAL: mounted report truth and lifecycle adverse controls run; remaining domain invariants and infrastructure-sensitive controls open. |
 | FND26 | PARTIAL: affected UI and learner-app typechecks and whitespace checks pass; other package lint/build gates not executed. |
@@ -1030,3 +1030,223 @@ From `apps/skillhubcore-admin`, `pnpm exec tsc --noEmit` exited 0; from `apps/ap
 Limitations: Certificate verification endpoint at `apps/realtutorialhub-web/src/app/api/certificates/verify/[verificationCode]/route.ts` returns certificate data including student name, but does not verify issuer authority, approval workflow, completion requirements or student identity. Physical certificate issuance via `apps/api-server/src/modules/certificates/certificate-delivery.service.ts` (QStash worker) and PDF rendering remain NOT EXECUTED. PNG/PDF capture, screenshot SHA-256, and browser rendering authority not verified. Static reference pages (explorer, matrix) correctly labeled; external-ai-handoff and candidate-upload governance consumers not yet inventoried for unsourced health/approval claims.
 
 FND15 Project LLM page truth committed; certificate verification authority established as database lookup only; other governance consumers (candidate-upload governance telemetry, external-ai-handoff contract status) and certificate issuance/generation/approval authority remain open.
+
+### FND13/15/16/19/20/21/22/23 batch-05 targeted slices (baseline 5992201c, current HEAD 3ebeff90)
+
+After Sol corrections cleared blockers at 5992201c, implemented eight targeted slices on `remediation/w1-2-batch-05-targeted`:
+
+## FND13 placement HTTP truth and date controls (manifest 068fa5af, implementation 068fa5af)
+
+**PROBLEM**: FND13 placement truth incomplete. Placement dashboard uses helper-layer `fetchSkillupApi` without HTTP evidence or date truth controls. Prior work covered program catalog, faculty, batch/recordings; placement and remaining dashboard truth remained open.
+
+**SOLUTION**: Created `apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts` with actual `fetchSkillupApi` helper exercising HTTP transport layer. Tests verify: (1) live placement fetch attempts GET `/api/placements` with actual brand/user headers, (2) empty response produces empty state without fabrication, (3) HTTP failure produces error state without fabrication, (4) date truth - ISO timestamp values pass through unmodified, fabricated/fallback dates NOT injected.
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 4 tests passed: HTTP transport layer exercised with actual helper, empty response produces empty state, HTTP failure produces error state, date values not fabricated. Mocked global fetch with intercepted responses; no live HTTP, database or browser.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: Helper-layer evidence only; mounted dashboard page component, static SkillUp app build, physical HTTP route, deployed service behavior, and browser navigation NOT EXECUTED. Prior FND13 attribution corrected by Sol: program/faculty/batch work verified helper layer with isolated query adapters, not full page/route/browser stack. Placement zero score controls and other dashboard truth remain separate. FND13 status: PARTIAL / IMPLEMENTED_UNVERIFIED; Sol review required for complete acceptance.
+
+## FND15 remaining governance consumers and certificate authority truth (commit 178ad8b4)
+
+**PROBLEM**: FND15 operational truth incomplete. Prior work covered question timestamp, SHC operational pages, Project LLM dashboard/registry/mix-match/compliance truth. Remaining governance consumers (integration certification, workflow details, specification review) and certificate authority verification remained open.
+
+**SOLUTION**: Created comprehensive SHC Project LLM truth controls covering remaining governance consumers and certificate authority:
+
+1. **Integration Certification Truth** (`apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/integration-certification-truth.test.tsx`): Mounted page component with isolated providers. Verifies zero integrations produces empty state without fabrication; no false certification claims.
+
+2. **Workflow Details Truth** (`apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/workflow-details-truth.test.tsx`): Mounted details page with provider isolation. Verifies unavailable workflow produces error state without fabricated placeholder data.
+
+3. **Specification Review Truth** (`apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/specification-review-truth.test.tsx`): Mounted review page with isolated providers. Verifies empty specification produces empty state without fabricated review content.
+
+4. **Certificate Verification Authority** (`apps/api-server/src/lib/__tests__/certificate-verification-authority.test.ts`): Isolated contract verification using actual `CertificationManager`. Tests verify: valid chain accepted, expired certificate rejected, self-signed rejected, invalid signature rejected, revoked certificate rejected. Mocked certificate store; no live PKI or database.
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+# Integration certification truth
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/integration-certification-truth.test.tsx'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+
+# Workflow details truth
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/workflow-details-truth.test.tsx'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+
+# Specification review truth
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/__tests__/specification-review-truth.test.tsx'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+
+# Certificate verification authority
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/lib/__tests__/certificate-verification-authority.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0 for all 4 test selections: integration certification (1 file / 1 test), workflow details (1 file / 1 test), specification review (1 file / 1 test), certificate authority (1 file / 5 tests). Mocked providers and certificate store; no live HTTP, PKI, database or browser.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues (after Sol correction 44d3ac1e removed trailing whitespace from certification control).
+
+**LIMITATIONS**: Mounted component evidence only for SHC pages; static SHC build, physical HTTP routes, deployed service behavior, browser navigation NOT EXECUTED. Certificate authority uses mocked certificate store; actual PKI chain validation, CRL checking, OCSP, physical certificate issuance/storage/retrieval NOT EXECUTED. Certificate issuance authority, governance workflow integration, and deployed certification service remain open. FND15 status: PARTIAL / IMPLEMENTED_UNVERIFIED; Sol review required for complete acceptance.
+
+## FND16 RTH newsletter form action truth (manifest 9a107c39, implementation 9a107c39)
+
+**PROBLEM**: FND16 form/action inventory incomplete. Prior work covered shared marketing footer (unavailable) and password recovery acknowledgement. RTH site local footer at `apps/realtutorialhub-site/components/footer/FooterBrand.tsx` contained client-side `alert("Thank you for subscribing")` without any HTTP call - pure UI simulation fabricating false success.
+
+**SOLUTION**: Removed fabricated newsletter subscription form from RTH local footer. Replaced with unavailable state matching shared footer pattern: "Newsletter subscriptions are currently unavailable." Created `apps/realtutorialhub-site/components/footer/__tests__/newsletter-truth.test.tsx` verifying unavailable disclosure and no false subscription success. Documented complete form/action inventory in `audit/FND16_Form_Action_Inventory_And_Persistence_Manifest.md` covering: registration/signup (requires server contract inspection), login (requires server contract inspection), enquiry edit (SkillUp-admin CRM out-of-scope), admission event delivery (inspection permitted), consent (localStorage only, correct), all newsletter variants, password recovery (completed).
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/realtutorialhub-site/components/footer/__tests__/newsletter-truth.test.tsx'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()]});if(!v)process.exit(1);await v.close();"
+```
+
+Exit 0, 1 file / 1 test passed: RTH footer displays unavailable message, no subscription form or false success. Mounted component with blocked fetch; no live HTTP or browser.
+
+```powershell
+pnpm exec tsc --noEmit  # from apps/realtutorialhub-site
+```
+
+Exit 0: RTH site typecheck passed.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: Mounted component evidence only; static RTH marketing site build, deployed site behavior, browser navigation NOT EXECUTED. Other form actions (signup/login server contracts, admission event delivery, AuthPage semantics) remain open per manifest. Product impact of unavailable RTH newsletter requires Sol review. FND16 status: PARTIAL / IMPLEMENTED_UNVERIFIED; Sol review required for feature impact and remaining form inventory.
+
+## FND21 nested schema and authoring truth compatibility tests (commit 5bbd0f65)
+
+**PROBLEM**: FND21 nested document schema incomplete. `TutorialBlockSchemaLazy` resolves to `z.any()` accepting unknown child blocks. Storage preparation injected example content into incomplete authored blocks (Definition D1, Introduction I1). Complete nested schema contract tests and storage preparation truth controls remained open, with compatibility assessment required before tightening schema.
+
+**SOLUTION**: Created comprehensive FND21 test suite documenting current failures as intentional regression controls pending compatibility decision:
+
+1. **Nested Schema Compatibility** (`packages/types/src/tutorial-rich-document/__tests__/nested-schema-compatibility.test.ts`): 11 tests covering valid nested blocks (paragraph, definition, code, introduction, deep nesting), FAILING unknown type rejection, FAILING missing required fields, FAILING malformed content, schema version validation, legacy compatibility. Tests document current z.any() permissiveness.
+
+2. **Storage Preparation Truth** (`apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/__tests__/storage-preparation-truth.test.ts`): 8 tests covering Definition D1 and Introduction I1. FAILING tests document incomplete blocks receiving example content injection (array content in Python lesson). Passing tests verify complete blocks preserved and payloadFormat metadata.
+
+3. **Compatibility Constraint Document** (`audit/FND21_Nested_Schema_Compatibility_Constraint.md`): Complete analysis documenting z.any() issue, example injection in normalizers, document consumer inventory (7 services), supported structural shapes, preview vs storage distinction requirements, compatible schema tightening strategies (Options A/B/C), separation of preview/storage normalizers, required actions before implementation, Sol decision gates.
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+# Nested schema compatibility (VERIFICATION_FAILED intentional)
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['packages/types/src/tutorial-rich-document/__tests__/nested-schema-compatibility.test.ts'],{run:true,config:false,environment:'node',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('packages/types/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+
+# Storage preparation truth (VERIFICATION_FAILED intentional)
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/__tests__/storage-preparation-truth.test.ts'],{run:true,config:false,environment:'jsdom',globals:true,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
+
+Nested schema: Exit 1, 1 file / 8 passed, 3 failed: unknown nested type accepted (should reject), missing required fields accepted (should reject), malformed content accepted (should reject). Storage preparation: Exit 1, 1 file / 4 passed, 4 failed: Definition D1 incomplete receives example injection (should store sparse), D1 partial receives example injection (should store sparse), Introduction I1 incomplete receives example injection (should store sparse), I1 partial receives example injection (should store sparse). All failures are INTENTIONAL regression controls.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: NO implementation - tests document current behavior only. Schema tightening, normalizer separation, historical document migration, physical database audit, browser-based authoring workflow, production schema deployment NOT EXECUTED. Complete consumer impact assessment (import/composer/delivery/analysis services) and historical compatibility matrix remain open. DO NOT tighten schema or modify normalizers without Sol-approved migration plan. FND21 status: VERIFICATION_FAILED (intentional); Sol decisions required per compatibility constraint document before any implementation.
+
+## FND22 artifact SHA-256 validation completion (manifest d98c12c7, implementation d98c12c7)
+
+**PROBLEM**: FND22 artifact hash test 52b9365b VERIFICATION_FAILED (exit 1: 1 passed / 1 failed). Project AI `BindArtifactRequest` schema enforced length 64 but accepted non-hex characters like `'z' * 64`, violating SHA-256 hex contract. Case normalization, historical stored hash compatibility, and comprehensive hex pattern validation remained incomplete.
+
+**SOLUTION**: Added `SHA256_HEX_PATTERN` regex (`^[a-fA-F0-9]{64}$`) to `services/project-ai/app/api/schemas/workflow.py`. Implemented `@field_validator("artifact_sha256")` with hex pattern enforcement and lowercase normalization for consistent storage. Validation accepts both uppercase and lowercase hex input (for historical compatibility) but normalizes to lowercase before storage. Expanded `tests/foundation/test_artifact_hash_contract.py` from 2 to 13 test cases covering:
+
+1. Valid lowercase hex (64 'a' characters) - accepted
+2. Non-hex characters (64 'z' characters) - rejected with clear error
+3. Uppercase hex normalization - accepted and converted to lowercase
+4. Mixed case hex normalization - accepted and converted to lowercase
+5. Real SHA-256 hash (empty file hash) - accepted
+6. Too short (63 characters) - rejected
+7. Too long (65 characters) - rejected
+8. Empty string - rejected
+9. Hash with spaces - rejected
+10. Hash with special characters - rejected
+11. Hash with non-hex letters (g-z) - rejected
+12. All valid hex digits (0-9, a-f, A-F) - accepted and normalized
+13. Artifact type validation independence - confirmed
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and pre-created event loop with socket/DNS guard before imports:
+
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; $env:PYTHONPATH='.'; python -c "import asyncio,builtins,socket,dotenv; loop=asyncio.new_event_loop(); builtins._foundation_test_loop=loop; deny=lambda *a,**k: (_ for _ in ()).throw(RuntimeError('offline guard')); socket.socket.connect=deny; socket.create_connection=deny; socket.getaddrinfo=deny; dotenv.load_dotenv=lambda *a,**k: False; import pytest; result=pytest.main(['-q','tests/foundation/test_artifact_hash_contract.py']); loop.close(); raise SystemExit(result)"
+```
+
+Exit 0, 13 passed, 2 warnings (pytest asyncio config warnings are expected with PYTEST_DISABLE_PLUGIN_AUTOLOAD). Primary FND22 control now passes: non-hex 64-character input rejected with ValidationError. All 13 contract validation cases pass. No HTTP route, JWT authentication, governance service binding, or database persistence executed.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: Historical stored artifact hash migration, physical HTTP route validation, JWT authorization, governance service binding to actual workflow/artifact records, and deployed backend behavior NOT EXECUTED. Contract validation tests use mocked dependencies (no FastAPI app, no database, no authentication). Real workflow artifact binding with actual SHA-256 hash persistence and duplicate/mismatch detection not tested. Project AI API typecheck, full pytest suite, and physical service deployment remain open. FND22 status: IMPLEMENTED_UNVERIFIED; Sol review required for historical hash migration strategy and acceptance.
+
+## FND23 event type registration and HTTP analytics decision inputs (manifest 3ebeff90, implementation 3ebeff90)
+
+**PROBLEM**: FND23 event/schema/analytics incomplete. Four intentionally failing security tests documented: event type mismatch, retry-after-handler-failure, correlation collision, brand dedupe. Complete system inventory, exact schemas, architectural design proposals, and Sol decision inputs required before any implementation.
+
+**SOLUTION**: Created comprehensive FND23 decision input document (`audit/W1_W3_FND23_Event_Decision_Input.md`) providing complete evidence for Sol architectural review:
+
+1. **Complete System Inventory**:
+   - Publisher: `publishEvent` with typed envelopes, QStash delivery, signed messages
+   - Worker registrations: 1 actual (`STUDENT_ENROLLED`), 17 placeholders
+   - Exact schemas: All 18 `PlatformEventTypes` with strict Zod validation
+   - Signed envelope structure: `id`, `type`, `correlationId`, `source`, `occurredAt`, `version`, `data`
+   - Consumer: `createQStashHandler` with signature verification, schema validation, idempotency
+   - HTTP Analytics: `ingestAnalyticsEvent`, `createDedupeKey`, GA4/Meta/Internal providers
+
+2. **Documented Current Failures** (all 4 intentionally preserved):
+   - **Event type mismatch**: Custom schema can invoke wrong registered handler
+   - **Retry-after-handler-failure**: Failed handler stores marker preventing retry
+   - **Correlation collision**: Distinct event IDs with same `correlationId` collide
+   - **Brand dedupe**: Cross-brand events with identical content incorrectly deduplicate
+
+3. **Compatible Fix Proposals**:
+   - Type mismatch: Enforce `parsed.type === registeredType` after schema validation
+   - Retry-after-failure: Proposal A (simple, marker after success) vs Proposal B (complex, processing/processed/failed states)
+   - Correlation collision: Change idempotency key from `correlationId` to `id` (one-time reprocessing)
+   - Brand dedupe: Include `brandId` in dedupe hash (hash-included vs prefix approach)
+
+4. **Architectural Design for Sol**:
+   - Verified tenant + event identity + immutable payload envelope extension
+   - Atomic claim/commit vs retry-after-crash semantics
+   - Duplicate conflict handling with payload immutability verification
+   - Cross-brand dedupe separation policies
+   - Unknown-tenant and payload-violation handling
+
+**VERIFICATION**: Repository root, with DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys cleared and offline network guard:
+
+```powershell
+# Events package type-check
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; cd packages/events && pnpm run type-check
+
+# Events package lint
+cd packages/events && pnpm exec eslint src --no-ignore --max-warnings=0
+
+# Event tests (VERIFICATION_FAILED intentional for 4 security probes)
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:REDIS_URL=''; $env:UPSTASH_REDIS_REST_URL=''; $env:NEON_CONNECTION_STRING=''; $env:QSTASH_TOKEN=''; cd packages/events && pnpm test
+```
+
+Type-check: Exit 0. Lint: Exit 0, no warnings. Tests: Exit 1, 4 failed / 6 passed (10 total). Four failing tests remain VERIFICATION_FAILED as required: fnd23-event-type-probe (type mismatch), fnd23-event-retry-probe (retry-after-failure), fnd23-correlation-collision (correlation key collision), brand-dedupe-control (cross-brand dedupe). All positive controls pass: matching registered type accepted, handler success allows retry, distinct correlationIds separate, same-brand dedupe works.
+
+```powershell
+git diff --check
+```
+
+Exit 0: no trailing whitespace or EOF issues.
+
+**LIMITATIONS**: NO implementation - document provides decision inputs only. All 4 failing tests preserved as required. Offline guard mandatory (all DB/cache/queue environment keys cleared). NO live QStash, Redis, DB, queue, physical delivery. Complete system inventory documented but Sol approval required before: (1) immediate security fixes (type validation + brand dedupe), (2) retry architecture selection (Proposal A vs B), (3) correlation key change (breaking change with one-time reprocessing), (4) tenant verification + payload immutability (breaking changes), (5) claim timeout and stuck-handler monitoring, (6) unknown-tenant and payload-violation policies. FND23 status: VERIFICATION_FAILED (intentional); ready for Sol architectural review per Claude_Sonnet45_W1_W3_Detailed_Implementation_Handover_a239ca39.md.
+
+Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted` was recorded prior to first batch-05 slice. Working tree on d31e6f47 contains Batch 08 Sol probes with 2 FND04 failures. Other group dispositions and accumulated limitations as stated above. After `5cb8fe1f`, Sol issued corrections restoring working-tree-state and other prior files, reconciling identity reset scope, adding missing manifest references, and removing a false FND16 acceptance claim. The corrections are 14 commits from `7e050c4f` through `5992201c`, recorded in `audit/W1_W3_Sol_Correction_Summary.md`. Baseline after corrections: `5992201c`, working tree clean. Current batch slices: FND13 placement (068fa5af, 4b88c6cc), FND15 governance (178ad8b4), FND16 RTH newsletter (9a107c39), FND19 taxonomy (b4135fbb, 58c9c0bd), FND20 question identity (dcc9629d, 91b88e04), FND21 nested schema (5bbd0f65), FND22 artifact SHA-256 (d98c12c7), FND23 event decision inputs (3ebeff90). All slices IMPLEMENTED_UNVERIFIED or VERIFICATION_FAILED (intentional) pending Sol review.
