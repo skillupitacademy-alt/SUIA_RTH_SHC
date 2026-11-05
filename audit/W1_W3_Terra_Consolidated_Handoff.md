@@ -520,3 +520,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND05/FND23 help route source trace records signed user forwarding, separate omitted progress gate and broad error mappings; access policy and actual route/token/DB execution remain open.
+
+FND20 assignment help actual route/schema control (manifest `W1_W3_FND20_Assignment_Help_Route_Manifest.md`, baseline 9c378e74): guarded selection exited 0 (2 passed). The route forwards fixture-authenticated subject and schema-valid values to fixture service; malformed UUID and auth failure deny before service. Auth verifier, actual service composition, progress policy, DB and browser NOT EXECUTED; the separate service fixture control is recorded above. No production change; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/__tests__/route-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
