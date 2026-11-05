@@ -1,8 +1,8 @@
 # FND16: Form/Action Inventory and Persistence Controls
 
 **Finding:** FND16 (Partial / Implemented_Unverified)  
-**Authority:** audit/W1_W3_Terra_Consolidated_Handoff.md, Claude_Sonnet45_W1_W3_Detailed_Implementation_Handover_a239ca39.md  
-**Status:** IMPLEMENTED_UNVERIFIED (requires Sol review)
+**Authority:** audit/W1_W3_Terra_Consolidated_Handoff.md, audit/W1_W3_Sol_Sonnet_Handover_Feedback_9ed39f2d.md  
+**Status:** PARTIAL — RTH newsletter completed, other work pending
 
 ## Scope
 
