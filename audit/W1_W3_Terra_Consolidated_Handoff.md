@@ -431,3 +431,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 Cumulative diff check found whitespace on the added SubtopicTable test line in cdaf9db8; corrected without behavior change. Repeat cumulative `git diff HEAD~5 --check` exited 0.
+
+FND21 nested canonical document schema sensitivity (manifest `W1_W3_FND21_Nested_Schema_Control_Manifest.md`, baseline 1d510f14): actual schema guarded test exited 1 (2 passed / 1 retained failure). Valid nested paragraph and wrong document version controls pass, but unknown nested block is accepted because container child schema is `z.any()`. This is a schema-validation gap, distinct from previously accepted service membership validation. Actual schema is used by tutorial import, composer write/read, delivery, suggestion/transformation services, SHC analysis and RTH delivery; tightening can reject previously accepted stored children, including supported structural/legacy shapes. Deployed data, compatible historical adapter and accepted membership representation need assessment before altering this shared contract; no production change or physical data execution. FND21 remains VERIFICATION_FAILED for this invariant, no claim that the service permits unauthorized telemetry.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; const v=await startVitest('test',['packages/types/src/tutorial-rich-document/__tests__/nested-schema-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
