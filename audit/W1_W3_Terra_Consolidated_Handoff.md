@@ -442,3 +442,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 FND20 multi-select follow-up traces current flagged-option joining, comma splitting, partial credit and 0.8 boolean threshold in the crosswalk. Comma-containing option text, intended grading policy and actual scorer round-trip remain open; no algorithm, import or scoring execution changed.
 
 FND26 targeted lint after topic and recovery corrections: with `ESLINT_USE_FLAT_CONFIG=false`, `pnpm exec eslint 'src/app/api/admin/topics/route.ts' 'src/app/api/admin/topics/[id]/route.ts' 'src/schemas/hierarchy.schemas.ts'` from `apps/api-server`, and `pnpm exec eslint 'src/app/forgot-password/page.tsx'` from each learner app, all exited 0 with no warnings. Test files and marketing provider lint were not included; marketing package's missing ESLint configuration was previously recorded.
+
+FND14 SkillUp assessment listing truth (manifest `W1_W3_FND14_SkillUp_Exam_Listing_Manifest.md`, baseline 0227fd81): active `/student/exams` presented three literal tracks with status/duration and inert start controls and claimed results feed placement guidance; no data source was used. Replaced that presentation with unavailable, preserved the placement link and general study guidance. Guarded mounted control exited 0 (1 passed) with Link fixture; no assessment API, real browser or DB. From `apps/skillup-web`, `pnpm exec tsc --noEmit` and `ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint 'src/app/student/exams/page.tsx'` exited 0 without warnings. No assessment capability was added; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root test:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillup-web/src/app/student/exams/__tests__/listing-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
