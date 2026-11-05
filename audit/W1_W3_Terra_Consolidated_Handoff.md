@@ -534,3 +534,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/__tests__/route-service-composition.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND05 assignment help error boundary (manifest `W1_W3_FND05_Assignment_Help_Error_Manifest.md`, baseline b1829104): guarded actual route with fixture auth/service exited 1 (2 failed). Fixture wrong-brand 403 becomes 401 without service effect; unexpected fixture service error text is reflected in 500. These controls do not exercise real JWT/DB or establish access policy. Denial/status and sanitization assertions remain VERIFICATION_FAILED; no production edit, Sol review/scope required.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/__tests__/error-boundary.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/realtutorialhub-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
