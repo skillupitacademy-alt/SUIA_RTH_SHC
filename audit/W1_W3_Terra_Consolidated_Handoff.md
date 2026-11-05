@@ -550,3 +550,10 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/modules/admin-engine/__tests__/answerless-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND20 multi-select actual evaluator control (manifest `W1_W3_FND20_Multi_Select_Evaluator_Manifest.md`, baseline 24c5c6d3): guarded real AnswerEvaluationEngine and EvaluatorFactory exited 0 (1 passed), confirming full match, wrong-choice penalty, incomplete selection and existing 0.8 boolean threshold. In particular 4/5 correct and 5/5 plus one wrong both produce 0.8 and boolean true. This characterizes current algorithm, not policy acceptance; actual exam engine/persistence, option-text delimiter compatibility and learner/browser remain NOT EXECUTED. No production change; Sol review required.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/modules/answer-engine/__tests__/multi-select-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
