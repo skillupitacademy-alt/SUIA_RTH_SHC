@@ -28,3 +28,20 @@ it('cancels its retry timer on unmount', async () => {
   view.unmount();
   expect(vi.getTimerCount()).toBe(0);
 });
+it('does not send a request when the subtopic identity is missing', async () => {
+  vi.stubGlobal('fetch', vi.fn());
+  render(<AITutorBlock data={{ greeting: 'Hello', qa_pairs: [] }} theme={{ blockAITutor: '', blockAITutorHeader: '' }} />);
+  const input = screen.getByRole('textbox') as HTMLTextAreaElement;
+  fireEvent.change(input, { target: { value: 'Question' } });
+  await act(async () => { fireEvent.keyDown(input, { key: 'Enter' }); });
+  expect(fetch).not.toHaveBeenCalled();
+});
+it('sends the supplied subtopic identity', async () => {
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ source: 'qa_pairs', answer: 'Answer', chunks: null }), { status: 200 }));
+  vi.stubGlobal('fetch', fetchMock);
+  render(<AITutorBlock data={{ greeting: 'Hello', qa_pairs: [] }} theme={{ blockAITutor: '', blockAITutorHeader: '' }} subtopicId="fixture-subtopic" />);
+  const input = screen.getByRole('textbox') as HTMLTextAreaElement;
+  fireEvent.change(input, { target: { value: 'Question' } });
+  await act(async () => { fireEvent.keyDown(input, { key: 'Enter' }); });
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body).subtopicId).toBe('fixture-subtopic');
+});

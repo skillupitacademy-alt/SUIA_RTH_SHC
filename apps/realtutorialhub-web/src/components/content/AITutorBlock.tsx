@@ -41,7 +41,7 @@ function createMessageId(prefix: string) {
 export function AITutorBlock({
   data,
   theme,
-  subtopicId = '11111111-1111-1111-1111-111111111111',
+  subtopicId,
   subtopicName = 'this subtopic',
   difficulty = 'simple',
 }: AITutorBlockProps) {
@@ -87,7 +87,7 @@ export function AITutorBlock({
     };
   }, [subtopicId]);
 
-  const canSubmit = question.trim().length >= 3 && !isLoading && !isRateLimited;
+  const canSubmit = Boolean(subtopicId?.trim()) && question.trim().length >= 3 && !isLoading && !isRateLimited;
 
   const handleSubmit = async () => {
     const trimmedQuestion = question.trim();
