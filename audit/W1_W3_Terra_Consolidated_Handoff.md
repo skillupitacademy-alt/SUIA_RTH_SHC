@@ -345,3 +345,10 @@ Final cumulative diff follow-up: `git diff HEAD~10 --check` found a trailing bla
 FND26 API static check after topic schema probe: `pnpm exec tsc --noEmit` from `apps/api-server` exited 0. Existing tsconfig determines test inclusion; this does not establish a comprehensive test-type gate or alter the retained FND19 failure.
 
 FND15 compliance switching additional control (manifest `W1_W3_FND15_Compliance_Existing_Contract_Control_Manifest.md`, baseline f0d7c53b): guarded mounted selection now passes 4 tests, including already loaded A followed by pending and failed B, where copy remains disabled and no clipboard call occurs. Same exact command and mock limitations as the prior compliance control; no production change or physical backend/browser. IMPLEMENTED_UNVERIFIED pending Sol review.
+
+FND15 shared Project LLM context banner (manifest `W1_W3_FND15_Context_Banner_Manifest.md`, baseline 666e3e64): labels local purpose and version list as draft/supplied and target as proposed; an empty list no longer asserts an initial version. State, defaults and backend behavior are unchanged. Guarded config-free mounted controls exited 0 (2 passed); context is mocked, no browser or backend. From `apps/skillhubcore-admin`, `pnpm exec tsc --noEmit` and `ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint 'src/app/(admin)/tools/project-llm/components/ProjectLlmContextBanner.tsx'` each exited 0 without warnings. IMPLEMENTED_UNVERIFIED, Sol review required.
+
+Test command from repository root:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/components/__tests__/context-banner-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
