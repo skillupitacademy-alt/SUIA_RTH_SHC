@@ -456,3 +456,5 @@ Exact repository-root test:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/skillup-web/src/app/student/learn/__tests__/learning-truth.test.tsx','apps/skillup-web/src/app/student/exams/__tests__/listing-truth.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND08/FND22 candidate uploader provenance follow-up: client literal uploadedBy reaches backend candidate mapper and later approval requester input in source; actual permission/enforcer behavior and persisted execution remain NOT EXECUTED. Backend actor change requires Sol scope and policy selection; see inventory.
