@@ -1,6 +1,8 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { domains, getDb } from '@quiz/db';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -59,23 +61,34 @@ export async function POST(request: NextRequest) {
 
   try {
     const db = getDb();
-    const body = await request.json();
-    const { name, description, category, status = 'active' } = body;
+    const rawBody = await request.json();
 
-    if (!name || !category) {
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
       return NextResponse.json(
-        { error: 'Name and category are required' },
+        { error: 'Payload too deep or large' },
         { status: 400 }
       );
     }
 
+    const sanitizedBody = sanitizeJsonField(rawBody);
+    const parsed = domainSchema.safeParse(sanitizedBody);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid payload', issues: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const body = parsed.data;
+
     const [newDomain] = await db
       .insert(domains)
       .values({
-        name,
-        description,
-        category,
-        status,
+        name: body.name,
+        description: body.description,
+        category: body.category,
+        status: body.status ?? 'active',
       })
       .returning();
 
