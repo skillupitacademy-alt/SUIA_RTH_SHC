@@ -1,0 +1,3 @@
+# FND05 legacy progress concurrent update control manifest
+
+Baseline 8c15dbbc. Actual `TutorialProgressRepository.markBlockComplete` reads and merges completed blocks then updates by row ID with no version predicate. Add deterministic actual-repository fixture using two simultaneous reads of one snapshot and isolated adapter writes; distinct completions must both survive. Include sequential positive. This is a simulated interleaving, not PostgreSQL concurrency/transaction evidence. No schema, owner, physical DB or production edit; offline guard. Retain failure pending selected tenant/storage and concurrency contract.
