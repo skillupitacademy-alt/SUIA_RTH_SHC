@@ -36,3 +36,13 @@ it('keeps copy disabled when the current contract is unavailable', async () => {
   await waitFor(() => expect((screen.getByRole('button', { name: /Copy Full Brief/ }) as HTMLButtonElement).disabled).toBe(true));
   expect(state.write).not.toHaveBeenCalled();
 });
+
+it('labels static requirements as reference rather than gate evidence', () => {
+  state.get.mockReturnValue(new Promise(() => {}));
+  render(<Page />);
+  expect(screen.getByText(/Static reference material/)).toBeTruthy();
+  expect(screen.queryByText('Enforced by Gate')).toBeNull();
+  expect(screen.queryByText('Mandatory Contract')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: /View as Checklist/ }));
+  expect(screen.queryByText('Mandatory Contract')).toBeNull();
+});

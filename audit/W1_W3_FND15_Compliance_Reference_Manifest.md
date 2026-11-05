@@ -1,0 +1,3 @@
+# FND15 compliance brief reference disclosure manifest
+
+Baseline 26524223. Existing compliance-brief displays a static array as generated mandatory requirements and enforced gates regardless of backend contract; icons resemble passed checks. FND15 allows this active evidence panel. Change only presentation and copied template language to identify the static array as reference, distinguish loaded backend contract, and avoid unsupported gate/certification claims. Preserve actual fetched contract and workflow navigation. Adjacent mounted test with mocked API verifies source labels and no enforced-gate claim; isolated fetch only and offline guard. No backend policy, approval or gate implementation. Sol review required.
