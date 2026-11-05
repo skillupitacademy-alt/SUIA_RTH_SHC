@@ -1,0 +1,3 @@
+# FND05 assignment help error boundary manifest
+
+Baseline 3d3d9d99, clean tree. Actual help route catches all authentication errors as 401 and returns unexpected service exception text in 500. Reuse existing `AssignmentAuthError` contract to preserve 401/403 with generic messages; sanitize unexpected auth and service errors to 500. Preserve valid principal forwarding, schema, service and access policy. Edit only help route and isolated error fixture/tests; test auth, service and valid/invalid input with existing composition. No ownership/progress authorization change, physical JWT/DB/browser or network.
