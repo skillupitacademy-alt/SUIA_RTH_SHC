@@ -13,7 +13,7 @@ RTH-ACTIVE-007,27642,no,"SOURCE CONFIRMED, POLICY OPEN: approved and deployed bo
 RTH-ACTIVE-008,27644,no,"SOURCE PARTIAL: deprecated getTutorialBySlug remains defined; scoped direct-call search found no callers, dynamic invocation and active delivery path NOT EXECUTED."
 RTH-AI-001,27101,no,VERIFICATION_FAILED: isolated actual route accepts fixture other-brand user; real JWT/proxy/deployment NOT EXECUTED.
 RTH-AI-002,27102,no,VERIFICATION_FAILED: isolated actual route returns global seed Q&A for unrelated fixture subtopic; real content/store NOT EXECUTED.
-RTH-AI-003,27103,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+RTH-AI-003,27103,no,"SOURCE CONFIRMED, POLICY OPEN: query calls completion after seed/vector lookup; distinct learning completion authority and physical progress NOT EXECUTED."
 RTH-AI-004,27161,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-AI-005,27167,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-AI-006,27175,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
@@ -85,7 +85,7 @@ RTH-FE-003,26997,no,"UNVERIFIED: inspect finding, wave, active source and accept
 RTH-FE-004,26998,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-005,26999,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-006,27042,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-FE-007,27104,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+RTH-FE-007,27104,no,SOURCE CONFIRMED: AITutorBlock 429 remains disabled; analogous actual useAiTutor hook retry control fails. Actual AITutorBlock/browser NOT EXECUTED.
 RTH-FE-008,27105,no,VERIFICATION_FAILED: mounted BlockRenderer omits supplied subtopic ID; child source uses fixed fallback. Actual browser/request NOT EXECUTED.
 RTH-FE-009,27106,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-FE-010,27211,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
