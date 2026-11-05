@@ -460,3 +460,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 FND08/FND22 candidate uploader provenance follow-up: client literal uploadedBy reaches backend candidate mapper and later approval requester input in source; actual permission/enforcer behavior and persisted execution remain NOT EXECUTED. Backend actor change requires Sol scope and policy selection; see inventory.
 
 FND08/FND22 correction to requester risk: enforcer's self-approval method compares persisted approval workflow_requester with approved_by, ignoring its requester argument; configurable admin override exists. Candidate uploader remains untrusted provenance, but this source does not prove that field bypasses the separation check. No runtime execution.
+
+FND08/FND22 source follow-up links workflow creation JWT user_id to persisted workflow requester and governance approval effective requester on the examined path. Alternate paths, JWT validation and real enforcement remain NOT EXECUTED; candidate uploadedBy remains untrusted metadata.
