@@ -7,7 +7,6 @@ import { Redis } from '@upstash/redis';
 
 import { logger } from '@/lib/logger';
 import { markAiTutorBlockComplete } from '@/lib/ai-tutor-progress';
-import { DEFAULT_TUTORIAL_CONTENT } from '../../../../lib/tutorial-content';
 import {
   queryAiTutorVector,
   type AiTutorVectorMetadata,
@@ -53,7 +52,6 @@ const defaultDeps: QueryDeps = {
 
 const RATE_LIMIT = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
-const aiTutorQaPairs = DEFAULT_TUTORIAL_CONTENT.ai_tutor?.qa_pairs ?? [];
 
 const toErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
@@ -106,26 +104,6 @@ const getSessionUserId = async (request: Request): Promise<string | 401 | 403> =
   } catch {
     return 401;
   }
-};
-
-const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ');
-
-const tokenize = (value: string) =>
-  normalizeText(value)
-    .split(/\s+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3);
-
-const findQaPairMatch = (question: string) => {
-  const tokens = tokenize(question);
-  if (tokens.length === 0) return null;
-
-  return (
-    aiTutorQaPairs.find((pair) => {
-      const haystack = normalizeText(pair.question);
-      return tokens.some((token) => haystack.includes(token));
-    }) ?? null
-  );
 };
 
 const maybeMarkAiTutorComplete = async (userId: string, subtopicId: string) => {
@@ -186,25 +164,6 @@ async function processAiTutorQuery(
     }
 
     const questionsRemaining = Math.max(0, RATE_LIMIT - rateLimit.count);
-    const qaPairMatch = findQaPairMatch(input.question);
-
-    if (qaPairMatch !== null) {
-      await maybeMarkAiTutorComplete(userId, input.subtopicId);
-      deps.logger.info({
-        event: 'ai_tutor.query',
-        userId,
-        subtopicId: input.subtopicId,
-        scoreRange: null,
-      });
-
-      return NextResponse.json({
-        source: 'qa_pairs',
-        answer: qaPairMatch.answer,
-        chunks: null,
-        questionsRemaining,
-      });
-    }
-
     const results = await queryAiTutorVector(input.question, {
       subtopicId: input.subtopicId,
       difficulty: input.difficulty,
