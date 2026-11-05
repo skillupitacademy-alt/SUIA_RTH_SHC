@@ -613,3 +613,5 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; const v=await startVitest('test',['apps/realtutorialhub-web/src/components/content/__tests__/ai-tutor-retry-control.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND01 RTH-AI-004/005/006 candidate reconciliation: isolated cross-brand route denial and both mounted retry controls fail; duplicated client state is source-confirmed but shared abstraction remains a design decision. No live JWT/browser or rate store execution; no finding closed.

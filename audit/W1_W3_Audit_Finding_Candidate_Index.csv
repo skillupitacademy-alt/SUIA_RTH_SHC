@@ -14,9 +14,9 @@ RTH-ACTIVE-008,27644,no,"SOURCE PARTIAL: deprecated getTutorialBySlug remains de
 RTH-AI-001,27101,no,VERIFICATION_FAILED: isolated actual route accepts fixture other-brand user; real JWT/proxy/deployment NOT EXECUTED.
 RTH-AI-002,27102,no,VERIFICATION_FAILED: isolated actual route returns global seed Q&A for unrelated fixture subtopic; real content/store NOT EXECUTED.
 RTH-AI-003,27103,no,"SOURCE CONFIRMED, POLICY OPEN: query calls completion after seed/vector lookup; distinct learning completion authority and physical progress NOT EXECUTED."
-RTH-AI-004,27161,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-AI-005,27167,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-RTH-AI-006,27175,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+RTH-AI-004,27161,no,VERIFICATION_FAILED: actual-route fixture cross-brand denial control fails; real JWT/proxy NOT EXECUTED.
+RTH-AI-005,27167,no,SOURCE CONFIRMED: hook and block duplicate submit/rate state; abstraction decision remains open.
+RTH-AI-006,27175,no,VERIFICATION_FAILED: both actual mounted hook and block remain rate limited after fixture Retry-After; real browser/API NOT EXECUTED.
 RTH-API-001,26202,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-API-002,26547,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 RTH-API-003,26548,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
