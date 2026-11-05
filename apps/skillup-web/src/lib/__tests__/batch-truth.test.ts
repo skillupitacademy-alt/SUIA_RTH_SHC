@@ -19,9 +19,21 @@ describe.each([getSkillupBatches, getSkillupMyBatch])('batch data truth', (load)
   it('retains enrolled batch and completed session without invented recording or next session', async () => {
     state.results = [[{ batchId: 'b', batchName: 'Stored batch', enrolledCount: 2, facultyName: null }], [{ id: 's', scheduledAt: '2026-01-01T00:00:00Z', title: 'Stored note', mode: 'online', status: 'completed' }]];
     const result = await load('learner');
-    expect(result.batch).toMatchObject({ name: 'Stored batch', nextSession: null, materials: [] });
+    expect(result.batch).toMatchObject({ name: 'Stored batch', faculty: 'Unavailable', nextSession: null, materials: [] });
     expect(result.sessions[0]).toMatchObject({ id: 's', status: 'completed' });
     expect(result.sessions[0]).not.toHaveProperty('recording');
+  });
+  it('selects the nearest future scheduled session instead of the first descending row', async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date('2026-01-02T00:00:00Z'));
+    try {
+      state.results = [[{ batchId: 'b', batchName: 'Batch', enrolledCount: 2, facultyName: 'Stored faculty' }], [
+        { id: 'later', scheduledAt: '2026-01-05T00:00:00Z', status: 'scheduled' },
+        { id: 'near', scheduledAt: '2026-01-03T00:00:00Z', status: 'scheduled' },
+        { id: 'past', scheduledAt: '2026-01-01T00:00:00Z', status: 'scheduled' },
+      ]];
+      const result = await load('learner');
+      expect(result.batch).toMatchObject({ faculty: 'Stored faculty', nextSession: '2026-01-03T00:00:00.000Z' });
+    } finally { vi.useRealTimers(); }
   });
   it('propagates storage failure', async () => {
     state.fail = true;

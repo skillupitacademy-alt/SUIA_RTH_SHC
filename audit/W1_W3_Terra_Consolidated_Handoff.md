@@ -472,3 +472,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND13 dashboard payment source trace records people-store installment totals versus separate payment-page pool; authoritative cross-store balance, currency and synchronization remain NOT EXECUTED/decision-pending. No financial data or mutation accessed.
+
+FND13 next-session/faculty truth (manifest `W1_W3_FND13_Next_Session_Manifest.md`, baseline 5d75632e): three data helpers previously chose the first scheduled session from descending rows, potentially displaying the latest or a past session as next; they now select the nearest future scheduled session without changing history order. Missing faculty is unavailable in both batch helpers. Guarded forked actual-helper selection exited 0 (2 files / 10 passed), with fake clock and mocked DB; initial run exited 1 (6 passed / 4 failed) because an automated edit produced an invalid call, corrected before rerun. No physical DB/browser. `pnpm exec tsc --noEmit` from `apps/skillup-web` exited 0, also covering prior attendance containment; targeted ESLint was interrupted as it completed and returned exit 0 without diagnostics, so do not treat that ambiguous interruption as a reliable lint pass. IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact test from repository root:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/batch-truth.test.ts','apps/skillup-web/src/lib/__tests__/dashboard-truth.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```

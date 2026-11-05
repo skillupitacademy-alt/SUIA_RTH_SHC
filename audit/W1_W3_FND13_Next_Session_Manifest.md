@@ -1,0 +1,3 @@
+# FND13 next session ordering and faculty truth manifest
+
+Baseline 5d75632e. `getStudentBatchContext` returns sessions descending by scheduled time; three consumers take the first scheduled row and label it next, even if it is later or past. `getSkillupBatches` also fabricates faculty label when absent. FND13 allows existing helper/callers. Select nearest scheduled session at or after current time without mutating order, use unavailable faculty fallback. Keep session history and status unchanged. Actual helper tests cover out-of-order/past/none and stored faculty with isolated adapters and guarded clock; no DB/browser. Sol review required.

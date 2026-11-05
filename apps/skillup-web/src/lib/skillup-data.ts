@@ -164,6 +164,13 @@ export async function getSkillupPrograms() {
   };
 }
 
+function findNextScheduledSession<T extends { status: string; scheduledAt: Date | string }>(sessions: T[]): T | undefined {
+  const now = Date.now();
+  return sessions
+    .filter((session) => session.status === 'scheduled' && new Date(session.scheduledAt).getTime() >= now)
+    .reduce<T | undefined>((nearest, session) => nearest === undefined || new Date(session.scheduledAt).getTime() < new Date(nearest.scheduledAt).getTime() ? session : nearest, undefined);
+}
+
 export async function getSkillupStudentDashboard(userId: string) {
     const profile = await getStudentProfile(userId);
     const batchContext = await getStudentBatchContext(userId);
@@ -187,7 +194,7 @@ export async function getSkillupStudentDashboard(userId: string) {
       .filter((item) => item.status !== 'paid')
       .reduce((sum, item) => sum + item.amount, 0);
 
-    const nextSession = sessions.find((session) => session.status === 'scheduled');
+    const nextSession = findNextScheduledSession(sessions);
 
     const attendancePercent = null;
     const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
@@ -228,7 +235,7 @@ export async function getSkillupMyBatch(userId: string) {
       return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled');
+    const nextSession = findNextScheduledSession(batchContext.sessions);
     const currentTopic = 'Unavailable';
     const schedule = batchContext.sessions.slice(0, 3).map((session) => ({
       day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
@@ -421,13 +428,13 @@ export async function getSkillupBatches(userId: string) {
       return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled');
+    const nextSession = findNextScheduledSession(batchContext.sessions);
     const materials: string[] = [];
 
     return {
       batch: {
         name: batchContext.batchName,
-        faculty: batchContext.facultyName ?? 'SkillUp Faculty',
+        faculty: batchContext.facultyName ?? 'Unavailable',
         currentTopic: 'Unavailable',
         nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
