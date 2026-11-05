@@ -638,3 +638,5 @@ Exact command from `services/project-ai`:
 ```powershell
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; $env:PYTHONPATH='.'; $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; python -c "import asyncio,builtins,socket,dotenv; loop=asyncio.new_event_loop(); builtins._foundation_test_loop=loop; deny=lambda *a,**k: (_ for _ in ()).throw(RuntimeError('offline guard')); socket.socket.connect=deny; socket.create_connection=deny; socket.getaddrinfo=deny; dotenv.load_dotenv=lambda *a,**k: False; import pytest; result=pytest.main(['-q','tests/foundation/test_gate1_boundary.py']); loop.close(); raise SystemExit(result)"
 ```
+
+FND03 private progress migration draft `W1_W3_FND03_Private_Progress_Migration_Draft.md` records observed keys, scoped prospective owners, expand/qualify/contract, quarantine and collision-safe rollback. It is deliberately non-executable pending physical routing, provenance and full consumer inventory; no schema/DB operation. Telemetry global event-ID uniqueness and exact-retry constraints remain explicit. Sol review required.
