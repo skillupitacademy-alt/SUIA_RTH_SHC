@@ -25,7 +25,6 @@ export async function GET(
   try {
     const params = await context.params;
     
-    console.log('[SkillUp Tutorial Content - DEPRECATED] Request for:', params.subtopicId);
     console.warn('[SkillUp Tutorial Content] ⚠️  DEPRECATION WARNING: Use /api/tutorial/sections/* instead');
     
     // Authenticate user (SkillUp-specific)
@@ -35,13 +34,11 @@ export async function GET(
     }
     const user = { userId: authResult.userId };
     
-    console.log('[SkillUp Tutorial Content] User authenticated:', user.userId);
     
     // Call API server with brand context
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const apiEndpoint = `${apiUrl}/api/tutorial/content/${params.subtopicId}`;
     
-    console.log('[SkillUp Tutorial Content] Calling API:', apiEndpoint);
     
     const response = await fetch(
       apiEndpoint,
