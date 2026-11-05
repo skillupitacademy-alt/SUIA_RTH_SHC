@@ -164,22 +164,28 @@ export default function ComplianceBriefPage() {
   const workflowId = searchParams.get('workflowId') || state.workflowId;
   const [viewMode, setViewMode] = useState<'grid' | 'checklist'>('grid');
   const [copied, setCopied] = useState(false);
-  const [contract, setContract] = useState<EngineeringContract | null>(null);
+  const [loadedContract, setLoadedContract] = useState<{ workflowId: string; data: EngineeringContract } | null>(null);
+  const contract = loadedContract?.workflowId === workflowId ? loadedContract.data : null;
   const [contractLoading, setContractLoading] = useState(false);
 
-  // Load engineering contract from backend when workflowId is available
+  // Ignore responses from a workflow that is no longer selected.
   useEffect(() => {
-    if (!workflowId) return;
+    let active = true;
+    setLoadedContract(null);
+    if (!workflowId) {
+      setContractLoading(false);
+      return () => { active = false; };
+    }
     setContractLoading(true);
     projectLlmClient.getEngineeringContract(workflowId)
       .then((data) => {
-        setContract(data);
+        if (active) setLoadedContract({ workflowId, data });
       })
       .catch(() => {
-        // Fall back to static requirements â€” contract may not be generated yet
-        setContract(null);
+        if (active) setLoadedContract(null);
       })
-      .finally(() => setContractLoading(false));
+      .finally(() => { if (active) setContractLoading(false); });
+    return () => { active = false; };
   }, [workflowId]);
 
   const handleCopyBrief = () => {
@@ -295,9 +301,14 @@ that any gate passed without attached verification evidence.`;
               )}
             </button>
 
+            {contract === null && (
+              <span className="text-xs text-slate-500" role="status">
+                {contractLoading ? 'Loading current contract…' : 'Current contract unavailable; copying is disabled.'}
+              </span>
+            )}
             <button
               onClick={handleCopyBrief}
-              disabled={contractLoading}
+              disabled={contractLoading || contract === null}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 rounded-xl transition-all shadow-sm shadow-pink-500/20 active:scale-95"
             >
               {copied ? (
