@@ -543,3 +543,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND20 source follow-up: schema permits answerless/unflagged options, while create engine substitutes “No correct answer provided”; flagged options may be legitimate. Authoring/scoring contract and actual persistence remain open; no blanket validation rule assumed.
+
+FND20 answerless schema-to-engine fixture control (manifest `W1_W3_FND20_Answerless_Engine_Control_Manifest.md`, baseline 2122d0ca): guarded actual schema plus engine with mocked duplicate detection, transaction and repository exited 0 (2 passed). An answerless string-options input reaches repository fixture with literal fallback; a flagged correct option remains flagged. This is descriptive, not a validated scoring or persistence contract. Initial run exited 1 because assertion expected two repository arguments while actual call has three; corrected to inspect its data argument. Physical DB, queue, scorer and API auth NOT EXECUTED. No production change; authoring policy remains open, IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/api-server/src/modules/admin-engine/__tests__/answerless-contract.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/api-server/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
