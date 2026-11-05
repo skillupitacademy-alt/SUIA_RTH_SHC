@@ -507,3 +507,5 @@ Exact repository-root command:
 ```powershell
 $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import path from 'node:path'; const v=await startVitest('test',['apps/skillup-web/src/lib/__tests__/read-fallback-boundary.test.ts'],{run:true,config:false,setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts'],pool:'forks',maxWorkers:1},{resolve:{alias:{'@':path.resolve('apps/skillup-web/src')}},test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
 ```
+
+FND05 decision input traces program detail/list/metadata/static params, faculty and sitemap paths: auth-required BFF policy conflicts with requestless local data consumers. Sol must select public catalog vs protected policy and build behavior; no guessed public access or production change.
