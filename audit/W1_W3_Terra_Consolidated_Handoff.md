@@ -46,7 +46,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND11 | NOT COMPLETE: consumer inventory, equal-email ambiguity controls and uniqueness decision remain; migration separate. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
 | FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty and batch/recording slices committed; placement, remaining dashboard truth, HTTP and physical evidence remain. |
-| FND14 | IMPLEMENTED_UNVERIFIED for shared result-report DATA-02 slice only, commit `2d865a14`, manifest `W1_W3_FND14_DATA02_Slice_Manifest.md`; full assessment/result surface coverage remains open. |
+| FND14 | PARTIAL / IMPLEMENTED_UNVERIFIED: shared result-report and SkillUp assessment-list truth slices implemented; full assessment/result coverage remains open. |
 | FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC operational and Project LLM truth slices committed; other governance consumers and authority remain. |
 | FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: newsletter and recovery acknowledgement slices committed; other form/action inventory and controls remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
@@ -56,7 +56,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND21 | VERIFICATION_FAILED: nested document schema accepts unknown child; compatibility and private owner authority remain open. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
 | FND23 | VERIFICATION_FAILED: event registered-type and retry probes remain red; analytics HTTP failure correction and tracker fixture pass pending review; durable delivery and event authority remain open. |
-| FND24 | NOT COMPLETE: domain-specific caller controls depend on FND18–FND23. |
+| FND24 | PARTIAL / IMPLEMENTED_UNVERIFIED: isolated assignment-help route/service composition tested; full domain caller controls depend on FND18–FND23. |
 | FND25 | PARTIAL: mounted report truth and lifecycle adverse controls run; remaining domain invariants and infrastructure-sensitive controls open. |
 | FND26 | PARTIAL: affected UI and learner-app typechecks and whitespace checks pass; other package lint/build gates not executed. |
 | FND27 | PARTIAL: `63d56dff` maps source-backed compatibility and principle evidence for G1-G9; complete group-specific regressions and Sol review remain. |
