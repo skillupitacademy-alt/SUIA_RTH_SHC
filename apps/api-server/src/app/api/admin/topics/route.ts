@@ -73,13 +73,16 @@ async function postHandler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
     const body = parsed.data;
+    if (body.complexity !== undefined && body.complexityLevel !== undefined) {
+      return ApiResponse.error(badRequest('Specify one complexity representation'));
+    }
 
     const createBody: TopicInsert = {
       subjectId: body.subjectId,
       name: body.name,
       description: body.description,
       status: body.status,
-      complexity: typeof body.complexityLevel === 'number' ? String(body.complexityLevel) : undefined,
+      complexity: body.complexity ?? (body.complexityLevel !== undefined ? String(body.complexityLevel) : undefined),
       weight: typeof body.weight === 'number' ? body.weight : undefined,
     };
 

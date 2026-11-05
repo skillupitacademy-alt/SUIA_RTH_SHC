@@ -24,6 +24,7 @@ export const topicSchema = z.object({
   subjectId: uuid,
   name: z.string().min(1),
   description: z.string().optional(),
+  complexity: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
   complexityLevel: z.number().int().min(1).optional(),
   weight: z.number().int().min(1).optional(),
   learningUrl: z.string().url().or(z.string().length(0)).optional().nullable(),

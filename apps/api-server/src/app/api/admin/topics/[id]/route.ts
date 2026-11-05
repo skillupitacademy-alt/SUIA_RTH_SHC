@@ -31,8 +31,12 @@ async function patchHandler(
     if (!parsed.success) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
-    const body = parsed.data;
-    const result = await AdminTopicEngine.updateTopic(id, body, _payload.userId);
+    const { complexityLevel, complexity, ...body } = parsed.data;
+    if (complexity !== undefined && complexityLevel !== undefined) {
+      return ApiResponse.error(badRequest('Specify one complexity representation'));
+    }
+    const selectedComplexity = complexity ?? (complexityLevel !== undefined ? String(complexityLevel) : undefined);
+    const result = await AdminTopicEngine.updateTopic(id, { ...body, ...(selectedComplexity !== undefined ? { complexity: selectedComplexity } : {}) }, _payload.userId);
     if (result?.id !== undefined) {
       void HierarchySyncService.sync('topic', result.id);
     }

@@ -1,0 +1,32 @@
+import { NextRequest } from 'next/server';
+import { beforeEach, expect, it, vi } from 'vitest';
+const calls = vi.hoisted(() => ({ create: vi.fn(async (x: unknown) => ({ id: 't', ...x as object })), update: vi.fn(async (_id: string, x: unknown) => ({ id: 't', ...x as object })) }));
+vi.mock('@/modules/auth/admin-audience.util', () => ({ requireAdminRouteAccess: vi.fn(async () => ({ userId: 'admin' })) }));
+vi.mock('@/modules/admin-engine/admin.topic.engine', () => ({ AdminTopicEngine: class {} }));
+vi.mock('@/modules/admin-engine/admin.engine', () => ({ AdminTopicEngine: { updateTopic: calls.update } }));
+vi.mock('@/modules/core/container', () => ({ container: { get: () => ({ createTopic: calls.create }) } }));
+vi.mock('@/modules/hierarchy/hierarchy-sync.service', () => ({ HierarchySyncService: { sync: vi.fn() } }));
+vi.mock('@/lib/cqrs', () => ({ bootstrapCQRS: vi.fn(), GetTopicsQuery: class {}, queryBus: {} }));
+vi.mock('@/lib/metrics', () => ({ recordCounter: vi.fn(), recordTimer: vi.fn() }));
+import { POST } from '../route';
+import { PATCH } from '../[id]/route';
+const base = { subjectId: '00000000-0000-4000-8000-000000000001', name: 'Topic' };
+const req = (body: unknown, method: string) => new NextRequest('http://localhost/api/admin/topics/t', { method, body: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
+beforeEach(() => { calls.create.mockClear(); calls.update.mockClear(); });
+it.each(['beginner', 'intermediate', 'advanced', 'expert'])('preserves %s on create and update', async (complexity) => {
+  expect((await POST(req({ ...base, complexity }, 'POST'))).status).toBe(201);
+  expect(calls.create).toHaveBeenLastCalledWith(expect.objectContaining({ complexity }), 'admin');
+  expect((await PATCH(req({ complexity }, 'PATCH'), { params: Promise.resolve({ id: 't' }) })).status).toBe(200);
+  expect(calls.update).toHaveBeenLastCalledWith('t', { complexity }, 'admin');
+});
+it('supports legacy numeric input and rejects malformed or conflicting representations before writes', async () => {
+  expect((await POST(req({ ...base, complexityLevel: 3 }, 'POST'))).status).toBe(201);
+  expect(calls.create).toHaveBeenLastCalledWith(expect.objectContaining({ complexity: '3' }), 'admin');
+  expect((await PATCH(req({ complexityLevel: 3 }, 'PATCH'), { params: Promise.resolve({ id: 't' }) })).status).toBe(200);
+  expect(calls.update).toHaveBeenLastCalledWith('t', { complexity: '3' }, 'admin');
+  calls.create.mockClear(); calls.update.mockClear();
+  expect((await POST(req({ ...base, complexity: 'invalid' }, 'POST'))).status).toBe(400);
+  expect((await POST(req({ ...base, complexity: 'expert', complexityLevel: 4 }, 'POST'))).status).toBe(400);
+  expect((await PATCH(req({ complexity: 'expert', complexityLevel: 4 }, 'PATCH'), { params: Promise.resolve({ id: 't' }) })).status).toBe(400);
+  expect(calls.create).not.toHaveBeenCalled(); expect(calls.update).not.toHaveBeenCalled();
+});
