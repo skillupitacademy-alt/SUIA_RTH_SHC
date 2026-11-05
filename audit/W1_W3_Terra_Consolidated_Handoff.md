@@ -615,3 +615,5 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 ```
 
 FND01 RTH-AI-004/005/006 candidate reconciliation: isolated cross-brand route denial and both mounted retry controls fail; duplicated client state is source-confirmed but shared abstraction remains a design decision. No live JWT/browser or rate store execution; no finding closed.
+
+FND03 decision input now includes RTH AI tutor precise owners and discriminating controls; signed-subject/content/completion decisions remain pending and no authority was selected.
