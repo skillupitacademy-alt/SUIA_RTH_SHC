@@ -19,7 +19,7 @@ Current HEAD: 23a723e7 (includes FND16 draft that needs correction)
 - REQUIRED: Revert EnquiryEditForm changes OR replace with source-backed contract evidence
 - REQUIRED: Distinguish committed server success vs async work vs rejection vs unknown transport
 - DO NOT: Add automatic auth retries or alter login/signup from generic assumption
-- FILES: 
+- FILES:
   - apps/skillup-admin/src/components/crm/EnquiryEditForm.tsx (revert to 9ed39f2d version)
   - apps/skillup-admin/src/components/crm/__tests__/fnd16-forms-acknowledgement.test.tsx (remove or update)
   - audit/W1_W3_FND16_Form_Action_Inventory_And_Persistence_Manifest.md (correct)
