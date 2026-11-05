@@ -134,6 +134,7 @@ describe('FND13 placement truth controls', () => {
     expect(result.jobs[0].match).toBe(null); // Matching unavailable when vector fails
     expect(result.jobs[1].match).toBe(null);
     expect(result.jobs[0].company).toBe('DataTech');
+    expect(result.matchingStatus).toBe('unavailable');
 
     state.vectorError = null;
   });
@@ -183,6 +184,7 @@ describe('FND13 placement truth controls', () => {
     expect(result.jobs[0].match).toBe(92); // 0.92 * 100
     expect(result.jobs[1].id).toBe('job-backend-1');
     expect(result.jobs[1].match).toBe(87); // 0.87 * 100
+    expect(result.matchingStatus).toBe('matched');
   });
 
   it('returns null profile when no active profile exists', async () => {
@@ -207,6 +209,7 @@ describe('FND13 placement truth controls', () => {
     // Without profile, match is null (matching unavailable)
     expect(result.jobs[0].match).toBe(null);
     expect(result.jobs[0].company).toBe('Company A');
+    expect(result.matchingStatus).toBe('missing_profile');
   });
 
   it('handles empty job listings gracefully', async () => {
@@ -290,7 +293,7 @@ describe('FND13 placement truth controls', () => {
     });
 
     // Verify no synthetic date fields
-    expect(Object.keys(result)).toEqual(['profile', 'jobs']);
+    expect(Object.keys(result)).toEqual(['profile', 'jobs', 'matchingStatus']);
     expect(Object.keys(result.jobs[0])).toEqual(['id', 'company', 'title', 'location', 'match']);
   });
 

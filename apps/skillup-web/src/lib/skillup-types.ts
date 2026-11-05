@@ -55,6 +55,7 @@ export type SkillupPlacementProfile = {
 export type SkillupPlacementResponse = {
   profile: SkillupPlacementProfile | null;
   jobs: SkillupJobMatch[];
+  matchingStatus: 'missing_profile' | 'unavailable' | 'matched';
 };
 
 export type SkillupFacultyMember = {

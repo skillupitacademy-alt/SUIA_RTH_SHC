@@ -356,6 +356,9 @@ export async function getSkillupPlacement(userId: string) {
         }
       : null;
 
+    // Track whether vector matching succeeded for matchingStatus
+    let vectorMatchingSucceeded = false;
+
     // Process jobs: keep persisted jobs browsable in DB order, with null match when unavailable
     const jobsWithMatches = await (async () => {
       // Without profile, return jobs in DB order with null match (no matching available)
@@ -403,6 +406,7 @@ export async function getSkillupPlacement(userId: string) {
           .filter((item): item is { id: string; company: string; title: string; location: string; match: number | null } => item !== null);
 
         if (ranked.length > 0) {
+          vectorMatchingSucceeded = true;
           return ranked;
         }
       } catch {
@@ -419,9 +423,17 @@ export async function getSkillupPlacement(userId: string) {
       }));
     })();
 
+    // Determine matching status: missing_profile, unavailable, or matched
+    const matchingStatus = profile === null
+      ? 'missing_profile'
+      : vectorMatchingSucceeded && jobsWithMatches.some(job => job.match !== null)
+        ? 'matched'
+        : 'unavailable';
+
     return {
       profile,
       jobs: jobsWithMatches,
+      matchingStatus,
     };
 }
 
