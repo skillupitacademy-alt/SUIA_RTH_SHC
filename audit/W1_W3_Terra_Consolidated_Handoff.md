@@ -401,3 +401,10 @@ $env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --inpu
 Earlier red FND19 and MKT-018 probes are superseded for these isolated boundaries only. Other tenant and event failures remain VERIFICATION_FAILED; no aggregate pass is asserted.
 
 FND19 correction limitation: historical numeric complexity strings can fall outside the named API-client union and domain service sorts stored text; see inventory. No physical data, migration or interpretation has been established.
+
+FND19 taxonomy delete failure controls (manifest `W1_W3_FND19_Delete_Failure_Controls_Manifest.md`, baseline ac6d302d): real mounted SubjectTable, SkillTable, TopicTable and SubtopicTable now each exercise an intercepted failing delete with the displayed resource ID and generic error; their existing identity positives/negatives are retained. Guarded config-free combined selection exited 0, 3 files / 20 tests passed. API, cards/dialog where noted, transport and physical browser/DB are fixtures or NOT EXECUTED. No production behavior changed. This supersedes the earlier statement that individual mounted failure controls were unexecuted; IMPLEMENTED_UNVERIFIED pending Sol review.
+
+Exact repository-root command:
+```powershell
+$env:DATABASE_URL=''; $env:DIRECT_URL=''; $env:NEON_DATABASE_URL=''; node --input-type=module -e "import { startVitest } from 'vitest/node'; import react from '@vitejs/plugin-react'; import path from 'node:path'; const v=await startVitest('test',['apps/skillhubcore-admin/src/components/questions/__tests__/topic-identity.test.tsx','apps/skillhubcore-admin/src/components/questions/__tests__/subtopic-identity.test.tsx','apps/skillhubcore-admin/src/components/questions/__tests__/subject-skill-identity.test.tsx'],{run:true,config:false,environment:'jsdom',setupFiles:['audit/W1_W3_Offline_Test_Network_Guard.ts']},{resolve:{alias:{'@':path.resolve('apps/skillhubcore-admin/src')}},plugins:[react()],test:{exclude:['**/.worktrees/**','**/node_modules/**']}});if(!v)process.exit(1);await v.close();"
+```
