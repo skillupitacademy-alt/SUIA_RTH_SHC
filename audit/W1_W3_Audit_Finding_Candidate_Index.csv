@@ -2,7 +2,7 @@ candidate_id,first_audit_line,in_91_row_crosswalk,disposition
 PA-A-001,32350,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 PA-A-002,32376,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 PA-A-003,32392,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-PA-A-004,32410,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+PA-A-004,32410,yes,"SOURCE CONFIRMED, OPEN: exact/shared query lacks deterministic precedence; no real-store selection or Sol decision."
 RTH-ACTIVE-001,27616,no,"SOURCE CONFIRMED, OPEN: page identity repository still filters exact/shared and limit(1) without ordering; simultaneous candidates NOT EXECUTED."
 RTH-ACTIVE-002,27617,no,"SOURCE CONFIRMED, POLICY OPEN: delivery service permits approved/deployed; intended publication policy requires Sol decision."
 RTH-ACTIVE-003,27618,no,"SOURCE CONFIRMED, CONDITIONAL: sections cache key uses slug/difficulty while fetch forwards learner IDs; response personalization and physical cache isolation NOT EXECUTED."
@@ -349,7 +349,7 @@ SHC-DATA-BOUNDARY-001,2688,no,"UNVERIFIED: inspect finding, wave, active source 
 SHC-DATA-INTEGRITY-001,2974,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DATA-OWN-001,2180,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DATA-QUERY-001,2932,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
-SHC-DATA-TRUTH-001,5860,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
+SHC-DATA-TRUTH-001,5860,yes,IMPLEMENTED_UNVERIFIED: f12b0d0a/ce7d7906 remove fabricated timestamp treatment; Sol acceptance pending.
 SHC-DEAD-CODE-001,15495,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DIP-001,1727,yes,"UNVERIFIED: inspect finding, wave, active source and acceptance"
 SHC-DIP-REFERENCE-001,7822,no,"UNVERIFIED: inspect finding, wave, active source and acceptance"
