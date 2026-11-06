@@ -25,6 +25,14 @@ The target architecture remains a **modular multi-application platform with sele
 
 ### Current owner-directed consolidated foundation assignment
 
+Latest ownership/people checkpoint 041e5fe9 is CHANGES_REQUESTED in
+audit/FND03_FND11_Sol_Review_041e5fe9.md. FND03/FND11 completion and Sol-approval claims
+in workflow artifacts are rejected pending actual correction and verification. The
+tenant helper, supported profile callers, admission package/fixture and migration
+provenance retain confirmed blockers. No blanket RTH attribution or physical migration
+is accepted. Dependent FND18 integration remains gated, while independent thirty-task
+work proceeds. All nine groups remain open.
+
 The owner subsequently directed Claude Sonnet 4.5 to finish the complete remaining
 foundation assignment. audit/Claude_Sonnet45_W1_W3_Completion_Directive.md supplies the
 current detailed FND01-FND30 implementation and closure guidance. It preserves the

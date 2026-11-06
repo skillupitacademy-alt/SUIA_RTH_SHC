@@ -1,9 +1,18 @@
 # FND03: Ownership Architecture Implementation
 
-**Status:** APPROVED  
-**Branch:** remediation/w1-2-batch-05-targeted  
-**Implementation Date:** 2026-01-11  
-**Review Approved:** 2026-01-11  
+## Independent Sol disposition on 2026-11-06
+
+CHANGES_REQUESTED at submission 041e5fe9. The historical APPROVED labels below are local
+workflow review claims, not Sol acceptance. See audit/FND03_FND11_Sol_Review_041e5fe9.md.
+Five new tenant-boundary assertions fail, API typecheck has three errors and repository
+read/write paths remain tenant-unqualified. Blanket RTH migration/default attribution
+violates the selected unknown-provenance policy. Migration execution and dependent
+identity integration remain gated. FND03 is open and tenant enforcement is incomplete.
+
+**Status:** APPROVED
+**Branch:** remediation/w1-2-batch-05-targeted
+**Implementation Date:** 2026-01-11
+**Review Approved:** 2026-01-11
 **Blocks Removed:** FND18, FND06, FND05, FND04
 
 ---
@@ -32,11 +41,11 @@ export const tenantEnum = pgEnum("tenant", ["realtutorialhub", "skillup", "skill
 
 export const users = pgTable("users", {
   // ... existing fields
-  
+
   // FND03: Tenant-qualified ownership
   tenantId: tenantEnum('tenant_id').notNull().default('realtutorialhub'),
   localSubjectId: text('local_subject_id'), // Tenant-scoped user identifier
-  
+
   // ... other fields
 }, (t) => ({
   idx_users_tenant_local_subject: index("idx_users_tenant_local_subject")
@@ -56,10 +65,10 @@ Added tenant column to shared progress table:
 ```typescript
 export const tutorialProgress = pgTable('tutorial_progress', {
   // ... existing fields
-  
+
   // FND03: Tenant boundary enforcement
   tenantId: text('tenant_id').notNull().default('realtutorialhub'),
-  
+
   // ... other fields
 }, (table) => ({
   idxTutorialProgressTenant: index('idx_tutorial_progress_tenant').on(table.tenantId),
@@ -113,17 +122,17 @@ static isOwner(
   if (requestingTenant !== resourceTenant) {
     return false;  // Cross-tenant access DENIED
   }
-  
+
   // Within same tenant, check userId OR shadowUserId
   if (requestingUserId === resourceOwnerId) {
     return true;
   }
-  
+
   // Fallback to canonical identity if available
   if (requestingShadowUserId && resourceShadowUserId) {
     return requestingShadowUserId === resourceShadowUserId;
   }
-  
+
   return false;
 }
 ```
@@ -210,8 +219,8 @@ export function withOwnershipRBAC(
 -- Example: Map users to correct tenant based on shadowUserId lookup
 UPDATE users u
 SET tenant_id = (
-  SELECT p.platform 
-  FROM db_people.users p 
+  SELECT p.platform
+  FROM db_people.users p
   WHERE p.id = u.shadow_user_id
 )
 WHERE u.shadow_user_id IS NOT NULL;
@@ -381,8 +390,8 @@ requirePermissionOrOwnership(
 **New pattern (FND03):**
 ```typescript
 requirePermissionOrOwnership(
-  { 
-    userId: req.userId, 
+  {
+    userId: req.userId,
     roles: req.roles,
     tenant: req.brand,              // NEW: from JWT
     shadowUserId: req.shadowUserId  // NEW: optional canonical ID
@@ -443,7 +452,7 @@ if (req.brand !== 'skillhubcore' && !isSuperAdmin(req.roles)) {
 
 Three CRITICAL blockers identified during code review have been resolved:
 
-**BLOCKER 1: Missing tenant parameter (BREAKING CHANGE)**  
+**BLOCKER 1: Missing tenant parameter (BREAKING CHANGE)**
 The original implementation signature was incomplete. All callers must now provide `resourceTenant`:
 ```typescript
 // BEFORE (broken)
@@ -454,13 +463,13 @@ requirePermissionOrOwnership(user, resourceOwnerId, resourceTenant, permission)
 ```
 This is a **breaking change**. All ownership-checking API routes must be updated to pass the tenant parameter. Routes not yet updated will fail compilation.
 
-**BLOCKER 2: requirePermissionOrOwnership tenant enforcement gap**  
+**BLOCKER 2: requirePermissionOrOwnership tenant enforcement gap**
 The service method was not enforcing tenant boundaries for non-owner permission checks. Fixed by adding explicit tenant comparison before permission evaluation. Cross-tenant access now requires both explicit permission AND admin role.
 
-**BLOCKER 3: Test file wrong path**  
+**BLOCKER 3: Test file wrong path**
 Test file was created at incorrect location. Moved from `packages/auth/src/__tests__/` to `packages/auth/src/rbac/__tests__/ownership.service.test.ts` and re-verified all 18 tests pass.
 
-**Unblocked Dependencies:**  
+**Unblocked Dependencies:**
 With these fixes applied, FND18 (taxonomy admin), FND06 (progress tenant isolation), FND05 (concurrent completion), and FND04 (export ownership) can now proceed with tenant-qualified ownership checks.
 
 ### 8.2 Pre-Deployment Verification
@@ -526,8 +535,8 @@ With these fixes applied, FND18 (taxonomy admin), FND06 (progress tenant isolati
 
 **Query Plan Review Needed:**
 ```sql
-EXPLAIN ANALYZE 
-SELECT * FROM tutorial_progress 
+EXPLAIN ANALYZE
+SELECT * FROM tutorial_progress
 WHERE tenant_id = 'skillup' AND user_id = 'abc-123';
 ```
 
@@ -582,5 +591,5 @@ packages/db-tutorial/migrations/0029_fnd03_add_tenant_to_progress.sql (NEW)
 
 ---
 
-**Implementation Status:** APPROVED  
+**Implementation Status:** APPROVED
 **Next Steps:** Deploy migrations to staging, integrate with FND06/FND18, coordinate downstream API route updates for breaking tenant parameter requirement

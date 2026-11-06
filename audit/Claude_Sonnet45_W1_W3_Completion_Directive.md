@@ -14,6 +14,36 @@ implementation owner on the branch and retain the user's existing work.
 
 ## Required outcome
 
+### Immediate checkpoint after ownership/people submission 041e5fe9
+
+Independent disposition is CHANGES_REQUESTED in
+audit/FND03_FND11_Sol_Review_041e5fe9.md. Local workflow APPROVED labels do not establish
+Sol acceptance or complete tenant enforcement. The reported main merge is unsupported
+by the observed remote ancestry. Correct the acceptance/integration records.
+
+Within the existing FND03/FND05/FND06/FND11/FND18/FND25/FND26 tasks, correct missing/canonical
+tenant guards at every public helper, apply the same policy to access summaries, remove
+blanket tenant-admin cross-tenant grants and avoid projection equality substituting for
+verified local ownership. Migrate actual supported callers, import the existing error
+class and fix the admission package import before claiming build compatibility.
+
+Do not deploy the new schema/migrations. Replace blanket RTH default/backfill attribution
+with the reviewed provenance/quarantine and producer/repository migration plan. Current
+progress repository predicates and inserts remain tenant-unqualified. They need the
+selected actual ownership chain before schema changes can establish isolation.
+
+Equal email across platforms is permitted. Admission must reject foreign-owner reuse,
+not globally reject an independent local account merely because another platform uses
+that email. Implement the scoped, normalized target-platform lookup and ambiguity policy
+through real predicate-discriminating tests, secure admission/invitation compatibility
+and the reviewed email constraint migration. No fixed credential reuse or physical change.
+
+Keep the new sol-fnd03-tenant-boundary.test.ts required. Five adverse cases fail and its
+same-tenant positive passes. Submitted admission cases do not execute under normal module
+resolution; with a diagnostic alias they both fail. API typecheck has three errors.
+Correct these regressions before dependent FND18 runtime integration. Continue independent
+W2 implementation and read-only contract work through the full thirty-task directive.
+
 Deliver implemented foundation corrections, integrated contracts and sufficient evidence
 for Sol to accept W1-W3 and determine W4 entry. Completion requires more than a ledger,
 an investigation or a test count. Carry implementation through its real supported caller
