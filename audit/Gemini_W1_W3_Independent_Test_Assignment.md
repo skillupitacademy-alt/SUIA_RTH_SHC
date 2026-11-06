@@ -1,5 +1,14 @@
 # Gemini independent foundation testing packet
 
+## Latest durability review at 5abcd87a
+
+[Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md) records 7/7 retained
+adapter passes but 2 passes / 7 new durability/publication/commit failures. Test runtime
+shared persistence and fresh application instances, dispatcher ownership, immutable whole
+envelope replay, invitation rollback and zero affected rows. Existing same-process route
+recovery controls are useful but do not establish crash durability. Keep full GM01-GM20
+and original FND/group scope; no production edits. Sol retains acceptance.
+
 ## Latest required correction at 27243c6e
 
 Read [Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md). Four retained lease tests

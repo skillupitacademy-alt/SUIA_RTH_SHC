@@ -1,5 +1,14 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Sol addendum at 5abcd87a: scoped progress, CHANGES_REQUESTED
+
+[Durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): old adapter 7/7 passes
+reproduced; new runtime durability, invitation commit and publisher replay checks have
+2 passes / 7 failures. New route tests below prove same-process recovery, not durable
+outbox persistence: production helpers use Maps rather than the SQL outbox table.
+Preserve these historical results with correct boundaries and disclose the known old
+fixture failures. All-task/group completion and W4 entry remain unaccepted by Sol.
+
 - **Role**: `Gemini Flash` (`TESTER_MODEL`) — Sole independent verification owner. Zero production edits.
 - **Implementer**: `Argon` (`Gemini 4 Argon (Medium)`)
 - **Reviewer / Authority**: `Sol`

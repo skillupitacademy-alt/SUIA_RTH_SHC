@@ -1,5 +1,14 @@
 # Current owner override
 
+## Latest durability review at source e19034dc / report 5abcd87a
+
+[Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED.
+A1 retained adapter controls now pass 7/7. Runtime outbox and invitation authority still
+use Maps; new durability/commit/publisher probes give 2 passes / 7 failures. Implement
+actual shared persistence, transactional redemption and immutable retry envelopes under
+existing D7/TC08. Continue ALL TC01-TC20/FND01-FND30, not only S1-S3. Gemini tests;
+Sol accepts. No W1-W3 closure or W4 entry; standing authorization remains active.
+
 ## Current adapter review at 27243c6e (2026-11-07)
 
 [Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED.

@@ -1,5 +1,12 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Latest review at source e19034dc / report 5abcd87a (2026-11-07): CHANGES_REQUESTED.**
+[Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md). Prior adapter controls
+pass 7/7, but runtime Map-backed outbox/invitations, non-immutable publication retries
+and invitation commit outcomes remain defective (2 pass / 7 fail in new probes).
+Actual persistence/transaction composition is source work, distinct from physical gates.
+Argon retains full TC01-TC20/FND01-FND30 scope; Gemini tests, Sol accepts. No W4 approval.
+
 **Latest adapter review at 27243c6e, 2026-11-07: CHANGES_REQUESTED.**
 [Sol review and full continuation](Sol_W1_W3_Adapter_Review_27243c6e.md): prior four lease
 examples pass, but six new adapter checks fail. Both compatibility fallbacks remain

@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current review at 5abcd87a
+
+[Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED.
+Argon owns all remaining TC/FND implementation including runtime durable outbox,
+immutable publication retries and transactional persisted invitations. Gemini independently
+tests shared-store/restart/commit behavior without production edits. Sol accepts; scoped
+adapter progress is retained, but no W1-W3 closure/W4 entry is approved.
+
 ## Latest review at 27243c6e
 
 [Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED. Argon

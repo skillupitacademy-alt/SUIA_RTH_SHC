@@ -1,5 +1,14 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Latest Sol review of e19034dc and independent report 5abcd87a
+
+[Durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED. The
+prior 7-case adapter controls pass. Runtime outbox/invitations are Map-backed, publication
+retries regenerate envelope fields, and redemption consumes before commit / ignores zero
+affected rows. New probes: 2 pass / 7 fail. SQL schema existence and same-process retry
+are not durable runtime composition. Continue the full standing twenty-item/thirty-FND
+assignment and disclose known incompatible old fixtures. No closure or W4 approval.
+
 ## Current Sol disposition at a09de38b / report 27243c6e
 
 [Adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED. Lua owner
