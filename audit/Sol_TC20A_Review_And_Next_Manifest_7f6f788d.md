@@ -18,6 +18,11 @@ No TC20/FND23/W1-W3 group closes. TC20-A2 ingress authority, TC20-B durable even
 physical effects, BROWSER-01 and RC-ID-01 remain open. This review authorizes no push,
 main merge, deployment, live database, browser, queue or migration execution.
 
+Graph maintenance note: graphify update . was invoked after adding the diagnostic. It
+reported incremental extraction of two files, then remained running without a completion
+result. Sol stopped only that identified invocation's process tree. The update is
+INTERRUPTED, not a verified rebuild; direct frozen source/test evidence governs this review.
+
 ## Reproduced evidence and attribution corrections
 
 Sol ran the same two-directory analytics selection using startVitest with config:false,
