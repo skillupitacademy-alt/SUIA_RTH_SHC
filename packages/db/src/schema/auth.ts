@@ -17,7 +17,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   shadowUserId: uuid('shadow_user_id'),
   // FND03: Tenant-qualified ownership
-  tenantId: tenantEnum('tenant_id').notNull().default('realtutorialhub'),
+  tenantId: tenantEnum('tenant_id'),
   localSubjectId: text('local_subject_id'), // Tenant-scoped user identifier
   // Onboarding fields
   isOnboarded: boolean("is_onboarded").notNull().default(false),

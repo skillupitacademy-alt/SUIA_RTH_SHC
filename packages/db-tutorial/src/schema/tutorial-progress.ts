@@ -10,7 +10,7 @@ export const tutorialProgress = pgTable('tutorial_progress', {
   userId: uuid('user_id').notNull(),
   subtopicId: uuid('subtopic_id').notNull(),
   // FND03: Tenant boundary enforcement
-  tenantId: text('tenant_id').notNull().default('realtutorialhub'),
+  tenantId: text('tenant_id'),
   status: tutorialProgressStatusEnum('status').notNull().default('not_started'),
   blocksCompleted: jsonb('blocks_completed').$type<string[]>().notNull().default([]),
   remediationTriggered: boolean('remediation_triggered').notNull().default(false),
