@@ -44,6 +44,7 @@ vi.mock('@upstash/redis', () => ({
     get = mocks.redisGet;
     set = mocks.redisSet;
     del = mocks.redisDel;
+    eval = vi.fn(async (_script: string, _keys: string[], _args: Array<string | number>) => 1);
     constructor() {}
   },
 }));

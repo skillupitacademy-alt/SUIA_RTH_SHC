@@ -16,6 +16,20 @@ vi.mock('@quiz/events', () => ({
   publishEvent: mocks.publishEvent,
 }));
 
+vi.mock('@upstash/redis', () => ({
+  Redis: class {
+    hgetall = vi.fn().mockResolvedValue({ capacity: 50, enrolled: 10 })
+    hset = vi.fn().mockResolvedValue(1)
+    hincrby = vi.fn().mockResolvedValue(11)
+    expire = vi.fn().mockResolvedValue(1)
+    eval = vi.fn().mockResolvedValue(1)
+    get = vi.fn().mockResolvedValue(null)
+    set = vi.fn().mockResolvedValue('OK')
+    del = vi.fn().mockResolvedValue(1)
+    constructor() {}
+  },
+}));
+
 vi.mock('next/server', () => ({
   NextRequest: Request,
   config: {},

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { createQStashHandler } from '../consumer';
+import { createInMemoryEventLeaseStore, createQStashHandler } from '../consumer';
 import { PlatformEventTypes } from '../types';
 beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -8,8 +8,7 @@ const body = JSON.stringify({ type: 'project.submitted', correlationId: 'correla
 const schema = z.object({ type: z.literal('project.submitted'), correlationId: z.string(), id: z.string() });
 const request = () => new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body });
 function store() {
-  const entries = new Map<string, string>();
-  return { get: (key: string) => entries.get(key) ?? null, set: (key: string, value: string) => { entries.set(key, value); return 'OK'; } };
+  return createInMemoryEventLeaseStore();
 }
 it('retries an event after handler failure instead of acknowledging it as complete', async () => {
   const effect = vi.fn().mockRejectedValueOnce(new Error('failed')).mockResolvedValueOnce(undefined);

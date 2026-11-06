@@ -14,7 +14,7 @@ vi.mock('@upstash/qstash', () => ({
   },
 }));
 
-import { createQStashHandler } from '../consumer';
+import { createDurableEventLeaseStore, createInMemoryEventLeaseStore, createQStashHandler } from '../consumer';
 import { publishEvent } from '../publisher';
 import {
   PlatformEventTypes,
@@ -53,40 +53,48 @@ describe('events package', () => {
   });
 
   it('short-circuits duplicate consumer deliveries', async () => {
-    const idempotencyStore = {
-      get: vi.fn().mockResolvedValue('already-seen'),
-      set: vi.fn(),
-    };
+    const idempotencyStore = createInMemoryEventLeaseStore();
     const receiver = {
       verify: vi.fn().mockResolvedValue(undefined),
     } as unknown as Receiver;
+    const effect = vi.fn();
     const handler = createQStashHandler(
       PlatformEventTypes.PAYMENT_RECEIVED,
-      vi.fn(),
+      effect,
       { idempotencyStore, receiver }
     );
 
-    const response = await handler(new Request('https://example.com', {
+    const eventPayload = {
+      id: crypto.randomUUID(),
+      type: PlatformEventTypes.PAYMENT_RECEIVED,
+      correlationId: crypto.randomUUID(),
+      source: 'payment-service',
+      occurredAt: new Date().toISOString(),
+      version: 1,
+      data: {
+        userId: crypto.randomUUID(),
+        installmentId: crypto.randomUUID(),
+        amount: 100,
+        paidAt: new Date().toISOString(),
+      },
+    };
+
+    const firstResponse = await handler(new Request('https://example.com', {
       method: 'POST',
       headers: { 'upstash-signature': 'valid' },
-      body: JSON.stringify({
-        id: crypto.randomUUID(),
-        type: PlatformEventTypes.PAYMENT_RECEIVED,
-        correlationId: crypto.randomUUID(),
-        source: 'payment-service',
-        occurredAt: new Date().toISOString(),
-        version: 1,
-        data: {
-          userId: crypto.randomUUID(),
-          installmentId: crypto.randomUUID(),
-          amount: 100,
-          paidAt: new Date().toISOString(),
-        },
-      }),
+      body: JSON.stringify(eventPayload),
+    }));
+    expect(firstResponse.status).toBe(200);
+    expect(effect).toHaveBeenCalledTimes(1);
+
+    const duplicateResponse = await handler(new Request('https://example.com', {
+      method: 'POST',
+      headers: { 'upstash-signature': 'valid' },
+      body: JSON.stringify(eventPayload),
     }));
 
-    expect(response.status).toBe(200);
-    expect(idempotencyStore.set).not.toHaveBeenCalled();
+    expect(duplicateResponse.status).toBe(200);
+    expect(effect).toHaveBeenCalledTimes(1);
   });
 
   it('publishes a QStash-ready event envelope', async () => {
@@ -160,7 +168,7 @@ describe('events package', () => {
   });
 
   it('consumer.ts: uses idempotency store and returns custom responses', async () => {
-    const idempotencyStore = { get: vi.fn().mockResolvedValue(null), set: vi.fn() };
+    const idempotencyStore = createInMemoryEventLeaseStore();
     const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as unknown as Receiver;
     const customHandler = createQStashHandler(
       PlatformEventTypes.PAYMENT_RECEIVED,
@@ -177,7 +185,7 @@ describe('events package', () => {
     
     const response = await customHandler(req);
     expect(response.status).toBe(201);
-    expect(idempotencyStore.set).toHaveBeenCalled();
+    expect(idempotencyStore.entries.size).toBeGreaterThan(0);
   });
 
   it('consumer.ts: returns default 200 response when handler returns void', async () => {
