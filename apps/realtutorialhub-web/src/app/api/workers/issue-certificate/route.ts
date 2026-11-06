@@ -11,7 +11,10 @@ import { eq, and, isNull } from 'drizzle-orm';
 import {
   acquireWorkerLease,
   completeWorkerLeaseIfOwner,
+  dispatchWorkerOutboxIntent,
+  getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  upsertWorkerOutboxIntent,
   type WorkerRedisLike,
 } from '../worker-lease';
 
@@ -72,6 +75,63 @@ const handler = createQStashHandler(
       );
 
       if (existingCertificate.length > 0) {
+        const existingRow = existingCertificate[0]!;
+        const existingOutbox = getWorkerOutboxIntent(
+          'realtutorialhub',
+          PlatformEventTypes.CERTIFICATE_ISSUED,
+          existingRow.id
+        );
+        if (existingOutbox?.status === 'published') {
+          const reconciled = await completeWorkerLeaseIfOwner(
+            redis,
+            redisKey,
+            claim.pendingValue,
+            'processed',
+            86_400
+          );
+          if (reconciled !== 'applied') {
+            return new Response('Event lease ownership lost before completion', { status: 409 });
+          }
+          return new Response('Duplicate event ignored', { status: 200 });
+        }
+
+        const issuedAtIso =
+          existingRow.issuedAt instanceof Date
+            ? existingRow.issuedAt.toISOString()
+            : typeof existingRow.issuedAt === 'string' && existingRow.issuedAt.trim().length > 0
+              ? existingRow.issuedAt
+              : new Date().toISOString();
+
+        const recoveryIntent = upsertWorkerOutboxIntent({
+          tenantId: 'realtutorialhub',
+          eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
+          aggregateId: existingRow.id,
+          ownerToken: claim.ownerToken,
+          payload: {
+            certificateId: existingRow.id,
+            userId,
+            issuedAt: issuedAtIso,
+          },
+        });
+
+        await dispatchWorkerOutboxIntent(recoveryIntent, claim.ownerToken, async (intent) => {
+          await publishEvent(
+            PlatformEventTypes.CERTIFICATE_ISSUED,
+            {
+              certificateId: existingRow.id,
+              userId,
+              issuedAt: issuedAtIso,
+            },
+            {
+              id: intent.eventId,
+              tenantId: 'realtutorialhub',
+              destinationUrl:
+                process.env.CERTIFICATE_ISSUED_EVENT_URL ??
+                'https://placeholder.invalid/consumers/certificate-issued',
+            }
+          );
+        });
+
         const reconciled = await completeWorkerLeaseIfOwner(
           redis,
           redisKey,
@@ -82,7 +142,21 @@ const handler = createQStashHandler(
         if (reconciled !== 'applied') {
           return new Response('Event lease ownership lost before completion', { status: 409 });
         }
-        return new Response('Duplicate event ignored', { status: 200 });
+
+        logger.info({
+          event: 'certificate.issued.reconciled',
+          userId,
+          scope,
+          parentId,
+          certificateId: existingRow.id,
+        });
+
+        return NextResponse.json({
+          data: {
+            certificateId: existingRow.id,
+            verificationCode: existingRow.verificationCode,
+          },
+        });
       }
 
       const created = await db.transaction(async (tx) => {
@@ -106,6 +180,20 @@ const handler = createQStashHandler(
           'issue-certificate.insert'
         );
 
+        if (row !== undefined) {
+          upsertWorkerOutboxIntent({
+            tenantId: 'realtutorialhub',
+            eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
+            aggregateId: row.id,
+            ownerToken: claim.ownerToken,
+            payload: {
+              certificateId: row.id,
+              userId,
+              issuedAt: row.issuedAt.toISOString(),
+            },
+          });
+        }
+
         return row;
       });
 
@@ -113,17 +201,35 @@ const handler = createQStashHandler(
         throw new Error('Failed to issue certificate');
       }
 
-      await publishEvent(
-        PlatformEventTypes.CERTIFICATE_ISSUED,
-        {
+      const outboxIntent = upsertWorkerOutboxIntent({
+        tenantId: 'realtutorialhub',
+        eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
+        aggregateId: created.id,
+        ownerToken: claim.ownerToken,
+        payload: {
           certificateId: created.id,
           userId,
           issuedAt: created.issuedAt.toISOString(),
         },
-        {
-          destinationUrl: process.env.CERTIFICATE_ISSUED_EVENT_URL ?? 'https://placeholder.invalid/consumers/certificate-issued',
-        }
-      );
+      });
+
+      await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
+        await publishEvent(
+          PlatformEventTypes.CERTIFICATE_ISSUED,
+          {
+            certificateId: created.id,
+            userId,
+            issuedAt: created.issuedAt.toISOString(),
+          },
+          {
+            id: intent.eventId,
+            tenantId: 'realtutorialhub',
+            destinationUrl:
+              process.env.CERTIFICATE_ISSUED_EVENT_URL ??
+              'https://placeholder.invalid/consumers/certificate-issued',
+          }
+        );
+      });
 
       const completionTransition = await completeWorkerLeaseIfOwner(
         redis,

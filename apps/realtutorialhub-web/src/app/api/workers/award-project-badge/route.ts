@@ -12,7 +12,10 @@ import { eq } from 'drizzle-orm';
 import {
   acquireWorkerLease,
   completeWorkerLeaseIfOwner,
+  dispatchWorkerOutboxIntent,
+  getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  upsertWorkerOutboxIntent,
   type WorkerRedisLike,
 } from '../worker-lease';
 
@@ -81,61 +84,84 @@ const badgeHandler = createQStashHandler(
         throw new Error('Project submission not found');
       }
 
-      if ((submission as { badgeAwarded?: boolean }).badgeAwarded === true) {
-        const reconciled = await completeWorkerLeaseIfOwner(
-          redis,
-          redisKey,
-          claim.pendingValue,
-          'processed',
-          86_400
+      const alreadyAwarded = (submission as { badgeAwarded?: boolean }).badgeAwarded === true;
+      if (alreadyAwarded) {
+        const existingOutbox = getWorkerOutboxIntent(
+          'realtutorialhub',
+          'project.certificate_requested',
+          submissionId
         );
-        if (reconciled !== 'applied') {
-          return new Response('Event lease ownership lost before completion', { status: 409 });
+        if (existingOutbox?.status === 'published') {
+          const reconciled = await completeWorkerLeaseIfOwner(
+            redis,
+            redisKey,
+            claim.pendingValue,
+            'processed',
+            86_400
+          );
+          if (reconciled !== 'applied') {
+            return new Response('Event lease ownership lost before completion', { status: 409 });
+          }
+          return new Response('Duplicate event ignored', { status: 200 });
         }
-        return new Response('Duplicate event ignored', { status: 200 });
+      } else {
+        await db.transaction(async (tx) => {
+          const txRepo = projectRepository.withDb(tx as never);
+          await txRepo.awardBadge(userId, badgeId, submissionId);
+          await withTimeout(
+            tx
+              .update(tutorialProjectSubmissions)
+              .set({
+                badgeAwarded: true,
+                updatedAt: new Date(),
+              })
+              .where(eq(tutorialProjectSubmissions.id, submissionId)),
+            STANDARD_QUERY_TIMEOUT,
+            'award-project-badge.mark-badge-awarded'
+          );
+        });
       }
-
-      await db.transaction(async (tx) => {
-        const txRepo = projectRepository.withDb(tx as never);
-        await txRepo.awardBadge(userId, badgeId, submissionId);
-        await withTimeout(
-          tx
-            .update(tutorialProjectSubmissions)
-            .set({
-              badgeAwarded: true,
-              updatedAt: new Date(),
-            })
-            .where(eq(tutorialProjectSubmissions.id, submissionId)),
-          STANDARD_QUERY_TIMEOUT,
-          'award-project-badge.mark-badge-awarded'
-        );
-      });
 
       const projectService = new ProjectService();
       const project = await projectRepository.getProject(projectId);
       if (project !== undefined) {
         const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
         if (eligibility.eligible) {
+          const outboxIntent = upsertWorkerOutboxIntent({
+            tenantId: 'realtutorialhub',
+            eventType: 'project.certificate_requested',
+            aggregateId: submissionId,
+            ownerToken: claim.ownerToken,
+            payload: {
+              userId,
+              scope: project.scope,
+              parentId: project.parentId,
+              parentName: project.title,
+            },
+          });
+
           const token = process.env.QSTASH_TOKEN;
           if (typeof token === 'string' && token.trim().length > 0) {
-            const client = new Client({ token });
-            await client.publishJSON({
-              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-              retries: 3,
-              body: {
-                id: crypto.randomUUID(),
-                type: 'project.certificate_requested',
-                correlationId: submission.id,
-                source: 'quiz-platform',
-                occurredAt: new Date().toISOString(),
-                version: 1,
-                data: {
-                  userId,
-                  scope: project.scope,
-                  parentId: project.parentId,
-                  parentName: project.title,
+            await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
+              const client = new Client({ token });
+              await client.publishJSON({
+                url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+                retries: 3,
+                body: {
+                  id: intent.eventId,
+                  type: 'project.certificate_requested',
+                  correlationId: submission.id,
+                  source: 'quiz-platform',
+                  occurredAt: new Date().toISOString(),
+                  version: 1,
+                  data: {
+                    userId,
+                    scope: project.scope,
+                    parentId: project.parentId,
+                    parentName: project.title,
+                  },
                 },
-              },
+              });
             });
           }
         }

@@ -23,6 +23,7 @@ import {
   completeWorkerLeaseIfOwner,
   isPendingWorkerLeaseValue,
   releaseWorkerLeaseIfOwner,
+  requireAtomicWorkerLeaseAdapter,
   type WorkerRedisLike,
 } from '../worker-lease';
 
@@ -108,6 +109,7 @@ async function processIndexContentEnvelope(
   const resolvedDifficulty = difficulty ?? 'simple';
   const redisKey = `vector-index:${subtopicId}:${resolvedDifficulty}`;
   const redis = deps.getRedis();
+  requireAtomicWorkerLeaseAdapter(redis);
   const existingVersion = await redis.get(redisKey);
   if (existingVersion === String(version)) {
     deps.logger.info({

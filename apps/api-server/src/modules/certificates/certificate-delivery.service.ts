@@ -40,8 +40,8 @@ export type CertificateDeliveryResult =
     };
 
 type JobLockService = {
-  acquireJobLock: typeof acquireJobLock;
-  releaseJobLock: typeof releaseJobLock;
+  acquireJobLock: (jobId: string, ttlSeconds?: number) => Promise<boolean>;
+  releaseJobLock: (jobId: string) => Promise<unknown>;
 };
 
 const DEFAULT_ISSUER_NAME = 'Tutorial Platform';
