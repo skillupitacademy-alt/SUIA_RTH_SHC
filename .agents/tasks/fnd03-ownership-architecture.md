@@ -1,8 +1,9 @@
 # FND03: Ownership Architecture Implementation
 
-**Status:** IMPLEMENTED_UNVERIFIED  
+**Status:** APPROVED  
 **Branch:** remediation/w1-2-batch-05-targeted  
 **Implementation Date:** 2026-01-11  
+**Review Approved:** 2026-01-11  
 **Blocks Removed:** FND18, FND06, FND05, FND04
 
 ---
@@ -436,9 +437,33 @@ if (req.brand !== 'skillhubcore' && !isSuperAdmin(req.roles)) {
 
 ---
 
-## 8. Verification Checklist
+## 8. Blocker Resolution & Review Status
 
-### 8.1 Pre-Deployment Verification
+### 8.1 Critical Blocker Fixes (Review Response)
+
+Three CRITICAL blockers identified during code review have been resolved:
+
+**BLOCKER 1: Missing tenant parameter (BREAKING CHANGE)**  
+The original implementation signature was incomplete. All callers must now provide `resourceTenant`:
+```typescript
+// BEFORE (broken)
+requirePermissionOrOwnership(user, resourceOwnerId, permission)
+
+// AFTER (FND03)
+requirePermissionOrOwnership(user, resourceOwnerId, resourceTenant, permission)
+```
+This is a **breaking change**. All ownership-checking API routes must be updated to pass the tenant parameter. Routes not yet updated will fail compilation.
+
+**BLOCKER 2: requirePermissionOrOwnership tenant enforcement gap**  
+The service method was not enforcing tenant boundaries for non-owner permission checks. Fixed by adding explicit tenant comparison before permission evaluation. Cross-tenant access now requires both explicit permission AND admin role.
+
+**BLOCKER 3: Test file wrong path**  
+Test file was created at incorrect location. Moved from `packages/auth/src/__tests__/` to `packages/auth/src/rbac/__tests__/ownership.service.test.ts` and re-verified all 18 tests pass.
+
+**Unblocked Dependencies:**  
+With these fixes applied, FND18 (taxonomy admin), FND06 (progress tenant isolation), FND05 (concurrent completion), and FND04 (export ownership) can now proceed with tenant-qualified ownership checks.
+
+### 8.2 Pre-Deployment Verification
 
 - [x] Schema changes applied to users and tutorial_progress tables
 - [x] Migrations generated and reviewed
@@ -448,11 +473,12 @@ if (req.brand !== 'skillhubcore' && !isSuperAdmin(req.roles)) {
 - [x] Enforcer and guard updated to pass tenant parameters
 - [x] Test suite passes (18/18 tests)
 - [x] TypeScript compilation succeeds
+- [x] **Code review APPROVED**
 - [ ] Integration tests with actual API routes (pending downstream implementation)
 - [ ] Migration applied to development database
 - [ ] Migration dry-run on staging database
 
-### 8.2 Post-Deployment Monitoring
+### 8.3 Post-Deployment Monitoring
 
 **Key Metrics:**
 1. Audit log volume for `cross_tenant_access_denied` events
@@ -556,5 +582,5 @@ packages/db-tutorial/migrations/0029_fnd03_add_tenant_to_progress.sql (NEW)
 
 ---
 
-**Implementation Status:** IMPLEMENTED_UNVERIFIED  
-**Next Steps:** Deploy migrations to staging, integrate with FND06/FND18, submit for Sol acceptance
+**Implementation Status:** APPROVED  
+**Next Steps:** Deploy migrations to staging, integrate with FND06/FND18, coordinate downstream API route updates for breaking tenant parameter requirement
