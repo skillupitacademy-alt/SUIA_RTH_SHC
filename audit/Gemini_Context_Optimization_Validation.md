@@ -164,3 +164,4 @@
   4. Authorization for optional adoption by Terra and sequential application of the minimal reference diff to `AGENTS.md` and `CLAUDE.md`.
 
 *Note*: **Terra / Tera** continues critical implementation work on `TC01`–`TC20` without interruption.
+
