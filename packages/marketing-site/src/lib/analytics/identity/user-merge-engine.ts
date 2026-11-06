@@ -1,3 +1,4 @@
+import type { AnalyticsBrandId } from "../../../config/analytics";
 import { addIdentityEdge, calculateDeterministicConfidence } from "./identity-graph";
 import { getIdentityNode, saveIdentityNode, type IdentityNode } from "./identity-store";
 
@@ -8,11 +9,108 @@ export interface MergeResult {
   conflicts: string[];
 }
 
-export function mergeIdentityNodes(primaryId: string, secondaryId: string): MergeResult | undefined {
-  const primary = getIdentityNode(primaryId);
-  const secondary = getIdentityNode(secondaryId);
+const VALID_ANALYTICS_BRANDS = new Set<AnalyticsBrandId>(["realtutorialhub", "skillupitacademy"]);
 
-  if (!primary || !secondary || primary.id === secondary.id) {
+function isValidBrandId(value: unknown): value is AnalyticsBrandId {
+  return typeof value === "string" && VALID_ANALYTICS_BRANDS.has(value as AnalyticsBrandId);
+}
+
+function extractNodeIdBrandPrefix(nodeId: string): { hasPrefix: boolean; brandId?: AnalyticsBrandId } {
+  for (const candidate of VALID_ANALYTICS_BRANDS) {
+    if (nodeId.startsWith(`identity:${candidate}:`) || nodeId.startsWith(`identity_${candidate}_`)) {
+      return { hasPrefix: true, brandId: candidate };
+    }
+  }
+  if (nodeId.startsWith("identity:") || nodeId.startsWith("identity_")) {
+    return { hasPrefix: true, brandId: undefined };
+  }
+  return { hasPrefix: false, brandId: undefined };
+}
+
+function resolveVerifiedIdentityNode(
+  nodeId: unknown,
+  expectedBrandId?: AnalyticsBrandId,
+): { brandId: AnalyticsBrandId; node: IdentityNode } | undefined {
+  if (typeof nodeId !== "string" || !nodeId.trim()) {
+    return undefined;
+  }
+
+  const prefixInfo = extractNodeIdBrandPrefix(nodeId);
+  if (prefixInfo.hasPrefix && !prefixInfo.brandId) {
+    return undefined;
+  }
+
+  if (expectedBrandId !== undefined && !isValidBrandId(expectedBrandId)) {
+    return undefined;
+  }
+
+  if (prefixInfo.brandId && expectedBrandId && prefixInfo.brandId !== expectedBrandId) {
+    return undefined;
+  }
+
+  const candidateBrands: AnalyticsBrandId[] = expectedBrandId
+    ? [expectedBrandId]
+    : [...VALID_ANALYTICS_BRANDS];
+
+  const matches: Array<{ storeBrand: AnalyticsBrandId; node: IdentityNode }> = [];
+  for (const candidateBrand of candidateBrands) {
+    const found = getIdentityNode(candidateBrand, nodeId);
+    if (found) {
+      matches.push({ storeBrand: candidateBrand, node: found });
+    }
+  }
+
+  if (matches.length !== 1) {
+    return undefined;
+  }
+
+  const { storeBrand, node } = matches[0];
+  if (!isValidBrandId(node.brandId) || node.brandId !== storeBrand) {
+    return undefined;
+  }
+
+  if (prefixInfo.brandId && prefixInfo.brandId !== storeBrand) {
+    return undefined;
+  }
+
+  if (expectedBrandId && node.brandId !== expectedBrandId) {
+    return undefined;
+  }
+
+  return { brandId: storeBrand, node };
+}
+
+export function mergeIdentityNodes(
+  primaryId: string,
+  secondaryId: string,
+  brandId?: AnalyticsBrandId,
+): MergeResult | undefined {
+  if (typeof primaryId !== "string" || typeof secondaryId !== "string" || primaryId === secondaryId) {
+    return undefined;
+  }
+
+  const primaryResolved = resolveVerifiedIdentityNode(primaryId, brandId);
+  const secondaryResolved = resolveVerifiedIdentityNode(secondaryId, brandId);
+
+  if (!primaryResolved || !secondaryResolved) {
+    return undefined;
+  }
+
+  if (primaryResolved.brandId !== secondaryResolved.brandId) {
+    return undefined;
+  }
+
+  const verifiedBrand = primaryResolved.brandId;
+  const primary = primaryResolved.node;
+  const secondary = secondaryResolved.node;
+
+  if (
+    primary.id === secondary.id ||
+    !isValidBrandId(primary.brandId) ||
+    !isValidBrandId(secondary.brandId) ||
+    primary.brandId !== verifiedBrand ||
+    secondary.brandId !== verifiedBrand
+  ) {
     return undefined;
   }
 
@@ -32,17 +130,19 @@ export function mergeIdentityNodes(primaryId: string, secondaryId: string): Merg
 
   const merged: IdentityNode = {
     ...primary,
+    brandId: verifiedBrand,
     identifiers: mergedIdentifiers,
     confidence: Math.max(primary.confidence, secondary.confidence, calculateDeterministicConfidence(mergedIdentifiers)),
     updatedAt: new Date().toISOString(),
   };
 
-  saveIdentityNode({
+  saveIdentityNode(verifiedBrand, {
     ...secondary,
+    brandId: verifiedBrand,
     mergedInto: primary.id,
     updatedAt: merged.updatedAt,
   });
-  saveIdentityNode(merged);
+  saveIdentityNode(verifiedBrand, merged);
 
   addIdentityEdge({
     from: secondary.id,
