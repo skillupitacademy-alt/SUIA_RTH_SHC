@@ -1,4 +1,4 @@
-import { getAnalyticsRuntimeConfig } from "../../config/analytics";
+import { getAnalyticsRuntimeConfig, isSupportedAnalyticsBrandId } from "../../config/analytics";
 import type { AnalyticsBrandId } from "../../config/analytics";
 import { buildBrowserAnalyticsContext } from "./context";
 import { enrichAnalyticsEvent } from "./enrichment";
@@ -19,7 +19,7 @@ import { recordEventHealth } from "../observability/event-health";
 import { startSpan, endSpan } from "../observability/tracing";
 
 function createDedupeKey(event: AnalyticsEventEnvelope) {
-  return `${event.name}:${event.context.session.sessionId}:${JSON.stringify(event.payload)}`;
+  return `${event.context.brandId}:${event.name}:${event.context.session.sessionId}:${JSON.stringify(event.payload)}`;
 }
 
 class AnalyticsTracker {
@@ -41,7 +41,25 @@ class AnalyticsTracker {
     payload: AnalyticsEventPayload<TEvent>,
     partialContext?: Partial<AnalyticsEventContext>,
   ) {
-    const baseContext = buildBrowserAnalyticsContext(this.options.config.brand.brandId);
+    const configuredBrandId = this.options.config?.brand?.brandId;
+    if (!isSupportedAnalyticsBrandId(configuredBrandId)) {
+      throw new Error("invalid_analytics_brand");
+    }
+
+    const baseContext = buildBrowserAnalyticsContext(configuredBrandId);
+    if (!isSupportedAnalyticsBrandId(baseContext.brandId) || baseContext.brandId !== configuredBrandId) {
+      throw new Error("invalid_analytics_brand");
+    }
+
+    if (partialContext && "brandId" in partialContext) {
+      if (
+        !isSupportedAnalyticsBrandId(partialContext.brandId) ||
+        partialContext.brandId !== baseContext.brandId
+      ) {
+        throw new Error("invalid_analytics_brand_context");
+      }
+    }
+
     const resolvedIdentity = resolveIdentity({
       brandId: baseContext.brandId,
       anonymousId: baseContext.user.anonymousId,
@@ -72,6 +90,7 @@ class AnalyticsTracker {
       context: {
         ...baseContext,
         ...partialContext,
+        brandId: baseContext.brandId,
         user: {
           ...baseContext.user,
           ...partialContext?.user,
@@ -196,9 +215,12 @@ class AnalyticsTracker {
   }
 }
 
-let trackerSingleton: AnalyticsTracker | undefined;
+const trackerSingletonsByBrand = new Map<AnalyticsBrandId, AnalyticsTracker>();
 
 export function createAnalyticsTracker(brandId: AnalyticsBrandId, providers?: AnalyticsProvider[]) {
+  if (!isSupportedAnalyticsBrandId(brandId)) {
+    throw new Error("invalid_analytics_brand");
+  }
   const config = getAnalyticsRuntimeConfig({ brandId });
 
   return new AnalyticsTracker({
@@ -226,8 +248,15 @@ export function createAnalyticsTracker(brandId: AnalyticsBrandId, providers?: An
 }
 
 export function getAnalyticsTracker(brandId: AnalyticsBrandId) {
-  trackerSingleton ??= createAnalyticsTracker(brandId);
-  return trackerSingleton;
+  if (!isSupportedAnalyticsBrandId(brandId)) {
+    throw new Error("invalid_analytics_brand");
+  }
+  let tracker = trackerSingletonsByBrand.get(brandId);
+  if (!tracker) {
+    tracker = createAnalyticsTracker(brandId);
+    trackerSingletonsByBrand.set(brandId, tracker);
+  }
+  return tracker;
 }
 
 export function trackEvent<TEvent extends AnalyticsEventName>(
