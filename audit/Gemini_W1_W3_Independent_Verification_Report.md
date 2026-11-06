@@ -28,7 +28,7 @@
 | **Priority 2: TC14** | Cache & Service Workers (SkillUp & RTH) | Sol boundary suite: **PASS (7/7 in SkillUp SW; 4/4 in RTH SW)**; Placement suite: **3 failed** in `routes.test.ts` | **PASS on Service Worker Cache; FAILING on Catalog Route Fixture** | SkillUp SW assets-only cache (`skillup-static-assets-v2`), legacy `skillup-app-shell-v1` deletion on activation, and network-only navigation (`503` offline for `/programs`, `/student`, `/api/*`, RSC) verified. Authorized obsolete public navigation cache assertion updated to network-only per Sol `D2`. In `apps/skillup-web/src/app/api/__tests__/routes.test.ts`, lines 181, 191, 289 fail with 500 because `extractAuthFromRequest` rejects unauthenticated test request per `enforceBrandValidation`. |
 | **Priority 3: TC07 / TC08** | People Normalization & SkillUp Local Admission Containment | 2 test suites: **PASS (25/25 passed)** (`collision.test.ts`: 5/5, `email-normalization.test.ts`: 20/20) | **PASS (Containment Verified; New Account Provisioning Gated)** | Active SkillUp platform predicate, `deletedAt` null check, `isActive: true`, and case/whitespace normalization verified. Foreign-only accounts (`realtutorialhub`) and ambiguous records (`limit(2)`) denied (`409`). No foreign accounts bound. Full new-account invitation/provisioning remains gated. |
 | **Priority 4: TC15** | Gate 1 Persistent Authority in `ProjectLlmClient` | 4 test suites: **PASS (62/62 passed)** in `@quiz/skillhubcore-admin` | **PASS (Client Containment Verified; Backend Verification Open)** | Verified in `apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts`: `ensureCandidateRequested` no longer auto-approves `AWAITING_GATE_1` to `GUI_APPROVED`. Throws `ProjectLlmError(409, 'Gate 1 human approval is required before candidate upload')`. Backend persisted human authority remains gated. |
-| **Priority 4: TC20** | Events & Marketing Analytics Deduplication | Vitest: **PASS (4/4)** in `marketing-site` analytics; **3 failed** in `packages/events` | **PARTIAL (Analytics Dedupe Hash PASS; Downstream Leak & Event Handlers FAIL)** | `packages/marketing-site/src/lib/analytics/server/pipeline.ts` includes `brandId` in dedupe hash: cross-brand collision separated, same-brand retry deduped (`1/1 passed`). However, session timeline & lead score leak across brands (sessionDepth 2, leadScore 4). `packages/events`: 3 tests fail on correlation collision, failure retry, and custom schema event type mismatch. |
+| **Priority 4: TC20** | Events & Marketing Analytics Deduplication | Vitest: **1 failed, 4 passed** in `marketing-site` analytics; **3 failed** in `packages/events` | **PARTIAL (Analytics Dedupe Hash PASS; Downstream Leak & Event Handlers FAIL)** | `packages/marketing-site/src/lib/analytics/server/pipeline.ts` includes `brandId` in dedupe hash: cross-brand collision separated, same-brand retry deduped. However, session timeline & lead score leak across brands (sessionDepth 2, leadScore 4), reproduced by FAIL-04 regression test. `packages/events`: 3 tests fail on correlation collision, failure retry, and custom schema event type mismatch. |
 
 ---
 
@@ -182,18 +182,19 @@ Command executed:
 
 ### B. TC20 — Analytics Brand Deduplication & Downstream State Defect
 Commands executed:
-- `npx vitest run "packages/marketing-site/src/lib/analytics/__tests__/brand-dedupe-control.test.ts"` -> **1/1 passed**
+- `pnpm --filter @quiz/marketing-site exec vitest run src/lib/analytics/__tests__/brand-dedupe-control.test.ts` -> **1 passed, 1 failed (FAIL-04 reproduced)**
 - `npx vitest run "packages/marketing-site/src/lib/analytics/providers/__tests__/internal-http-failure.test.ts"` -> **3/3 passed**
 
 **Observed Result**:
 - `packages/marketing-site/src/lib/analytics/server/pipeline.ts` includes `event.context.brandId` in the SHA-256 dedupe key.
 - Two events with identical payload and anonymous ID across different brands (`realtutorialhub` vs `skillupitacademy`) are correctly accepted as separate events (`deduped: false`). Same-brand replay is correctly deduplicated (`deduped: true`).
 
-**Critical Finding GM-P4-01 (Downstream Analytics Collision Defect)**:
-In `brand-dedupe-control.test.ts`, the console audit log exposes a downstream state leak:
+**Critical Finding GM-P4-01 (Downstream Analytics Collision Defect — FAIL-04 Confirmed)**:
+In `brand-dedupe-control.test.ts`, the regression test reproducing `FAIL-04` asserts that subsequent events under a different brand must not inherit prior timeline depth or lead score:
 - First brand (`realtutorialhub`) event: `sessionDepth: 1`, `leadScore: 2`
-- Second brand (`skillupitacademy`) event with identical IDs: `sessionDepth: 2`, `leadScore: 4`
-Because `sessionId` and `anonymousId` in-memory session/lead trackers are not keyed by `brandId`, downstream user journey, lead scoring, and session tracking cross-contaminate between brands. Tera must partition the session and lead score state maps by brand.
+- Second brand (`skillupitacademy`) event with identical IDs: `sessionDepth` received 2 (expected 1), `leadScore` received 4 (expected 2)
+- Journey path accumulated cross-brand: `['education.page_viewed', 'education.page_viewed']`
+Because `sessionId` and `anonymousId` in-memory session/lead trackers (`session-timeline.ts` and `lead-scoring.ts`) are not keyed by `brandId`, downstream user journey, lead scoring, and session tracking cross-contaminate between brands. Tera must partition the session and lead score state maps by `brandId`.
 
 ### C. TC20 — Events Consumer Deficiencies
 Command executed:
