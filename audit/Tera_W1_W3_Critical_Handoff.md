@@ -1,5 +1,22 @@
 # Tera critical packet execution handoff
 
+## Sol checkpoint at Gemini revision f88fef44, 2026-11-06
+
+The earlier blocked-policy descriptions below are historical. Read
+[Sol decisions and independent review](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+for D1-D7 and the full twenty-item continuation. Selected containment is accepted
+only at its demonstrated offline boundary. Same-tenant profile permission, actual
+profile store/table provenance and the API typecheck remain unresolved in source.
+Catalog navigation/API responses are selected network-only, and new explicit
+Gate 1/scoring/nested/event policies now authorize bounded implementation.
+
+Sol reproduced ownership/guard 27 passes, admission/normalization 25 passes,
+RTH worker 4 passes, SkillUp worker 4 passes / 1 obsolete-contract failure,
+placement selection 21 passes / 3 catalog-fixture failures, nested/storage 18
+passes / 5 failures, and analytics HTTP provider 3 passes. These are separate
+selections, not a completed foundation gate. All twenty critical items and thirty
+FND tasks remain accountable. Next required model is Tera, then Gemini and Sol.
+
 Assigned project role: Tera / Terra. Runtime model: parent reports the host spawned this worker with `gpt-6.1-terra`; the runtime identifier is not independently exposed inside this worker. Packet: `audit/Tera_W1_W3_Critical_Implementation_Assignment.md`, TC01–TC20. Baseline: branch `remediation/w1-2-batch-05-targeted`, HEAD `19b173dd9d1171e688e7b994e75b83d97190b287`, working tree clean. Scope: critical production files explicitly identified by item manifests; independent tests belong to Gemini, existing checks may be run locally. No live database/browser, schema execution, push or acceptance. Next required model: Gemini, against an exact frozen source commit and item-specific controls; Sol owns final acceptance.
 
 TC01 baseline: Sol review `audit/FND03_FND11_Sol_Review_041e5fe9.md` records five failing public tenant controls, broken profile contexts/guard import, unresolved admission subpath and unsafe tenant defaults. Those findings remain CHANGES_REQUESTED; no approval is implied. TC02–TC05 initial production manifest: `packages/auth/src/rbac/ownership.service.ts`, `packages/auth/src/rbac/rbac.guard.ts`, `apps/api-server/src/app/api/auth/profile/route.ts`; explicit verified tenant and resource identity only. User-selected tenant/local ownership, unknown denial, and no projection-equality authorization govern. Schema/default migration and admission require separate manifests; independent Gemini owns test files.

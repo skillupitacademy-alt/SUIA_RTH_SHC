@@ -1,5 +1,20 @@
 # Gemini independent foundation testing packet
 
+## Current Sol decision checkpoint, 2026-11-06
+
+Use [Sol decisions and independent review](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+to test Tera's next frozen source. D2 authorizes replacing only the obsolete catalog
+cache-positive contract with network-only/offline-denial controls and repairing
+catalog success fixtures to supply real Request/auth context. Preserve static-asset
+caching positives. Never weaken private ownership or malformed-content denials.
+
+Add the D1 and D3-D7 adverse/legitimate controls as production slices arrive. Use
+the original GM01-GM20 matrix below for ID attribution. Historical report rows that
+transposed GM07/08/09 are superseded by that matrix. The marketing HTTP-503 provider
+control independently passes 3/3; event retry/identity defects remain separate.
+Sol's selected runner and commands are recorded in the linked review. Do not sum
+historical overlapping counts or claim the API typecheck is passing.
+
 Assigned by the owner through Sol on 2026-11-06. Gemini owns independent test design,
 test changes, execution and evidence for the remaining foundation work. Read
 W1_W3_Model_Routing_And_Handoff_Protocol.md and declare actual runtime identity if

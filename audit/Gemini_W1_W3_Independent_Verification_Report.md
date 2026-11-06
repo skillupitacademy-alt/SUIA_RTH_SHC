@@ -1,5 +1,16 @@
 # Gemini Independent W1–W3 Verification Report (`GM01`–`GM20`)
 
+> Sol review addendum, 2026-11-06: the original observations below remain historical
+> evidence. [Sol's independent rerun and policy decisions](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+> reproduce the selected counts and the two API type errors. GM07 is exports, GM08
+> progress and GM09 concurrency under the actual assignment; the disposition matrix
+> below transposed these scopes. Its GM19 HTTP-503 failure claim is stale: Sol reran
+> internal-http-failure.test.ts with 3/3 passing. Event-consumer defects remain open.
+> Historical GM11/14/16/17 counts were not independently rerun in this checkpoint.
+> The 181/177 inventory totals are claims awaiting reconciliation, not accepted totals.
+> D1-D7 now select the requested policies. Tera is next for implementation, followed
+> by Gemini against a frozen revision and Sol for acceptance. No overall closure.
+
 - **Assigned project role**: `Gemini` (Independent testing: regression, negative security, caller integration, compatibility, concurrency, and quality-gate verification)
 - **Runtime model**: Gemini 4 Argon (Medium)
 - **Packet**: `audit/Gemini_W1_W3_Independent_Test_Assignment.md` (`GM01`–`GM20`)

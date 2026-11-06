@@ -5,6 +5,14 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**2026-11-06 Sol checkpoint:** source 6d0217df and Gemini tests f88fef44 received
+partial acceptance for explicitly bounded offline containment, not FND/group closure.
+[The independent review and D1-D7 decisions](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+select the next private-profile, store-provenance, cache, Gate 1, scoring, document
+and event contracts. Tera retains TC01-TC20, Gemini GM01-GM20, and Sonnet the existing
+noncritical packet. API typecheck still fails with two profile tenant-context errors.
+All remaining physical/runtime gates, Batch 08, BROWSER-01 and RC-ID-01 remain open.
+
 ---
 
 ## 1. Program Objective

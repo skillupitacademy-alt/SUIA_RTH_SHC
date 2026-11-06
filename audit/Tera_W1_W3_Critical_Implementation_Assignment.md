@@ -1,5 +1,19 @@
 # Tera critical implementation packet
 
+## Current Sol decision checkpoint, 2026-11-06
+
+Read [Sol decisions and independent review](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+before continuing. It reviews source 6d0217df with Gemini tests f88fef44 and selects
+the requested private-profile, store-provenance, catalog-cache, Gate 1, scoring,
+nested-document and event policies. The full TC01-TC20 packet below remains assigned.
+Its twenty-row continuation table is the current actionable priority crosswalk.
+
+Start with TC02/TC03/TC05 and TC14. Do not manufacture profile tenant equality to
+satisfy types, restore catalog caching, or weaken genuine foreign-tenant denials.
+Proceed with independent selected TC15/TC17/TC18/TC20 slices in disjoint files while
+Gemini tests frozen commits. All thirty FND tasks remain accountable. Migration
+execution, live infrastructure, browser execution, pushes and self-closure remain gated.
+
 Assigned by the owner through Sol on 2026-11-06. Assigned role Tera / Terra, critical
 production implementer. Read W1_W3_Model_Routing_And_Handoff_Protocol.md first and declare
 actual runtime identity if exposed, baseline, scope and next handoff. The host must select
