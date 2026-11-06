@@ -1,0 +1,31 @@
+{
+  "project_type": "TypeScript monorepo with Bun/Hono backend services, Next.js apps, Drizzle ORM, PostgreSQL multi-database architecture",
+  "language": "TypeScript",
+  "build_system": "Turbo monorepo with pnpm workspaces, cross-env for environment handling, concurrency controls for Windows builds",
+  "test_framework": "Vitest for unit/integration tests, isolated test databases, fixture-based mocking, offline guards for network isolation",
+  "build_command": "pnpm build (turbo run build --concurrency=2) or pnpm build:windows-safe (concurrency=1 for resource-constrained systems)",
+  "test_command": "pnpm test (turbo run test --concurrency=4) or pnpm test:all (recursive across all packages)",
+  "verification_instructions": "1. Run `pnpm test` for affected packages after changes. 2. For schema changes, verify migration files in packages/*/migrations/. 3. Use offline guards (no live DB operations). 4. Check type-check with `pnpm type-check`. 5. Verify RBAC tests in packages/auth/src/rbac/__tests__/. 6. Verify export ownership tests in apps/api-server/src/app/api/export/download/__tests__/batch-08-ownership.test.ts.",
+  "snapshot_or_generated_files": "Drizzle schema migration files in packages/*/migrations/, graphify-out/graph.json (knowledge graph, rewritten on every build). Commands: none for migrations (manual review required), graphify update . for graph incremental updates.",
+  "environment_constraints": "1. Offline guard required for all tests (no live network/DB calls). 2. Multi-database architecture: db-skillup (brand-local users), db-people (canonical identity), db-tutorial (ILS/progress). 3. Never restart dev servers on port 9001. 4. Token verification requires 32-byte secrets. 5. Schema migrations require explicit Sol authorization before execution. 6. Browser/physical store operations require separate runtime authorization gate.",
+  "contribution_requirements": "1. FND03 blocks FND18, FND06, FND05, FND04 per ownership matrix. 2. Selected policy: verified tenant + tenant-local subject; equal IDs/emails in separate tenants do NOT join accounts. 3. Unknown provenance denies access. 4. Preserve existing behavior for legitimate clients. 5. No speculative distributed infrastructure. 6. Route only genuinely missing authority/migration choices to Sol with concrete recommended design. 7. Prepare executable migration recipes but do not execute. 8. Keep tenant/subject propagation explicit through service boundaries.",
+  "key_patterns": "1. Ownership checks use OwnershipRBACService from packages/auth/src/rbac/ownership.service.ts (userId-based only, no tenant context). 2. Export download verification at apps/api-server/src/app/api/export/download/route.ts checks job.userId === payload.userId. 3. Progress repository at packages/db-tutorial/src/repositories/tutorial-progress.repository.ts uses userId+subtopicId keys. 4. Platform enum: realtutorialhub, skillup, skillhubcore in packages/db-people/src/schema/enums.ts. 5. Multi-database pattern: db-skillup (brand-local), db-people (canonical), db-tutorial (shared). 6. Token service uses brand claim in JWT payload. 7. No existing tenantId columns in any schema files inspected.",
+  "relevant_files": [
+    "packages/db-skillup/src/schema/users.ts",
+    "packages/db-people/src/schema/users.ts",
+    "packages/db-people/src/schema/enums.ts",
+    "packages/db-people/src/schema/platform-access.ts",
+    "packages/auth/src/rbac/ownership.service.ts",
+    "packages/auth/src/session.service.ts",
+    "packages/auth/src/token.service.ts",
+    "packages/db-tutorial/src/repositories/tutorial-progress.repository.ts",
+    "apps/api-server/src/app/api/export/download/route.ts",
+    "apps/api-server/src/app/api/export/download/__tests__/batch-08-ownership.test.ts",
+    "apps/api-server/src/modules/auth/repositories/user.repository.ts",
+    "apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts",
+    "audit/FND12_Complete_Truth_Inventory.md",
+    "audit/Claude_Sonnet45_W1_W3_Completion_Directive.md",
+    ".agents/tasks/fnd12-fnd17-ownership-matrix.md"
+  ],
+  "directory_structure": "packages/db-skillup, packages/db-people, packages/db-tutorial contain separate Drizzle schemas. packages/auth contains RBAC/session/token services. apps/api-server contains Next.js API routes with export/auth modules. apps/skillup-admin, apps/skillhubcore-admin contain admin-specific routes. audit/ contains architectural decisions and investigation reports. .agents/tasks/ contains task-specific artifacts."
+}

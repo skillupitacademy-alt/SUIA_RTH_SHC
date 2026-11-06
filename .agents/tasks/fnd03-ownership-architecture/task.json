@@ -1,0 +1,7 @@
+{
+  "task_id": "task-fnd03-ownership-architecture",
+  "task_description": "Build executable caller-to-credential-to-tenant/local-subject-to-store ownership map, distinguish policy from deployment facts, produce reviewed schema/key/foreign-key manifests, draft safe migration/rollback without guessed provenance, implement compatible source corrections, route missing authority to Sol with concrete design",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null
+}

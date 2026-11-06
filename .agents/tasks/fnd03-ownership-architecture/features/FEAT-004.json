@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-004",
+  "type": "docs",
+  "description": "Draft safe historical-row migration strategy with quarantine for unknown provenance, tenant-assignment rules for existing data, idempotent migration script structure, and verified rollback procedure without guessed email/requester provenance",
+  "status": "pending",
+  "steps": [
+    "Read FEAT-002 schema-changes.md for nullable tenantId design and FEAT-003 service-changes.md for unknown provenance denial",
+    "Define historical data categories: (1) Single-tenant deployment rows (all rows belong to one known tenant - assign that tenantId), (2) Multi-tenant rows with unambiguous source (user exists in db-skillup with brand, map brand→tenantId), (3) Ambiguous rows (userId exists in multiple brands, or userId not found in db-skillup), (4) Orphaned rows (userId does not exist in any user table)",
+    "Design tenant assignment for category 1: If deployment history confirms single tenant (e.g., only skillup brand ever used), batch UPDATE all NULL tenantId rows: UPDATE tutorial_progress SET tenantId = 'skillup' WHERE tenantId IS NULL. Document evidence required: deployment logs, user table brand distribution query",
+    "Design tenant assignment for category 2: For each NULL tenantId row, lookup userId in db-skillup users table. If exactly one match with brand column, assign tenantId from brand. SQL: UPDATE tutorial_progress tp SET tenantId = (SELECT u.brand FROM db_skillup.users u WHERE u.id = tp.userId LIMIT 1) WHERE tenantId IS NULL AND EXISTS(SELECT 1 FROM db_skillup.users u WHERE u.id = tp.userId)",
+    "Design quarantine for category 3 and 4: Create shadow table tutorial_progress_quarantine with same schema. Move ambiguous/orphaned rows: INSERT INTO tutorial_progress_quarantine SELECT * FROM tutorial_progress WHERE tenantId IS NULL AND (userId IN (SELECT userId FROM users GROUP BY userId HAVING COUNT(DISTINCT brand) > 1) OR userId NOT IN (SELECT id FROM users)). DELETE from tutorial_progress WHERE id IN quarantine. Document: quarantined rows require manual review before restoration",
+    "Design idempotent migration script structure: (1) Create shadow/quarantine tables IF NOT EXISTS, (2) Add tenantId column IF NOT EXISTS (Drizzle migration handles this), (3) Run category 1 UPDATE if applicable with WHERE tenantId IS NULL check, (4) Run category 2 UPDATE with WHERE tenantId IS NULL, (5) Run category 3/4 quarantine INSERT and DELETE in transaction with RETURNING clause, (6) Log quarantine counts and require manual review gate",
+    "Design rollback procedure: (1) Verify no tenant-qualified writes occurred (SELECT COUNT(*) FROM audit_log WHERE action LIKE '%tenant%' AND created_at > migration_timestamp = 0), (2) Restore quarantined rows: INSERT INTO tutorial_progress SELECT * FROM tutorial_progress_quarantine, (3) Verify row count matches pre-migration snapshot, (4) ALTER TABLE DROP COLUMN tenantId (or keep nullable indefinitely if too risky), (5) DROP shadow tables",
+    "Design verification queries: Pre-migration snapshot: SELECT COUNT(*), MIN(created_at), MAX(created_at) FROM tutorial_progress. Post-migration checks: SELECT COUNT(*) WHERE tenantId IS NULL (expect 0 or documented quarantine count), SELECT tenantId, COUNT(*) GROUP BY tenantId (expect distribution matching brand distribution from users table). Cross-reference export jobs and user tables for consistency",
+    "Document provenance constraints: NEVER guess tenantId from email domain (email@skillup.com does not prove tenant). NEVER infer tenantId from IP address, session metadata, or requester context (per directive: session metadata is not identity authority). Only use: (1) explicit brand column in db-skillup users, (2) platform column in db-people users, (3) deployment history confirmation for single-tenant case",
+    "Design migration gate: List prerequisites before execution: (1) Sol authorization of migration plan, (2) Production database backup with verified restore test, (3) Maintenance window scheduled (no concurrent writes), (4) Rollback procedure tested on staging clone, (5) Quarantine review process established (who reviews, what criteria for restoration)",
+    "Write migration plan at .agents/tasks/fnd03-ownership-architecture/migration-plan.md with: Executive Summary, Historical Data Categories, Tenant Assignment Rules (with SQL examples), Quarantine Strategy, Idempotent Migration Script Structure, Rollback Procedure, Verification Queries, Provenance Constraints (what NOT to do), Migration Prerequisites, Execution Gate Requirements"
+  ],
+  "acceptance_criteria": [
+    "migration-plan.md contains tenant assignment rules for 4 historical data categories",
+    "Quarantine strategy defined for ambiguous/orphaned rows without guessing provenance",
+    "Idempotent migration script structure documented with WHERE tenantId IS NULL checks",
+    "Rollback procedure includes data preservation verification before column drop",
+    "Provenance constraints documented: no email domain guessing, no IP-based inference, no session metadata as authority",
+    "Migration gate requirements listed: Sol authorization, backup, staging test, maintenance window"
+  ],
+  "verification": [
+    "File .agents/tasks/fnd03-ownership-architecture/migration-plan.md exists",
+    "grep 'UPDATE.*SET tenantId\\|quarantine\\|rollback' migration-plan.md (expect tenant assignment and quarantine SQL)",
+    "grep 'NEVER guess\\|NOT to do' migration-plan.md (confirm provenance constraints documented)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
