@@ -24,6 +24,7 @@ import { RBACService } from './rbac.service';
 import { OwnershipRBACService } from './ownership.service';
 import { createRBACUser } from './rbac.adapter';
 import type { Permission } from './permissions';
+import { ForbiddenError } from '../errors/auth-errors';
 
 // Note: AuthContext should be imported from your API server
 // This is a minimal type definition for the guard

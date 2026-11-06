@@ -71,24 +71,13 @@ export class OwnershipRBACService {
     context: OwnershipContext,
     permission: Permission
   ): boolean {
-    const { requestingUserId, requestingTenant, requestingShadowUserId, resourceOwnerId, resourceTenant, resourceShadowUserId, userRoles } = context;
-    
-    // 1. FND03: Check tenant boundary FIRST for non-admin users
-    const isCrossTenantAccess = requestingTenant !== resourceTenant;
-    const isAdmin = userRoles.some(role => role === 'admin' || role === 'super_admin');
-    
-    if (isCrossTenantAccess && !isAdmin) {
-      // Non-admin users cannot access cross-tenant resources
-      logOwnershipCheck({
-        requestingUserId,
-        resourceOwnerId,
-        permission,
-        result: 'DENIED',
-        reason: 'cross_tenant_access_denied',
-      });
+    const { requestingUserId, requestingTenant, resourceOwnerId, resourceTenant, userRoles } = context;
+
+    if (!this.isValidTenantPair(requestingTenant, resourceTenant) ||
+        !requestingUserId?.trim() || !resourceOwnerId?.trim()) {
       return false;
     }
-    
+
     // 2. Check if user has explicit permission (admin, faculty, etc.)
     const hasPermission = RBACService.hasPermission(userRoles, permission, requestingUserId);
     
@@ -105,8 +94,7 @@ export class OwnershipRBACService {
     
     // 3. Check ownership - must be same tenant AND same user
     if (requestingTenant === resourceTenant) {
-      const ownershipMatch = requestingUserId === resourceOwnerId ||
-        (requestingShadowUserId && resourceShadowUserId && requestingShadowUserId === resourceShadowUserId);
+      const ownershipMatch = requestingUserId === resourceOwnerId;
       
       if (ownershipMatch) {
         logOwnershipCheck({
@@ -179,22 +167,14 @@ export class OwnershipRBACService {
     requestingShadowUserId?: string,
     resourceShadowUserId?: string
   ): boolean {
-    // FND03: Tenant must match first
-    if (requestingTenant !== resourceTenant) {
-      return false;
-    }
-    
-    // Within same tenant, check userId OR shadowUserId
-    if (requestingUserId === resourceOwnerId) {
-      return true;
-    }
-    
-    // Fallback to canonical identity if available
-    if (requestingShadowUserId && resourceShadowUserId) {
-      return requestingShadowUserId === resourceShadowUserId;
-    }
-    
-    return false;
+    return this.isValidTenantPair(requestingTenant, resourceTenant) &&
+      Boolean(requestingUserId?.trim()) && Boolean(resourceOwnerId?.trim()) &&
+      requestingUserId === resourceOwnerId;
+  }
+
+  private static isValidTenantPair(requestingTenant: string, resourceTenant: string): boolean {
+    const tenants = ['skillup', 'realtutorialhub', 'skillhubcore'];
+    return tenants.includes(requestingTenant) && requestingTenant === resourceTenant;
   }
 
   /**
@@ -211,22 +191,12 @@ export class OwnershipRBACService {
     isOwner: boolean;
     hasExplicitPermission: boolean;
   } {
-    const { requestingUserId, requestingTenant, requestingShadowUserId, resourceOwnerId, resourceTenant, resourceShadowUserId, userRoles } = context;
-    
-    // FND03: Check tenant-qualified ownership
-    const isOwner = this.isOwner(
-      requestingUserId,
-      requestingTenant,
-      resourceOwnerId,
-      resourceTenant,
-      requestingShadowUserId,
-      resourceShadowUserId
-    );
-    
-    const hasReadPermission = RBACService.hasPermission(userRoles, readPermission);
-    const hasWritePermission = writePermission 
-      ? RBACService.hasPermission(userRoles, writePermission)
-      : false;
+    const { requestingUserId, requestingTenant, resourceOwnerId, resourceTenant, userRoles } = context;
+    const valid = this.isValidTenantPair(requestingTenant, resourceTenant) &&
+      Boolean(requestingUserId?.trim()) && Boolean(resourceOwnerId?.trim());
+    const isOwner = valid && this.isOwner(requestingUserId, requestingTenant, resourceOwnerId, resourceTenant);
+    const hasReadPermission = valid && RBACService.hasPermission(userRoles, readPermission);
+    const hasWritePermission = valid && Boolean(writePermission && RBACService.hasPermission(userRoles, writePermission));
 
     return {
       canRead: hasReadPermission || isOwner,
