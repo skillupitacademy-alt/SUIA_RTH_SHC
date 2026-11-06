@@ -1,0 +1,92 @@
+
+ RUN  v4.1.0 E:/onlinewebsites/quiz-platform
+
+xxxxxx·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > generic complete preserves a replacement after the final comparison read
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > worker complete preserves a replacement after the final comparison read
+AssertionError: expected 'processed' not to be 'processed' // Object.is equality
+ ❯ audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts:39:40
+     37|         }
+     38|       } catch { /* Rejecting a non-atomic adapter is an acceptable out…
+     39|       expect(entries.get('lease')).not.toBe('processed');
+       |                                        ^
+     40|       expect(entries.has('lease')).toBe(true);
+     41|       // With no adapter support, no mutation is allowed; otherwise pr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > generic release preserves a replacement after the final comparison read
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > worker release preserves a replacement after the final comparison read
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts:40:36
+     38|       } catch { /* Rejecting a non-atomic adapter is an acceptable out…
+     39|       expect(entries.get('lease')).not.toBe('processed');
+     40|       expect(entries.has('lease')).toBe(true);
+       |                                    ^
+     41|       // With no adapter support, no mutation is allowed; otherwise pr…
+     42|       expect(['processing:old-owner', 'processing:replacement-owner'])…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > generic handler rejects a non-atomic completion adapter before business effects
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "id": "new-event",
+        "type": "project.submitted",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts:58:22
+     56|     await handler(new Request('https://fixture.invalid/events', { meth…
+     57|   } catch { /* Unsupported-store rejection expected. */ }
+     58|   expect(effect).not.toHaveBeenCalled();
+       |                      ^
+     59| });
+     60|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts > worker does not acquire an effect lease without atomic completion/release support
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ audit/Sol_Lease_Adapter_Contract_Probe_27243c6e.test.ts:66:20
+     64|   try { acquired = (await acquireWorkerLease(redis, 'new-worker-lease'…
+     65|   catch { /* Unsupported-store rejection expected. */ }
+     66|   expect(acquired).toBe(false);
+       |                    ^
+     67| });
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed (7)
+   Start at  04:02:21
+   Duration  785ms (transform 69ms, setup 268ms, import 241ms, tests 28ms, environment 0ms)
+

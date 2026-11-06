@@ -1,5 +1,14 @@
 # Current owner override
 
+## Current adapter review at 27243c6e (2026-11-07)
+
+[Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED.
+The four old lease probes pass, but both adapters retain unsafe two-read fallbacks:
+new adapter checks give 1 pass / 6 failures. Argon retains ALL TC01-TC20/FND01-FND30
+implementation. Reject unsupported atomic adapters before effects, complete actual worker
+effect recovery, and correct invented TC/FND/group/gate mappings. Gemini tests only;
+Sol accepts. No W1-W3 closure or W4 entry. Standing D1-D7 authorization continues.
+
 ## Current closure review at 6292b22c (2026-11-07)
 
 [Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md): CHANGES_REQUESTED.

@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Latest review at 27243c6e
+
+[Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED. Argon
+retains ALL implementation; Gemini independently tests; Sol accepts. Unsupported adapters
+must fail closed before effects and worker publication needs durable recovery. Restore
+canonical TC/FND/group/root-cause meanings. Full twenty-item continuation remains active;
+no W1-W3 closure or W4 approval follows from aggregate green tests.
+
 ## Current Sol disposition at 6292b22c
 
 [Closure review](Sol_W1_W3_Closure_Review_6292b22c.md): CHANGES_REQUESTED. Argon retains

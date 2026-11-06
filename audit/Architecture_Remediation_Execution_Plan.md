@@ -1,5 +1,12 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Latest adapter review at 27243c6e, 2026-11-07: CHANGES_REQUESTED.**
+[Sol review and full continuation](Sol_W1_W3_Adapter_Review_27243c6e.md): prior four lease
+examples pass, but six new adapter checks fail. Both compatibility fallbacks remain
+non-atomic. Worker recovery and accurate canonical requirement mappings remain open.
+RC-ID-01 retains the root-cause definition below. Argon implements, Gemini tests, Sol
+accepts; all TC01-TC20/FND01-FND30 remain in standing scope. No W4 entry approved.
+
 **Current Sol closure review, 6292b22c (2026-11-07): CHANGES_REQUESTED.**
 [Review and full twenty-item continuation](Sol_W1_W3_Closure_Review_6292b22c.md).
 Retained residual/scoring/Python probes pass; three new lease/claim tests fail. Argon

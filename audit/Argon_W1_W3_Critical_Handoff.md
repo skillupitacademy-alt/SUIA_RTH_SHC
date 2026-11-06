@@ -1,5 +1,15 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Current Sol disposition at a09de38b / report 27243c6e
+
+[Adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md): CHANGES_REQUESTED. Lua owner
+operations and removal of mock introspection improve the source, but the no-eval fallback
+still races after its second GET. New shared-adapter probes: 1 passed / 6 failed.
+Durable worker publish recovery is not proved by domain-row existence. The group table
+below renames established G1-G9 and must be reconciled against the completion directive.
+RC-ID-01 is the identity/session/authorization/brand root cause, not merely secret rotation.
+Continue ALL twenty TC items and thirty FND requirements under standing authorization.
+
 ## Governing review of e0154380 plus 6292b22c
 
 [Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md) remains CHANGES_REQUESTED.

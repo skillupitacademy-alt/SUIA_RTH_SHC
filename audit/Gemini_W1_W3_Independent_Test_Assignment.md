@@ -1,5 +1,13 @@
 # Gemini independent foundation testing packet
 
+## Latest required correction at 27243c6e
+
+Read [Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md). Four retained lease tests
+pass but do not prove worker integration; new generic/worker adapter tests have 6 failures.
+Test last-comparison interleavings, reject incomplete adapters before effects, and verify
+actual worker retry after domain persistence/publish failure. Restore canonical TC/FND/G1-G9
+and RC-ID-01 meanings. Keep original GM01-GM20 coverage and no production edits.
+
 ## Current verification correction at 6292b22c
 
 Read [Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md). Three new atomic lease /

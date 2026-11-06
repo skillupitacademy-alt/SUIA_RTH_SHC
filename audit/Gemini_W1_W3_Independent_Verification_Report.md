@@ -1,5 +1,15 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Sol addendum at 27243c6e: CHANGES_REQUESTED
+
+[Sol adapter review](Sol_W1_W3_Adapter_Review_27243c6e.md) reproduces the four retained
+lease passes but adds 1 pass / 6 failing generic/worker adapter checks. The four old tests
+do not import worker-lease.ts or worker routes, so their attribution to L3 is unsupported.
+The TC/FND mapping and foundation group names below contradict governing assignments.
+RC-ID-01 is identity/session/authorization/brand authority, not Redis stress qualification.
+Preserve reported execution evidence as scoped history, correct its interpretation and
+do not claim all thirty requirements or all nine groups verified from those selections.
+
 - **Testing Model**: `Gemini Flash` (`TESTER_MODEL`)
 - **Implementer Model**: `Argon` (`Gemini 4 Argon (Medium)`)
 - **Reviewer Model**: `Sol`
