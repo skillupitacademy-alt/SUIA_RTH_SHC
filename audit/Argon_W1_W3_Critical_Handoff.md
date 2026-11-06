@@ -1,5 +1,13 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Governing review of e0154380 plus 6292b22c
+
+[Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md) remains CHANGES_REQUESTED.
+The retained R1-R8 examples pass; atomic owner completion/release and mock-adapter claim
+denial still fail. Worker integration and full requirement coverage remain open. Treat
+the historical completion claims below as implementer reports, not Sol acceptance.
+Argon continues all twenty TC items; reconcile Gemini's two production worker additions.
+
 ## Current Sol review at f18da842, 2026-11-07
 
 [The correction review](Sol_W1_W3_Correction_Review_f18da842.md) is CHANGES_REQUESTED.

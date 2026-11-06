@@ -1,5 +1,14 @@
 # Gemini Independent W1–W3 Comprehensive Verification Report (`GM01`–`GM20`)
 
+## Sol review addendum, 2026-11-07: closure not accepted
+
+[Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md) records 1 passing / 3 failing
+new event lease probes, while prior residual/scoring and Python examples pass. The
+all-TC/all-FND VERIFIED statements below exceed demonstrated scope and are not accepted
+as foundation closure. Candidate source includes the two production worker changes in
+6292b22c, not only Argon's e0154380. Preserve the historical report, correct attribution
+and supply requirement-level evidence and actual worker tests after Argon's next repair.
+
 ## Independent Verification Following Sol Correction Review `15f66ff8` & Argon Remediation `e0154380`
 
 Following Sol's correction review ([Sol_W1_W3_Correction_Review_f18da842.md](file:///e:/onlinewebsites/quiz-platform/audit/Sol_W1_W3_Correction_Review_f18da842.md), commit `15f66ff8`), which confirmed eight residual findings (`R1`–`R8`) via new probe suites ([Sol_W1_W3_Residual_Probes_f18da842.test.ts](file:///e:/onlinewebsites/quiz-platform/audit/Sol_W1_W3_Residual_Probes_f18da842.test.ts), [Sol_W1_W3_Scoring_Identity_Probe_f18da842.test.ts](file:///e:/onlinewebsites/quiz-platform/audit/Sol_W1_W3_Scoring_Identity_Probe_f18da842.test.ts), and [Sol_Gate1_Principal_Probe_f18da842.py](file:///e:/onlinewebsites/quiz-platform/audit/Sol_Gate1_Principal_Probe_f18da842.py)), **Argon** completed the full production remediation across 18 source files at commit **`e0154380`** on `remediation/w1-2-batch-05-targeted`.

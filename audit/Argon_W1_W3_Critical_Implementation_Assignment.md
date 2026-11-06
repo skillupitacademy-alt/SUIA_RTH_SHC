@@ -1,5 +1,14 @@
 # Current owner override
 
+## Current closure review at 6292b22c (2026-11-07)
+
+[Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md): CHANGES_REQUESTED.
+Prior residual/scoring/Python examples pass; new lease probes produce 1 pass / 3 failures.
+Argon retains the FULL TC01-TC20/FND01-FND30 standing assignment. Correct atomic event
+completion/release, remove mock-aware production exceptions, and qualify actual workers.
+Continue all remaining requirements and gate evidence, not only those three findings.
+Gemini owns tests only; Sol owns acceptance. No W1-W3 closure or W4 entry is approved.
+
 ## Current residual review at f18da842, 2026-11-07
 
 [Sol's correction review](Sol_W1_W3_Correction_Review_f18da842.md) is CHANGES_REQUESTED.

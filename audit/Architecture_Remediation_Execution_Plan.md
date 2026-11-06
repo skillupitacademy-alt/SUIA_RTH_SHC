@@ -1,5 +1,11 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Current Sol closure review, 6292b22c (2026-11-07): CHANGES_REQUESTED.**
+[Review and full twenty-item continuation](Sol_W1_W3_Closure_Review_6292b22c.md).
+Retained residual/scoring/Python probes pass; three new lease/claim tests fail. Argon
+continues all remaining implementation, Gemini tests only, Sol accepts. Blanket all-FND
+verification does not close W1-W3, physical gates or W4 entry requirements.
+
 **Governing architecture:** `FinalAechitecture.md`
 **Primary evidence sources:** `CompleteProjectAudit.md`, `CompleteProjectMatrix.md`
 **Purpose:** One authoritative implementation sequence for all AI models and human review.

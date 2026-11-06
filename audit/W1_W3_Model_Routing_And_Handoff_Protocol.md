@@ -1,5 +1,12 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current Sol disposition at 6292b22c
+
+[Closure review](Sol_W1_W3_Closure_Review_6292b22c.md): CHANGES_REQUESTED. Argon retains
+all TC01-TC20/FND01-FND30 implementation; Gemini tests independently without production
+changes; Sol approves. Atomic event completion/release, mock-aware source exceptions,
+actual worker integration and full requirement/gate coverage remain open. No W4 approval.
+
 ## Latest Sol review at f18da842, 2026-11-07
 
 [Residual correction review](Sol_W1_W3_Correction_Review_f18da842.md): CHANGES_REQUESTED.

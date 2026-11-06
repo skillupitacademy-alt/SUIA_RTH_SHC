@@ -1,5 +1,13 @@
 # Gemini independent foundation testing packet
 
+## Current verification correction at 6292b22c
+
+Read [Sol closure review](Sol_W1_W3_Closure_Review_6292b22c.md). Three new atomic lease /
+unconfirmed-claim denials fail despite the retained green residual examples. Verify actual
+worker/store and ingress paths and the original GM01-GM20 requirements. No production
+edits: return repairs to Argon. Identify 6292b22c's two worker edits as implementation,
+then independently test the next frozen source. Blanket all-FND verification is withdrawn.
+
 ## Residual correction verification at f18da842
 
 Read [Sol's current review](Sol_W1_W3_Correction_Review_f18da842.md). Keep the now-passing
