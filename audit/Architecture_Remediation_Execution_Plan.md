@@ -25,6 +25,14 @@ The target architecture remains a **modular multi-application platform with sele
 
 ### Current owner-directed consolidated foundation assignment
 
+The owner subsequently directed Claude Sonnet 4.5 to finish the complete remaining
+foundation assignment. audit/Claude_Sonnet45_W1_W3_Completion_Directive.md supplies the
+current detailed FND01-FND30 implementation and closure guidance. It preserves the
+original nine-group structure, exact task IDs and independent Sol acceptance. The
+placement clarification at f4a9bac5 remains authoritative for every raw vector score.
+Full W1-W3 completion and W4 entry depend on the recorded group gates, including any
+required physical/runtime evidence. They are not granted by issuing this directive.
+
 On 2026-11-05 the owner requested one assignment for the nine remaining W1-W3 planning
 groups before W4. `audit/W1_W3_Terra_Consolidated_Implementation_Task.md` assigns thirty
 tasks FND01-FND30 to Terra, with independent Sol acceptance. This becomes the active

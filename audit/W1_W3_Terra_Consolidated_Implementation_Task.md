@@ -1,5 +1,20 @@
 # Consolidated W1-W3 foundation implementation assignment for Terra
 
+## Current implementation ownership and completion directive
+
+As directed by the owner, Claude Sonnet 4.5 now owns the complete remaining FND01-FND30
+implementation assignment. Terra's name in this file and historical reports preserves
+attribution. Sol retains independent architecture review, verification and acceptance.
+Read audit/Claude_Sonnet45_W1_W3_Completion_Directive.md for detailed per-task implementation,
+acceptance and dependency handling issued 2026-11-06. It incorporates the placement
+clarification at f4a9bac5 and carries all thirty tasks and all nine groups forward.
+
+Implement selected corrections and actual caller integration, submit stable slices for
+review and continue independent work during decision waits. A short workflow cannot
+replace the full assignment. Historical incomplete/failing evidence needs actual correction,
+and group/W1-W3 closure follows required independent gates. Current source and latest
+Sol decisions take precedence over old workflow summaries and baseline status tables.
+
 Assigned 2026-11-05 by Sol / Codex at the owner's request to consolidate the nine
 remaining foundation groups before W4. Implementer Terra / Tera. Independent reviewer
 and architecture acceptance Sol. Status PLANNED, with prior submitted work retaining
