@@ -1,55 +1,333 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { expect, it, vi } from 'vitest';
-const f = vi.hoisted(() => ({ reads: 0, platform: 'realtutorialhub', writes: vi.fn(), insert: vi.fn(), event: vi.fn() }));
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+
+interface MockUserRow {
+  id: string;
+  email: string;
+  platform: string;
+  isActive: boolean;
+  deletedAt: Date | null;
+}
+
+const f = vi.hoisted(() => ({
+  enquiryEmail: 'same@example.test',
+  enquiryProgramId: 'prog-1',
+  users: [] as MockUserRow[],
+  batches: [{ id: 'batch-1', programId: 'prog-1', isActive: true, startDate: new Date('2026-01-01') }],
+  lastUserPredicates: [] as Array<{ op: string; col?: string; val?: unknown }>,
+  lastUserLimit: 0,
+  txWrites: vi.fn(),
+  insertedProfiles: [] as Array<Record<string, unknown>>,
+  insertedAdmissions: [] as Array<Record<string, unknown>>,
+  insertedEnrollments: [] as Array<Record<string, unknown>>,
+  updatedEnquiries: [] as Array<Record<string, unknown>>,
+  event: vi.fn(),
+}));
+
 vi.mock('bcryptjs', () => ({ default: { hash: vi.fn(async () => 'inert-fixture') } }));
-vi.mock('drizzle-orm', () => ({ and: vi.fn(), desc: vi.fn(), eq: vi.fn(), isNull: vi.fn(), sql: vi.fn() }));
-vi.mock('@quiz/events', () => ({ PlatformEventTypes: { ADMISSION_COMPLETED: 'fixture' }, publishEvent: f.event }));
-vi.mock('@/lib/admin-bff', () => ({ requireAdminOrForbidden: async () => null, jsonError: (error: string, status: number) => NextResponse.json({ error }, { status }), jsonData: (data: unknown, status: number) => NextResponse.json(data, { status }) }));
-vi.mock('@/lib/skillup-admin-data', () => ({ getAdminEnquiryDetail: async () => ({ email: 'same@example.test', studentName: 'Fixture' }) }));
-vi.mock('@quiz/db-people', () => {
-  const columns = new Proxy({}, { get: () => ({}) });
-  const query = {
-    from: () => query,
-    where: () => query,
-    orderBy: () => query,
-    limit: async () => {
-      // First read: batch lookup (always returns batch)
-      if (f.reads === 0) { f.reads++; return [{ id: 'batch' }]; }
-      // Second read: platform-scoped user lookup
-      // Return user only if platforms match, otherwise return empty (no same-platform match)
-      f.reads++;
-      return f.platform === 'skillup' ? [{ id: 'existing-user' }] : [];
-    }
-  };
-  const insert = () => {
-    f.insert();
-    return {
-      values: () => ({
-        onConflictDoNothing: async () => undefined,
-        returning: () => ({ then: async (fn: any) => fn([{ id: 'new-user' }]) })
-      })
+
+vi.mock('drizzle-orm', () => ({
+  eq: (col: { col: string }, val: unknown) => {
+    const fn = (row: Record<string, unknown>) => row[col.col] === val;
+    fn.meta = { op: 'eq', col: col.col, val };
+    return fn;
+  },
+  isNull: (col: { col: string }) => {
+    const fn = (row: Record<string, unknown>) => row[col.col] === null || row[col.col] === undefined;
+    fn.meta = { op: 'isNull', col: col.col };
+    return fn;
+  },
+  sql: (strings: TemplateStringsArray, ...values: any[]) => {
+    const raw = strings.join('');
+    const colObj = values[0];
+    const targetVal = values[1];
+    const fn = (row: Record<string, unknown>) => {
+      if (raw.includes('lower(trim(') && colObj?.col) {
+        return String(row[colObj.col] ?? '').trim().toLowerCase() === targetVal;
+      }
+      return false;
     };
+    fn.meta = { op: 'lower_trim_eq', col: colObj?.col, val: targetVal };
+    return fn;
+  },
+  and: (...preds: any[]) => {
+    const validPreds = preds.filter(Boolean);
+    const fn = (row: Record<string, unknown>) => validPreds.every((p) => p(row));
+    fn.preds = validPreds.map((p) => p.meta ?? { op: 'unknown' });
+    return fn;
+  },
+  desc: (col: { col: string }) => col,
+}));
+
+vi.mock('@quiz/events', () => ({
+  PlatformEventTypes: { ADMISSION_COMPLETED: 'ADMISSION_COMPLETED' },
+  publishEvent: f.event,
+}));
+
+vi.mock('@/lib/admin-bff', () => ({
+  requireAdminOrForbidden: async () => null,
+  jsonError: (error: string, status: number) => NextResponse.json({ error }, { status }),
+  jsonData: (data: unknown, status: number = 200) => NextResponse.json(data, { status }),
+}));
+
+vi.mock('@/lib/skillup-admin-data', () => ({
+  getAdminEnquiryDetail: async () => ({
+    email: f.enquiryEmail,
+    studentName: 'Fixture Student',
+    programId: f.enquiryProgramId,
+  }),
+}));
+
+vi.mock('@quiz/db-people', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@quiz/db-people')>();
+  const makeTable = (tableName: string) =>
+    new Proxy(
+      { __table: tableName },
+      {
+        get: (target, prop) => {
+          if (prop === '__table') return target.__table;
+          return { table: tableName, col: String(prop) };
+        },
+      },
+    );
+
+  const createQueryBuilder = () => {
+    let currentTable = '';
+    let currentWhere: any = null;
+    const builder = {
+      from: (table: any) => {
+        currentTable = table?.__table ?? '';
+        return builder;
+      },
+      where: (pred: any) => {
+        currentWhere = pred;
+        if (currentTable === 'users' && pred?.preds) {
+          f.lastUserPredicates = pred.preds;
+        }
+        return builder;
+      },
+      orderBy: () => builder,
+      limit: async (n: number) => {
+        const dataset = currentTable === 'batches' ? f.batches : currentTable === 'users' ? f.users : [];
+        if (currentTable === 'users') {
+          f.lastUserLimit = n;
+        }
+        const filtered = currentWhere ? dataset.filter((row) => currentWhere(row)) : dataset;
+        return filtered.slice(0, n);
+      },
+    };
+    return builder;
   };
+
+  const insert = (table: any) => ({
+    values: (val: Record<string, unknown>) => {
+      const tableName = table?.__table;
+      if (tableName === 'userProfiles') f.insertedProfiles.push(val);
+      if (tableName === 'admissions') f.insertedAdmissions.push(val);
+      if (tableName === 'batchEnrollments') f.insertedEnrollments.push(val);
+      return {
+        onConflictDoNothing: async () => undefined,
+        returning: () => ({
+          then: async (resolve: any) => resolve([{ id: `${tableName}-new-id`, ...val }]),
+        }),
+      };
+    },
+  });
+
+  const update = (table: any) => ({
+    set: (val: Record<string, unknown>) => ({
+      where: async () => {
+        if (table?.__table === 'enquiries') f.updatedEnquiries.push(val);
+      },
+    }),
+  });
+
   return {
-    db: { select: () => query, insert, transaction: async (fn: any) => { f.writes(); await fn({ select: () => query, insert, update: () => ({ set: () => ({ where: async () => undefined }) }) }); } },
-    admissions: columns, batchEnrollments: columns, batches: columns, enquiries: columns, userProfiles: columns, users: columns
+    ...actual,
+    normalizeEmail: actual.normalizeEmail,
+    db: {
+      select: () => createQueryBuilder(),
+      insert,
+      update,
+      transaction: async (fn: any) => {
+        f.txWrites();
+        return await fn({
+          select: () => createQueryBuilder(),
+          insert,
+          update,
+        });
+      },
+    },
+    admissions: makeTable('admissions'),
+    batchEnrollments: makeTable('batchEnrollments'),
+    batches: makeTable('batches'),
+    enquiries: makeTable('enquiries'),
+    userProfiles: makeTable('userProfiles'),
+    users: makeTable('users'),
   };
 });
+
 import { POST } from '../route';
 
-it('rejects foreign-platform email collision (Option B: reject collision)', async () => {
-  f.reads = 0; f.platform = 'realtutorialhub'; f.insert.mockClear(); f.writes.mockClear(); f.event.mockReset().mockResolvedValue({});
-  const response = await POST(new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }), { params: Promise.resolve({ id: 'e' }) });
-  expect.soft(response.ok).toBe(false);
-  expect.soft(response.status).toBe(409);
-  expect.soft(f.writes).not.toHaveBeenCalled(); // No admission created
-  expect.soft(f.event).not.toHaveBeenCalled(); // No event published
-});
+describe('SkillUp admission tenant-scoped email & predicate controls (GM06 / FND11)', () => {
+  beforeEach(() => {
+    f.enquiryEmail = 'same@example.test';
+    f.enquiryProgramId = 'prog-1';
+    f.users = [];
+    f.lastUserPredicates = [];
+    f.lastUserLimit = 0;
+    f.txWrites.mockClear();
+    f.insertedProfiles = [];
+    f.insertedAdmissions = [];
+    f.insertedEnrollments = [];
+    f.updatedEnquiries = [];
+    f.event.mockReset().mockResolvedValue({});
+  });
 
-it('admits when email exists on same platform (reuses user)', async () => {
-  f.reads = 0; f.platform = 'skillup'; f.insert.mockClear(); f.writes.mockClear(); f.event.mockReset().mockResolvedValue({});
-  const response = await POST(new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }), { params: Promise.resolve({ id: 'e' }) });
-  expect.soft(response.ok).toBe(true);
-  expect.soft(f.writes).toHaveBeenCalled(); // Transaction completed
-  expect.soft(f.event).toHaveBeenCalled(); // Event published
+  it('rejects foreign-platform-only email match with 409 and zero writes/events', async () => {
+    f.users = [
+      {
+        id: 'rth-user-1',
+        email: 'same@example.test',
+        platform: 'realtutorialhub',
+        isActive: true,
+        deletedAt: null,
+      },
+    ];
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'e' }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect(f.lastUserPredicates).toEqual([
+      { op: 'lower_trim_eq', col: 'email', val: 'same@example.test' },
+      { op: 'eq', col: 'platform', val: 'skillup' },
+      { op: 'eq', col: 'isActive', val: true },
+      { op: 'isNull', col: 'deletedAt' },
+    ]);
+    expect(f.lastUserLimit).toBeGreaterThanOrEqual(2);
+    expect(f.txWrites).not.toHaveBeenCalled();
+    expect(f.insertedAdmissions).toHaveLength(0);
+    expect(f.event).not.toHaveBeenCalled();
+  });
+
+  it('admits when a unique active SkillUp account exists (with mixed-case/whitespace email normalization)', async () => {
+    f.enquiryEmail = '  Same.User@Example.TEST  ';
+    f.users = [
+      {
+        id: 'skillup-user-1',
+        email: 'same.user@example.test',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: null,
+      },
+    ];
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'e' }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(f.lastUserPredicates).toContainEqual({
+      op: 'lower_trim_eq',
+      col: 'email',
+      val: 'same.user@example.test',
+    });
+    expect(f.txWrites).toHaveBeenCalledTimes(1);
+    expect(f.insertedProfiles[0]).toMatchObject({ userId: 'skillup-user-1' });
+    expect(f.insertedAdmissions[0]).toMatchObject({ studentUserId: 'skillup-user-1' });
+    expect(f.insertedEnrollments[0]).toMatchObject({ studentUserId: 'skillup-user-1' });
+    expect(f.event).toHaveBeenCalledTimes(1);
+  });
+
+  it('selects only the SkillUp account when independent equal-email accounts exist on both RTH and SkillUp', async () => {
+    f.users = [
+      {
+        id: 'rth-foreign-user',
+        email: 'same@example.test',
+        platform: 'realtutorialhub',
+        isActive: true,
+        deletedAt: null,
+      },
+      {
+        id: 'skillup-local-user',
+        email: 'same@example.test',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: null,
+      },
+    ];
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'e' }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(f.insertedAdmissions).toHaveLength(1);
+    expect(f.insertedAdmissions[0].studentUserId).toBe('skillup-local-user');
+    expect(f.insertedAdmissions[0].studentUserId).not.toBe('rth-foreign-user');
+    expect(f.event).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects soft-deleted or inactive SkillUp accounts with 409 and zero writes/events', async () => {
+    f.users = [
+      {
+        id: 'skillup-deleted-user',
+        email: 'same@example.test',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: new Date('2026-02-01T00:00:00Z'),
+      },
+      {
+        id: 'skillup-inactive-user',
+        email: 'same@example.test',
+        platform: 'skillup',
+        isActive: false,
+        deletedAt: null,
+      },
+    ];
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'e' }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect(f.txWrites).not.toHaveBeenCalled();
+    expect(f.insertedAdmissions).toHaveLength(0);
+    expect(f.event).not.toHaveBeenCalled();
+  });
+
+  it('rejects ambiguous duplicate active SkillUp accounts with 409 and zero writes/events', async () => {
+    f.users = [
+      {
+        id: 'skillup-dup-1',
+        email: 'same@example.test',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: null,
+      },
+      {
+        id: 'skillup-dup-2',
+        email: 'same@example.test',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: null,
+      },
+    ];
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/crm/enquiries/e/admit', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'e' }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect(f.txWrites).not.toHaveBeenCalled();
+    expect(f.insertedAdmissions).toHaveLength(0);
+    expect(f.event).not.toHaveBeenCalled();
+  });
 });
