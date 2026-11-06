@@ -9,7 +9,7 @@
 
 import { RBACService } from './rbac.service';
 import type { Role } from './roles';
-import type { Permission } from './permissions';
+import { PERMISSIONS, type Permission } from './permissions';
 import { logOwnershipCheck } from '../audit/rbac.audit';
 import { ForbiddenError } from '../errors/auth-errors';
 
@@ -76,6 +76,11 @@ export class OwnershipRBACService {
     if (!this.isValidTenantPair(requestingTenant, resourceTenant) ||
         !requestingUserId?.trim() || !resourceOwnerId?.trim()) {
       return false;
+    }
+
+    // Profile permissions in an ownership API are self-only. Management uses a separate boundary.
+    if (permission === PERMISSIONS.PROFILE_READ || permission === PERMISSIONS.PROFILE_WRITE) {
+      return requestingUserId === resourceOwnerId;
     }
 
     // 2. Check if user has explicit permission (admin, faculty, etc.)
@@ -195,8 +200,10 @@ export class OwnershipRBACService {
     const valid = this.isValidTenantPair(requestingTenant, resourceTenant) &&
       Boolean(requestingUserId?.trim()) && Boolean(resourceOwnerId?.trim());
     const isOwner = valid && this.isOwner(requestingUserId, requestingTenant, resourceOwnerId, resourceTenant);
-    const hasReadPermission = valid && RBACService.hasPermission(userRoles, readPermission);
-    const hasWritePermission = valid && Boolean(writePermission && RBACService.hasPermission(userRoles, writePermission));
+    const profilePermission = (permission: Permission) =>
+      permission === PERMISSIONS.PROFILE_READ || permission === PERMISSIONS.PROFILE_WRITE;
+    const hasReadPermission = valid && !profilePermission(readPermission) && RBACService.hasPermission(userRoles, readPermission);
+    const hasWritePermission = valid && Boolean(writePermission && !profilePermission(writePermission) && RBACService.hasPermission(userRoles, writePermission));
 
     return {
       canRead: hasReadPermission || isOwner,

@@ -13,7 +13,7 @@ export interface BffAuthResult {
   isAuthenticated: boolean;
   userId?: string;
   email?: string;
-  brand?: 'realtutorialhub' | 'skillup';
+  brand?: 'realtutorialhub' | 'skillup' | 'skillhubcore';
   roles?: Role[];
   accessToken?: string;
   shadowUserId?: string;
@@ -48,6 +48,10 @@ export function createRBACUser(auth: BffAuthResult): RBACUser {
     throw new Error('Cannot create RBAC user: User not authenticated');
   }
 
+  if (!auth.brand || !['realtutorialhub', 'skillup', 'skillhubcore'].includes(auth.brand)) {
+    throw new Error('Cannot create RBAC user: Invalid brand');
+  }
+
   if (!auth.originalUserId || !auth.shadowUserId) {
     throw new Error('Cannot create RBAC user: Missing user identity');
   }
@@ -61,7 +65,7 @@ export function createRBACUser(auth: BffAuthResult): RBACUser {
     originalUserId: auth.originalUserId,
     shadowUserId: auth.shadowUserId,
     roles: auth.roles, // Already normalized and typed
-    brand: auth.brand || 'realtutorialhub',
+    brand: auth.brand,
     email: auth.email,
   };
 }

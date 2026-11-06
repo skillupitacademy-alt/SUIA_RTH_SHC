@@ -2,7 +2,8 @@
 
 export {};
 
-const CACHE_NAME = 'skillup-app-shell-v1';
+const CACHE_NAME = 'skillup-static-assets-v2';
+const LEGACY_CACHE_NAME = 'skillup-app-shell-v1';
 
 type PrecacheEntry = string | { url: string; revision: string | null };
 type SkillupWorkerEventMap = {
@@ -28,7 +29,10 @@ sw.addEventListener('install', (event) => {
 });
 
 sw.addEventListener('activate', (event) => {
-  event.waitUntil(sw.clients.claim());
+  event.waitUntil((async () => {
+    await caches.delete(LEGACY_CACHE_NAME);
+    await sw.clients.claim();
+  })());
 });
 
 sw.addEventListener('fetch', (event) => {
@@ -64,7 +68,6 @@ sw.addEventListener('fetch', (event) => {
       } catch {
         return (
           cached ??
-          (await cache.match('/offline')) ??
           new Response('offline', {
             status: 503,
             headers: { 'content-type': 'text/plain' },
