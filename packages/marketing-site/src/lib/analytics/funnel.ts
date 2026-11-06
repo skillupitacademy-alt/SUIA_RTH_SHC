@@ -1,3 +1,4 @@
+import type { AnalyticsBrandId } from "../../../config/analytics";
 import type { AnalyticsEventEnvelope, AnalyticsEventName } from "./events";
 
 export interface FunnelStepDefinition {
@@ -13,6 +14,7 @@ export interface FunnelDefinition {
 }
 
 export interface FunnelProgressRecord {
+  brandId: AnalyticsBrandId;
   funnelId: string;
   sessionId: string;
   anonymousId: string;
@@ -20,6 +22,14 @@ export interface FunnelProgressRecord {
   currentStep?: string;
   completed: boolean;
   lastEventAt: string;
+}
+
+const VALID_ANALYTICS_BRANDS = new Set<AnalyticsBrandId>(["realtutorialhub", "skillupitacademy"]);
+
+function assertValidBrandId(brandId: unknown): asserts brandId is AnalyticsBrandId {
+  if (typeof brandId !== "string" || !VALID_ANALYTICS_BRANDS.has(brandId as AnalyticsBrandId)) {
+    throw new Error("invalid_analytics_brand");
+  }
 }
 
 export const funnelDefinitions: FunnelDefinition[] = [
@@ -56,10 +66,10 @@ export const funnelDefinitions: FunnelDefinition[] = [
   },
 ];
 
-const funnelState = new Map<string, FunnelProgressRecord>();
+const funnelStateByBrand = new Map<AnalyticsBrandId, Map<string, FunnelProgressRecord>>();
 
 function getStateKey(funnelId: string, sessionId: string) {
-  return `${funnelId}:${sessionId}`;
+  return JSON.stringify([funnelId, sessionId]);
 }
 
 function eventMatchesStep(event: AnalyticsEventEnvelope, step: FunnelStepDefinition) {
@@ -67,6 +77,19 @@ function eventMatchesStep(event: AnalyticsEventEnvelope, step: FunnelStepDefinit
 }
 
 export function evaluateFunnelProgress(event: AnalyticsEventEnvelope): FunnelProgressRecord[] {
+  const brandId = event?.context?.brandId;
+  assertValidBrandId(brandId);
+
+  const sessionId = event?.context?.session?.sessionId;
+  if (typeof sessionId !== "string" || !sessionId.trim()) {
+    throw new Error("invalid_analytics_session_id");
+  }
+
+  const anonymousId = event?.context?.user?.anonymousId;
+  if (typeof anonymousId !== "string" || !anonymousId.trim()) {
+    throw new Error("invalid_analytics_anonymous_id");
+  }
+
   const matches: FunnelProgressRecord[] = [];
 
   for (const funnel of funnelDefinitions) {
@@ -75,8 +98,14 @@ export function evaluateFunnelProgress(event: AnalyticsEventEnvelope): FunnelPro
       continue;
     }
 
-    const key = getStateKey(funnel.id, event.context.session.sessionId);
-    const previous = funnelState.get(key);
+    let brandFunnelState = funnelStateByBrand.get(brandId);
+    if (!brandFunnelState) {
+      brandFunnelState = new Map<string, FunnelProgressRecord>();
+      funnelStateByBrand.set(brandId, brandFunnelState);
+    }
+
+    const key = getStateKey(funnel.id, sessionId);
+    const previous = brandFunnelState.get(key);
     const completedSteps = previous ? [...previous.completedSteps] : [];
 
     if (!completedSteps.includes(matchingStep.id)) {
@@ -84,23 +113,25 @@ export function evaluateFunnelProgress(event: AnalyticsEventEnvelope): FunnelPro
     }
 
     const record: FunnelProgressRecord = {
+      brandId,
       funnelId: funnel.id,
-      sessionId: event.context.session.sessionId,
-      anonymousId: event.context.user.anonymousId,
+      sessionId,
+      anonymousId,
       completedSteps,
       currentStep: matchingStep.id,
       completed: completedSteps.length === funnel.steps.length,
       lastEventAt: event.context.session.occurredAt,
     };
 
-    funnelState.set(key, record);
+    brandFunnelState.set(key, record);
     matches.push(record);
   }
 
   return matches;
 }
 
-export function getFunnelState() {
-  return [...funnelState.values()];
+export function getFunnelState(brandId: AnalyticsBrandId): FunnelProgressRecord[] {
+  assertValidBrandId(brandId);
+  const brandFunnelState = funnelStateByBrand.get(brandId);
+  return brandFunnelState ? [...brandFunnelState.values()] : [];
 }
-

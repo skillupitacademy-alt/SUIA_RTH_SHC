@@ -1,14 +1,24 @@
+import type { AnalyticsBrandId } from "../../config/analytics";
 import type { AnalyticsEventEnvelope, AnalyticsEventName } from "./events";
 
 export type LeadTemperature = "cold" | "warm" | "hot";
 
 export interface LeadScoreSnapshot {
+  brandId: AnalyticsBrandId;
   anonymousId: string;
   sessionId: string;
   score: number;
   temperature: LeadTemperature;
   segments: string[];
   lastEventAt: string;
+}
+
+const VALID_ANALYTICS_BRANDS = new Set<AnalyticsBrandId>(["realtutorialhub", "skillupitacademy"]);
+
+function assertValidBrandId(brandId: unknown): asserts brandId is AnalyticsBrandId {
+  if (typeof brandId !== "string" || !VALID_ANALYTICS_BRANDS.has(brandId as AnalyticsBrandId)) {
+    throw new Error("invalid_analytics_brand");
+  }
 }
 
 const scoreWeights: Record<AnalyticsEventName, number> = {
@@ -27,7 +37,7 @@ const scoreWeights: Record<AnalyticsEventName, number> = {
   "education.page_viewed": 2,
 };
 
-const scoreState = new Map<string, LeadScoreSnapshot>();
+const scoreStateByBrand = new Map<AnalyticsBrandId, Map<string, LeadScoreSnapshot>>();
 
 function getTemperature(score: number): LeadTemperature {
   if (score >= 60) {
@@ -64,10 +74,28 @@ function deriveSegments(event: AnalyticsEventEnvelope, score: number): string[] 
 }
 
 export function updateLeadScore(event: AnalyticsEventEnvelope): LeadScoreSnapshot {
-  const key = event.context.user.anonymousId;
-  const previous = scoreState.get(key);
+  const brandId = event?.context?.brandId;
+  assertValidBrandId(brandId);
+
+  const key = event?.context?.user?.anonymousId;
+  if (typeof key !== "string" || !key.trim()) {
+    throw new Error("invalid_analytics_anonymous_id");
+  }
+
+  if (!event?.name || !(event.name in scoreWeights)) {
+    throw new Error("invalid_analytics_event_name");
+  }
+
+  let brandScores = scoreStateByBrand.get(brandId);
+  if (!brandScores) {
+    brandScores = new Map<string, LeadScoreSnapshot>();
+    scoreStateByBrand.set(brandId, brandScores);
+  }
+
+  const previous = brandScores.get(key);
   const score = (previous?.score ?? 0) + scoreWeights[event.name];
   const snapshot: LeadScoreSnapshot = {
+    brandId,
     anonymousId: key,
     sessionId: event.context.session.sessionId,
     score,
@@ -76,11 +104,12 @@ export function updateLeadScore(event: AnalyticsEventEnvelope): LeadScoreSnapsho
     lastEventAt: event.context.session.occurredAt,
   };
 
-  scoreState.set(key, snapshot);
+  brandScores.set(key, snapshot);
   return snapshot;
 }
 
-export function getLeadScores() {
-  return [...scoreState.values()];
+export function getLeadScores(brandId: AnalyticsBrandId): LeadScoreSnapshot[] {
+  assertValidBrandId(brandId);
+  const brandScores = scoreStateByBrand.get(brandId);
+  return brandScores ? [...brandScores.values()] : [];
 }
-
