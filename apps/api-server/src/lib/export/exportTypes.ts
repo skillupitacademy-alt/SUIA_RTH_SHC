@@ -8,71 +8,95 @@ export function isLearnerExportBrand(value: unknown): value is LearnerExportBran
 function extractBrandFromArtifactRef(ref: unknown): LearnerExportBrand | undefined {
   if (typeof ref !== 'string') return undefined;
   const trimmed = ref.trim();
-  if (trimmed.startsWith('exports/realtutorialhub/')) return 'realtutorialhub';
-  if (trimmed.startsWith('exports/skillup/')) return 'skillup';
+  const match = /(?:^|\/)exports\/(realtutorialhub|skillup)\//i.exec(trimmed);
+  if (match && isLearnerExportBrand(match[1].toLowerCase())) {
+    return match[1].toLowerCase() as LearnerExportBrand;
+  }
   return undefined;
+}
+
+function collectConsistentExplicitBrand(candidates: readonly unknown[]): LearnerExportBrand | undefined {
+  let resolved: LearnerExportBrand | undefined;
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) continue;
+    if (!isLearnerExportBrand(candidate)) {
+      return undefined;
+    }
+    if (resolved !== undefined && resolved !== candidate) {
+      return undefined;
+    }
+    resolved = candidate;
+  }
+  return resolved;
 }
 
 export function resolveStoredExamBrand(exam: unknown): LearnerExportBrand | undefined {
   if (typeof exam !== 'object' || exam === null) return undefined;
   const record = exam as Record<string, unknown>;
-  if (isLearnerExportBrand(record.brand)) return record.brand;
-  if (isLearnerExportBrand(record.tenantId)) return record.tenantId;
-
   const exportUrls =
     typeof record.exportUrls === 'object' && record.exportUrls !== null
       ? (record.exportUrls as Record<string, unknown>)
       : null;
+  const meta =
+    exportUrls !== null && typeof exportUrls._meta === 'object' && exportUrls._meta !== null
+      ? (exportUrls._meta as Record<string, unknown>)
+      : null;
+
+  const explicitBrand = collectConsistentExplicitBrand([
+    record.brand,
+    record.tenantId,
+    exportUrls?.brand,
+    exportUrls?.tenantId,
+    meta?.brand,
+    meta?.tenantId,
+  ]);
+  if (!explicitBrand) return undefined;
 
   if (exportUrls !== null) {
-    if (isLearnerExportBrand(exportUrls.brand)) return exportUrls.brand;
-    if (isLearnerExportBrand(exportUrls.tenantId)) return exportUrls.tenantId;
-    const meta =
-      typeof exportUrls._meta === 'object' && exportUrls._meta !== null
-        ? (exportUrls._meta as Record<string, unknown>)
-        : null;
-    if (meta !== null) {
-      if (isLearnerExportBrand(meta.brand)) return meta.brand;
-      if (isLearnerExportBrand(meta.tenantId)) return meta.tenantId;
+    for (const [key, value] of Object.entries(exportUrls)) {
+      if (key === '_meta' || key === 'brand' || key === 'tenantId') continue;
+      const refBrand = extractBrandFromArtifactRef(value);
+      if (refBrand !== undefined && refBrand !== explicitBrand) {
+        return undefined;
+      }
     }
-    const fromJson = extractBrandFromArtifactRef(exportUrls.analytics_json);
-    if (fromJson !== undefined) return fromJson;
-    const fromCsv = extractBrandFromArtifactRef(exportUrls.analytics_csv);
-    if (fromCsv !== undefined) return fromCsv;
-    const fromPdf = extractBrandFromArtifactRef(exportUrls.student_insight_pdf);
-    if (fromPdf !== undefined) return fromPdf;
   }
 
-  return undefined;
+  return explicitBrand;
 }
 
 export function resolveStoredJobBrand(job: unknown): LearnerExportBrand | undefined {
   if (typeof job !== 'object' || job === null) return undefined;
   const record = job as Record<string, unknown>;
-  if (isLearnerExportBrand(record.brand)) return record.brand;
-  if (isLearnerExportBrand(record.tenantId)) return record.tenantId;
-
   const payload =
     typeof record.payload === 'object' && record.payload !== null
       ? (record.payload as Record<string, unknown>)
       : null;
-  if (payload !== null) {
-    if (isLearnerExportBrand(payload.brand)) return payload.brand;
-    if (isLearnerExportBrand(payload.tenantId)) return payload.tenantId;
-  }
-
   const result =
     typeof record.result === 'object' && record.result !== null
       ? (record.result as Record<string, unknown>)
       : null;
+
+  const explicitBrand = collectConsistentExplicitBrand([
+    record.brand,
+    record.tenantId,
+    payload?.brand,
+    payload?.tenantId,
+    result?.brand,
+    result?.tenantId,
+  ]);
+  if (!explicitBrand) return undefined;
+
   if (result !== null) {
-    if (isLearnerExportBrand(result.brand)) return result.brand;
-    if (isLearnerExportBrand(result.tenantId)) return result.tenantId;
-    const fromRef = extractBrandFromArtifactRef(result.downloadUrl);
-    if (fromRef !== undefined) return fromRef;
+    for (const ref of [result.downloadUrl, result.url, result.fileUrl]) {
+      const refBrand = extractBrandFromArtifactRef(ref);
+      if (refBrand !== undefined && refBrand !== explicitBrand) {
+        return undefined;
+      }
+    }
   }
 
-  return undefined;
+  return explicitBrand;
 }
 
 export interface ExportRequest {

@@ -307,10 +307,26 @@ async def transition_workflow(
     if to_state == CanonicalWorkflowState.GUI_APPROVED:
         actor_brand = str(user.get("brand") or "").strip().lower()
         actor_roles = [str(r) for r in (user.get("roles") or [])]
-        if actor_brand != "skillhubcore" or not any(r in {"super_admin", "contract_admin"} for r in actor_roles):
+        token_type = str(user.get("token_type") or "").strip().lower()
+        is_admin_flag = user.get("is_admin") is True
+        raw_aud = user.get("aud")
+        if isinstance(raw_aud, list):
+            aud_values = {str(a).strip().lower() for a in raw_aud}
+        elif isinstance(raw_aud, str) and raw_aud.strip():
+            aud_values = {raw_aud.strip().lower()}
+        else:
+            aud_values = set()
+        if (
+            actor_brand != "skillhubcore"
+            or token_type != "admin"
+            or not is_admin_flag
+            or "user" in aud_values
+            or not (aud_values & {"shc-admin", "admin"})
+            or not any(r in {"super_admin", "contract_admin"} for r in actor_roles)
+        ):
             raise HTTPException(
                 status_code=403,
-                detail="Gate 1 (GUI_APPROVED) requires verified skillhubcore contract_admin or super_admin authority"
+                detail="Gate 1 (GUI_APPROVED) requires verified skillhubcore admin credential class and contract_admin or super_admin authority"
             )
 
     try:
@@ -356,10 +372,28 @@ async def approve_gate_1_workflow(
     )
     actor_brand = str(user.get("brand") or "").strip().lower()
     actor_roles = [str(r) for r in (user.get("roles") or [])]
-    if not actor_id or actor_brand != "skillhubcore" or not any(r in {"super_admin", "contract_admin"} for r in actor_roles):
+    token_type = str(user.get("token_type") or "").strip().lower()
+    is_admin_flag = user.get("is_admin") is True
+    raw_aud = user.get("aud")
+    if isinstance(raw_aud, list):
+        aud_values = {str(a).strip().lower() for a in raw_aud}
+    elif isinstance(raw_aud, str) and raw_aud.strip():
+        aud_values = {raw_aud.strip().lower()}
+    else:
+        aud_values = set()
+
+    if (
+        not actor_id
+        or actor_brand != "skillhubcore"
+        or token_type != "admin"
+        or not is_admin_flag
+        or "user" in aud_values
+        or not (aud_values & {"shc-admin", "admin"})
+        or not any(r in {"super_admin", "contract_admin"} for r in actor_roles)
+    ):
         raise HTTPException(
             status_code=403,
-            detail="Gate 1 approval requires verified skillhubcore contract_admin or super_admin authority",
+            detail="Gate 1 approval requires verified skillhubcore admin credential class and contract_admin or super_admin authority",
         )
 
     try:
@@ -369,6 +403,9 @@ async def approve_gate_1_workflow(
             actor_brand=actor_brand,
             actor_roles=actor_roles,
             actor_capabilities=["project_llm:contract:approve"],
+            actor_token_type=token_type,
+            actor_is_admin=is_admin_flag,
+            actor_aud=next(iter(aud_values & {"shc-admin", "admin"}), ""),
             contract_id=request.contract_id,
             contract_sha256=request.contract_sha256,
             reason=request.reason,

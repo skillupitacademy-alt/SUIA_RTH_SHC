@@ -53,12 +53,15 @@ const handler = createQStashHandler(
 
     const existing = await redis.get(redisKey);
     if (existing !== null && String(existing).trim().length > 0) {
+      if (String(existing) === 'processing') {
+        return new Response('Event processing already in progress', { status: 409 });
+      }
       return new Response('Duplicate event ignored', { status: 200 });
     }
 
-    const claimed = await redis.set(redisKey, 'processing', { ex: 86_400, nx: true });
+    const claimed = await redis.set(redisKey, 'processing', { ex: 300, nx: true });
     if (claimed == null || String(claimed).trim().length === 0) {
-      return new Response('Duplicate event ignored', { status: 200 });
+      return new Response('Event claim not acquired', { status: 409 });
     }
 
     try {
@@ -130,6 +133,7 @@ const handler = createQStashHandler(
   },
   {
     schema: ReviewWorkerSchema,
+    tenantScope: 'realtutorialhub',
   }
 );
 

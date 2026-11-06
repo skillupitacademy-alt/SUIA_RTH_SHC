@@ -12,8 +12,9 @@ import {
   normalizeQuestionOptions,
   normalizeQuestionType,
   parseAnswer,
+  resolveQuestionAnswerForScoring,
+  resolveQuestionCorrectAnswerForScoring,
   serializeAnswerTokens,
-  validateQuestionAnswerOptionIds,
 } from '@/modules/question/question-contract';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 
@@ -107,59 +108,11 @@ export class ExamEngine {
   }
 
   private resolveAnswerForScoring(question: ScorableQuestion, answer: string): string {
-    const normalizedType = normalizeQuestionType(question.type);
-    const normalizedOptions = normalizeQuestionOptions(question.options);
-
-    if (normalizedOptions.length === 0) {
-      return normalizedType === 'multi_select' ? serializeAnswerTokens(parseAnswer(answer)) : answer.trim();
-    }
-
-    if (isVersionedOptionIds(answer)) {
-      const validation = validateQuestionAnswerOptionIds(question.options, answer, {
-        rejectDuplicates: true,
-        rejectUnknownIds: true,
-        strictIdOnly: true,
-      });
-      if (!validation.valid) {
-        throw new Error(`Invalid versioned option ID answer: ${validation.reason ?? 'invalid'}`);
-      }
-    }
-
-    const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
-    const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
-    const optionByLabel = new Map(
-      normalizedOptions
-        .filter((option) => typeof option.label === 'string' && option.label.trim() !== '')
-        .map((option) => [option.label!.toLowerCase(), option])
-    );
-
-    const resolvedAnswers = answerIds.map((answerId) => {
-      const key = answerId.toLowerCase();
-      const option = isVersionedOptionIds(answer)
-        ? optionById.get(key)
-        : (optionById.get(key) ?? optionByLabel.get(key));
-      return option?.text ?? option?.code ?? option?.label ?? answerId;
-    });
-
-    return normalizedType === 'multi_select'
-      ? serializeAnswerTokens(resolvedAnswers)
-      : (resolvedAnswers[0] ?? '');
+    return resolveQuestionAnswerForScoring(question, answer);
   }
 
   private resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
-    const normalizedType = normalizeQuestionType(question.type);
-    const normalizedOptions = normalizeQuestionOptions(question.options);
-    const flaggedCorrect = normalizedOptions
-      .filter((option) => option.isCorrect === true)
-      .map((option) => option.text ?? option.code ?? option.label ?? option.id);
-
-    if (flaggedCorrect.length === 0) {
-      return question.correctAnswer;
-    }
-
-    return normalizedType === 'multi_select' || flaggedCorrect.length > 1
-      ? serializeAnswerTokens(flaggedCorrect)
-      : flaggedCorrect.join(',');
+    return resolveQuestionCorrectAnswerForScoring(question);
   }
 
   /**

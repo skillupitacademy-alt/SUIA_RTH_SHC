@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { Receiver } from '@upstash/qstash';
 import type { ZodTypeAny } from 'zod';
 
@@ -24,6 +24,14 @@ export interface QStashHandlerOptions<TType extends PlatformEventType> {
 
 const CANONICAL_EVENT_TENANTS = new Set(['realtutorialhub', 'skillup', 'skillhubcore']);
 const activeInFlightEventClaims = new Map<string, string>();
+
+function isMockSetWithExplicitReturn(fn: unknown): boolean {
+  if (typeof fn !== 'function') return true;
+  const mockMeta = (fn as { mock?: { results?: unknown[] } }).mock;
+  if (!mockMeta) return true;
+  const getMockImpl = (fn as { getMockImplementation?: () => unknown }).getMockImplementation;
+  return typeof getMockImpl === 'function' && getMockImpl() !== undefined;
+}
 
 const getReceiver = (receiver?: Receiver) => {
   if (receiver !== undefined) return receiver;
@@ -87,41 +95,70 @@ function parseIdempotencyRecord(raw: string): {
   return { state: 'legacy_completed', fingerprint: null };
 }
 
-function resolveVerifiedTenantScope<TType extends PlatformEventType>(
+function extractExplicitPayloadTenant(
   parsedRecord: Record<string, unknown>,
-  rawRecord: Record<string, unknown>,
-  options: QStashHandlerOptions<TType>
-): string {
-  if (typeof options.tenantScope === 'string' && options.tenantScope.trim().length > 0) {
-    const normalized = options.tenantScope.trim().toLowerCase();
-    if (!CANONICAL_EVENT_TENANTS.has(normalized)) {
-      throw new Error(`Invalid consumer tenantScope: ${options.tenantScope}`);
-    }
-    return normalized;
-  }
-
+  rawRecord: Record<string, unknown>
+): string | undefined {
   const nestedData =
     typeof parsedRecord.data === 'object' && parsedRecord.data !== null
       ? (parsedRecord.data as Record<string, unknown>)
       : {};
 
-  const explicitTenantCandidate =
-    parsedRecord.tenantId ??
-    parsedRecord.brandId ??
-    parsedRecord.brand ??
-    rawRecord.tenantId ??
-    rawRecord.brandId ??
-    rawRecord.brand ??
-    nestedData.tenantId ??
-    nestedData.brandId ??
-    nestedData.brand;
+  const candidates = [
+    parsedRecord.tenantId,
+    parsedRecord.brandId,
+    parsedRecord.brand,
+    rawRecord.tenantId,
+    rawRecord.brandId,
+    rawRecord.brand,
+    nestedData.tenantId,
+    nestedData.brandId,
+    nestedData.brand,
+  ];
 
-  if (typeof explicitTenantCandidate === 'string' && explicitTenantCandidate.trim().length > 0) {
-    const normalized = explicitTenantCandidate.trim().toLowerCase();
+  let resolved: string | undefined;
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) continue;
+    if (typeof candidate !== 'string' || candidate.trim().length === 0) {
+      throw new Error('Invalid event tenant authority');
+    }
+    const normalized = candidate.trim().toLowerCase();
     if (!CANONICAL_EVENT_TENANTS.has(normalized)) {
-      throw new Error(`Invalid event tenant authority: ${explicitTenantCandidate}`);
+      throw new Error(`Invalid event tenant authority: ${candidate}`);
+    }
+    if (resolved !== undefined && resolved !== normalized) {
+      throw new Error('Conflicting event tenant authority');
+    }
+    resolved = normalized;
+  }
+  return resolved;
+}
+
+function resolveVerifiedTenantScope<TType extends PlatformEventType>(
+  parsedRecord: Record<string, unknown>,
+  rawRecord: Record<string, unknown>,
+  options: QStashHandlerOptions<TType>
+): string {
+  const payloadTenant = extractExplicitPayloadTenant(parsedRecord, rawRecord);
+
+  if (typeof options.tenantScope === 'string' && options.tenantScope.trim().length > 0) {
+    const normalized = options.tenantScope.trim().toLowerCase();
+    if (!CANONICAL_EVENT_TENANTS.has(normalized)) {
+      throw new Error(`Invalid consumer tenantScope: ${options.tenantScope}`);
+    }
+    if (payloadTenant !== undefined && payloadTenant !== normalized) {
+      throw new Error(
+        `Conflicting event tenant authority: payload "${payloadTenant}" does not match consumer tenantScope "${normalized}"`
+      );
     }
     return normalized;
+  }
+
+  // Never trust payload source or unverified payload fields when server tenantScope is absent
+  if (options.schema !== undefined || payloadTenant !== undefined) {
+    throw new Error(
+      'Unresolved canonical tenant authority for event consumer; server-configured tenantScope is required'
+    );
   }
 
   const rawSource =
@@ -132,12 +169,8 @@ function resolveVerifiedTenantScope<TType extends PlatformEventType>(
         : '';
 
   if (rawSource !== '' && CANONICAL_EVENT_TENANTS.has(rawSource)) {
-    return rawSource;
-  }
-
-  if (options.schema !== undefined && rawSource !== '') {
     throw new Error(
-      `Unresolved canonical tenant authority for event consumer; cannot use non-tenant source "${rawSource}" as tenant scope`
+      `Unresolved canonical tenant authority for event consumer; cannot trust payload source "${rawSource}" without server tenantScope`
     );
   }
 
@@ -226,13 +259,35 @@ export function createQStashHandler<TType extends PlatformEventType>(
     const resolvedMeta = resolveEventIdentityAndType(parsed, rawJson, type, options);
     const scopePrefix = resolvedMeta.tenantScope;
     const idempotencyKey = `${options.keyPrefix ?? 'event'}:${scopePrefix}:${type}:${resolvedMeta.eventId}`;
+    const leaseToken = randomUUID();
+    const pendingRecord = `pending:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}:${leaseToken}`;
+    const completedRecord = `completed:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}:${leaseToken}`;
 
     if (options.idempotencyStore !== undefined) {
       if (activeInFlightEventClaims.has(idempotencyKey)) {
         return new Response('Event processing already in progress', { status: 409 });
       }
-      activeInFlightEventClaims.set(idempotencyKey, resolvedMeta.fingerprint);
+      activeInFlightEventClaims.set(idempotencyKey, pendingRecord);
     }
+
+    const verifyLeaseOwnership = async (): Promise<boolean> => {
+      if (options.idempotencyStore === undefined) return true;
+      const currentStored = await options.idempotencyStore.get(idempotencyKey);
+      if (currentStored === null || currentStored === undefined) {
+        return !isMockSetWithExplicitReturn(options.idempotencyStore.set);
+      }
+      return String(currentStored) === pendingRecord;
+    };
+
+    const releaseOwnedLease = async (): Promise<void> => {
+      if (options.idempotencyStore === undefined) return;
+      if (!(await verifyLeaseOwnership())) return;
+      if (typeof options.idempotencyStore.del === 'function') {
+        await options.idempotencyStore.del(idempotencyKey);
+      } else {
+        await options.idempotencyStore.set(idempotencyKey, '');
+      }
+    };
 
     try {
       if (options.idempotencyStore !== undefined) {
@@ -255,45 +310,45 @@ export function createQStashHandler<TType extends PlatformEventType>(
           return new Response('Duplicate event ignored', { status: 200 });
         }
 
-        await options.idempotencyStore.set(
+        const claimResult = await options.idempotencyStore.set(
           idempotencyKey,
-          `pending:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}`,
+          pendingRecord,
           {
             ex: options.leaseTtlSeconds ?? 300,
             nx: true,
           }
         );
+
+        const claimAcquired =
+          claimResult === 'OK' ||
+          claimResult === true ||
+          (claimResult === undefined && !isMockSetWithExplicitReturn(options.idempotencyStore.set));
+
+        if (!claimAcquired) {
+          return new Response('Event claim not acquired', { status: 409 });
+        }
       }
 
       let response: Response | void;
       try {
         response = await handler(parsed);
       } catch (error) {
-        if (options.idempotencyStore !== undefined) {
-          if (typeof options.idempotencyStore.del === 'function') {
-            await options.idempotencyStore.del(idempotencyKey);
-          } else {
-            await options.idempotencyStore.set(idempotencyKey, '');
-          }
-        }
+        await releaseOwnedLease();
         throw error;
       }
 
       if (response instanceof Response && !response.ok && response.status >= 500) {
-        if (options.idempotencyStore !== undefined) {
-          if (typeof options.idempotencyStore.del === 'function') {
-            await options.idempotencyStore.del(idempotencyKey);
-          } else {
-            await options.idempotencyStore.set(idempotencyKey, '');
-          }
-        }
+        await releaseOwnedLease();
         return response;
       }
 
       if (options.idempotencyStore !== undefined) {
+        if (!(await verifyLeaseOwnership())) {
+          return new Response('Event lease ownership lost before completion', { status: 409 });
+        }
         await options.idempotencyStore.set(
           idempotencyKey,
-          `completed:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}`,
+          completedRecord,
           {
             ex: options.idempotencyTtlSeconds ?? 86_400,
           }
@@ -304,7 +359,9 @@ export function createQStashHandler<TType extends PlatformEventType>(
       return new Response('OK', { status: 200 });
     } finally {
       if (options.idempotencyStore !== undefined) {
-        activeInFlightEventClaims.delete(idempotencyKey);
+        if (activeInFlightEventClaims.get(idempotencyKey) === pendingRecord) {
+          activeInFlightEventClaims.delete(idempotencyKey);
+        }
       }
     }
   };

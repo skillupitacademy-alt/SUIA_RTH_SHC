@@ -166,78 +166,64 @@ export class TutorialProgressRepository
         return created as TutorialProgressRecord;
       }
 
-      const mergedBlocks = mergeCompletedTutorialSection(existing.blocksCompleted ?? [], blockType);
-      const snapshot = calculateTutorialProgress({
-        completedSections: mergedBlocks,
-        assignmentCompleted: mergedBlocks.includes('assignment'),
-        projectCompleted: mergedBlocks.includes('project'),
-      });
-      const expectedVersion = typeof existing.version === 'number' ? existing.version : 1;
-      const nextVersion = expectedVersion + 1;
+      let current: TutorialProgressRecord | undefined = existing;
+      const maxCasAttempts = 3;
 
-      const [updated] = await this.runRead(
-        this.dbInstance
-          .update(tutorialProgress)
-          .set({
-            blocksCompleted: mergedBlocks,
-            status: snapshot.status,
-            completedAt: snapshot.status === 'completed' ? existing.completedAt ?? now : existing.completedAt,
-            remediationTriggered: snapshot.remediationTriggered,
-            version: nextVersion,
-            updatedAt: now,
-            deletedAt: null,
-          })
-          .where(
-            and(
-              eq(tutorialProgress.id, existing.id),
-              condition,
-              activeProgress,
-              eq(tutorialProgress.version, expectedVersion)
-            )
-          )
-          .returning(),
-        'TutorialProgressRepository.markBlockComplete.update'
-      );
-
-      if (!updated) {
-        const latest = await this.getProgress(userId, subtopicId, normalizedTenant);
-        if (!latest) {
+      for (let attempt = 1; attempt <= maxCasAttempts; attempt += 1) {
+        if (!current) {
           throw new Error('Concurrent tutorial progress modification detected and row no longer exists');
         }
-        const retryMergedBlocks = mergeCompletedTutorialSection(latest.blocksCompleted ?? [], blockType);
-        const retrySnapshot = calculateTutorialProgress({
-          completedSections: retryMergedBlocks,
-          assignmentCompleted: retryMergedBlocks.includes('assignment'),
-          projectCompleted: retryMergedBlocks.includes('project'),
+
+        if (Array.isArray(current.blocksCompleted) && current.blocksCompleted.includes(blockType)) {
+          return current;
+        }
+
+        const mergedBlocks = mergeCompletedTutorialSection(current.blocksCompleted ?? [], blockType);
+        const snapshot = calculateTutorialProgress({
+          completedSections: mergedBlocks,
+          assignmentCompleted: mergedBlocks.includes('assignment'),
+          projectCompleted: mergedBlocks.includes('project'),
         });
-        const retryExpectedVersion = typeof latest.version === 'number' ? latest.version : 1;
-        const [retried] = await this.runRead(
+        const expectedVersion = typeof current.version === 'number' ? current.version : 1;
+        const nextVersion = expectedVersion + 1;
+
+        const [updated] = await this.runRead(
           this.dbInstance
             .update(tutorialProgress)
             .set({
-              blocksCompleted: retryMergedBlocks,
-              status: retrySnapshot.status,
-              completedAt: retrySnapshot.status === 'completed' ? latest.completedAt ?? now : latest.completedAt,
-              remediationTriggered: retrySnapshot.remediationTriggered,
-              version: retryExpectedVersion + 1,
+              blocksCompleted: mergedBlocks,
+              status: snapshot.status,
+              completedAt: snapshot.status === 'completed' ? current.completedAt ?? now : current.completedAt,
+              remediationTriggered: snapshot.remediationTriggered,
+              version: nextVersion,
               updatedAt: now,
               deletedAt: null,
             })
             .where(
               and(
-                eq(tutorialProgress.id, latest.id),
+                eq(tutorialProgress.id, current.id),
                 condition,
                 activeProgress,
-                eq(tutorialProgress.version, retryExpectedVersion)
+                eq(tutorialProgress.version, expectedVersion)
               )
             )
             .returning(),
-          'TutorialProgressRepository.markBlockComplete.retryUpdate'
+          `TutorialProgressRepository.markBlockComplete.update.attempt${attempt}`
         );
-        return (retried ?? latest) as TutorialProgressRecord;
+
+        if (updated) {
+          return updated as TutorialProgressRecord;
+        }
+
+        current = await this.getProgress(userId, subtopicId, normalizedTenant);
+        if (current && Array.isArray(current.blocksCompleted) && current.blocksCompleted.includes(blockType)) {
+          return current;
+        }
       }
 
-      return updated as TutorialProgressRecord;
+      throw new Error(
+        'Concurrent tutorial progress update conflict: compare-and-swap exhausted without applying completion'
+      );
     });
   }
 
@@ -316,10 +302,21 @@ export class TutorialProgressRepository
           updatedAt: now,
           deletedAt: null,
         })
-        .where(and(eq(tutorialProgress.id, existing.id), condition, activeProgress))
+        .where(
+          and(
+            eq(tutorialProgress.id, existing.id),
+            condition,
+            activeProgress,
+            eq(tutorialProgress.version, expectedVersion)
+          )
+        )
         .returning(),
       'TutorialProgressRepository.resetProgress.update'
     );
+
+    if (!updated) {
+      throw new Error('Concurrent tutorial progress reset conflict: compare-and-swap failed');
+    }
 
     return updated as TutorialProgressRecord;
   }

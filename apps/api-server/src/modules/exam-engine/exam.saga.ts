@@ -187,22 +187,28 @@ export class ExamSaga {
                 logger.info({ examId }, '[ExamSaga] Step 4-6: Generating JSON/CSV exports');
                 const examRecord = await db.query.exams.findFirst({
                     where: eq(exams.id, examId),
-                    columns: { exportUrls: true }
+                    columns: { userId: true, exportUrls: true }
                 });
                 const storedBrand = resolveStoredExamBrand(examRecord);
-                const sagaBrand: LearnerExportBrand = isLearnerExportBrand(storedBrand) ? storedBrand : 'realtutorialhub';
+                if (!isLearnerExportBrand(storedBrand)) {
+                    throw new Error('Verified learner brand provenance is required before generating exam saga exports');
+                }
+                const sagaBrand: LearnerExportBrand = storedBrand;
 
                 const { ExportEngine } = await import('@/lib/export/exportEngine');
                 const exportEngine = ExportEngine.getInstance();
                 const jsonUrl = await exportEngine.processExport(examId, data.userId, 'json', sagaBrand);
                 const csvUrl = await exportEngine.processExport(examId, data.userId, 'csv', sagaBrand);
 
-                const existingUrls = (examRecord?.exportUrls as Record<string, string> | null) ?? {};
+                const existingUrls = (examRecord?.exportUrls as Record<string, unknown> | null) ?? {};
 
                 await db.update(exams)
                     .set({ 
                         exportUrls: { 
                             ...existingUrls,
+                            brand: sagaBrand,
+                            tenantId: sagaBrand,
+                            _meta: { brand: sagaBrand, tenantId: sagaBrand, ownerUserId: data.userId },
                             analytics_json: jsonUrl, 
                             analytics_csv: csvUrl 
                         } 

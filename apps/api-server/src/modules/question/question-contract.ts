@@ -228,3 +228,117 @@ export function validateQuestionAnswerOptionIds(
 
   return { valid: true, optionIds: resolvedIds };
 }
+
+export interface ScorableQuestionSnapshot {
+  type?: string | null;
+  correctAnswer?: string | null;
+  options?: unknown;
+}
+
+function buildOptionLookupMaps(normalizedOptions: readonly NormalizedQuestionOption[]) {
+  const optionById = new Map<string, NormalizedQuestionOption>();
+  const optionByLabel = new Map<string, NormalizedQuestionOption>();
+  const optionsByContent = new Map<string, NormalizedQuestionOption[]>();
+
+  for (const option of normalizedOptions) {
+    optionById.set(option.id.toLowerCase(), option);
+    if (typeof option.label === 'string' && option.label.trim() !== '') {
+      optionByLabel.set(option.label.trim().toLowerCase(), option);
+    }
+    for (const contentCandidate of [option.text, option.code]) {
+      if (typeof contentCandidate === 'string' && contentCandidate.trim() !== '') {
+        const contentKey = contentCandidate.trim().toLowerCase();
+        const bucket = optionsByContent.get(contentKey) ?? [];
+        if (!bucket.some((item) => item.id.toLowerCase() === option.id.toLowerCase())) {
+          bucket.push(option);
+          optionsByContent.set(contentKey, bucket);
+        }
+      }
+    }
+  }
+
+  return { optionById, optionByLabel, optionsByContent };
+}
+
+export function resolveQuestionAnswerForScoring(
+  question: ScorableQuestionSnapshot,
+  answer: string
+): string {
+  const normalizedType = normalizeQuestionType(question.type);
+  const normalizedOptions = normalizeQuestionOptions(question.options);
+
+  if (normalizedOptions.length === 0) {
+    return normalizedType === 'multi_select'
+      ? serializeAnswerTokens(parseAnswer(answer))
+      : answer.trim();
+  }
+
+  const versioned = isVersionedOptionIds(answer);
+  if (versioned) {
+    const validation = validateQuestionAnswerOptionIds(question.options, answer, {
+      rejectDuplicates: true,
+      rejectUnknownIds: true,
+      strictIdOnly: true,
+    });
+    if (!validation.valid) {
+      throw new Error(`Invalid versioned option ID answer: ${validation.reason ?? 'invalid'}`);
+    }
+    return normalizedType === 'multi_select'
+      ? serializeAnswerTokens(validation.optionIds)
+      : (validation.optionIds[0] ?? '');
+  }
+
+  const answerTokens = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
+  const { optionById, optionByLabel, optionsByContent } = buildOptionLookupMaps(normalizedOptions);
+
+  const resolvedTokens = answerTokens.map((token) => {
+    const key = token.trim().toLowerCase();
+    const byId = optionById.get(key);
+    if (byId) return byId.id;
+
+    const byLabel = optionByLabel.get(key);
+    if (byLabel) return byLabel.id;
+
+    const byContent = optionsByContent.get(key);
+    if (byContent && byContent.length === 1) {
+      return byContent[0].id;
+    }
+    if (byContent && byContent.length > 1) {
+      throw new Error('Ambiguous unversioned option text in question snapshot; canonical option ID is required');
+    }
+
+    return token.trim();
+  });
+
+  return normalizedType === 'multi_select'
+    ? serializeAnswerTokens(resolvedTokens)
+    : (resolvedTokens[0] ?? '');
+}
+
+export function resolveQuestionCorrectAnswerForScoring(
+  question: ScorableQuestionSnapshot
+): string {
+  const normalizedType = normalizeQuestionType(question.type);
+  const normalizedOptions = normalizeQuestionOptions(question.options);
+
+  if (normalizedOptions.length === 0) {
+    return question.correctAnswer ?? '';
+  }
+
+  const flaggedCorrect = normalizedOptions
+    .filter((option) => option.isCorrect === true)
+    .map((option) => option.id);
+
+  if (flaggedCorrect.length > 0) {
+    return normalizedType === 'multi_select' || flaggedCorrect.length > 1
+      ? serializeAnswerTokens(flaggedCorrect)
+      : flaggedCorrect.join(',');
+  }
+
+  const rawCorrect = (question.correctAnswer ?? '').trim();
+  if (rawCorrect === '') {
+    return '';
+  }
+
+  return resolveQuestionAnswerForScoring(question, rawCorrect);
+}

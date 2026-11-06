@@ -40,7 +40,24 @@ async function getWorkflowHandler() {
     }>(async (context) => {
       const { examId, userId, format, jobId } = context.requestPayload;
       const rawBrand = (context.requestPayload as { brand?: unknown }).brand;
-      const brandId: LearnerExportBrand = isLearnerExportBrand(rawBrand) ? rawBrand : 'realtutorialhub';
+      const payloadBrand = isLearnerExportBrand(rawBrand) ? rawBrand : undefined;
+      let brandId: LearnerExportBrand | undefined = payloadBrand;
+      if (brandId === undefined) {
+        try {
+          const examRow = await db.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            columns: { userId: true, exportUrls: true },
+          });
+          if (examRow && examRow.userId === userId) {
+            brandId = resolveStoredExamBrand(examRow);
+          }
+        } catch (error: unknown) {
+          log.warn({ err: error, jobId, examId }, 'Failed to resolve exam brand in export workflow');
+        }
+      }
+      if (!isLearnerExportBrand(brandId)) {
+        throw new Error('Export workflow requires verified learner brand provenance');
+      }
       const stateKey = `export:workflow:${jobId}`;
       const queryBuilder = new ExportQueryBuilder();
       const aggregator = new ExportAggregator();
@@ -115,34 +132,24 @@ async function getWorkflowHandler() {
     log.info({ examId, jobId }, 'Step: Fetch Raw Data');
     await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
 
-    // Idempotency: check cache and DB before heavy work
-    try {
-      const cachedUrl = await redis.get<string>(cacheKey);
-      if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
-        log.info({ examId, jobId, format }, 'Export workflow cache hit');
-        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
-          result: {
-            examId,
-            format,
-            downloadUrl: cachedUrl,
-            completedAt: new Date().toISOString()
-          }
-        });
-        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: cachedUrl } as const;
-      }
-      log.info({ examId, jobId, format }, 'Export workflow cache miss');
-    } catch (error: unknown) {
-      log.warn({ err: error, jobId, examId }, 'Export workflow cache read failed');
-    }
-
     try {
       const examRow = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
-        columns: { exportUrls: true }
+        columns: { userId: true, exportUrls: true }
       });
-      const existingUrl = format === 'json'
-        ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
-        : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv;
+      if (examRow && examRow.userId !== userId) {
+        throw new Error('Unauthorized export workflow: exam ownership mismatch');
+      }
+      const storedBrand = resolveStoredExamBrand(examRow);
+      if (storedBrand !== undefined && storedBrand !== brandId) {
+        throw new Error('Unauthorized export workflow: exam brand provenance mismatch');
+      }
+      const existingUrl =
+        storedBrand === brandId
+          ? (format === 'json'
+              ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
+              : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv)
+          : undefined;
       if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
         log.info({ examId, jobId, format }, 'Export workflow idempotency hit from exams.export_urls');
         try {
@@ -154,6 +161,8 @@ async function getWorkflowHandler() {
           result: {
             examId,
             format,
+            brand: brandId,
+            tenantId: brandId,
             downloadUrl: existingUrl,
             completedAt: new Date().toISOString()
           }
@@ -161,7 +170,31 @@ async function getWorkflowHandler() {
         return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: existingUrl } as const;
       }
     } catch (error: unknown) {
+      if (error instanceof Error && error.message.startsWith('Unauthorized export workflow')) {
+        throw error;
+      }
       log.warn({ err: error, jobId, examId }, 'Export workflow idempotency lookup failed');
+    }
+
+    try {
+      const cachedUrl = await redis.get<string>(cacheKey);
+      if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
+        log.info({ examId, jobId, format }, 'Export workflow cache hit');
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+          result: {
+            examId,
+            format,
+            brand: brandId,
+            tenantId: brandId,
+            downloadUrl: cachedUrl,
+            completedAt: new Date().toISOString()
+          }
+        });
+        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: cachedUrl } as const;
+      }
+      log.info({ examId, jobId, format }, 'Export workflow cache miss');
+    } catch (error: unknown) {
+      log.warn({ err: error, jobId, examId }, 'Export workflow cache read failed');
     }
 
     const [meta, currentRows, historicalRows] = await Promise.all([

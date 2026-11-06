@@ -361,6 +361,21 @@ class WorkflowGovernanceService:
             raise ValueError(
                 "Authorization failed: Gate 1 approval requires project_llm:contract:approve capability"
             )
+        record_token_type = gate_1_record.get("token_type")
+        if record_token_type is not None and str(record_token_type).strip().lower() != "admin":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires admin credential class (token_type='admin')"
+            )
+        record_is_admin = gate_1_record.get("is_admin")
+        if record_is_admin is not None and record_is_admin is not True:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires is_admin=True"
+            )
+        record_aud = gate_1_record.get("aud")
+        if record_aud is not None and str(record_aud).strip().lower() not in {"shc-admin", "admin"}:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires shc-admin or admin audience"
+            )
 
         workflow_contract_id = (workflow.contract_id or "").strip()
         approval_contract_id = (gate_1_record.get("contract_id") or "").strip()
@@ -385,6 +400,9 @@ class WorkflowGovernanceService:
         actor_brand: str,
         actor_roles: list[str],
         actor_capabilities: Optional[list[str]] = None,
+        actor_token_type: str = "admin",
+        actor_is_admin: bool = True,
+        actor_aud: str = "shc-admin",
         contract_id: Optional[str] = None,
         contract_sha256: Optional[str] = None,
         reason: Optional[str] = None,
@@ -400,16 +418,31 @@ class WorkflowGovernanceService:
         normalized_approver = (approved_by or "").strip()
         normalized_brand = (actor_brand or "").strip().lower()
         roles_list = [str(r) for r in (actor_roles or [])]
+        normalized_token_type = str(actor_token_type or "").strip().lower()
+        normalized_aud = str(actor_aud or "").strip().lower()
+
+        if normalized_token_type != "admin" or actor_is_admin is not True or normalized_aud not in {"shc-admin", "admin"}:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires verified SHC admin credential class (token_type='admin', is_admin=True, aud in {'shc-admin', 'admin'})"
+            )
+        if normalized_brand != "skillhubcore":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires verified skillhubcore authority"
+            )
+        if not any(r in {"super_admin", "contract_admin"} for r in roles_list):
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires super_admin or contract_admin role"
+            )
+
         capabilities_list = (
             [str(c) for c in actor_capabilities]
             if actor_capabilities is not None
-            else (
-                ["project_llm:contract:approve"]
-                if normalized_brand == "skillhubcore"
-                and any(r in {"super_admin", "contract_admin"} for r in roles_list)
-                else []
-            )
+            else ["project_llm:contract:approve"]
         )
+        if "project_llm:contract:approve" not in capabilities_list:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires project_llm:contract:approve capability"
+            )
 
         effective_contract_id = (contract_id or workflow.contract_id or "").strip()
         effective_contract_sha = (contract_sha256 or workflow.contract_sha256 or "").strip().lower()
@@ -447,6 +480,9 @@ class WorkflowGovernanceService:
             "approved_by": normalized_approver,
             "brand": normalized_brand,
             "roles": roles_list,
+            "token_type": normalized_token_type,
+            "is_admin": True,
+            "aud": normalized_aud,
             "capability": (
                 "project_llm:contract:approve"
                 if "project_llm:contract:approve" in capabilities_list

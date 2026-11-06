@@ -58,6 +58,7 @@ const notificationHandler = createQStashHandler(
   {
     schema: RemediationNotificationSchema,
     allowedTypes: ['remediation.notification_requested'],
+    tenantScope: 'realtutorialhub',
   }
 );
 
