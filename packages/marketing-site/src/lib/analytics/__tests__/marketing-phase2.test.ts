@@ -10,6 +10,7 @@ import { defaultConsentState } from "../../privacy/privacy-flags";
 describe("marketing phase 2 systems", () => {
   it("resolves and stitches identity with deterministic identifiers", () => {
     const resolved = resolveIdentity({
+      brandId: "realtutorialhub",
       anonymousId: "anon_a",
       sessionId: "sess_a",
       userId: "user_1",
@@ -24,12 +25,14 @@ describe("marketing phase 2 systems", () => {
 
   it("computes advanced session quality", () => {
     const first = updateSession({
+      brandId: "realtutorialhub",
       sessionId: "sess_quality",
       at: "2026-05-26T10:00:00.000Z",
       type: "page",
       path: "/",
     });
     const second = updateSession({
+      brandId: "realtutorialhub",
       sessionId: "sess_quality",
       at: "2026-05-26T10:03:00.000Z",
       type: "conversion",
