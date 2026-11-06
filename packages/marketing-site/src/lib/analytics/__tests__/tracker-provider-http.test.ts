@@ -1,9 +1,15 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('../../privacy/consent-manager', () => ({ canDispatchProvider: () => true }));
-vi.mock('../../../config/analytics', () => ({ getAnalyticsRuntimeConfig: () => ({
-  enabled: true, debug: false, requestTimeoutMs: 1000, dedupeWindowMs: 1, flushIntervalMs: 60000, batchSize: 10,
-  brand: { brandId: 'realtutorialhub', internalCollectionEndpoint: 'https://example.invalid/collect' },
-}) }));
+vi.mock('../../../config/analytics', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../config/analytics')>();
+  return {
+    ...actual,
+    getAnalyticsRuntimeConfig: () => ({
+      enabled: true, debug: false, requestTimeoutMs: 1000, dedupeWindowMs: 1, flushIntervalMs: 60000, batchSize: 10,
+      brand: { brandId: 'realtutorialhub', internalCollectionEndpoint: 'https://example.invalid/collect' },
+    }),
+  };
+});
 import { createAnalyticsTracker } from '../tracker';
 import { InternalAnalyticsProvider } from '../providers/internal.provider';
 import { getProviderHealthSnapshot } from '../../observability/provider-health';
