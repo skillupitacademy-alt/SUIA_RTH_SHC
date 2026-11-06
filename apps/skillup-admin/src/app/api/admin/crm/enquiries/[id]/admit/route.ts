@@ -34,6 +34,8 @@ async function admit(request: NextRequest, context: { params: Promise<{ id: stri
   const targetPlatform = 'skillup';
 
   // Check if email exists on ANY platform first (foreign-tenant collision detection)
+  // Per requirement: Option B (reject collision) - foreign-tenant admission must return 409
+  // Aligns with VERIFICATION_FAILED test requirement (audit/W1.2_Batch_08_Sol_Probe.py)
   const [anyPlatformUser] = await db
     .select({ id: users.id, platform: users.platform })
     .from(users)
