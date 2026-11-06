@@ -8,6 +8,12 @@ import { certificates, db, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db-
 
 import { logger } from '@/lib/logger';
 import { eq, and, isNull } from 'drizzle-orm';
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  releaseWorkerLeaseIfOwner,
+  type WorkerRedisLike,
+} from '../worker-lease';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,13 +32,13 @@ const IssueCertificateSchema = z.object({
   }),
 });
 
-const createRedisClient = () => {
+const createRedisClient = (): WorkerRedisLike => {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (typeof url !== 'string' || url.trim().length === 0 || typeof token !== 'string' || token.trim().length === 0) {
     throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required');
   }
-  return new Redis({ url, token });
+  return new Redis({ url, token }) as unknown as WorkerRedisLike;
 };
 
 const handler = createQStashHandler(
@@ -43,16 +49,15 @@ const handler = createQStashHandler(
     const redis = createRedisClient();
     const redisKey = `cert:${userId}:${scope}:${parentId}`;
 
-    const existing = await redis.get(redisKey);
-    if (existing !== null && String(existing).trim().length > 0) {
-      if (String(existing) === 'processing') {
-        return new Response('Event processing already in progress', { status: 409 });
-      }
+    const claim = await acquireWorkerLease(redis, redisKey, {
+      leaseSeconds: 300,
+      pendingPrefix: 'processing',
+    });
+
+    if (claim.kind === 'already-completed') {
       return new Response('Duplicate event ignored', { status: 200 });
     }
-
-    const claimed = await redis.set(redisKey, 'processing', { ex: 300, nx: true });
-    if (claimed == null || String(claimed).trim().length === 0) {
+    if (claim.kind === 'busy') {
       return new Response('Event claim not acquired', { status: 409 });
     }
 
@@ -67,7 +72,16 @@ const handler = createQStashHandler(
       );
 
       if (existingCertificate.length > 0) {
-        await redis.set(redisKey, 'processed', { ex: 86_400 });
+        const reconciled = await completeWorkerLeaseIfOwner(
+          redis,
+          redisKey,
+          claim.pendingValue,
+          'processed',
+          86_400
+        );
+        if (reconciled !== 'applied') {
+          return new Response('Event lease ownership lost before completion', { status: 409 });
+        }
         return new Response('Duplicate event ignored', { status: 200 });
       }
 
@@ -111,7 +125,16 @@ const handler = createQStashHandler(
         }
       );
 
-      await redis.set(redisKey, 'processed', { ex: 86_400 });
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        redisKey,
+        claim.pendingValue,
+        'processed',
+        86_400
+      );
+      if (completionTransition !== 'applied') {
+        return new Response('Event lease ownership lost before completion', { status: 409 });
+      }
 
       logger.info({
         event: 'certificate.issued',
@@ -128,7 +151,7 @@ const handler = createQStashHandler(
         },
       });
     } catch (error) {
-      await Promise.resolve((redis as { del?: (key: string) => unknown }).del?.(redisKey)).catch(() => undefined);
+      await releaseWorkerLeaseIfOwner(redis, redisKey, claim.pendingValue).catch(() => undefined);
       throw error;
     }
   },

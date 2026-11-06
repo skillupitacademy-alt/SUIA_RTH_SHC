@@ -8,11 +8,44 @@ export interface ConsumerRedisLike {
   get(key: string): Promise<string | null> | string | null;
   set(key: string, value: string, options?: { ex?: number; nx?: boolean }): Promise<unknown> | unknown;
   del?(key: string): Promise<unknown> | unknown;
+  eval?(script: string, keys: string[], args: Array<string | number>): Promise<unknown> | unknown;
+}
+
+export type EventClaimResult =
+  | { kind: 'acquired'; ownerToken: string; pendingRecord: string }
+  | { kind: 'busy' }
+  | { kind: 'already-completed'; completedRecord: string }
+  | { kind: 'payload-conflict' };
+
+export type EventLeaseTransitionResult = 'applied' | 'owner-lost';
+
+export interface DurableEventLeaseStore {
+  claim(input: {
+    key: string;
+    fingerprint: string;
+    fnv1aFingerprint?: string;
+    eventId: string;
+    ownerToken: string;
+    pendingRecord?: string;
+    leaseSeconds: number;
+  }): Promise<EventClaimResult>;
+
+  completeIfOwner(input: {
+    key: string;
+    expectedPending: string;
+    completedValue: string;
+    retentionSeconds: number;
+  }): Promise<EventLeaseTransitionResult>;
+
+  releaseIfOwner(input: {
+    key: string;
+    expectedPending: string;
+  }): Promise<EventLeaseTransitionResult>;
 }
 
 export interface QStashHandlerOptions<TType extends PlatformEventType> {
   receiver?: Receiver;
-  idempotencyStore?: ConsumerRedisLike;
+  idempotencyStore?: ConsumerRedisLike | DurableEventLeaseStore;
   schema?: ZodTypeAny;
   allowedTypes?: readonly string[];
   tenantScope?: string;
@@ -22,16 +55,33 @@ export interface QStashHandlerOptions<TType extends PlatformEventType> {
   onDuplicate?: (envelope: EventEnvelope<TType, unknown>) => void | Promise<void>;
 }
 
-const CANONICAL_EVENT_TENANTS = new Set(['realtutorialhub', 'skillup', 'skillhubcore']);
-const activeInFlightEventClaims = new Map<string, string>();
+export const CLAIM_EVENT_LEASE_LUA = `
+local current = redis.call("GET", KEYS[1])
+if current then
+  return current
+end
+redis.call("SET", KEYS[1], ARGV[1], "EX", tonumber(ARGV[2]), "NX")
+return "ACQUIRED"
+`.trim();
 
-function isMockSetWithExplicitReturn(fn: unknown): boolean {
-  if (typeof fn !== 'function') return true;
-  const mockMeta = (fn as { mock?: { results?: unknown[] } }).mock;
-  if (!mockMeta) return true;
-  const getMockImpl = (fn as { getMockImplementation?: () => unknown }).getMockImplementation;
-  return typeof getMockImpl === 'function' && getMockImpl() !== undefined;
-}
+export const COMPLETE_IF_OWNER_LUA = `
+if redis.call("GET", KEYS[1]) ~= ARGV[1] then
+  return 0
+end
+redis.call("SET", KEYS[1], ARGV[2], "EX", tonumber(ARGV[3]))
+return 1
+`.trim();
+
+export const RELEASE_IF_OWNER_LUA = `
+if redis.call("GET", KEYS[1]) ~= ARGV[1] then
+  return 0
+end
+redis.call("DEL", KEYS[1])
+return 1
+`.trim();
+
+const CANONICAL_EVENT_TENANTS = new Set(['realtutorialhub', 'skillup', 'skillhubcore']);
+const claimingKeysByStore = new WeakMap<object, Set<string>>();
 
 const getReceiver = (receiver?: Receiver) => {
   if (receiver !== undefined) return receiver;
@@ -82,8 +132,9 @@ function parseIdempotencyRecord(raw: string): {
   state: 'pending' | 'completed' | 'legacy_completed';
   fingerprint: string | null;
 } {
-  if (raw.startsWith('pending:')) {
-    const rest = raw.slice('pending:'.length);
+  if (raw.startsWith('pending:') || raw.startsWith('processing:') || raw === 'processing') {
+    const prefix = raw.startsWith('pending:') ? 'pending:' : 'processing:';
+    const rest = raw.startsWith(prefix) ? raw.slice(prefix.length) : '';
     const match = /^(sha256:[0-9a-f]+|fnv1a:[0-9a-f]+)(?::.*)?$/i.exec(rest);
     return { state: 'pending', fingerprint: match ? match[1].toLowerCase() : null };
   }
@@ -93,6 +144,220 @@ function parseIdempotencyRecord(raw: string): {
     return { state: 'completed', fingerprint: match ? match[1].toLowerCase() : null };
   }
   return { state: 'legacy_completed', fingerprint: null };
+}
+
+function classifyExistingRecord(
+  serializedRecord: string,
+  fingerprint: string,
+  fnv1aFingerprint?: string
+): Exclude<EventClaimResult, { kind: 'acquired' }> {
+  const parsedRecord = parseIdempotencyRecord(serializedRecord);
+  if (parsedRecord.state === 'pending') {
+    return { kind: 'busy' };
+  }
+  if (parsedRecord.state === 'completed' && parsedRecord.fingerprint !== null) {
+    const expectedDigest = parsedRecord.fingerprint.startsWith('fnv1a:')
+      ? (fnv1aFingerprint ?? fingerprint).toLowerCase()
+      : fingerprint.toLowerCase();
+    if (parsedRecord.fingerprint !== expectedDigest) {
+      return { kind: 'payload-conflict' };
+    }
+  }
+  return { kind: 'already-completed', completedRecord: serializedRecord };
+}
+
+function isDurableEventLeaseStore(
+  store: ConsumerRedisLike | DurableEventLeaseStore
+): store is DurableEventLeaseStore {
+  const candidate = store as Partial<DurableEventLeaseStore>;
+  return (
+    typeof candidate.claim === 'function' &&
+    typeof candidate.completeIfOwner === 'function' &&
+    typeof candidate.releaseIfOwner === 'function'
+  );
+}
+
+export function createDurableEventLeaseStore(
+  store: ConsumerRedisLike | DurableEventLeaseStore
+): DurableEventLeaseStore {
+  if (store === null || typeof store !== 'object') {
+    throw new Error('Unsupported event idempotency store adapter');
+  }
+  if (isDurableEventLeaseStore(store)) {
+    return store;
+  }
+
+  const redisStore = store as ConsumerRedisLike;
+  if (typeof redisStore.eval === 'function') {
+    const evalFn = redisStore.eval.bind(redisStore);
+    return {
+      async claim(input) {
+        const pendingRecord = input.pendingRecord ?? `pending:${input.fingerprint}:${input.eventId}:${input.ownerToken}`;
+        const rawResult = await evalFn(
+          CLAIM_EVENT_LEASE_LUA,
+          [input.key],
+          [pendingRecord, input.leaseSeconds]
+        );
+        if (rawResult === 'ACQUIRED') {
+          return { kind: 'acquired', ownerToken: input.ownerToken, pendingRecord };
+        }
+        if (typeof rawResult === 'string' && rawResult.trim().length > 0) {
+          return classifyExistingRecord(rawResult, input.fingerprint, input.fnv1aFingerprint);
+        }
+        return { kind: 'busy' };
+      },
+      async completeIfOwner(input) {
+        const result = await evalFn(
+          COMPLETE_IF_OWNER_LUA,
+          [input.key],
+          [input.expectedPending, input.completedValue, input.retentionSeconds]
+        );
+        return result === 1 || result === '1' || result === 'OK' || result === true
+          ? 'applied'
+          : 'owner-lost';
+      },
+      async releaseIfOwner(input) {
+        const result = await evalFn(
+          RELEASE_IF_OWNER_LUA,
+          [input.key],
+          [input.expectedPending]
+        );
+        return result === 1 || result === '1' || result === 'OK' || result === true
+          ? 'applied'
+          : 'owner-lost';
+      },
+    };
+  }
+
+  if (typeof redisStore.get !== 'function' || typeof redisStore.set !== 'function') {
+    throw new Error('Unsupported event idempotency store adapter: get and set are required');
+  }
+
+  return {
+    async claim(input) {
+      const pendingRecord = input.pendingRecord ?? `pending:${input.fingerprint}:${input.eventId}:${input.ownerToken}`;
+      let storeClaims = claimingKeysByStore.get(redisStore);
+      if (storeClaims === undefined) {
+        storeClaims = new Set<string>();
+        claimingKeysByStore.set(redisStore, storeClaims);
+      }
+      if (storeClaims.has(input.key)) {
+        return { kind: 'busy' };
+      }
+      storeClaims.add(input.key);
+
+      try {
+        const existingRecord = await redisStore.get(input.key);
+        if (existingRecord !== null && existingRecord !== undefined && String(existingRecord).trim().length > 0) {
+          return classifyExistingRecord(String(existingRecord), input.fingerprint, input.fnv1aFingerprint);
+        }
+
+        const claimResult = await redisStore.set(input.key, pendingRecord, {
+          ex: input.leaseSeconds,
+          nx: true,
+        });
+
+        const claimAcquired = claimResult === 'OK' || claimResult === true;
+        if (!claimAcquired) {
+          return { kind: 'busy' };
+        }
+
+        return {
+          kind: 'acquired',
+          ownerToken: input.ownerToken,
+          pendingRecord,
+        };
+      } finally {
+        storeClaims.delete(input.key);
+      }
+    },
+
+    async completeIfOwner(input) {
+      const firstSnapshot = await redisStore.get(input.key);
+      if (firstSnapshot === null || firstSnapshot === undefined || String(firstSnapshot) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+      const secondSnapshot = await redisStore.get(input.key);
+      if (secondSnapshot === null || secondSnapshot === undefined || String(secondSnapshot) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+
+      await redisStore.set(input.key, input.completedValue, {
+        ex: input.retentionSeconds,
+      });
+      return 'applied';
+    },
+
+    async releaseIfOwner(input) {
+      const firstSnapshot = await redisStore.get(input.key);
+      if (firstSnapshot === null || firstSnapshot === undefined || String(firstSnapshot) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+      const secondSnapshot = await redisStore.get(input.key);
+      if (secondSnapshot === null || secondSnapshot === undefined || String(secondSnapshot) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+
+      if (typeof redisStore.del === 'function') {
+        await redisStore.del(input.key);
+      } else {
+        await redisStore.set(input.key, '');
+      }
+      return 'applied';
+    },
+  };
+}
+
+export interface InMemoryEventLeaseStoreHooks {
+  onBeforeClaim?: (key: string, entries: Map<string, string>) => void | Promise<void>;
+  onBeforeComplete?: (key: string, expectedPending: string, entries: Map<string, string>) => void | Promise<void>;
+  onBeforeRelease?: (key: string, expectedPending: string, entries: Map<string, string>) => void | Promise<void>;
+}
+
+export function createInMemoryEventLeaseStore(
+  entries = new Map<string, string>(),
+  hooks: InMemoryEventLeaseStoreHooks = {}
+): DurableEventLeaseStore & ConsumerRedisLike & { readonly entries: Map<string, string> } {
+  return {
+    entries,
+    get(key: string) {
+      return entries.get(key) ?? null;
+    },
+    set(key: string, value: string, options?: { ex?: number; nx?: boolean }) {
+      if (options?.nx && entries.has(key)) return null;
+      entries.set(key, value);
+      return 'OK';
+    },
+    del(key: string) {
+      return entries.delete(key) ? 1 : 0;
+    },
+    async claim(input) {
+      await hooks.onBeforeClaim?.(input.key, entries);
+      const pendingRecord = input.pendingRecord ?? `pending:${input.fingerprint}:${input.eventId}:${input.ownerToken}`;
+      const existing = entries.get(input.key);
+      if (existing !== undefined && existing.trim().length > 0) {
+        return classifyExistingRecord(existing, input.fingerprint, input.fnv1aFingerprint);
+      }
+      entries.set(input.key, pendingRecord);
+      return { kind: 'acquired', ownerToken: input.ownerToken, pendingRecord };
+    },
+    async completeIfOwner(input) {
+      await hooks.onBeforeComplete?.(input.key, input.expectedPending, entries);
+      if (entries.get(input.key) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+      entries.set(input.key, input.completedValue);
+      return 'applied';
+    },
+    async releaseIfOwner(input) {
+      await hooks.onBeforeRelease?.(input.key, input.expectedPending, entries);
+      if (entries.get(input.key) !== input.expectedPending) {
+        return 'owner-lost';
+      }
+      entries.delete(input.key);
+      return 'applied';
+    },
+  };
 }
 
 function extractExplicitPayloadTenant(
@@ -263,106 +528,70 @@ export function createQStashHandler<TType extends PlatformEventType>(
     const pendingRecord = `pending:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}:${leaseToken}`;
     const completedRecord = `completed:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}:${leaseToken}`;
 
-    if (options.idempotencyStore !== undefined) {
-      if (activeInFlightEventClaims.has(idempotencyKey)) {
-        return new Response('Event processing already in progress', { status: 409 });
+    const leaseStore =
+      options.idempotencyStore !== undefined
+        ? createDurableEventLeaseStore(options.idempotencyStore)
+        : undefined;
+
+    if (leaseStore !== undefined) {
+      const claimOutcome = await leaseStore.claim({
+        key: idempotencyKey,
+        fingerprint: resolvedMeta.fingerprint,
+        fnv1aFingerprint: resolvedMeta.fnv1aFingerprint,
+        eventId: resolvedMeta.eventId,
+        ownerToken: leaseToken,
+        pendingRecord,
+        leaseSeconds: options.leaseTtlSeconds ?? 300,
+      });
+
+      if (claimOutcome.kind === 'payload-conflict') {
+        return new Response('Conflicting event payload for existing event ID', { status: 409 });
       }
-      activeInFlightEventClaims.set(idempotencyKey, pendingRecord);
+      if (claimOutcome.kind === 'already-completed') {
+        await options.onDuplicate?.(parsed);
+        return new Response('Duplicate event ignored', { status: 200 });
+      }
+      if (claimOutcome.kind === 'busy') {
+        return new Response('Event claim not acquired', { status: 409 });
+      }
     }
 
-    const verifyLeaseOwnership = async (): Promise<boolean> => {
-      if (options.idempotencyStore === undefined) return true;
-      const currentStored = await options.idempotencyStore.get(idempotencyKey);
-      if (currentStored === null || currentStored === undefined) {
-        return !isMockSetWithExplicitReturn(options.idempotencyStore.set);
-      }
-      return String(currentStored) === pendingRecord;
-    };
-
-    const releaseOwnedLease = async (): Promise<void> => {
-      if (options.idempotencyStore === undefined) return;
-      if (!(await verifyLeaseOwnership())) return;
-      if (typeof options.idempotencyStore.del === 'function') {
-        await options.idempotencyStore.del(idempotencyKey);
-      } else {
-        await options.idempotencyStore.set(idempotencyKey, '');
-      }
-    };
-
+    let response: Response | void;
     try {
-      if (options.idempotencyStore !== undefined) {
-        const existingRecord = await options.idempotencyStore.get(idempotencyKey);
-        if (existingRecord !== null && existingRecord !== undefined && String(existingRecord).trim().length > 0) {
-          const serializedRecord = String(existingRecord);
-          const parsedRecord = parseIdempotencyRecord(serializedRecord);
-          if (parsedRecord.state === 'pending') {
-            return new Response('Event processing already in progress', { status: 409 });
-          }
-          if (parsedRecord.state === 'completed' && parsedRecord.fingerprint !== null) {
-            const expectedDigest = parsedRecord.fingerprint.startsWith('fnv1a:')
-              ? resolvedMeta.fnv1aFingerprint.toLowerCase()
-              : resolvedMeta.fingerprint.toLowerCase();
-            if (parsedRecord.fingerprint !== expectedDigest) {
-              return new Response('Conflicting event payload for existing event ID', { status: 409 });
-            }
-          }
-          await options.onDuplicate?.(parsed);
-          return new Response('Duplicate event ignored', { status: 200 });
-        }
-
-        const claimResult = await options.idempotencyStore.set(
-          idempotencyKey,
-          pendingRecord,
-          {
-            ex: options.leaseTtlSeconds ?? 300,
-            nx: true,
-          }
-        );
-
-        const claimAcquired =
-          claimResult === 'OK' ||
-          claimResult === true ||
-          (claimResult === undefined && !isMockSetWithExplicitReturn(options.idempotencyStore.set));
-
-        if (!claimAcquired) {
-          return new Response('Event claim not acquired', { status: 409 });
-        }
+      response = await handler(parsed);
+    } catch (error) {
+      if (leaseStore !== undefined) {
+        await leaseStore.releaseIfOwner({
+          key: idempotencyKey,
+          expectedPending: pendingRecord,
+        });
       }
+      throw error;
+    }
 
-      let response: Response | void;
-      try {
-        response = await handler(parsed);
-      } catch (error) {
-        await releaseOwnedLease();
-        throw error;
+    if (response instanceof Response && !response.ok && response.status >= 500) {
+      if (leaseStore !== undefined) {
+        await leaseStore.releaseIfOwner({
+          key: idempotencyKey,
+          expectedPending: pendingRecord,
+        });
       }
+      return response;
+    }
 
-      if (response instanceof Response && !response.ok && response.status >= 500) {
-        await releaseOwnedLease();
-        return response;
-      }
-
-      if (options.idempotencyStore !== undefined) {
-        if (!(await verifyLeaseOwnership())) {
-          return new Response('Event lease ownership lost before completion', { status: 409 });
-        }
-        await options.idempotencyStore.set(
-          idempotencyKey,
-          completedRecord,
-          {
-            ex: options.idempotencyTtlSeconds ?? 86_400,
-          }
-        );
-      }
-
-      if (response instanceof Response) return response;
-      return new Response('OK', { status: 200 });
-    } finally {
-      if (options.idempotencyStore !== undefined) {
-        if (activeInFlightEventClaims.get(idempotencyKey) === pendingRecord) {
-          activeInFlightEventClaims.delete(idempotencyKey);
-        }
+    if (leaseStore !== undefined) {
+      const transition = await leaseStore.completeIfOwner({
+        key: idempotencyKey,
+        expectedPending: pendingRecord,
+        completedValue: completedRecord,
+        retentionSeconds: options.idempotencyTtlSeconds ?? 86_400,
+      });
+      if (transition !== 'applied') {
+        return new Response('Event lease ownership lost before completion', { status: 409 });
       }
     }
+
+    if (response instanceof Response) return response;
+    return new Response('OK', { status: 200 });
   };
 }
