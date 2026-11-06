@@ -385,9 +385,60 @@ class WorkflowGovernanceService:
             )
             if not can_implement:
                 raise ValueError(f"Authorization failed: {auth_reason}")
-        
+
         # Execute transition
         now = datetime.now(timezone.utc)
+
+        # Gate 1 human approval enforcement and persisted approval binding (TC15 / D4)
+        normalized_trigger = (triggered_by or "").strip()
+        forbidden_automated_triggers = {
+            "",
+            "system",
+            "auto",
+            "ensurecandidaterequested",
+            "ui-auto",
+            "automated",
+            "bot",
+        }
+        if to_state == CanonicalWorkflowState.GUI_APPROVED:
+            if normalized_trigger.lower() in forbidden_automated_triggers:
+                raise ValueError(
+                    "Authorization failed: Gate 1 (GUI_APPROVED) requires an explicit verified human principal; automated transitions are forbidden"
+                )
+            normalized_reason = (reason or "").strip()
+            if "ensurecandidaterequested" in normalized_reason.lower() or "auto-approve" in normalized_reason.lower():
+                raise ValueError(
+                    "Authorization failed: Gate 1 auto-approval bypass is forbidden"
+                )
+            current_gates = dict(workflow.gate_results or {})
+            current_gates["gate_1_approval"] = {
+                "status": "APPROVED",
+                "approved_by": normalized_trigger,
+                "approved_at": now.isoformat(),
+                "contract_id": workflow.contract_id,
+                "contract_sha256": workflow.contract_sha256,
+                "reason": normalized_reason or "Explicit human Gate 1 contract approval",
+            }
+            workflow.gate_results = current_gates
+
+        if (
+            workflow.current_state == CanonicalWorkflowState.GUI_APPROVED
+            and to_state == CanonicalWorkflowState.CANDIDATE_REQUESTED
+        ):
+            gate_1_record = (workflow.gate_results or {}).get("gate_1_approval")
+            if not isinstance(gate_1_record, dict) or gate_1_record.get("status") != "APPROVED":
+                raise ValueError(
+                    "Authorization failed: Cannot transition to CANDIDATE_REQUESTED without a persisted human Gate 1 approval record"
+                )
+            if (
+                workflow.contract_sha256
+                and gate_1_record.get("contract_sha256")
+                and gate_1_record.get("contract_sha256") != workflow.contract_sha256
+            ):
+                raise ValueError(
+                    "Authorization failed: Persisted Gate 1 approval contract_sha256 does not match current workflow contract_sha256"
+                )
+
         transition = StateTransition(
             from_state=workflow.current_state,
             to_state=to_state,

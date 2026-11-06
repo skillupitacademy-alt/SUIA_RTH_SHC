@@ -291,11 +291,25 @@ async def transition_workflow(
         )
     
     # Attempt transition
+    actor_id = (
+        user.get("user_id")
+        or user.get("email")
+        or user.get("sub")
+        or user.get("id")
+        or ""
+    )
+    if to_state in (CanonicalWorkflowState.GUI_APPROVED, CanonicalWorkflowState.CANDIDATE_REQUESTED):
+        if not actor_id or str(actor_id).strip().lower() in {"system", "auto", "ensurecandidaterequested", "ui-auto"}:
+            raise HTTPException(
+                status_code=403,
+                detail="Gate 1 transitions require an authenticated human principal"
+            )
+
     try:
         workflow = await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=to_state,
-            triggered_by=user["user_id"],
+            triggered_by=str(actor_id),
             evidence_id=request.evidence_id,
             reason=request.reason
         )
