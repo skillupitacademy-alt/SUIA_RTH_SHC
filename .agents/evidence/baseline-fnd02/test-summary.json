@@ -1,0 +1,6 @@
+{
+  "status": "timeout",
+  "note": "vitest run --reporter=json timed out after 180 seconds",
+  "alternative": "Test execution blocked - baseline captured without test counts",
+  "recommendation": "Manual test run required or investigate vitest hang"
+}
