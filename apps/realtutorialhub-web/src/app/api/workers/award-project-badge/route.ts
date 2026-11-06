@@ -62,74 +62,82 @@ const badgeHandler = createQStashHandler(
       return new Response('Duplicate event ignored', { status: 200 });
     }
 
-    const projectRepository = new ProjectRepository();
-    const submission = await withTimeout(
-      projectRepository.getSubmission(submissionId),
-      STANDARD_QUERY_TIMEOUT,
-      'award-project-badge.getSubmission'
-    );
-    if (submission === undefined) {
-      throw new Error('Project submission not found');
-    }
-
-    await db.transaction(async (tx) => {
-      const txRepo = projectRepository.withDb(tx as never);
-      await txRepo.awardBadge(userId, badgeId, submissionId);
-      await withTimeout(
-        tx
-          .update(tutorialProjectSubmissions)
-          .set({
-            badgeAwarded: true,
-            updatedAt: new Date(),
-          })
-          .where(eq(tutorialProjectSubmissions.id, submissionId)),
+    try {
+      const projectRepository = new ProjectRepository();
+      const submission = await withTimeout(
+        projectRepository.getSubmission(submissionId),
         STANDARD_QUERY_TIMEOUT,
-        'award-project-badge.mark-badge-awarded'
+        'award-project-badge.getSubmission'
       );
-    });
+      if (submission === undefined) {
+        throw new Error('Project submission not found');
+      }
 
-    const projectService = new ProjectService();
-    const project = await projectRepository.getProject(projectId);
-    if (project !== undefined) {
-      const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
-      if (eligibility.eligible) {
-        const token = process.env.QSTASH_TOKEN;
-        if (typeof token === 'string' && token.trim().length > 0) {
-          const client = new Client({ token });
-          await client.publishJSON({
-            url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-            retries: 3,
-            body: {
-              id: crypto.randomUUID(),
-              type: 'project.certificate_requested',
-              correlationId: submission.id,
-              source: 'quiz-platform',
-              occurredAt: new Date().toISOString(),
-              version: 1,
-              data: {
-                userId,
-                scope: project.scope,
-                parentId: project.parentId,
-                parentName: project.title,
+      await db.transaction(async (tx) => {
+        const txRepo = projectRepository.withDb(tx as never);
+        await txRepo.awardBadge(userId, badgeId, submissionId);
+        await withTimeout(
+          tx
+            .update(tutorialProjectSubmissions)
+            .set({
+              badgeAwarded: true,
+              updatedAt: new Date(),
+            })
+            .where(eq(tutorialProjectSubmissions.id, submissionId)),
+          STANDARD_QUERY_TIMEOUT,
+          'award-project-badge.mark-badge-awarded'
+        );
+      });
+
+      const projectService = new ProjectService();
+      const project = await projectRepository.getProject(projectId);
+      if (project !== undefined) {
+        const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
+        if (eligibility.eligible) {
+          const token = process.env.QSTASH_TOKEN;
+          if (typeof token === 'string' && token.trim().length > 0) {
+            const client = new Client({ token });
+            await client.publishJSON({
+              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+              retries: 3,
+              body: {
+                id: crypto.randomUUID(),
+                type: 'project.certificate_requested',
+                correlationId: submission.id,
+                source: 'quiz-platform',
+                occurredAt: new Date().toISOString(),
+                version: 1,
+                data: {
+                  userId,
+                  scope: project.scope,
+                  parentId: project.parentId,
+                  parentName: project.title,
+                },
               },
-            },
-          });
+            });
+          }
         }
       }
+
+      await redis.set(redisKey, 'processed', { ex: 86_400 });
+
+      logger.info({
+        event: 'project.badge_awarded',
+        submissionId,
+        userId,
+        projectId,
+        badgeId,
+      });
+
+      return new Response('ok', { status: 200 });
+    } catch (error) {
+      await Promise.resolve((redis as { del?: (key: string) => unknown }).del?.(redisKey)).catch(() => undefined);
+      throw error;
     }
-
-    logger.info({
-      event: 'project.badge_awarded',
-      submissionId,
-      userId,
-      projectId,
-      badgeId,
-    });
-
-    return new Response('ok', { status: 200 });
   },
   {
     schema: AwardBadgeSchema,
+    allowedTypes: ['project.approved'],
   }
 );
 

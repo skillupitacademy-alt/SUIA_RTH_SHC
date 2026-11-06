@@ -61,65 +61,72 @@ const handler = createQStashHandler(
       return new Response('Duplicate event ignored', { status: 200 });
     }
 
-    const projectRepository = new ProjectRepository();
-    const [submission, project] = await Promise.all([
-      withTimeout(
-        projectRepository.getSubmission(submissionId),
-        STANDARD_QUERY_TIMEOUT,
-        'review-project.getSubmission'
-      ),
-      withTimeout(
-        projectRepository.getProject(projectId),
-        STANDARD_QUERY_TIMEOUT,
-        'review-project.getProject'
-      ),
-    ]);
+    try {
+      const projectRepository = new ProjectRepository();
+      const [submission, project] = await Promise.all([
+        withTimeout(
+          projectRepository.getSubmission(submissionId),
+          STANDARD_QUERY_TIMEOUT,
+          'review-project.getSubmission'
+        ),
+        withTimeout(
+          projectRepository.getProject(projectId),
+          STANDARD_QUERY_TIMEOUT,
+          'review-project.getProject'
+        ),
+      ]);
 
-    if (submission === undefined || project === undefined) {
-      throw new Error('Submission or project not found');
-    }
+      if (submission === undefined || project === undefined) {
+        throw new Error('Submission or project not found');
+      }
 
-    const deliverable = submission.submissionContent as Record<string, unknown>;
-    const checklist = [
-      {
-        item: 'Deliverable URL present',
-        passed: Boolean(deliverable.deliverableUrl ?? deliverable.url ?? deliverable.repoUrl ?? deliverable.liveDemoUrl),
-      },
-      {
-        item: 'README included',
-        passed: typeof deliverable.readme === 'string' && deliverable.readme.trim().length > 0,
-      },
-      {
-        item: 'Requirements referenced',
-        passed: JSON.stringify(deliverable).toLowerCase().includes('require'),
-      },
-    ];
+      const deliverable = submission.submissionContent as Record<string, unknown>;
+      const checklist = [
+        {
+          item: 'Deliverable URL present',
+          passed: Boolean(deliverable.deliverableUrl ?? deliverable.url ?? deliverable.repoUrl ?? deliverable.liveDemoUrl),
+        },
+        {
+          item: 'README included',
+          passed: typeof deliverable.readme === 'string' && deliverable.readme.trim().length > 0,
+        },
+        {
+          item: 'Requirements referenced',
+          passed: JSON.stringify(deliverable).toLowerCase().includes('require'),
+        },
+      ];
 
-    const feedback = buildReviewText(checklist);
+      const feedback = buildReviewText(checklist);
 
-    await db.transaction(async (tx) => {
-      const txRepo = projectRepository.withDb(tx as never);
-      await txRepo.updateSubmissionStatus(submissionId, 'ai_reviewing');
-      await txRepo.updateSubmissionStatus(submissionId, 'needs_review', {
-        feedback,
-        checklist,
-        suggestedStatus: 'needs_review',
+      await db.transaction(async (tx) => {
+        const txRepo = projectRepository.withDb(tx as never);
+        await txRepo.updateSubmissionStatus(submissionId, 'ai_reviewing');
+        await txRepo.updateSubmissionStatus(submissionId, 'needs_review', {
+          feedback,
+          checklist,
+          suggestedStatus: 'needs_review',
+        });
       });
-    });
 
-    logger.info({
-      event: 'project.ai_review_complete',
-      submissionId,
-      userId,
-      projectId,
-    });
+      await redis.set(redisKey, 'processed', { ex: 86_400 });
 
-    return NextResponse.json({
-      data: {
+      logger.info({
+        event: 'project.ai_review_complete',
         submissionId,
-        suggestedStatus: 'needs_review',
-      },
-    });
+        userId,
+        projectId,
+      });
+
+      return NextResponse.json({
+        data: {
+          submissionId,
+          suggestedStatus: 'needs_review',
+        },
+      });
+    } catch (error) {
+      await Promise.resolve((redis as { del?: (key: string) => unknown }).del?.(redisKey)).catch(() => undefined);
+      throw error;
+    }
   },
   {
     schema: ReviewWorkerSchema,

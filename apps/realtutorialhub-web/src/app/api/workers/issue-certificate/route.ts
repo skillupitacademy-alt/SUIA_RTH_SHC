@@ -53,76 +53,85 @@ const handler = createQStashHandler(
       return new Response('Duplicate event ignored', { status: 200 });
     }
 
-    const existingCertificate = await withTimeout(
-      db
-        .select()
-        .from(certificates)
-        .where(and(eq(certificates.userId, userId), eq(certificates.scope, scope), eq(certificates.parentId, parentId), isNull(certificates.deletedAt))),
-      STANDARD_QUERY_TIMEOUT,
-      'issue-certificate.lookup'
-    );
-
-    if (existingCertificate.length > 0) {
-      return new Response('Duplicate event ignored', { status: 200 });
-    }
-
-    const created = await db.transaction(async (tx) => {
-      const [row] = await withTimeout(
-        tx
-          .insert(certificates)
-          .values({
-            userId,
-            scope,
-            parentId,
-            parentName,
-            verificationCode: crypto.randomUUID(),
-            pdfUrl: null,
-            issuedAt: new Date(),
-            expiresAt: null,
-            version: 1,
-            deletedAt: null,
-          })
-          .returning(),
+    try {
+      const existingCertificate = await withTimeout(
+        db
+          .select()
+          .from(certificates)
+          .where(and(eq(certificates.userId, userId), eq(certificates.scope, scope), eq(certificates.parentId, parentId), isNull(certificates.deletedAt))),
         STANDARD_QUERY_TIMEOUT,
-        'issue-certificate.insert'
+        'issue-certificate.lookup'
       );
 
-      return row;
-    });
-
-    if (created === undefined) {
-      throw new Error('Failed to issue certificate');
-    }
-
-    await publishEvent(
-      PlatformEventTypes.CERTIFICATE_ISSUED,
-      {
-        certificateId: created.id,
-        userId,
-        issuedAt: created.issuedAt.toISOString(),
-      },
-      {
-        destinationUrl: process.env.CERTIFICATE_ISSUED_EVENT_URL ?? 'https://placeholder.invalid/consumers/certificate-issued',
+      if (existingCertificate.length > 0) {
+        await redis.set(redisKey, 'processed', { ex: 86_400 });
+        return new Response('Duplicate event ignored', { status: 200 });
       }
-    );
 
-    logger.info({
-      event: 'certificate.issued',
-      userId,
-      scope,
-      parentId,
-      certificateId: created.id,
-    });
+      const created = await db.transaction(async (tx) => {
+        const [row] = await withTimeout(
+          tx
+            .insert(certificates)
+            .values({
+              userId,
+              scope,
+              parentId,
+              parentName,
+              verificationCode: crypto.randomUUID(),
+              pdfUrl: null,
+              issuedAt: new Date(),
+              expiresAt: null,
+              version: 1,
+              deletedAt: null,
+            })
+            .returning(),
+          STANDARD_QUERY_TIMEOUT,
+          'issue-certificate.insert'
+        );
 
-    return NextResponse.json({
-      data: {
+        return row;
+      });
+
+      if (created === undefined) {
+        throw new Error('Failed to issue certificate');
+      }
+
+      await publishEvent(
+        PlatformEventTypes.CERTIFICATE_ISSUED,
+        {
+          certificateId: created.id,
+          userId,
+          issuedAt: created.issuedAt.toISOString(),
+        },
+        {
+          destinationUrl: process.env.CERTIFICATE_ISSUED_EVENT_URL ?? 'https://placeholder.invalid/consumers/certificate-issued',
+        }
+      );
+
+      await redis.set(redisKey, 'processed', { ex: 86_400 });
+
+      logger.info({
+        event: 'certificate.issued',
+        userId,
+        scope,
+        parentId,
         certificateId: created.id,
-        verificationCode: created.verificationCode,
-      },
-    });
+      });
+
+      return NextResponse.json({
+        data: {
+          certificateId: created.id,
+          verificationCode: created.verificationCode,
+        },
+      });
+    } catch (error) {
+      await Promise.resolve((redis as { del?: (key: string) => unknown }).del?.(redisKey)).catch(() => undefined);
+      throw error;
+    }
   },
   {
     schema: IssueCertificateSchema,
+    allowedTypes: ['project.certificate_requested'],
   }
 );
 
