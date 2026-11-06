@@ -221,3 +221,6 @@ scripts/verify-*.mjs
 /.project-ai/linux-worker-smoke-*.json
 /.project-ai/linux-worker-smoke-*.png
 /services/project-ai/.build/
+
+# Generated AI context packets and checkpoints (local-only, uncommitted)
+/.context-packets/
