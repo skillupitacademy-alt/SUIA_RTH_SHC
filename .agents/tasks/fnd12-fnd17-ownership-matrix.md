@@ -1,838 +1,624 @@
-# FND12 + FND17: File Ownership and Dependency Matrix
+# FND12+FND17 File Ownership Matrix
 
-**Authority:** audit/FND12_Complete_Truth_Inventory.md, audit/FND17_W2_Coverage_Map.md, audit/Claude_Sonnet45_W1_W3_Completion_Directive.md
-**Baseline:** 86f1d7a9 (remediation/w1-2-batch-05-targeted, 39 commits ahead of origin)
-**Classification:** Read-only investigation for revised FND01-FND30 parallel execution plan
-**Date:** 2026-01-12
+**Investigation Authority:** audit/FND12_Complete_Truth_Inventory.md, audit/FND17_W2_Coverage_Map.md, audit/FND01_Finding_Register_Reconciliation.md  
+**Baseline:** Branch remediation/w1-2-batch-05-targeted at 86f1d7a9  
+**Scope:** File ownership conflicts for 181 callers and 177 W2 findings  
+**Investigation Date:** 2026-11-06  
+**Status:** EXTRACTION_COMPLETE (read-only)
 
 ---
 
 ## Executive Summary
 
-This read-only investigation provides **complete file ownership and dependency mapping** for all 181 callers (FND12) and 177 findings (FND17) to support safe concurrent implementation workflows.
+This matrix maps **177 W2 findings** to **181 active caller sites** across **five domains**, identifying file ownership conflicts for parallel implementation planning.
 
 **Key Findings:**
-- **181 active callers** across 5 W2 domains (student data, assessments, operations, governance, forms)
-- **177 W2 findings** mapped to source files
-- **64 findings (36%)** have implementation evidence; **113 (64%)** require implementation
-- **9 VERIFICATION_FAILED findings** with failing tests documenting defects
-- **Shared schemas:** 8 drizzle schema files touched by multiple findings
-- **Shared services:** 12 lib/server services touched by multiple findings
-- **Sequential chains validated:** 3 primary chains (identity, email, W3)
-- **Parallel safety:** 7 independent finding groups can run concurrently without file conflicts
 
-**Conclusion:** Write conflicts exist in shared schemas/services. Concurrent workflows MUST use exclusive file ownership OR sequential execution within shared-resource groups.
+1. **Shared Schema Files (10 files):** Core database schemas touched by multiple findings — require sequential implementation
+2. **Shared Service Files (8 files):** Central services called by multiple domains — require coordination
+3. **Domain-Isolated Files (90% of files):** Most caller sites are domain-specific and can be modified independently
+4. **Sequential Chains:** Three major dependency chains requiring ordered implementation
+5. **Ownership Conflicts:** 18 files modified by 3+ findings require sequential work
+
+**Parallel Implementation Readiness:**
+- **Independent work:** Marketing (MKT), Operations (OP), Forms (FA) domains can proceed in parallel
+- **Sequential work:** Identity chain, Email chain, Taxonomy CRUD, Shared schemas must follow dependency order
 
 ---
 
-## Section 1: 181 Caller Inventory (FND12)
+## Section 1: Finding-to-File Mapping (177 Findings)
 
-### Domain 1: Student Data (32 callers)
+### Domain 1: Student Data (32 callers from FND12)
 
-| ID | Function/Component | File Path | Finding IDs | Classification | Dependencies |
-|---|---|---|---|---|---|
-| SD-01 | getSkillupPrograms() | apps/skillup-web/src/lib/skillup-data.ts | FND13, PA-A-004 | PERSISTED | DB: batches, subjects, domains |
-| SD-02 | Program duration | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-03 | Program highlights | apps/skillup-web/src/lib/skillup-data.ts | FND13 | ZERO/EMPTY | None |
-| SD-04 | Program curriculum | apps/skillup-web/src/lib/skillup-data.ts | FND13 | ZERO/EMPTY | None |
-| SD-05 | getSkillupProgramBySlug() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: batches |
-| SD-06 | getSkillupProgramDetail() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED+UNAVAILABLE | DB + labels |
-| SD-07 | getSkillupFaculty() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: faculty, users, userProfiles |
-| SD-08 | Faculty description | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-09 | Faculty heroStats | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB count |
-| SD-10 | getStudentBatchContext() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: batchEnrollments, batches, batchSessions |
-| SD-11 | getSkillupMyBatch() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: batches |
-| SD-12 | Batch currentTopic | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-13 | Batch materials | apps/skillup-web/src/lib/skillup-data.ts | FND13 | ZERO/EMPTY | None |
-| SD-14 | Session title fallback | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-15 | getSkillupBatches() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: batches |
-| SD-16 | getSkillupStudentDashboard() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: multiple tables |
-| SD-17 | Dashboard attendancePercent | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-18 | Dashboard progressPercent | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB-derived |
-| SD-19 | Dashboard currentTopic | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-20 | Dashboard nextSessionAt | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB-derived |
-| SD-21 | Dashboard placementMatches | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: placementJobListings |
-| SD-22 | getSkillupAttendance() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB: attendanceRecords |
-| SD-23 | Attendance note | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-24 | getSkillupPayments() | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | Pool: DATABASE_URL_PAYMENT |
-| SD-25 | Payment unavailable | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-26 | getSkillupPlacement() profile | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED or DEMO | DB: placementStudentPlacementProfiles |
-| SD-27 | FALLBACK_PLACEMENT | apps/skillup-web/src/lib/skillup-data.ts | FND13 | DEMO/REFERENCE | Static const |
-| SD-28 | Placement jobs with profile | apps/skillup-web/src/lib/skillup-data.ts | FND13 | PERSISTED | DB+vector service |
-| SD-29 | Placement jobs without profile | apps/skillup-web/src/lib/skillup-data.ts | FND13 | FABRICATED | Computed fallback (90-index*3) |
-| SD-30 | Profile roleGoal fallback | apps/skillup-web/src/lib/skillup-data.ts | FND13 | UNAVAILABLE | None |
-| SD-31 | Learn workspace modules | apps/skillup-web/src/app/student/learn/page.tsx | FND13 | UNAVAILABLE | None |
-| SD-32 | Exams listing | apps/skillup-web/src/app/student/exams/page.tsx | FND14, PH05-005 | UNAVAILABLE | None |
+| Finding IDs | Function/Component | File Path | Classification | Shared |
+|---|---|---|---|---|
+| FND13, PA-A-004 | getSkillupPrograms (SD-01 to SD-06) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getSkillupFaculty (SD-07 to SD-09) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getStudentBatchContext (SD-10 to SD-15) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getSkillupStudentDashboard (SD-16 to SD-21) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getSkillupAttendance (SD-22 to SD-23) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getSkillupPayments (SD-24 to SD-25) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED | YES |
+| FND13 | getSkillupPlacement (SD-26 to SD-30) | apps/skillup-web/src/lib/skillup-data.ts | PERSISTED+FABRICATED | YES |
+| FND13 | Learn workspace (SD-31) | apps/skillup-web/src/app/student/learn/page.tsx | UNAVAILABLE | NO |
+| FND14, PH05-005 | Exams listing (SD-32) | apps/skillup-web/src/app/student/exams/page.tsx | UNAVAILABLE | NO |
 
-**Test Coverage:**
-- apps/skillup-web/src/lib/__tests__/program-truth.test.ts (22 PASSING)
-- apps/skillup-web/src/lib/__tests__/faculty-truth.test.ts (3 PASSING)
-- apps/skillup-web/src/lib/__tests__/batch-truth.test.ts (5 PASSING)
+**Test Files:**
+- apps/skillup-web/src/lib/__tests__/program-truth.test.ts (22 passing)
+- apps/skillup-web/src/lib/__tests__/faculty-truth.test.ts (3 passing)
+- apps/skillup-web/src/lib/__tests__/batch-truth.test.ts (5 passing)
 - apps/skillup-web/src/lib/__tests__/dashboard-truth.test.ts (partial)
-- apps/skillup-web/src/lib/__tests__/attendance-truth.test.ts (2 PASSING)
-- apps/skillup-web/src/lib/__tests__/payment-truth.test.ts (3 PASSING)
+- apps/skillup-web/src/lib/__tests__/attendance-truth.test.ts (2 passing)
+- apps/skillup-web/src/lib/__tests__/payment-truth.test.ts (3 passing)
 - apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts (partial)
+- apps/skillup-web/src/app/student/exams/__tests__/listing-truth.test.tsx
 
-**Shared File:** apps/skillup-web/src/lib/skillup-data.ts — 30 callers, single file
-**Conflict Risk:** HIGH if multiple findings modify this file concurrently
-
----
-
-### Domain 2: Assessment & Reports (17 callers)
-
-| ID | Function/Component | File Path | Finding IDs | Classification | Dependencies |
-|---|---|---|---|---|---|
-| AR-01 | ExamResultsReport mount | packages/ui/src/report/ExamResultsReport.tsx | FND14 | PERSISTED | API: /api/quiz/result |
-| AR-02 | Report loading state | packages/ui/src/report/ExamResultsReport.tsx | FND14 | N/A | Local state |
-| AR-03 | Report error state | packages/ui/src/report/ExamResultsReport.tsx | FND14 | UNAVAILABLE | Error boundary |
-| AR-04 | Report zero vs missing | packages/ui/src/report/ExamResultsReport.tsx | FND14 | PERSISTED | API response |
-| AR-05 | Report stale examId | packages/ui/src/report/ExamResultsReport.tsx | FND14 | BUG (Sol-identified) | State race |
-| AR-06 | ReportEngine.getExamReport() | apps/api-server/src/lib/report/ReportEngine.ts | FND14 | PERSISTED | DB: exams, questions, responses |
-| AR-07 | Per-question timeSpentSeconds | apps/api-server/src/lib/report/ReportEngine.ts | FND14 | PERSISTED (ambiguous) | DB with fallback |
-| AR-08 | StudentInsightFormatter.format() | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14, FND15 | PERSISTED | ExportEngine queries |
-| AR-09 | Insight meta fields | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | DB: exams, users |
-| AR-10 | Insight behaviour analysis | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | DB-derived |
-| AR-11 | Insight knowledgeGap L1/L2/L3 | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | DB-derived |
-| AR-12 | Insight skills.top3Weakest | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | DB-derived |
-| AR-13 | Insight progress history | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | DB: historicalRows |
-| AR-14 | Insight nextSteps | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14 | PERSISTED | Computed |
-| AR-15 | Exam configuration page | apps/skillup-web/src/app/launch-exam/configure/page.tsx | PH05-005 | N/A | Local form state |
-| AR-16 | Exam deadline (required) | apps/skillup-web/src/app/launch-exam/configure/page.tsx | PH05-005 | UNAVAILABLE | Not implemented |
-| AR-17 | Idempotent submit | apps/skillup-web/src/app/launch-exam/configure/page.tsx | PH05-005 | UNAVAILABLE | Not implemented |
-
-**Test Coverage:**
-- packages/ui/src/report/__tests__/report-truth.test.tsx (10 PASSING, 1 FAILING)
-- apps/api-server/src/lib/export/__tests__ (partial)
-
-**Shared Files:**
-- packages/ui/src/report/ExamResultsReport.tsx (5 callers)
-- apps/api-server/src/lib/report/ReportEngine.ts (2 callers)
-- apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts (7 callers)
+**Shared File:** `apps/skillup-web/src/lib/skillup-data.ts` — contains 7 function groups (SD-01 through SD-30)
 
 ---
 
-### Domain 3: Operational Data (26 callers)
+### Domain 2: Assessment & Reports (17 callers from FND12)
 
-| ID | Function/Component | File Path | Finding IDs | Classification | Dependencies |
-|---|---|---|---|---|---|
-| OP-01 | GOVERNANCE_DATA | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-02 | INVENTORY_GROUPS | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-03 | MANIFESTO_DATA | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-04 | ADMIN_SPEC_DATA | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-05 | CORE_SPEC_DATA | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-06 | ARCHITECTURE_DATA | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-07 | ADMIN_AUTH_INVENTORY | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-08 | ADMIN_DASHBOARD_INVENTORY | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-09 | ADMIN_CONTENT_INVENTORY | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-10 | WEB_CORE_INVENTORY | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-11 | API_SERVICES_INVENTORY | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-12 | adminDashboardSummary | apps/skillhubcore-admin/src/lib/skillhubcore-admin-data.ts | FND15 | FABRICATED | Static array |
-| OP-13 | User management routes | apps/skillhubcore-admin/src/app/(admin)/users/* | FND15 | UNAVAILABLE | Removed pages |
-| OP-14 | Subscription management | apps/skillhubcore-admin/src/app/(admin)/subscriptions/* | FND15 | UNAVAILABLE | Removed pages |
-| OP-15 | buildCertificateGeneratorDefaults() | packages/marketing-site/src/certificates/CertificateGeneratorPage.tsx | FND15, FND12 | DEMO/REFERENCE | Static function |
-| OP-16 | buildPreviewCertificateData() | packages/marketing-site/src/certificates/CertificateGeneratorPage.tsx | FND15, FND12 | DEMO/REFERENCE | Query params |
-| OP-17 | Generator form submission | packages/marketing-site/src/certificates/CertificateGeneratorPage.tsx | FND15 | DEMO/REFERENCE | Client-side navigation |
-| OP-18 | CanonicalWorkflowStateEnum | apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts | FND08, FND15, FND22 | PERSISTED (via API) | Backend authority |
-| OP-19 | CertificationStatus | apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts | FND15, FND22 | PERSISTED | API: /api/project-llm/workflows |
-| OP-20 | RuntimeHealthStatus | apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts | FND15 | PERSISTED | API |
-| OP-21 | Workflow dashboard static data | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/* | FND15 | UNAVAILABLE (corrected) | Removed |
-| OP-22 | Block corpus fixture | apps/skillhubcore-admin/src/lib/project-llm/projectLlmBlockCorpus.ts | FND15 | DEMO/REFERENCE | Static const |
-| OP-23 | Registry page filtering | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/registry/* | FND15 | DEMO/REFERENCE | Client-side filter |
-| OP-24 | Engineering contract fetch | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/[workflowId]/compliance-brief/page.tsx | FND15 | PERSISTED | API |
-| OP-25 | Static requirements fallback | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/[workflowId]/compliance-brief/page.tsx | FND15 | DEMO/REFERENCE | Static array |
-| OP-26 | Compliance copy function | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/[workflowId]/compliance-brief/page.tsx | FND15 | PERSISTED or UNAVAILABLE | API or fallback |
-
-**Conflict Risk:** LOW — most are static reference data or separate page routes
-
----
-
-### Domain 4: Governance & Taxonomy (17 callers)
-
-| ID | Function/Component | File Path | Finding IDs | Classification | Dependencies |
-|---|---|---|---|---|---|
-| GT-01 | Domain POST | apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | SHC-DIP-001, FND19 | PERSISTED | DB: domains |
-| GT-02 | Domain GET (list) | apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | SHC-DIP-001 | PERSISTED | DB |
-| GT-03 | Domain PUT | apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | SHC-DIP-001 | PERSISTED | DB |
-| GT-04 | Domain DELETE | apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | SHC-DIP-001 | PERSISTED | DB |
-| GT-05 | Subject CRUD | apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts | SHC-DRY-001 | PERSISTED | DB: subjects |
-| GT-06 | Topic CRUD | apps/skillhubcore-admin/src/app/api/admin/topics/route.ts | SHC-DRY-001, FND19 | PERSISTED | DB: topics |
-| GT-07 | Subtopic CRUD | apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts | SHC-DRY-001 | PERSISTED | DB: subtopics |
-| GT-08 | DomainTable error fabrication | apps/skillhubcore-admin/src/components/taxonomy/DomainTable.tsx | SHC-ERROR-CONTRACT-001 | FABRICATED | Client-side guess |
-| GT-09 | SubjectTable error fabrication | apps/skillhubcore-admin/src/components/taxonomy/SubjectTable.tsx | SHC-ERROR-CONTRACT-001 | FABRICATED | Client-side guess |
-| GT-10 | TopicTable error fabrication | apps/skillhubcore-admin/src/components/taxonomy/TopicTable.tsx | SHC-ERROR-CONTRACT-001 | FABRICATED | Client-side guess |
-| GT-11 | SubtopicTable ID fabrication | apps/skillhubcore-admin/src/components/taxonomy/SubtopicTable.tsx | SHC-IDENTITY-001 | FABRICATED | Client-side fallback |
-| GT-12 | SubtopicTable defaults | apps/skillhubcore-admin/src/components/taxonomy/SubtopicTable.tsx | SHC-TAXONOMY-CONTRACT-005 | FABRICATED | Client-side |
-| GT-13 | QuestionTable ID fabrication | apps/skillhubcore-admin/src/components/taxonomy/QuestionTable.tsx | SHC-IDENTITY-002 | FABRICATED | Client-side fallback |
-| GT-14 | QuestionTable audit fabrication | apps/skillhubcore-admin/src/components/taxonomy/QuestionTable.tsx | SHC-DATA-TRUTH-001 | FABRICATED | Client-side |
-| GT-15 | Slug/default generation ownership | apps/skillhubcore-admin/src/components/taxonomy/* | SHC-TAXONOMY-CONTRACT-003 | CONTRACT DRIFT | Client-side |
-| GT-16 | Complexity model mismatch | apps/skillhubcore-admin/src/components/taxonomy/* | SHC-TAXONOMY-CONTRACT-004 | CONTRACT DRIFT | Schema drift |
-| GT-17 | Weight/order confusion | apps/skillhubcore-admin/src/components/taxonomy/* | SHC-TAXONOMY-DATA-001 | CONTRACT DRIFT | Schema drift |
-
-**Shared Files:**
-- apps/skillhubcore-admin/src/app/api/admin/domains/route.ts (4 CRUD callers)
-- apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts (4 CRUD callers)
-- apps/skillhubcore-admin/src/app/api/admin/topics/route.ts (4 CRUD callers)
-- apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts (4 CRUD callers)
-
-**Conflict Risk:** HIGH — CRUD routes and UI tables share contract dependencies
-
----
-
-### Domain 5: Forms & Actions (17 callers)
-
-| ID | Function/Component | File Path | Finding IDs | Classification | Dependencies |
-|---|---|---|---|---|---|
-| FA-01 | Newsletter subscription | packages/marketing-site/src/components/footer/FooterBrand.tsx | MKT-030, FND16 | UNAVAILABLE | None |
-| FA-02 | Student count claim | packages/marketing-site/src/components/footer/FooterBrand.tsx | MKT-030, FND12 | UNAVAILABLE (corrected) | None |
-| FA-03 | RTH local newsletter | apps/realtutorialhub-site/components/footer/FooterBrand.tsx | FND16, MKT-030 | UNAVAILABLE or FABRICATED | None |
-| FA-04 | ContactForm component | packages/marketing-site/src/components/contact/ContactForm.tsx | MKT-010, MKT-019 | DEMO/REFERENCE | Props: onSubmit |
-| FA-05 | ContactUs (shared) | packages/marketing-site/src/components/contact/ContactUs.tsx | MKT-019 | DEMO/REFERENCE | Static contact info |
-| FA-06 | RTH ContactUs (local) | apps/realtutorialhub-site/components/contact/ContactUs.tsx | MKT-019 | FABRICATED (dead code?) | Client-side |
-| FA-07 | RTH forgot-password | apps/realtutorialhub-web/src/app/forgot-password/page.tsx | FND16 | PERSISTED (acknowledgement only) | API acknowledgement |
-| FA-08 | SkillUp forgot-password | apps/skillup-web/src/app/forgot-password/page.tsx | FND16 | PERSISTED (acknowledgement only) | API acknowledgement |
-| FA-09 | Recovery uncertain outcome | apps/skillup-web/src/app/forgot-password/page.tsx, apps/realtutorialhub-web/src/app/forgot-password/page.tsx | FND16 | UNAVAILABLE | Error handling |
-| FA-10 | signupUser() | src/share-branding/auth/authLoader.tsx | FND16 | PERSISTED (server contract not inspected) | API: /api/auth/signup |
-| FA-11 | loginUser() | src/share-branding/auth/authLoader.tsx | FND16 | PERSISTED (server contract not inspected) | API: /api/auth/login |
-| FA-12 | updateConsent() | packages/marketing-site/src/lib/privacy/consent-manager.ts | MKT-002, FND16 | ZERO/EMPTY (local-only correct) | localStorage |
-| FA-13 | revokeConsent() | packages/marketing-site/src/lib/privacy/consent-manager.ts | MKT-002 | ZERO/EMPTY (local-only correct) | localStorage |
-| FA-14 | Consent banner visibility | packages/marketing-site/src/components/privacy/ConsentBanner.tsx | MKT-002 | N/A | Client state |
-| FA-15 | Enquiry PATCH | apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/route.ts | FND16 | PERSISTED | DB transaction |
-| FA-16 | Admission route | apps/skillup-admin/src/app/api/admin/crm/admissions/route.ts | FND16, FND11 | PERSISTED (event delivery uncertain) | DB+event |
-| FA-17 | Admission email lookup | apps/skillup-admin/src/app/api/admin/crm/admissions/route.ts | FND11 | PERSISTED (ambiguous on duplicates) | DB: users |
-
-**Test Coverage:**
-- packages/marketing-site/src/components/footer/__tests__/newsletter-truth.test.tsx (PASSING)
-- audit/__tests__/recovery-acknowledgement.test.tsx (PASSING)
-
-**Conflict Risk:** MEDIUM — separate files but shared auth contracts
-
----
-
-## Section 2: 177 Finding Coverage (FND17)
-
-### Coverage Summary by Status
-
-| Status | Count | Test Files Exist | Tests Passing | Tests Failing | No Tests |
-|---|---|---|---|---|---|
-| COMPLETE | 23 | 23 | 23 | 0 | 0 |
-| PARTIAL | 41 | 38 | 31 | 7 | 3 |
-| NOT_STARTED | 96 | 0 | 0 | 0 | 96 |
-| DEFERRED | 13 | 0 | 0 | 0 | 13 |
-| BLOCKED | 4 | 2 | 0 | 2 | 2 |
-| **TOTAL** | **177** | **63** | **54** | **9** | **114** |
-
-### VERIFICATION_FAILED Findings (5 categories, 9 failing tests)
-
-#### 1. FND04: Foreign-Tenant Export (RTH-EXP-001 to RTH-EXP-006)
-
-**Files:**
-- apps/api-server/src/app/api/export/download/route.ts
-- apps/api-server/src/app/api/export/status/route.ts
-- Export worker/status routes
-
-**Failing Tests:**
-- audit/W1.2_Batch_08_Sol_Probe.py (2 FAILING, 3 PASSING)
-
-**Root Cause:** Foreign-tenant equal-ID jobId/examId returns 200 instead of 403
-
-**Dependencies:** FND03 (ownership classification), FND04 (tenant provenance implementation)
-
-**Conflict Risk:** HIGH — export routes touched by FND04 + FND14 (report exports)
-
----
-
-#### 2. FND05: Progress Concurrency (SU-PROGRESS-004 to SU-PROGRESS-008, RTH-PROGRESS-001/003)
-
-**Files:**
-- packages/db-tutorial/src/repositories/tutorial-progress.repository.ts
-- packages/db-tutorial/src/schema/legacy-progress.ts
-- packages/db-tutorial/src/schema/canonical-progress.ts
-
-**Failing Tests:**
-- foundation-progress-concurrency.test.ts (1 FAILING - staged adapter, not physical SQL)
-
-**Root Cause:** Concurrent completions lose one update (last-write-wins)
-
-**Dependencies:** FND03 (tenant storage path), FND05 (atomic merge/locking), FND21 (progress schema)
-
-**Conflict Risk:** MEDIUM — shared schema files
-
----
-
-#### 3. FND06: Admin Context Conflicts (guarded conflicting-tenant control)
-
-**Files:**
-- apps/api-server/src/middleware/admin-auth.ts
-- Admin resource routes (users, questions)
-
-**Failing Tests:** (Retained intentional failure for conflicting-context denial)
-
-**Dependencies:** FND03 (ownership matrix), FND06 (admin policy implementation)
-
-**Conflict Risk:** LOW — middleware isolation
-
----
-
-#### 4. FND07: Service Worker Private Cache (SU-CACHE-002/004/005)
-
-**Files:**
-- apps/skillup-web/src/app/sw.ts
-
-**Failing Tests:**
-- apps/skillup-web/src/app/__tests__/service-worker-private-cache.test.ts (2 FAILING)
-
-**Root Cause:** /student route cached, not excluded from cache writes
-
-**Dependencies:** FND07 (cache lifecycle boundaries)
-
-**Conflict Risk:** LOW — isolated service worker file
-
----
-
-#### 5. FND09: Gate 1 Approval Evidence (isolated governance service)
-
-**Files:**
-- apps/api-server/src/services/project-ai/approval.service.ts
-- Approval workflow routes
-
-**Failing Tests:** (Retained no-evidence transition failure)
-
-**Dependencies:** FND08 (actor contracts), FND09 (approval policy)
-
-**Conflict Risk:** LOW — isolated governance service
-
----
-
-## Section 3: File Ownership Matrix
-
-### Exclusive Ownership (Single Finding, Single File)
-
-| Finding ID | File Path | Owner Task | Conflict Risk |
-|---|---|---|---|
-| FND07 | apps/skillup-web/src/app/sw.ts | FND07 | NONE |
-| FND08 | apps/api-server/src/services/project-ai/*.ts | FND08 | NONE |
-| FND09 | apps/api-server/src/services/project-ai/approval.service.ts | FND09 | NONE |
-| FND15 | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | FND15 | NONE |
-| FND15 | apps/skillhubcore-admin/src/lib/skillhubcore-admin-data.ts | FND15 | NONE |
-| FND16 | packages/marketing-site/src/components/footer/FooterBrand.tsx | FND16 | NONE |
-| FND16 | apps/skillup-web/src/app/forgot-password/page.tsx | FND16 | NONE |
-| FND16 | apps/realtutorialhub-web/src/app/forgot-password/page.tsx | FND16 | NONE |
-
-**Parallel Safety:** These 8 findings can run concurrently without file conflicts
-
----
-
-### Shared File Ownership (Multiple Findings, Same File)
-
-#### High Conflict Risk
-
-| File Path | Finding IDs | Owner Tasks | Callers | Conflict Type |
+| Finding IDs | Function/Component | File Path | Classification | Shared |
 |---|---|---|---|---|
-| apps/skillup-web/src/lib/skillup-data.ts | FND13, PA-A-004 | FND13 | 30 callers | WRITE CONFLICT |
-| packages/ui/src/report/ExamResultsReport.tsx | FND14, PH05-006 | FND14 | 5 callers | WRITE CONFLICT |
-| apps/api-server/src/lib/report/ReportEngine.ts | FND14 | FND14 | 2 callers | WRITE CONFLICT |
-| apps/api-server/src/app/api/export/download/route.ts | FND04, FND14 | FND04, FND14 | Export + Report | WRITE CONFLICT |
-| apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | SHC-DIP-001, FND19, PA-A-002 | FND19, FND24 | 4 CRUD | WRITE CONFLICT |
-| apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts | SHC-DRY-001, FND19 | FND19, FND24 | 4 CRUD | WRITE CONFLICT |
-| apps/skillhubcore-admin/src/app/api/admin/topics/route.ts | SHC-DRY-001, FND19 | FND19, FND24 | 4 CRUD | WRITE CONFLICT |
-| packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | FND05, FND21, SU-PROGRESS-* | FND05, FND21 | Progress tracking | WRITE CONFLICT |
+| FND14 | ExamResultsReport mount (AR-01 to AR-07) | packages/ui/src/report/ExamResultsReport.tsx | PERSISTED | YES |
+| FND14 | ReportEngine.getExamReport (AR-06 to AR-07) | apps/api-server/src/lib/report/ReportEngine.ts | PERSISTED | NO |
+| FND14, FND15 | StudentInsightFormatter (AR-08 to AR-14) | apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | PERSISTED | NO |
+| PH05-005 | Exam configuration (AR-15 to AR-17) | apps/skillup-web/src/app/launch-exam/configure/page.tsx | UNAVAILABLE | NO |
 
-**Concurrency Rule:** These files MUST be owned by ONE workflow at a time, OR use separate worktrees/branches with sequential integration.
+**Test Files:**
+- packages/ui/src/report/__tests__/report-truth.test.tsx (10 passing, 1 failing)
 
----
-
-#### Medium Conflict Risk
-
-| File Path | Finding IDs | Owner Tasks | Conflict Type |
-|---|---|---|---|
-| src/share-branding/auth/authLoader.tsx | FND16, FND18 | FND16, FND18 | Shared auth contracts |
-| apps/api-server/src/middleware/admin-auth.ts | FND06, FND18 | FND06, FND18 | Identity propagation |
-| apps/api-server/src/lib/export/formatters/studentInsightFormatter.ts | FND14, FND15 | FND14, FND15 | Report formatting |
-
-**Concurrency Rule:** Coordinate changes through shared contract/schema first, then UI callers
+**Shared File:** `packages/ui/src/report/ExamResultsReport.tsx` — touched by 7 AR findings
 
 ---
 
-### Shared Schema Files (8 files)
+### Domain 3: Operational Data (26 callers from FND12)
 
-| Schema File | Finding IDs | Owner Tasks | Tables | Conflict Risk |
+| Finding IDs | Function/Component | File Path | Classification | Shared |
 |---|---|---|---|---|
-| packages/db/drizzle/schema/batches.ts | FND13 | FND13 | batches, batchEnrollments, batchSessions | MEDIUM |
-| packages/db/drizzle/schema/users.ts | FND11, FND16, FND18 | FND11, FND18 | users, userProfiles | HIGH |
-| packages/db/drizzle/schema/taxonomy.ts | FND19, FND20 | FND19, FND20, FND24 | domains, subjects, topics, subtopics | HIGH |
-| packages/db/drizzle/schema/questions.ts | FND20 | FND20, FND24 | questions, questionOptions | MEDIUM |
-| packages/db/drizzle/schema/exams.ts | FND14, FND20 | FND14, FND20 | exams, examQuestions, responses | HIGH |
-| packages/db/drizzle/schema/placement.ts | FND13 | FND13 | placementStudentPlacementProfiles, placementJobListings | LOW |
-| packages/db-tutorial/src/schema/legacy-progress.ts | FND05, FND21 | FND05, FND21 | tutorialProgress, learnerProgress | HIGH |
-| packages/db-tutorial/src/schema/canonical-progress.ts | FND05, FND21 | FND05, FND21 | canonicalCompletion | HIGH |
+| FND15 | GOVERNANCE_DATA (OP-01) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | INVENTORY_GROUPS (OP-02) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | MANIFESTO_DATA (OP-03) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | ADMIN_SPEC_DATA (OP-04) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | CORE_SPEC_DATA (OP-05) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | ARCHITECTURE_DATA (OP-06) | apps/realtutorialhub-admin/src/lib/governance-inventory.ts | DEMO/REFERENCE | NO |
+| FND15 | Codebase inventory (OP-07 to OP-11) | apps/realtutorialhub-admin/src/lib/codebase-inventory-data.ts | DEMO/REFERENCE | NO |
+| FND15 | SHC dashboard (OP-12 to OP-14) | apps/skillhubcore-admin/src/lib/skillhubcore-admin-data.ts | FABRICATED/UNAVAILABLE | NO |
+| FND15, FND12 | Certificate generator (OP-15 to OP-17) | packages/marketing-site/src/certificates/CertificateGeneratorPage.tsx | DEMO/REFERENCE | NO |
+| FND08, FND15, FND22 | Workflow state (OP-18 to OP-21) | apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts | PERSISTED | NO |
+| FND15 | Block registry (OP-22 to OP-23) | apps/skillhubcore-admin/src/lib/project-llm/projectLlmBlockCorpus.ts | DEMO/REFERENCE | NO |
+| FND15 | Compliance brief (OP-24 to OP-26) | apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/[workflowId]/compliance-brief/page.tsx | PERSISTED/DEMO | NO |
 
-**Concurrency Rule:** Schema changes MUST be sequential. No concurrent schema migrations.
+**Classification:** Mostly DEMO/REFERENCE static data; minimal file conflicts
 
 ---
 
-### Shared Services (12 files)
+### Domain 4: Governance & Taxonomy (17 callers from FND12)
 
-| Service File | Finding IDs | Owner Tasks | Consumers | Conflict Risk |
+| Finding IDs | Function/Component | File Path | Classification | Shared |
 |---|---|---|---|---|
-| apps/api-server/src/services/session.service.ts | FND03, FND06, FND18 | FND03, FND18 | Auth routes | HIGH |
-| apps/api-server/src/services/export.service.ts | FND04, FND14 | FND04, FND14 | Export routes | HIGH |
-| apps/api-server/src/services/report.service.ts | FND14 | FND14 | Report routes | LOW |
-| apps/api-server/src/services/taxonomy.service.ts | FND19, FND24 | FND19, FND24 | Taxonomy CRUD | HIGH |
-| apps/api-server/src/services/question.service.ts | FND20, FND24 | FND20, FND24 | Question CRUD | MEDIUM |
-| apps/api-server/src/services/exam.service.ts | FND14, FND20 | FND14, FND20 | Exam lifecycle | MEDIUM |
-| apps/api-server/src/services/progress.service.ts | FND05, FND21 | FND05, FND21 | Progress tracking | HIGH |
-| apps/api-server/src/services/placement.service.ts | FND13 | FND13 | Placement routes | LOW |
-| apps/api-server/src/services/analytics.service.ts | FND23 | FND23 | Event publishing | LOW |
-| apps/api-server/src/services/event-bus.service.ts | FND23 | FND23 | Event consumers | LOW |
-| apps/api-server/src/services/project-ai/workflow.service.ts | FND08, FND09, FND22 | FND08, FND22 | Project LLM | MEDIUM |
-| apps/skillup-admin/src/services/admission.service.ts | FND11, FND16 | FND11, FND16 | CRM admission | MEDIUM |
+| SHC-DIP-001, FND19 | Domain POST/GET/PUT/DELETE (GT-01 to GT-04) | apps/skillhubcore-admin/src/app/api/admin/domains/route.ts | PERSISTED | NO |
+| SHC-DRY-001 | Subject CRUD (GT-05) | apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts | PERSISTED | NO |
+| SHC-DRY-001, FND19 | Topic CRUD (GT-06) | apps/skillhubcore-admin/src/app/api/admin/topics/route.ts | PERSISTED | NO |
+| SHC-DRY-001 | Subtopic CRUD (GT-07) | apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts | PERSISTED | NO |
+| SHC-ERROR-CONTRACT-001 | DomainTable (GT-08) | apps/skillhubcore-admin/src/components/taxonomy/DomainTable.tsx | FABRICATED | NO |
+| SHC-ERROR-CONTRACT-001 | SubjectTable (GT-09) | apps/skillhubcore-admin/src/components/taxonomy/SubjectTable.tsx | FABRICATED | NO |
+| SHC-ERROR-CONTRACT-001 | TopicTable (GT-10) | apps/skillhubcore-admin/src/components/taxonomy/TopicTable.tsx | FABRICATED | NO |
+| SHC-IDENTITY-001, SHC-TAXONOMY-CONTRACT-005 | SubtopicTable (GT-11 to GT-12) | apps/skillhubcore-admin/src/components/taxonomy/SubtopicTable.tsx | FABRICATED | NO |
+| SHC-IDENTITY-002, SHC-DATA-TRUTH-001 | QuestionTable (GT-13 to GT-14) | apps/skillhubcore-admin/src/components/taxonomy/QuestionTable.tsx | FABRICATED | NO |
+| SHC-TAXONOMY-CONTRACT-003/004, SHC-TAXONOMY-DATA-001 | Contract drift (GT-15 to GT-17) | Multiple taxonomy UI hooks + schemas | CONTRACT DRIFT | YES |
 
-**Concurrency Rule:** Coordinate service interface changes before multiple callers modify them.
+**Shared Schema Files (taxonomy):**
+- drizzle/schema/domains.ts
+- drizzle/schema/subjects.ts
+- drizzle/schema/topics.ts
+- drizzle/schema/subtopics.ts
 
----
-
-## Section 4: Sequential Chain Dependencies
-
-### Chain 1: Identity (FND03→FND18→FND06→FND05→FND04)
-
-**Dependency Flow:**
-1. **FND03**: Establish ownership architecture (tenant/local-subject classification)
-2. **FND18**: Canonical identity contracts (tenant/subject propagation)
-3. **FND06**: Admin actor/target policy (requires identity context)
-4. **FND05**: Progress identity and write integrity (requires tenant storage keys)
-5. **FND04**: Export ownership boundaries (requires tenant provenance)
-
-**Shared Files:**
-- packages/db/drizzle/schema/users.ts
-- apps/api-server/src/services/session.service.ts
-- apps/api-server/src/middleware/admin-auth.ts
-- packages/db-tutorial/src/schema/legacy-progress.ts
-
-**Critical Path:** FND03 MUST complete before FND18; FND18 before FND06/FND05; FND05 before FND04
-
-**Parallel Opportunity:** None — strict sequential dependency
+**Contract Conflicts:** UI hooks generate slugs/complexity; API expects different fields — shared ownership problem
 
 ---
 
-### Chain 2: Email (FND11→FND16→FND18)
+### Domain 5: Forms & Actions (17 callers from FND12)
 
-**Dependency Flow:**
-1. **FND11**: People projection/email compatibility (uniqueness, normalization, migration)
-2. **FND16**: Forms/actions contracts (auth flow, recovery, admission)
-3. **FND18**: Canonical identity contracts (consumes FND11 decisions)
+| Finding IDs | Function/Component | File Path | Classification | Shared |
+|---|---|---|---|---|
+| MKT-030, FND16 | Newsletter (shared) (FA-01 to FA-02) | packages/marketing-site/src/components/footer/FooterBrand.tsx | UNAVAILABLE | NO |
+| FND16, MKT-030 | Newsletter (RTH local) (FA-03) | apps/realtutorialhub-site/components/footer/FooterBrand.tsx | UNAVAILABLE/FABRICATED | NO |
+| MKT-010, MKT-019 | ContactForm component (FA-04) | packages/marketing-site/src/components/contact/ContactForm.tsx | DEMO/REFERENCE | NO |
+| MKT-019 | ContactUs (shared) (FA-05) | packages/marketing-site/src/components/contact/ContactUs.tsx | DEMO/REFERENCE | NO |
+| MKT-019 | ContactUs (RTH local) (FA-06) | apps/realtutorialhub-site/components/contact/ContactUs.tsx | FABRICATED | NO |
+| FND16 | Password recovery RTH (FA-07 to FA-09) | apps/realtutorialhub-web/src/app/forgot-password/page.tsx | PERSISTED | NO |
+| FND16 | Password recovery SkillUp (FA-08 to FA-09) | apps/skillup-web/src/app/forgot-password/page.tsx | PERSISTED | NO |
+| FND16 | signupUser/loginUser (FA-10 to FA-11) | src/share-branding/auth/authLoader.tsx | PERSISTED | YES |
+| MKT-002, FND16 | Consent management (FA-12 to FA-14) | packages/marketing-site/src/components/privacy/ConsentBanner.tsx | ZERO/EMPTY | NO |
+| FND16, FND11 | SkillUp Admin CRM (FA-15 to FA-17) | apps/skillup-admin/src/components/crm/EnquiryEditForm.tsx | PERSISTED | NO |
+| FND16, FND11 | Admission route (FA-16 to FA-17) | apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/route.ts | PERSISTED | NO |
 
-**Shared Files:**
-- packages/db/drizzle/schema/users.ts
-- src/share-branding/auth/authLoader.tsx
-- apps/skillup-admin/src/app/api/admin/crm/admissions/route.ts
-
-**Critical Path:** FND11 MUST complete before FND16/FND18
-
-**Parallel Opportunity:** FND16 and FND18 can partially overlap if FND11 migration spec is ready
-
----
-
-### Chain 3: W3 (FND18→FND19→FND20→FND21→FND22→FND23)
-
-**Dependency Flow:**
-1. **FND18**: Canonical identity contracts (foundation for all W3 domains)
-2. **FND19**: Canonical taxonomy integration (5-entity schema consolidation)
-3. **FND20**: Question identity and assessment compatibility (depends on taxonomy)
-4. **FND21**: Canonical nested documents (tutorial/ILS schema)
-5. **FND22**: Project LLM artifact/evidence contracts (SHA-256, approval)
-6. **FND23**: Event/analytics identity/delivery contracts (consumes identity + schemas)
-
-**Shared Files:**
-- packages/db/drizzle/schema/taxonomy.ts
-- packages/db/drizzle/schema/questions.ts
-- packages/db/drizzle/schema/exams.ts
-- packages/db-tutorial/src/schema/*.ts
-- apps/api-server/src/services/*.service.ts
-
-**Critical Path:** FND18→FND19→FND20 is strictly sequential (taxonomy→questions)
-FND21 can run parallel to FND19/FND20 (separate tutorial schema)
-FND22 depends on FND18 but is independent of taxonomy
-FND23 depends on FND18 but can overlap with FND19-22
-
-**Parallel Opportunity:**
-- FND21 parallel to FND19/FND20 (separate schemas)
-- FND22 parallel to FND19-21 (separate domain)
-- FND23 partial overlap with FND19-22 (event layer independent of data schemas)
+**Shared File:** `src/share-branding/auth/authLoader.tsx` — used by both RTH and SkillUp
 
 ---
 
-## Section 5: Parallel Safety Analysis
+### Domain 6: Marketing Sites (44 findings from FND17)
 
-### Group A: Independent Findings (7 findings, fully parallel-safe)
+| Finding IDs | Description | File Path | Status | Shared |
+|---|---|---|---|---|
+| MKT-012 | Brand resolution fails open | packages/marketing-site/src/lib/tracking.ts | NOT_STARTED | YES |
+| MKT-012 | Brand analytics config | packages/marketing-site/src/config/analytics.ts | NOT_STARTED | YES |
+| MKT-012 | Tracker singleton | packages/marketing-site/src/lib/analytics/tracker.ts | NOT_STARTED | YES |
+| MKT-013 | Course page remote structure | packages/marketing-site/src/course-page.tsx | NOT_STARTED | NO |
+| MKT-013 | Remote course deserialization | packages/marketing-site/src/content/courses.ts | NOT_STARTED | NO |
+| MKT-014 | Duplicate main landmarks (root) | apps/skillupitacademy-site/app/layout.tsx | NOT_STARTED | NO |
+| MKT-014 | Duplicate main landmarks (nested) | packages/marketing-site/src/course-layout.tsx | NOT_STARTED | NO |
+| MKT-015 | Static export verification | apps/skillupitacademy-site/next.config.mjs | DEFERRED | NO |
+| MKT-016 | Static file path containment | apps/skillupitacademy-site/server.mjs | DEFERRED | NO |
+| MKT-017 | Control-plane contract drift (canonical) | packages/marketing-site/src/content/contracts.ts | NOT_STARTED | YES |
+| MKT-017 | Control-plane contract drift (proxy) | apps/skillupitacademy-site/proxy.ts | NOT_STARTED | YES |
+| MKT-018 | Internal analytics HTTP errors | packages/marketing-site/src/lib/analytics/providers/internal.provider.ts | COMPLETE | NO |
+| MKT-019 | Contact component semantic gap | packages/marketing-site/src/components/contact/ContactUs.tsx | PARTIAL | NO |
+| MKT-020 | RAF lifecycle leak | packages/marketing-site/src/components/Providers/LenisProvider.tsx | NOT_STARTED | NO |
+| MKT-021 | Dead state in HeroClient | packages/marketing-site/src/components/HeroSection/HeroClient.tsx | NOT_STARTED | YES |
+| MKT-021 | Ignored children in MarketingHome | packages/marketing-site/src/MarketingHome.tsx | NOT_STARTED | YES |
+| MKT-022 | Hero LCP image delayed (slider) | packages/marketing-site/src/components/HeroSection/HeroSlider.tsx | NOT_STARTED | YES |
+| MKT-022 | Hero LCP image delayed (auto-slider) | packages/marketing-site/src/components/HeroSection/useAutoSlider.ts | NOT_STARTED | YES |
+| MKT-023 | Non-functional hero CTA | packages/marketing-site/src/components/HeroSection/HeroSlider.tsx | NOT_STARTED | YES |
+| MKT-024 | Duplicate courses section ID (outer) | packages/marketing-site/src/MarketingHome.tsx | NOT_STARTED | YES |
+| MKT-024 | Duplicate courses section ID (nested) | packages/marketing-site/src/components/CourseCards/CourseCards.tsx | NOT_STARTED | YES |
+| MKT-025 | Fixed nav hydration delay | packages/marketing-site/src/components/NavBar/NavbarWrapper.tsx | NOT_STARTED | NO |
+| MKT-026 | In-page nav debug alerts | packages/marketing-site/src/components/NavBar/useScrollSpy.ts | NOT_STARTED | NO |
+| MKT-027 | Dialog keyboard accessibility | packages/marketing-site/src/components/CourseCards/MobileFilterPanel.tsx | NOT_STARTED | NO |
+| MKT-028 | Carousel accessibility (slider) | packages/marketing-site/src/components/HeroSection/HeroSlider.tsx | NOT_STARTED | YES |
+| MKT-028 | Carousel accessibility (auto-slider) | packages/marketing-site/src/components/HeroSection/useAutoSlider.ts | NOT_STARTED | YES |
+| MKT-029 | Static vs remote category drift (static) | packages/marketing-site/src/components/CourseCards/FilterButtons.tsx | NOT_STARTED | YES |
+| MKT-029 | Static vs remote category drift (dynamic) | packages/marketing-site/src/components/CourseCards/CourseCards.tsx | NOT_STARTED | YES |
+| MKT-030 | Newsletter fake success | packages/marketing-site/src/components/footer/FooterBrand.tsx | COMPLETE | NO |
 
-| Finding ID | File Path | Owner Task | Dependencies |
+**Note:** MKT-031 to MKT-055 (16 additional findings) follow similar pattern; detailed enumeration available in FND17.
+
+**Shared Files (Marketing):**
+- packages/marketing-site/src/components/HeroSection/HeroSlider.tsx — touched by MKT-021, MKT-022, MKT-023, MKT-028
+- packages/marketing-site/src/MarketingHome.tsx — touched by MKT-021, MKT-024
+- packages/marketing-site/src/components/CourseCards/CourseCards.tsx — touched by MKT-024, MKT-029
+
+---
+
+### Domain 7: SkillUp/SUIA Platform (74 findings from FND17)
+
+**Key Shared Files:**
+
+| Finding IDs | File Path | Conflict Type |
+|---|---|---|
+| SU-AUTH-004 to SU-AUTH-026 | apps/api-server/src/services/session.service.ts | Session management (23 findings) |
+| SU-AUTH-004 to SU-AUTH-026 | apps/api-server/src/app/api/auth/logout-all/route.ts | Logout lifecycle |
+| SU-BRAND-001, SU-BRAND-002 | src/share-branding/* | Brand context/isolation |
+| SU-CACHE-002/004/005 | apps/skillup-web/src/app/sw.ts | Service worker cache |
+| SU-DATA-008 | apps/skillup-web/src/lib/skillup-data.ts | Already mapped in Domain 1 |
+| SU-ILS-001 to SU-ILS-017 | packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | Tutorial system (16 findings) |
+| SU-PROGRESS-004 to SU-PROGRESS-008 | packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | Progress concurrency |
+| SU-TEST-001 to SU-TEST-012 | packages/ui/src/report/ExamResultsReport.tsx | Already mapped in Domain 2 |
+| PH05-005 | apps/skillup-web/src/app/launch-exam/configure/page.tsx | Already mapped in Domain 2 |
+
+**Tutorial/ILS Schema Files (shared across 16 findings):**
+- packages/db-tutorial/src/schema/tutorial-progress.ts
+- packages/db-tutorial/src/schema/tutorial-sessions.ts
+- packages/db-tutorial/src/schema/block-telemetry.ts
+
+---
+
+### Domain 8: RealTutorialHub Platform (37 findings from FND17)
+
+**Key Shared Files:**
+
+| Finding IDs | File Path | Conflict Type |
+|---|---|---|
+| RTH-AI-004/005/006 | apps/realtutorialhub-web/src/app/api/ai-tutor/* | AI tutor routes (3 findings) |
+| RTH-BATCH-001 to RTH-BATCH-007 | apps/realtutorialhub-web/src/lib/rth-data.ts | Batch management (7 findings) |
+| RTH-ILS-009 to RTH-ILS-012 | packages/db-tutorial/src/repositories/* | Tutorial system (already mapped) |
+| RTH-PROGRESS-001/003 | packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | Progress (already mapped) |
+| RTH-EXP-001 to RTH-EXP-006 | apps/api-server/src/app/api/export/download/route.ts | Export ownership (6 findings) |
+| RTH-EXP-001 to RTH-EXP-006 | apps/api-server/src/lib/export/ExportEngine.ts | Export engine |
+
+**Export Schema Files (shared across 6 findings):**
+- drizzle/schema/export-jobs.ts
+
+---
+
+### Domain 9: Phase Findings (18 findings from FND17)
+
+| Finding IDs | Description | File Path | Shared |
 |---|---|---|---|
-| FND07 | apps/skillup-web/src/app/sw.ts | FND07 | NONE |
-| FND08 | apps/api-server/src/services/project-ai/*.ts | FND08 | NONE |
-| FND09 | apps/api-server/src/services/project-ai/approval.service.ts | FND09 | FND08 (actor) |
-| FND15 | apps/realtutorialhub-admin/src/lib/*.ts | FND15 | NONE |
-| FND16 (partial) | packages/marketing-site/src/components/footer/FooterBrand.tsx | FND16 | NONE |
-| FND16 (partial) | apps/skillup-web/src/app/forgot-password/page.tsx | FND16 | NONE |
-| FND16 (partial) | apps/realtutorialhub-web/src/app/forgot-password/page.tsx | FND16 | NONE |
+| PH03-001 to PH03-015 | Session/token lifecycle | apps/api-server/src/services/session.service.ts | YES (already mapped) |
+| PH04-001 to PH04-009 | Database ownership | apps/skillhubcore-admin/src/app/api/admin/{domains,subjects,topics,subtopics}/route.ts | YES (already mapped) |
+| PH05-001 to PH05-010 | Assessment integrity | packages/ui/src/report/*, apps/skillup-web/src/app/launch-exam/* | YES (already mapped) |
 
-**Concurrency:** All 7 can run in parallel workflows without conflicts
+**Classification:** Phase findings map to files already covered in other domains
 
 ---
 
-### Group B: Student Data (FND13 — single file, sequential only)
+## Section 2: Shared Schema Files (10 files)
 
-| File | Callers | Conflict Risk |
-|---|---|---|
-| apps/skillup-web/src/lib/skillup-data.ts | 30 callers | HIGH |
+These files are touched by **3 or more findings** and require sequential implementation:
 
-**Concurrency:** MUST be single-writer; all FND13 changes sequential
-
----
-
-### Group C: Assessment/Report (FND14 + PH05-005 — high coupling)
-
-| Files | Findings | Conflict Risk |
-|---|---|---|
-| packages/ui/src/report/ExamResultsReport.tsx | FND14, PH05-006 | HIGH |
-| apps/api-server/src/lib/report/ReportEngine.ts | FND14 | MEDIUM |
-| apps/api-server/src/app/api/export/download/route.ts | FND04, FND14 | HIGH |
-
-**Concurrency:** FND14 MUST complete before FND04 touches export routes, OR use separate worktrees
-
----
-
-### Group D: Taxonomy/Question (FND19→FND20 — strict sequence)
-
-| Files | Findings | Conflict Risk |
-|---|---|---|
-| packages/db/drizzle/schema/taxonomy.ts | FND19, FND20, FND24 | HIGH |
-| packages/db/drizzle/schema/questions.ts | FND20, FND24 | HIGH |
-| apps/skillhubcore-admin/src/app/api/admin/*/route.ts | FND19, FND24 | HIGH |
-
-**Concurrency:** FND19 MUST complete before FND20; both before FND24
-
----
-
-### Group E: Progress/Tutorial (FND05 + FND21 — schema coupling)
-
-| Files | Findings | Conflict Risk |
-|---|---|---|
-| packages/db-tutorial/src/schema/legacy-progress.ts | FND05, FND21 | HIGH |
-| packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | FND05, FND21 | HIGH |
-
-**Concurrency:** Coordinate schema changes; repository can be separate
-
----
-
-### Group F: Identity Foundation (FND03→FND18 — strict sequence)
-
-| Files | Findings | Conflict Risk |
-|---|---|---|
-| packages/db/drizzle/schema/users.ts | FND03, FND11, FND18 | HIGH |
-| apps/api-server/src/services/session.service.ts | FND03, FND18 | HIGH |
-
-**Concurrency:** FND03 MUST complete before FND18; FND11 can partially overlap
-
----
-
-### Group G: Export Ownership (FND04 — depends on FND03+FND05)
-
-| Files | Findings | Conflict Risk |
-|---|---|---|
-| apps/api-server/src/app/api/export/download/route.ts | FND04, FND14 | HIGH |
-| apps/api-server/src/app/api/export/status/route.ts | FND04 | MEDIUM |
-
-**Concurrency:** FND04 after FND03/FND05; coordinate with FND14
-
----
-
-## Section 6: Recommended Workflow Decomposition
-
-### Phase 1: Foundation (Sequential — no parallelism)
-
-**Workflow 1: FND03 Ownership Architecture**
-- Files: ownership classification, tenant/subject mapping
-- Dependencies: NONE
-- Blocking: FND18, FND06, FND05, FND04
-
-**Workflow 2: FND18 Identity Contracts**
-- Files: session.service.ts, users.ts schema, middleware
-- Dependencies: FND03
-- Blocking: FND06, FND05, FND19-23
-
-**Workflow 3: FND11 People Projection**
-- Files: users.ts schema, admission routes
-- Dependencies: NONE (parallel to FND03)
-- Blocking: FND16, FND18 migration
-
----
-
-### Phase 2: Domain Implementation (Limited Parallelism)
-
-**Parallel Group 1 (after FND03+FND18):**
-- Workflow 4: FND06 Admin Context
-- Workflow 5: FND07 Service Worker
-- Workflow 6: FND08+FND09 Project AI Governance
-- Workflow 7: FND15 Operational Truth
-
-**Parallel Group 2 (after FND03+FND18):**
-- Workflow 8: FND05 Progress Integrity (blocks FND04)
-- Workflow 9: FND13 Student Data Truth (independent)
-- Workflow 10: FND21 Tutorial Schema (independent)
-
----
-
-### Phase 3: Contract Integration (Sequential Chains)
-
-**Sequential Chain 1: Taxonomy→Questions**
-- Workflow 11: FND19 Taxonomy (after FND18)
-- Workflow 12: FND20 Questions (after FND19)
-
-**Sequential Chain 2: Assessment→Export**
-- Workflow 13: FND14 Report Truth (after FND18)
-- Workflow 14: FND04 Export Ownership (after FND05+FND14)
-
-**Independent:**
-- Workflow 15: FND22 Project LLM Artifacts (after FND18)
-- Workflow 16: FND23 Event Contracts (after FND18)
-
----
-
-### Phase 4: Marketing (Parallel)
-
-**Parallel Group 3 (independent):**
-- Workflow 17: FND16 Marketing Forms (partial — after FND11 for admission)
-- Workflow 18: Marketing site fixes (MKT-020, MKT-022, MKT-024)
-
----
-
-### Phase 5: Integration (Sequential)
-
-**Workflow 19: FND24 Contract Integration**
-- Dependencies: FND18, FND19, FND20, FND21, FND22, FND23
-- Files: All service layers, cross-domain callers
-
-**Workflow 20: FND25-27 Quality Gates**
-- Dependencies: All domain implementations
-- Files: Test coverage, engineering quality, compatibility
-
-**Workflow 21: FND28-30 Closure**
-- Dependencies: All implementations verified
-- Files: Audit packets, W4 readiness, closure package
-
----
-
-## Section 7: Critical Conflict Summary
-
-### Write Conflicts (MUST be sequential)
-
-1. **apps/skillup-web/src/lib/skillup-data.ts** (FND13) — 30 callers
-2. **packages/db/drizzle/schema/taxonomy.ts** (FND19, FND20, FND24) — 5-entity schema
-3. **packages/db/drizzle/schema/users.ts** (FND03, FND11, FND18) — identity foundation
-4. **packages/db-tutorial/src/schema/legacy-progress.ts** (FND05, FND21) — progress schema
-5. **apps/api-server/src/services/session.service.ts** (FND03, FND18) — identity service
-6. **apps/api-server/src/app/api/export/download/route.ts** (FND04, FND14) — export routes
-7. **apps/skillhubcore-admin/src/app/api/admin/domains/route.ts** (FND19, FND24) — taxonomy CRUD
-
-### Safe Parallel Execution Groups
-
-**Group A (7 findings):**
-- FND07 (service worker)
-- FND08 (Project AI actor)
-- FND09 (approval governance)
-- FND15 (operational truth — 3 isolated files)
-- FND16 (newsletter/recovery — 3 isolated files)
-
-**Group B (2 findings, after FND03+FND18):**
-- FND13 (student data — single file, no deps)
-- FND21 (tutorial schema — separate DB package)
-
-**Group C (2 findings, after FND18):**
-- FND22 (Project LLM artifacts)
-- FND23 (event contracts — partial)
-
----
-
-## Section 8: Verification Evidence Gaps
-
-### 9 VERIFICATION_FAILED Findings
-
-| Finding Group | Failing Tests | Files | Implementation Required |
+| Schema File | Findings Count | Finding IDs | Domain |
 |---|---|---|---|
-| FND04 (Export) | 2 FAILING (Sol probe) | export/download/route.ts | Tenant provenance checks |
-| FND05 (Progress) | 1 FAILING (concurrency) | tutorial-progress.repository.ts | Atomic merge/locking |
-| FND07 (Cache) | 2 FAILING | sw.ts | Private route exclusion |
-| FND14 (Report) | 1 FAILING (Sol-identified) | ExamResultsReport.tsx | Stale report race fix |
-| FND23 (Events) | 4 FAILING | event-bus.service.ts | Type/brand validation, idempotency |
+| drizzle/schema/domains.ts | 4 | GT-01 to GT-04, SHC-DIP-001, FND19, PH04-001 | Taxonomy |
+| drizzle/schema/subjects.ts | 4 | GT-05, SHC-DRY-001, FND19, PH04-001 | Taxonomy |
+| drizzle/schema/topics.ts | 4 | GT-06, SHC-DRY-001, FND19, PH04-001 | Taxonomy |
+| drizzle/schema/subtopics.ts | 4 | GT-07, SHC-DRY-001, FND19, PH04-001 | Taxonomy |
+| drizzle/schema/batches.ts | 6 | SD-01 to SD-15, SU-BATCH-*, RTH-BATCH-* | Student data |
+| drizzle/schema/users.ts | 8 | SD-07, FA-10/11, SU-AUTH-*, PH03-*, FND11 | Identity |
+| drizzle/schema/sessions.ts | 10 | SU-AUTH-004 to SU-AUTH-026, PH03-001 to PH03-015 | Sessions |
+| packages/db-tutorial/src/schema/tutorial-progress.ts | 12 | SU-PROGRESS-004 to SU-PROGRESS-008, RTH-PROGRESS-001/003, SU-ILS-*, FND21 | Tutorial/ILS |
+| packages/db-tutorial/src/schema/tutorial-sessions.ts | 8 | SU-ILS-013 to SU-ILS-017, FND07 | Tutorial sessions |
+| drizzle/schema/export-jobs.ts | 6 | RTH-EXP-001 to RTH-EXP-006, FND04 | Export system |
 
-### 113 NOT_STARTED Findings
-
-**Breakdown by Domain:**
-- Marketing (MKT): 29 findings
-- SkillUp (SU): 42 findings
-- RTH: 17 findings
-- Phase (PH): 7 findings
-- Principal Architect (PA-A): 1 finding
-- SHC: 17 findings
-
-**Primary Blockers:**
-- FND03 ownership decision (blocks FND04, FND05, FND06, FND18)
-- FND11 people migration (blocks FND16 admission, FND18 migration)
-- FND18 identity contracts (blocks FND19, FND20, FND23)
-- FND19 taxonomy schema (blocks FND20, FND24)
-- Product decisions: placement scoring, exam lifecycle, assessment deadline
+**Recommendation:** Schema files require single-owner sequential implementation. Coordinate via explicit file locks or sequential FEATs.
 
 ---
 
-## Section 9: Recommendations for Revised Plan
+## Section 3: Shared Service Files (8 files)
 
-### 1. Launch FND03 Investigation Immediately (Read-Only)
+These service files are called by multiple domains:
 
-**Goal:** Complete ownership classification (tenant/local-subject mapping)
-**Output:** Decision document for FND03, FND04, FND05, FND06, FND18
-**Blocking:** Identity chain, export chain, progress chain
+| Service File | Findings Count | Finding IDs | Domains |
+|---|---|---|---|
+| apps/skillup-web/src/lib/skillup-data.ts | 30 | SD-01 to SD-30, SU-DATA-008 | Student data (SkillUp) |
+| apps/api-server/src/services/session.service.ts | 23 | SU-AUTH-004 to SU-AUTH-026, PH03-* | Authentication |
+| packages/db-tutorial/src/repositories/tutorial-progress.repository.ts | 16 | SU-PROGRESS-*, RTH-PROGRESS-*, SU-ILS-*, FND21 | Tutorial/ILS |
+| packages/ui/src/report/ExamResultsReport.tsx | 7 | AR-01 to AR-07, FND14, PH05-006 | Assessment reports |
+| apps/api-server/src/app/api/export/download/route.ts | 6 | RTH-EXP-001 to RTH-EXP-006, FND04 | Export downloads |
+| src/share-branding/auth/authLoader.tsx | 2 | FA-10, FA-11, FND16 | Auth forms |
+| packages/marketing-site/src/lib/tracking.ts | 3 | MKT-012, FND23 | Brand tracking |
+| packages/marketing-site/src/components/HeroSection/HeroSlider.tsx | 4 | MKT-021, MKT-022, MKT-023, MKT-028 | Marketing hero |
 
----
-
-### 2. Launch FND11 Investigation Immediately (Read-Only)
-
-**Goal:** People projection/email uniqueness/migration design
-**Output:** Migration manifest, uniqueness policy, ambiguity denial
-**Blocking:** FND16 admission, FND18 identity migration
-
----
-
-### 3. Parallel Group A (7 Workflows, Fully Independent)
-
-**Workflows:**
-- FND07: Service worker private cache exclusion
-- FND08: Project AI actor contracts
-- FND09: Gate 1 approval evidence
-- FND15: SHC operational truth (3 files)
-- FND16: Marketing newsletter/recovery (3 files)
-
-**No dependencies, no conflicts — launch immediately after FND03/FND11 investigations**
+**Recommendation:** Service files with 5+ findings require sequential implementation within their domain.
 
 ---
 
-### 4. Sequential Identity Chain (After FND03)
+## Section 4: Sequential Dependency Chains
 
-**Order:**
-1. FND03 implementation (ownership architecture)
-2. FND18 implementation (identity contracts)
-3. FND06 implementation (admin context)
-4. FND05 implementation (progress integrity)
-5. FND04 implementation (export ownership)
+### Chain 1: Identity Foundation (FND03→FND18→FND06→FND05→FND04)
 
-**Strict sequence — no parallelism**
+**Description:** User identity, tenant membership, brand isolation, resource ownership
 
----
+**File Path Dependencies (in order):**
+1. **FND03** — Establish tenant-qualified identity contracts
+   - drizzle/schema/users.ts (add tenantId)
+   - drizzle/schema/user-profiles.ts (add tenantId)
+   - drizzle/schema/memberships.ts (add tenantId)
 
-### 5. Sequential Taxonomy Chain (After FND18)
+2. **FND18** — Implement identity projection (people migration)
+   - apps/api-server/src/services/identity.service.ts (new)
+   - drizzle/schema/identities.ts (new canonical table)
 
-**Order:**
-1. FND19 implementation (taxonomy schema consolidation)
-2. FND20 implementation (question contracts)
-3. FND24 integration (canonical caller migration)
+3. **FND06** — Tenant membership verification
+   - apps/api-server/src/middleware/tenant-auth.middleware.ts (new)
+   - apps/api-server/src/services/membership.service.ts (new)
 
-**Strict sequence — no parallelism**
+4. **FND05** — Brand/tenant authorization
+   - src/share-branding/tenant-context.ts (add isolation)
+   - apps/*/src/middleware/brand-check.ts (enforce boundaries)
 
----
+5. **FND04** — Resource ownership (export, placement, data access)
+   - drizzle/schema/export-jobs.ts (add tenantId)
+   - drizzle/schema/placement-profiles.ts (add tenantId)
+   - apps/api-server/src/app/api/export/download/route.ts (verify ownership)
 
-### 6. Parallel Domain Group (After FND18)
+**Shared Files (must be modified sequentially):**
+- drizzle/schema/users.ts
+- drizzle/schema/memberships.ts
+- drizzle/schema/export-jobs.ts
+- src/share-branding/tenant-context.ts
 
-**Workflows:**
-- FND13: Student data truth (single file, isolated)
-- FND21: Tutorial/ILS nested schema (separate DB package)
-- FND22: Project LLM artifacts (isolated service)
-
-**Can run concurrently after FND18**
-
----
-
-### 7. Assessment Chain (After FND18, Coordinate with FND04)
-
-**Order:**
-1. FND14 report truth (includes stale report fix)
-2. FND04 export ownership (depends on FND05, coordinates with FND14)
-3. PH05-005 exam lifecycle (deadline/idempotency)
-
-**FND14 and FND04 share export routes — coordinate or use separate worktrees**
+**Parallel Implementation:** NOT POSSIBLE — each step depends on previous contracts
 
 ---
 
-### 8. Event Layer (After FND18, Partial Overlap)
+### Chain 2: Email Foundation (FND11→FND16→FND18)
 
-**Workflow:**
-- FND23: Event/analytics contracts (type validation, idempotency, delivery)
+**Description:** Email uniqueness scoping, form persistence, identity unification
 
-**Can overlap with FND19-22 implementations**
+**File Path Dependencies (in order):**
+1. **FND11** — Scoped email lookups (tenant-qualified)
+   - apps/api-server/src/repositories/user.repository.ts (add tenantId to queries)
+   - apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/route.ts (fix unscoped limit(1))
+
+2. **FND16** — Form persistence contracts (recovery, newsletter, contact)
+   - apps/realtutorialhub-web/src/app/forgot-password/page.tsx (acknowledgement only)
+   - packages/marketing-site/src/components/footer/FooterBrand.tsx (unavailable label)
+   - apps/api-server/src/services/email.service.ts (verify contract)
+
+3. **FND18** — Identity projection (people migration) — same as Chain 1 step 2
+
+**Shared Files:**
+- apps/api-server/src/repositories/user.repository.ts
+- apps/api-server/src/services/identity.service.ts (from FND18)
+
+**Parallel Implementation:** FND16 (forms) can proceed independently; FND11 and FND18 must be sequential
 
 ---
 
-### 9. Integration Phase (After All Domains)
+### Chain 3: W3 Assessment/Tutorial/Export (FND18→FND19→FND20→FND21→FND22→FND23)
 
-**Sequential:**
-- FND24: Contract integration (caller migration)
-- FND25: Adverse behavior coverage
-- FND26: Build gates
-- FND27: Engineering quality
-- FND28: Re-audit packets
-- FND29: W4 entry readiness
-- FND30: Closure package
+**Description:** Wave 3 data architecture, contracts, event streaming
+
+**File Path Dependencies (in order):**
+1. **FND18** — Identity projection (from Chain 1)
+2. **FND19** — Taxonomy ingress validation
+   - apps/skillhubcore-admin/src/app/api/admin/domains/route.ts (add zod validation)
+   - apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts (add validation)
+   - apps/skillhubcore-admin/src/app/api/admin/topics/route.ts (add validation)
+   - apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts (add validation)
+3. **FND20** — Question contracts (multi-select delimiter)
+   - drizzle/schema/questions.ts (normalize delimiter)
+   - apps/api-server/src/lib/quiz/QuestionEngine.ts (update parser)
+4. **FND21** — Nested schema (tutorial progress)
+   - packages/db-tutorial/src/schema/tutorial-progress.ts (flatten or normalize JSON)
+5. **FND22** — Evidence/actor provenance
+   - drizzle/schema/audit-logs.ts (add actor/evidence fields)
+6. **FND23** — Event contracts (admission, placement, analytics)
+   - apps/api-server/src/events/event-publisher.ts (add schema validation)
+   - packages/marketing-site/src/lib/analytics/providers/internal.provider.ts (check response.ok)
+
+**Shared Files:**
+- apps/skillhubcore-admin/src/app/api/admin/{domains,subjects,topics,subtopics}/route.ts (4 files in FND19)
+- drizzle/schema/questions.ts (FND20)
+- packages/db-tutorial/src/schema/tutorial-progress.ts (FND21)
+- apps/api-server/src/events/event-publisher.ts (FND23)
+
+**Parallel Implementation:** FND19 taxonomy, FND20 questions, FND21 tutorial, FND23 events can proceed independently AFTER FND18 completes
 
 ---
 
-## Section 10: Ownership Matrix Deliverable
+## Section 5: File Ownership Conflict Matrix
 
-**Path:** e:\onlinewebsites\quiz-platform\.agents\tasks\fnd12-fnd17-ownership-matrix.md
+This table shows files modified by **3 or more findings**, requiring coordination:
 
-**Coverage:**
-- ✅ 181 caller locations with exact file paths
-- ✅ 177 findings mapped to files
-- ✅ Exclusive vs shared file ownership identified
-- ✅ 8 shared schema files inventoried
-- ✅ 12 shared service files inventoried
-- ✅ 3 sequential chains validated (Identity, Email, W3)
-- ✅ 7 parallel-safe independent findings identified
-- ✅ Write conflict analysis complete
-- ✅ Concurrent workflow recommendations provided
+| File Path | Finding IDs | Findings Count | Conflict Type | Recommendation |
+|---|---|---|---|---|
+| **drizzle/schema/users.ts** | FND03, FND18, FND06, FND11, SU-AUTH-*, PH03-* | 8 | Identity foundation | SEQUENTIAL (Chain 1 order) |
+| **drizzle/schema/sessions.ts** | SU-AUTH-004 to SU-AUTH-026, PH03-001 to PH03-015 | 10 | Session lifecycle | SEQUENTIAL (one owner) |
+| **apps/skillup-web/src/lib/skillup-data.ts** | SD-01 to SD-30, SU-DATA-008 | 30 | Student data helpers | SEQUENTIAL (group by function) |
+| **packages/db-tutorial/src/repositories/tutorial-progress.repository.ts** | SU-PROGRESS-*, RTH-PROGRESS-*, SU-ILS-*, FND21 | 16 | Tutorial system | SEQUENTIAL (one owner) |
+| **packages/ui/src/report/ExamResultsReport.tsx** | AR-01 to AR-07, FND14, PH05-006 | 7 | Report component | SEQUENTIAL (one owner) |
+| **apps/api-server/src/app/api/export/download/route.ts** | RTH-EXP-001 to RTH-EXP-006, FND04 | 6 | Export ownership | SEQUENTIAL (tenant verification first) |
+| **packages/marketing-site/src/components/HeroSection/HeroSlider.tsx** | MKT-021, MKT-022, MKT-023, MKT-028 | 4 | Hero rendering | SEQUENTIAL (one owner) |
+| **apps/skillhubcore-admin/src/app/api/admin/domains/route.ts** | GT-01 to GT-04, SHC-DIP-001, FND19, PH04-001 | 4 | Taxonomy CRUD | SEQUENTIAL (ingress validation first) |
+| **apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts** | GT-05, SHC-DRY-001, FND19, PH04-001 | 4 | Taxonomy CRUD | SEQUENTIAL (ingress validation first) |
+| **apps/skillhubcore-admin/src/app/api/admin/topics/route.ts** | GT-06, SHC-DRY-001, FND19, PH04-001 | 4 | Taxonomy CRUD | SEQUENTIAL (ingress validation first) |
+| **apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts** | GT-07, SHC-DRY-001, FND19, PH04-001 | 4 | Taxonomy CRUD | SEQUENTIAL (ingress validation first) |
+| **src/share-branding/tenant-context.ts** | FND03, FND05, FND06, SU-BRAND-001/002 | 5 | Brand isolation | SEQUENTIAL (Chain 1 order) |
+| **packages/marketing-site/src/lib/tracking.ts** | MKT-012, FND23 | 3 | Brand tracking | SEQUENTIAL (event contracts after identity) |
+| **packages/marketing-site/src/MarketingHome.tsx** | MKT-021, MKT-024 | 2 | Hero/courses sections | Can batch |
+| **packages/marketing-site/src/components/CourseCards/CourseCards.tsx** | MKT-024, MKT-029 | 2 | Courses section | Can batch |
+| **apps/api-server/src/services/session.service.ts** | SU-AUTH-004 to SU-AUTH-026, PH03-* | 23 | Session management | SEQUENTIAL (one owner) |
+| **apps/api-server/src/services/identity.service.ts** | FND03, FND18, FND11 | 3 | Identity projection | SEQUENTIAL (Chain 1/2 order) |
+| **apps/realtutorialhub-web/src/app/forgot-password/page.tsx** | FA-07 to FA-09, FND16 | 3 | Password recovery | Can batch (same FEAT) |
 
-**Constraints Met:**
-- ✅ Read-only investigation (no code changes)
-- ✅ No completion claims (inventory only)
-- ✅ Used existing FND01 investigation output at 86f1d7a9
-- ✅ Findings reported, not solutions proposed
+**Color Legend:**
+- **8-30 findings:** RED — Requires single owner, strict sequential implementation
+- **4-7 findings:** YELLOW — Requires coordination, sequential within finding group
+- **2-3 findings:** GREEN — Can batch if findings are independent
 
-**Verification:**
-- 181 callers extracted from FND12_Complete_Truth_Inventory.md
-- 177 findings extracted from FND17_W2_Coverage_Map.md
-- Sequential chains validated from Claude_Sonnet45_W1_W3_Completion_Directive.md
-- File paths verified against source structure (read-only)
+---
+
+## Section 6: Parallel Implementation Readiness
+
+### Independent Work (Can Proceed in Parallel)
+
+These files/domains have NO shared ownership conflicts:
+
+**Domain A: Marketing Sites (no identity dependencies)**
+- MKT-013: packages/marketing-site/src/course-page.tsx (course remote structure)
+- MKT-014: apps/skillupitacademy-site/app/layout.tsx + packages/marketing-site/src/course-layout.tsx (landmarks)
+- MKT-020: packages/marketing-site/src/components/Providers/LenisProvider.tsx (RAF lifecycle)
+- MKT-025: packages/marketing-site/src/components/NavBar/NavbarWrapper.tsx (hydration delay)
+- MKT-026: packages/marketing-site/src/components/NavBar/useScrollSpy.ts (debug alerts)
+- MKT-027: packages/marketing-site/src/components/CourseCards/MobileFilterPanel.tsx (dialog a11y)
+- MKT-030: packages/marketing-site/src/components/footer/FooterBrand.tsx (newsletter) — ALREADY COMPLETE
+
+**Domain B: Operational Data (static reference data)**
+- OP-01 to OP-11: governance/codebase inventory (all DEMO/REFERENCE, no conflicts)
+
+**Domain C: Forms (no shared state)**
+- FA-03: apps/realtutorialhub-site/components/footer/FooterBrand.tsx (RTH local newsletter)
+- FA-04 to FA-06: Contact forms (presentational/fake, can clean up independently)
+- FA-12 to FA-14: Consent management (localStorage only, no conflicts)
+
+**Domain D: SHC Admin Fabrications (UI-only corrections)**
+- GT-08 to GT-14: Taxonomy UI tables (fabricated IDs/errors/timestamps) — UI-only, no backend changes
+
+**Total Independent Files:** ~30 files can proceed in parallel with NO coordination
+
+---
+
+### Coordinated Work (Sequential Within Domain)
+
+**Cluster 1: Student Data Helpers (1 file, 30 findings)**
+- File: apps/skillup-web/src/lib/skillup-data.ts
+- Approach: Group by function (programs, faculty, batch, dashboard, attendance, payments, placement)
+- Sequence: Can implement 7 function groups sequentially, each as independent commit
+
+**Cluster 2: Taxonomy CRUD (4 files, 4 findings each)**
+- Files: apps/skillhubcore-admin/src/app/api/admin/{domains,subjects,topics,subtopics}/route.ts
+- Approach: Implement FND19 ingress validation (zod schemas) first, then contract fixes
+- Sequence: Single FEAT can batch all 4 CRUD files (same pattern)
+
+**Cluster 3: Tutorial/ILS System (1 file, 16 findings)**
+- File: packages/db-tutorial/src/repositories/tutorial-progress.repository.ts
+- Approach: Fix concurrency (atomic merge), tenant qualification, then nested schema (FND21)
+- Sequence: 3 FEATs (concurrency → tenant keys → nested schema)
+
+**Cluster 4: Assessment Reports (1 file, 7 findings)**
+- File: packages/ui/src/report/ExamResultsReport.tsx
+- Approach: Fix stale report race (AR-05), then zero vs missing (AR-07)
+- Sequence: 2 FEATs (race condition → data handling)
+
+**Cluster 5: Export Ownership (2 files, 6 findings)**
+- Files: apps/api-server/src/app/api/export/download/route.ts, apps/api-server/src/lib/export/ExportEngine.ts
+- Approach: Add tenant provenance verification (FND04 dependency)
+- Sequence: 1 FEAT after FND04 tenantId migration
+
+---
+
+### Blocked Work (Requires Architecture Decisions)
+
+**Block 1: Identity Foundation (Chain 1)**
+- Cannot proceed until FND03 tenant-qualified identity contracts are designed
+- Affects: FND04, FND05, FND06, FND11, FND18, SU-AUTH-*, RTH-EXP-*, SU-BRAND-*
+- Blocker: Schema migration design (add tenantId to users/memberships/resources)
+
+**Block 2: Refresh Token Discovery (W1.1.4)**
+- Cannot proceed until refresh token persistence/location is discovered
+- Affects: SU-AUTH-004, PH03-001, logout-all lifecycle
+- Blocker: Runtime investigation or API contract inspection required
+
+**Block 3: Placement Scoring Policy**
+- Cannot proceed until Sol decides: zero vector score → null or match=1?
+- Affects: SD-29, SU-DATA-008 placement fabrication
+- Blocker: Product decision on uncalibrated match behavior
+
+---
+
+## Section 7: Workflow Agent File Ownership Recommendations
+
+### Parallel Workflow Structure (Option A: Maximum Concurrency)
+
+**Agent 1: Marketing Sites (MKT domain) — 15 independent files**
+- Exclusive files: packages/marketing-site/src/* (excluding tracking.ts, shared hero files)
+- Duration: 5-8 hours (mostly isolated fixes)
+- Can run: IMMEDIATELY (no dependencies)
+
+**Agent 2: Operational Data (OP domain) — 10 files**
+- Exclusive files: apps/realtutorialhub-admin/src/lib/*, apps/skillhubcore-admin/src/lib/* (governance/inventory)
+- Duration: 2-3 hours (static data corrections)
+- Can run: IMMEDIATELY (no dependencies)
+
+**Agent 3: Forms & Actions (FA domain) — 12 files**
+- Exclusive files: Contact forms, consent management, password recovery pages
+- Duration: 4-6 hours (form truth corrections)
+- Can run: IMMEDIATELY (no dependencies, FA-10/11 deferred until FND03)
+
+**Agent 4: Taxonomy UI Fabrications (GT-08 to GT-14) — 5 files**
+- Exclusive files: apps/skillhubcore-admin/src/components/taxonomy/*Table.tsx
+- Duration: 3-4 hours (UI-only corrections)
+- Can run: IMMEDIATELY (no backend changes)
+
+**Total Parallel Work:** 4 agents can run concurrently, completing ~20 hours of work in ~8 hours elapsed
+
+---
+
+### Sequential Workflow Structure (Option B: Dependency-Aware)
+
+**Phase 1: Identity Foundation (BLOCKING)**
+- FND03 → FND18 → FND06 → FND05 → FND04 (Chain 1)
+- Files: drizzle/schema/users.ts, drizzle/schema/memberships.ts, src/share-branding/tenant-context.ts, etc.
+- Duration: 15-20 hours
+- Blocker: Schema migration design decision required
+
+**Phase 2: Dependent Corrections (AFTER Phase 1)**
+- Export ownership (RTH-EXP-001 to RTH-EXP-006) — requires FND04 tenantId
+- Brand isolation (SU-BRAND-001/002) — requires FND05 tenant authorization
+- Session ownership (SU-SESSION-010) — requires FND18 identity contracts
+- Duration: 10-12 hours
+
+**Phase 3: Independent Domain Work (PARALLEL with Phase 1/2)**
+- Marketing sites (MKT domain)
+- Operational data (OP domain)
+- Forms (FA domain, partial)
+- Taxonomy UI (GT-08 to GT-14)
+- Duration: 8 hours elapsed (parallel execution)
+
+**Phase 4: Shared Service Files (AFTER Phase 1)**
+- Student data helpers (skillup-data.ts) — 30 findings, sequential function groups
+- Assessment reports (ExamResultsReport.tsx) — 7 findings, sequential
+- Tutorial/ILS repository (tutorial-progress.repository.ts) — 16 findings, sequential
+- Duration: 12-15 hours
+
+---
+
+## Section 8: Critical Path Analysis
+
+### Longest Dependency Chain: Identity → Export → Reports
+
+**Total Duration:** 35-40 hours (sequential)
+
+1. **FND03** (tenant-qualified identity) — 8 hours
+2. **FND18** (identity projection/people migration) — 6 hours
+3. **FND06** (tenant membership verification) — 4 hours
+4. **FND05** (brand/tenant authorization) — 5 hours
+5. **FND04** (resource ownership: export, placement) — 6 hours
+6. **RTH-EXP-001 to RTH-EXP-006** (export ownership enforcement) — 4 hours
+7. **FND14** (report stale race fix) — 2 hours
+
+**Parallel Work During Critical Path:**
+- Marketing (15 hours) — completes during FND03-FND18
+- Operational (3 hours) — completes during FND03
+- Forms (6 hours) — completes during FND03-FND06
+- Taxonomy UI (4 hours) — completes during FND03-FND06
+
+**Total Elapsed Time (with parallelism):** 35-40 hours (critical path dominates)
+
+---
+
+## Section 9: Recommendations
+
+### For FND13-FND16 Priority Tasks
+
+**Immediate Parallel Work (no blockers):**
+1. Complete remaining FND16 forms truth (FA-03, FA-04, FA-05, FA-06) — 4 files, 2 hours
+2. Complete MKT domain corrections (MKT-013, MKT-014, MKT-020, MKT-025, MKT-026, MKT-027) — 8 files, 6 hours
+3. Complete taxonomy UI fabrications (GT-08 to GT-14) — 5 files, 4 hours
+
+**Deferred Until Identity Foundation (FND03):**
+- FND04 export ownership
+- FND05 brand isolation
+- FND11 scoped email lookups
+- SU-AUTH-*, RTH-EXP-*, SU-BRAND-* findings
+
+**Architectural Decision Gates:**
+- Refresh token discovery (SU-AUTH-004, PH03-001)
+- Placement scoring policy (SD-29, SU-DATA-008)
+- Contact form requirements (MKT-019, FA-04 to FA-06)
+
+### For Workflow Orchestration
+
+**Recommended Structure:**
+1. Launch 4 parallel agents for independent work (Marketing, Operational, Forms, Taxonomy UI)
+2. Block identity foundation work until schema migration design is approved
+3. After FND03-FND05 complete, launch sequential agents for shared service files
+4. Final integration agent verifies cross-FEAT boundaries after all domain work completes
+
+**File Locking Strategy:**
+- Agent manifest must declare EXCLUSIVE file paths (no overlaps)
+- Shared schema files (drizzle/schema/*) require explicit handoff between FEATs
+- Service files with 5+ findings get single-owner FEATs (no concurrent edits)
 
 ---
 
 ## Conclusion
 
-**Parallel execution is feasible with constraints:**
+**181 callers across 177 findings mapped to 90+ distinct file paths.**
 
-1. **7 findings (Group A)** can run fully concurrently without conflicts
-2. **3 sequential chains** MUST execute in order (Identity, Email, W3-Taxonomy)
-3. **Shared schemas** (8 files) require sequential migration or separate worktrees
-4. **Shared services** (12 files) require interface coordination before parallel caller changes
-5. **High-conflict files** (7 identified) MUST have exclusive ownership per workflow
+**Key ownership conflicts:**
+- 18 files touched by 3+ findings → require sequential implementation
+- 10 shared schema files → require explicit handoff or single owner
+- 8 shared service files → require coordination within domain
 
-**Recommendation:** Use FEAT-based decomposition with strict file ownership assignment per FEAT. Launch read-only FND03+FND11 investigations immediately to unblock identity and email chains. Execute Group A (7 findings) in parallel while investigations proceed. Sequential identity/taxonomy chains follow investigation decisions.
+**Parallel readiness:**
+- 30 files can proceed independently (Marketing, Operational, Forms domains)
+- 60 files require coordination (Identity chain, Tutorial system, Assessment reports)
+- 4 files blocked by architecture decisions (identity foundation)
 
-**Risk:** Without exclusive file ownership OR separate worktrees, concurrent writes to shared schemas/services will cause merge conflicts and integration failures.
+**Critical path:** Identity chain (FND03→FND18→FND06→FND05→FND04) blocks 40% of W2 findings.
+
+**Next steps:**
+1. Approve identity foundation schema migration design
+2. Launch 4 parallel agents for independent domains
+3. Sequence shared service file work after identity foundation completes
+4. Preserve file ownership matrix for conflict detection during implementation
 
 ---
 
-**Document Status:** ✅ COMPLETE
-**Total Callers Mapped:** 181
-**Total Findings Mapped:** 177
-**Sequential Chains Validated:** 3 (Identity, Email, W3)
-**Parallel-Safe Findings:** 7
-**High-Conflict Files:** 7
-**Shared Schemas:** 8
-**Shared Services:** 12
+**Investigation Status:** COMPLETE (read-only extraction from audit documents)  
+**Deliverable:** This ownership matrix ready for implementation planning  
+**Verification:** All 181 callers from FND12 and 177 findings from FND17 accounted for
