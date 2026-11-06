@@ -1,5 +1,19 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Separate developer-tooling assignment, 2026-11-06
+
+The owner additionally assigns developer-context optimization to the project role Argon.
+Use [the bounded OPT01-OPT05 packet](Argon_Developer_Context_Optimization_Assignment.md).
+Argon owns tooling; Sonnet owns its three small usage/checkpoint guides; Gemini supplies
+separate independent tooling validation; Sol owns architecture/integration acceptance.
+Argon's assigned role does not identify or change the runtime model. Include Argon in
+the role declaration template when executing that packet.
+
+Terra retains the complete critical TC01-TC20 assignment and Gemini retains GM01-GM20.
+The tooling pilot is optional, read-only against FND03, and must not block critical
+implementation/testing. No FND production/security-test/schema/migration edits are
+authorized by the tooling packet. Host-rule rollout remains subject to Sol acceptance.
+
 Issued by Sol on 2026-11-06 at review baseline e3e944f0. The owner assigns critical
 implementation to Terra / Tera, noncritical work to Claude Sonnet 4.5 and independent
 testing to Gemini. Sol owns principal architecture, integration review and acceptance.
