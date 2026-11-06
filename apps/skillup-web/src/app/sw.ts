@@ -40,12 +40,10 @@ sw.addEventListener('fetch', (event) => {
 
   if (!url.pathname.startsWith('/')) return;
 
-  // Only the explicitly public catalog navigation and static assets may use
-  // this shared cache. Other responses can carry an authenticated identity.
-  const publicCatalog = request.mode === 'navigate' &&
-    (url.pathname === '/programs' || url.pathname.startsWith('/programs/'));
+  // Navigation responses can depend on authenticated request context even
+  // at a public URL. Only immutable Next static assets use the shared cache.
   const staticAsset = url.pathname.startsWith('/_next/static/');
-  if (!publicCatalog && !staticAsset) {
+  if (!staticAsset) {
     event.respondWith(fetch(request).catch(() => new Response('offline', {
       status: 503, headers: { 'content-type': 'text/plain' },
     })));
