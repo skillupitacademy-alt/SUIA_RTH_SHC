@@ -46,6 +46,7 @@ const analyticsQueue: AnalyticsEventEnvelope[] = [];
 
 function createDedupeKey(event: AnalyticsEventEnvelope) {
   const hash = createHash("sha256");
+  hash.update(JSON.stringify(event.context.brandId));
   hash.update(event.name);
   hash.update(JSON.stringify(event.payload));
   hash.update(event.context.user.anonymousId);
