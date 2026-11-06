@@ -139,3 +139,161 @@ export function normalizeIntroductionI1Payload(payload: unknown): TutorialIntrod
     },
   };
 }
+
+/**
+ * Prepares a D1 payload for persistence without injecting example educational claims (Sol D6).
+ * Preserves only author-supplied fields and structural empty defaults.
+ */
+export function prepareDefinitionD1PayloadForStorage(payload: unknown): TutorialDefinitionPayload {
+  const rawPayload = isRecord(payload) ? payload : {};
+  const rawPage = isRecord(rawPayload.page) ? rawPayload.page : rawPayload;
+  const rawExample = isRecord(rawPage.example) ? rawPage.example : undefined;
+
+  const page: Record<string, unknown> = {
+    type: stringOrFallback(rawPage.type, 'Definition'),
+    ...(typeof rawPage.category === 'string' ? { category: rawPage.category } : {}),
+    title: stringOrFallback(rawPage.title, ''),
+    intro: stringOrFallback(rawPage.intro, ''),
+    definition: stringOrFallback(rawPage.definition, ''),
+    explanation: Array.isArray(rawPage.explanation)
+      ? rawPage.explanation.filter((item): item is string => typeof item === 'string')
+      : [],
+    ...(rawExample
+      ? {
+          example: {
+            language: stringOrFallback(rawExample.language, 'text'),
+            code: stringOrFallback(rawExample.code, ''),
+          },
+        }
+      : {}),
+    characteristics: Array.isArray(rawPage.characteristics)
+      ? rawPage.characteristics.filter(isRecord).map((item) => ({
+          ...(typeof item.icon === 'string' ? { icon: item.icon } : {}),
+          title: stringOrFallback(item.title, ''),
+          description: stringOrFallback(item.description, ''),
+        }))
+      : [],
+    ...(typeof rawPage.takeaway === 'string' ? { takeaway: rawPage.takeaway } : {}),
+  };
+
+  return { page } as unknown as TutorialDefinitionPayload;
+}
+
+/**
+ * Prepares an I1 payload for persistence without injecting example educational claims (Sol D6).
+ * Preserves only author-supplied fields and structural empty defaults.
+ */
+export function prepareIntroductionI1PayloadForStorage(payload: unknown): TutorialIntroductionPayload {
+  const rawPayload = isRecord(payload) ? payload : {};
+  const rawPage = isRecord(rawPayload.page) ? rawPayload.page : rawPayload;
+  const rawMotto = isRecord(rawPage.motto) ? rawPage.motto : undefined;
+  const rawTopic = isRecord(rawPage.topic) ? rawPage.topic : undefined;
+  const rawWhereFit = isRecord(rawPage.whereFit) ? rawPage.whereFit : undefined;
+  const rawSolution = isRecord(rawPage.solution) ? rawPage.solution : undefined;
+  const rawCode = rawSolution && isRecord(rawSolution.code) ? rawSolution.code : undefined;
+  const rawWhereUsed = isRecord(rawPage.whereUsed) ? rawPage.whereUsed : undefined;
+  const rawRoadmap = isRecord(rawPage.roadmap) ? rawPage.roadmap : undefined;
+  const rawWhyMatters = isRecord(rawPage.whyMatters) ? rawPage.whyMatters : undefined;
+
+  const page: Record<string, unknown> = {
+    ...(typeof rawPage.badge === 'string' ? { badge: rawPage.badge } : {}),
+    title: stringOrFallback(rawPage.title, ''),
+    subtitle: stringOrFallback(rawPage.subtitle, ''),
+    ...(rawMotto && Array.isArray(rawMotto.lines)
+      ? {
+          motto: {
+            lines: rawMotto.lines.filter((line): line is string => typeof line === 'string'),
+          },
+        }
+      : {}),
+    ...(typeof rawPage.learningGoal === 'string' ? { learningGoal: rawPage.learningGoal } : {}),
+    ...(rawTopic
+      ? {
+          topic: {
+            title: stringOrFallback(rawTopic.title, ''),
+            description: stringOrFallback(rawTopic.description, ''),
+            quote: stringOrFallback(rawTopic.quote, ''),
+          },
+        }
+      : {}),
+    ...(rawWhereFit
+      ? {
+          whereFit: {
+            title: stringOrFallback(rawWhereFit.title, ''),
+            description: stringOrFallback(rawWhereFit.description, ''),
+            flowCards: Array.isArray(rawWhereFit.flowCards)
+              ? rawWhereFit.flowCards.filter(isRecord).map((card) => ({
+                  title: stringOrFallback(card.title, ''),
+                  subtitle: stringOrFallback(card.subtitle, ''),
+                  icon: stringOrFallback(card.icon, 'box'),
+                  ...(card.highlight === true ? { highlight: true } : {}),
+                }))
+              : [],
+          },
+        }
+      : {}),
+    ...(rawSolution
+      ? {
+          solution: {
+            title: stringOrFallback(rawSolution.title, ''),
+            description: stringOrFallback(rawSolution.description, ''),
+            ...(rawCode
+              ? {
+                  code: {
+                    language: stringOrFallback(rawCode.language, 'text'),
+                    code: stringOrFallback(rawCode.code, ''),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
+    ...(rawWhereUsed
+      ? {
+          whereUsed: {
+            title: stringOrFallback(rawWhereUsed.title, ''),
+            description: stringOrFallback(rawWhereUsed.description, ''),
+            useCases: Array.isArray(rawWhereUsed.useCases)
+              ? rawWhereUsed.useCases.filter(isRecord).map((useCase) => ({
+                  title: stringOrFallback(useCase.title, ''),
+                  description: stringOrFallback(useCase.description, ''),
+                  icon: stringOrFallback(useCase.icon, 'box'),
+                  ...(useCase.highlight === true ? { highlight: true } : {}),
+                }))
+              : [],
+          },
+        }
+      : {}),
+    ...(rawRoadmap
+      ? {
+          roadmap: {
+            title: stringOrFallback(rawRoadmap.title, ''),
+            description: stringOrFallback(rawRoadmap.description, ''),
+            steps: Array.isArray(rawRoadmap.steps)
+              ? rawRoadmap.steps.filter(isRecord).map((step) => ({
+                  title: stringOrFallback(step.title, ''),
+                  subtitle: stringOrFallback(step.subtitle, ''),
+                }))
+              : [],
+          },
+        }
+      : {}),
+    ...(rawWhyMatters
+      ? {
+          whyMatters: {
+            title: stringOrFallback(rawWhyMatters.title, ''),
+            benefits: Array.isArray(rawWhyMatters.benefits)
+              ? rawWhyMatters.benefits.filter(isRecord).map((benefit) => ({
+                  title: stringOrFallback(benefit.title, ''),
+                  subtitle: stringOrFallback(benefit.subtitle, ''),
+                  icon: stringOrFallback(benefit.icon, 'box'),
+                }))
+              : [],
+          },
+        }
+      : {}),
+    ...(typeof rawPage.keyTakeaway === 'string' ? { keyTakeaway: rawPage.keyTakeaway } : {}),
+  };
+
+  return { page } as unknown as TutorialIntroductionPayload;
+}

@@ -14,6 +14,8 @@ import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
   normalizeDefinitionD1Payload,
   normalizeIntroductionI1Payload,
+  prepareDefinitionD1PayloadForStorage,
+  prepareIntroductionI1PayloadForStorage,
 } from './blockPayloadNormalizers';
 import type { BlockInstance } from './documentTransformation';
 import { GENERATED_BLOCK_VERSION_DEFINITIONS } from './generatedBlockVersionDefinitions';
@@ -161,13 +163,13 @@ const definitions: BlockVersionDefinition[] = [
     type: 'definition',
     version: 'D1',
     normalizePreview: (payload) => ({ content: normalizeDefinitionD1Payload(payload), memoryModelWarning: '' }),
-    prepareForStorage: (payload) => ({ content: normalizeDefinitionD1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
+    prepareForStorage: (payload) => ({ content: prepareDefinitionD1PayloadForStorage(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
     parseMarkdown: parseDefinitionMarkdown,
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
       id: instance.id,
       type: 'definition',
       version: 'D1',
-      content: normalizeDefinitionD1Payload(instance.payload) as unknown as DefinitionD1AuthorContent,
+      content: prepareDefinitionD1PayloadForStorage(instance.payload) as unknown as DefinitionD1AuthorContent,
       expectedTimeSec: instance.expectedTimeSec,
     }),
   },
@@ -254,13 +256,13 @@ const definitions: BlockVersionDefinition[] = [
     type: 'introduction',
     version: 'I1',
     normalizePreview: (payload) => ({ content: normalizeIntroductionI1Payload(payload), memoryModelWarning: '' }),
-    prepareForStorage: (payload) => ({ content: normalizeIntroductionI1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
+    prepareForStorage: (payload) => ({ content: prepareIntroductionI1PayloadForStorage(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
     parseMarkdown: parseIntroductionMarkdown,
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
       id: instance.id,
       type: 'introduction',
       version: 'I1',
-      content: normalizeIntroductionI1Payload(instance.payload) as unknown as IntroductionI1AuthorContent,
+      content: prepareIntroductionI1PayloadForStorage(instance.payload) as unknown as IntroductionI1AuthorContent,
       expectedTimeSec: instance.expectedTimeSec,
     }),
   },
