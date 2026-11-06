@@ -102,10 +102,12 @@ describe('B08-F: Private Export Status Ownership', () => {
     mockJobs.set(JOB_ID, {
       id: JOB_ID,
       userId: OWNER_USER_ID,
+      brand: 'skillup',
       status: 'completed',
-      payload: { format: 'json' },
+      payload: { format: 'json', brand: 'skillup' },
       result: {
         format: 'json',
+        brand: 'skillup',
         downloadUrl: '/api/export/download?jobId=job-export-status-101',
       },
       updatedAt: new Date(),
@@ -219,7 +221,7 @@ describe('B08-F: Private Export Status Ownership', () => {
   });
 
   it('recovers missing-job status from an authorized owner exam', async () => {
-    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { analytics_json: 'private-ref' } } as never);
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, brand: 'skillup', exportUrls: { analytics_json: 'private-ref' } } as never);
     const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${ownerToken}` } });
     const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
     expect(response.status).toBe(200);
@@ -231,7 +233,7 @@ describe('B08-F: Private Export Status Ownership', () => {
 
   it.each([['json', 'analytics_json'], ['csv', 'analytics_csv'], ['student-insight-pdf', 'student_insight_pdf']] as const)(
     'recovers owned missing-job %s without workflow state', async (format, key) => {
-      vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { [key]: 'private-ref' } } as never);
+      vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, brand: 'skillup', exportUrls: { [key]: 'private-ref' } } as never);
       const req = new NextRequest(`https://skillup.test/api/export/status/missing?examId=exam-1&format=${format}`, { headers: { authorization: `Bearer ${ownerToken}` } });
       const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
       expect(response.status).toBe(200);
@@ -251,7 +253,7 @@ describe('B08-F: Private Export Status Ownership', () => {
   });
 
   it('keeps an owned exam without an artifact in the failed/not-ready state', async () => {
-    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: {} } as never);
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, brand: 'skillup', exportUrls: {} } as never);
     const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${ownerToken}` } });
     const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
     expect(response.status).toBe(200);

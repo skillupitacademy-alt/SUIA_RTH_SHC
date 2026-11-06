@@ -20,7 +20,7 @@ const secret = new TextEncoder().encode('isolated-trigger-test-key-32bytes!');
 const tokens = new TokenService(secret, secret, secret);
 const previous = container.get(TokenService);
 const env = { queue: process.env.QUEUE_ENABLED, qstash: process.env.QSTASH_TOKEN, node: process.env.NODE_ENV };
-const exams = new Map<string, { userId: string }>();
+const exams = new Map<string, { userId: string; brand: 'skillup' | 'realtutorialhub' }>();
 async function request(userId: string, brand: 'skillup' | 'realtutorialhub', examId = 'private-exam', format = 'json') {
   const token = await tokens.generateAccessToken({ userId, originalUserId: userId, shadowUserId: userId,
     email: 'learner@example.test', roles: ['student'], brand, tokenType: 'user', aud: 'user' });
@@ -34,7 +34,7 @@ function noDispatch() {
 }
 describe('export trigger resource authority', () => {
   beforeEach(() => {
-    vi.clearAllMocks(); container.register(TokenService, tokens); exams.clear(); exams.set('private-exam', { userId: 'owner' });
+    vi.clearAllMocks(); container.register(TokenService, tokens); exams.clear(); exams.set('private-exam', { userId: 'owner', brand: 'skillup' });
     process.env.QUEUE_ENABLED = 'true'; delete process.env.QSTASH_TOKEN; process.env.NODE_ENV = 'test';
     vi.mocked(db.query.exams.findFirst).mockImplementation(async ({ where }: any) => {
       const query = new PgDialect().sqlToQuery(where); return exams.get(String(query.params[0])) as never;
@@ -54,7 +54,7 @@ describe('export trigger resource authority', () => {
     const owner = await POST(await request('owner', 'skillup'));
     expect(owner.status).toBe(200);
     expect(db.query.exams.findFirst).toHaveBeenCalledTimes(1);
-    if (branch === 'queue' || branch === 'production') expect(ExportSaga.start).toHaveBeenCalledExactlyOnceWith('private-exam', 'owner', 'json');
+    if (branch === 'queue' || branch === 'production') expect(ExportSaga.start).toHaveBeenCalledExactlyOnceWith('private-exam', 'owner', 'json', 'skillup');
     if (branch.startsWith('qstash')) expect(queueService.enqueue).toHaveBeenCalledTimes(1);
     if (branch === 'qstash-fallback') expect(ExportSaga.execute).toHaveBeenCalledTimes(1);
     if (branch === 'development') expect(generation).toHaveBeenCalledTimes(1);
@@ -68,7 +68,7 @@ describe('export trigger resource authority', () => {
   });
   it.each(['pdf', 'json', 'csv', 'student-insight-pdf'])('accepts supported %s format for owner', async format => {
     expect((await POST(await request('owner', 'skillup', 'private-exam', format))).status).toBe(200);
-    expect(ExportSaga.start).toHaveBeenCalledExactlyOnceWith('private-exam', 'owner', format);
+    expect(ExportSaga.start).toHaveBeenCalledExactlyOnceWith('private-exam', 'owner', format, 'skillup');
   });
   it('rejects malformed body before exam lookup', async () => {
     expect((await POST(await request('owner', 'skillup', 'private-exam', 'invalid'))).status).toBe(400);

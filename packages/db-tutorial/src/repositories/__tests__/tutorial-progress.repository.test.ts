@@ -77,7 +77,7 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock();
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.findById('progress-1')).resolves.toEqual(db.selectRows[0] ?? undefined);
+    await expect(repo.findById('progress-1', 'skillup')).resolves.toEqual(db.selectRows[0] ?? undefined);
     expect(mocks.withTimeout).toHaveBeenCalledWith(
       expect.any(Promise),
       15_000,
@@ -98,7 +98,7 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock();
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.getProgress('user-1', 'subtopic-1')).resolves.toEqual(db.selectRows[0] ?? undefined);
+    await expect(repo.getProgress('user-1', 'subtopic-1', 'skillup')).resolves.toEqual(db.selectRows[0] ?? undefined);
   });
 
   it('markBlockComplete inserts a new row when none exists', async () => {
@@ -110,12 +110,13 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [], insertRow: inserted });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'technical')).resolves.toEqual(inserted);
+    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'technical', 'skillup')).resolves.toEqual(inserted);
     expect(db.insert).toHaveBeenCalledTimes(1);
     expect(db.values).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'user-1',
         subtopicId: 'subtopic-1',
+        tenantId: 'skillup',
         blocksCompleted: ['technical'],
         status: 'in_progress',
         deletedAt: null,
@@ -162,7 +163,7 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [existing], updateRow: completed });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'ai_tutor')).resolves.toEqual(completed);
+    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'ai_tutor', 'skillup')).resolves.toEqual(completed);
     expect(db.update).toHaveBeenCalledTimes(1);
     expect(db.set).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -177,14 +178,14 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [] });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1')).resolves.toBe(false);
+    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1', 'skillup')).resolves.toBe(false);
   });
 
   it('isSubtopicComplete returns false until every required block is done', async () => {
     const db = createDbMock({ selectRows: [makeRow({ blocksCompleted: ['notes', 'layman'] })] });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1')).resolves.toBe(false);
+    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1', 'skillup')).resolves.toBe(false);
   });
 
   it('isSubtopicComplete returns true when all required blocks are done', async () => {
@@ -209,7 +210,7 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [completed] });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1')).resolves.toBe(true);
+    await expect(repo.isSubtopicComplete('user-1', 'subtopic-1', 'skillup')).resolves.toBe(true);
   });
 
   it('getCompletedSubtopics uses the report timeout path', async () => {
@@ -218,7 +219,7 @@ describe('TutorialProgressRepository', () => {
     });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.getCompletedSubtopics('user-1')).resolves.toEqual(['subtopic-1', 'subtopic-2']);
+    await expect(repo.getCompletedSubtopics('user-1', 'skillup')).resolves.toEqual(['subtopic-1', 'subtopic-2']);
     expect(mocks.withTimeout).toHaveBeenCalledWith(
       expect.any(Promise),
       30_000,
@@ -236,7 +237,7 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [makeRow()], updateRow: reset });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.resetProgress('user-1', 'subtopic-1')).resolves.toEqual(reset);
+    await expect(repo.resetProgress('user-1', 'subtopic-1', 'skillup')).resolves.toEqual(reset);
     expect(db.update).toHaveBeenCalledTimes(1);
     expect(db.set).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -257,6 +258,17 @@ describe('TutorialProgressRepository', () => {
     const db = createDbMock({ selectRows: [], insertRow: created });
     const repo = new TutorialProgressRepository(db as never);
 
-    await expect(repo.resetProgress('user-1', 'subtopic-1')).resolves.toEqual(created);
+    await expect(repo.resetProgress('user-1', 'subtopic-1', 'skillup')).resolves.toEqual(created);
+  });
+
+  it('rejects unscoped calls without tenantId before any DB access', async () => {
+    const db = createDbMock();
+    const repo = new TutorialProgressRepository(db as never);
+
+    await expect(repo.getProgress('user-1', 'subtopic-1')).rejects.toThrow(/Verified tenant context \(tenantId\) is required/i);
+    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'notes')).rejects.toThrow(/Verified tenant context \(tenantId\) is required/i);
+    expect(db.select).not.toHaveBeenCalled();
+    expect(db.insert).not.toHaveBeenCalled();
+    expect(db.update).not.toHaveBeenCalled();
   });
 });

@@ -26,7 +26,7 @@ async function invoke(userId: string, brand: 'skillup' | 'realtutorialhub') {
 describe('export URL ownership and effects', () => {
   beforeEach(() => {
     vi.clearAllMocks(); container.register(TokenService, tokenService);
-    vi.mocked(db.query.exams.findFirst).mockResolvedValue({ userId: 'owner', exportUrls: { analytics_json: 'private-ref' } } as never);
+    vi.mocked(db.query.exams.findFirst).mockResolvedValue({ userId: 'owner', brand: 'skillup', exportUrls: { analytics_json: 'private-ref' } } as never);
     vi.mocked(redis.get).mockResolvedValue(null);
     vi.mocked(storage.exists).mockResolvedValue(true);
   });

@@ -113,8 +113,10 @@ describe('B08-F: Private Export Download Ownership', () => {
     mockJobs.set(JOB_ID, {
       id: JOB_ID,
       userId: OWNER_USER_ID,
+      brand: 'skillup',
       status: 'completed',
       result: {
+        brand: 'skillup',
         downloadUrl: 'exports/owner-report.json',
         format: 'json',
       },
@@ -124,6 +126,7 @@ describe('B08-F: Private Export Download Ownership', () => {
     mockExams.set(EXAM_ID, {
       id: EXAM_ID,
       userId: OWNER_USER_ID,
+      brand: 'skillup',
       exportUrls: {
         analytics_json: 'exports/exam-report.json',
       },
