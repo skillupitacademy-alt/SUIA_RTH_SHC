@@ -11,4 +11,5 @@ it('returns null match for zero vector score', async () => {
   f.match.mockResolvedValue([{ id: 'job', score: 0 }]);
   const result = await getSkillupPlacement('fixture');
   expect(result.jobs[0].match).toBe(null);
+  expect(result.matchingStatus).toBe('uncalibrated');
 });

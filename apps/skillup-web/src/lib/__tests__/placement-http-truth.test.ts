@@ -180,11 +180,13 @@ describe('FND13 placement truth controls', () => {
 
     expect(result.profile?.skills).toEqual(['TypeScript', 'Node.js']);
     expect(result.jobs).toHaveLength(2);
-    expect(result.jobs[0].id).toBe('job-backend-2');
-    expect(result.jobs[0].match).toBe(92); // 0.92 * 100
-    expect(result.jobs[1].id).toBe('job-backend-1');
-    expect(result.jobs[1].match).toBe(87); // 0.87 * 100
-    expect(result.matchingStatus).toBe('matched');
+    // Jobs remain in DB order (by deadline desc), not vector order
+    expect(result.jobs[0].id).toBe('job-backend-1'); // deadline 2025-10-15
+    expect(result.jobs[1].id).toBe('job-backend-2'); // deadline 2025-09-30
+    // Raw vector scores are uncalibrated; all matches return null
+    expect(result.jobs[0].match).toBe(null);
+    expect(result.jobs[1].match).toBe(null);
+    expect(result.matchingStatus).toBe('uncalibrated');
   });
 
   it('returns null profile when no active profile exists', async () => {
@@ -358,15 +360,116 @@ describe('FND13 placement truth controls', () => {
       },
     ]];
 
-    // Genuine zero score means no match (when calibrated system establishes this)
+    // Genuine zero score from vector service
     state.vectorMatch.mockResolvedValue([
       { id: 'job-mismatch', score: 0 },
     ]);
 
     const result = await getSkillupPlacement('student-zero');
 
-    // Currently returns null for zero (uncalibrated measurement)
-    // When calibration is established, zero would be a valid return value
+    // Raw vector scores (including zero) remain null until calibrated percentage established
     expect(result.jobs[0].match).toBe(null);
+    expect(result.matchingStatus).toBe('uncalibrated');
+  });
+
+  it('preserves DB order when vector returns partial/reordered subset', async () => {
+    state.profileRows = [[{
+      userId: 'student-partial-vector',
+      status: 'active',
+      readinessScore: 75,
+      skills: ['React', 'Vue'],
+      preferredLocation: 'Mumbai',
+      expectedCtc: 900000,
+      experienceSummary: 'Frontend development',
+    }]];
+
+    // Three jobs in DB order (by deadline desc)
+    state.jobRows = [[
+      {
+        id: 'job-frontend-1',
+        companyName: 'WebCorp',
+        title: 'React Developer',
+        location: 'Mumbai',
+        ctcMin: 800000,
+        ctcMax: 1100000,
+        deadline: new Date('2025-12-31'), // Latest deadline
+      },
+      {
+        id: 'job-frontend-2',
+        companyName: 'UX Labs',
+        title: 'Frontend Engineer',
+        location: 'Pune',
+        ctcMin: 700000,
+        ctcMax: 1000000,
+        deadline: new Date('2025-11-15'), // Middle deadline
+      },
+      {
+        id: 'job-frontend-3',
+        companyName: 'DesignHub',
+        title: 'UI Developer',
+        location: 'Remote',
+        ctcMin: 600000,
+        ctcMax: 900000,
+        deadline: new Date('2025-10-01'), // Earliest deadline
+      },
+    ]];
+
+    // Vector returns only 2 of 3 jobs, in different order
+    state.vectorMatch.mockResolvedValue([
+      { id: 'job-frontend-3', score: 0.88 }, // Vector ranks this first
+      { id: 'job-frontend-1', score: 0.75 }, // Vector ranks this second
+      // job-frontend-2 not in vector results (unknown job for vector)
+    ]);
+
+    const result = await getSkillupPlacement('student-partial-vector');
+
+    // ALL jobs preserved in DB order (not vector order), all matches null
+    expect(result.jobs).toHaveLength(3);
+    expect(result.jobs[0].id).toBe('job-frontend-1'); // DB order: deadline 2025-12-31
+    expect(result.jobs[1].id).toBe('job-frontend-2'); // DB order: deadline 2025-11-15
+    expect(result.jobs[2].id).toBe('job-frontend-3'); // DB order: deadline 2025-10-01
+    expect(result.jobs[0].match).toBe(null);
+    expect(result.jobs[1].match).toBe(null);
+    expect(result.jobs[2].match).toBe(null);
+    expect(result.matchingStatus).toBe('uncalibrated');
+  });
+
+  it('treats invalid/non-finite scores as unavailable', async () => {
+    state.profileRows = [[{
+      userId: 'student-invalid-scores',
+      status: 'active',
+      readinessScore: 70,
+      skills: ['PHP'],
+      preferredLocation: 'Chennai',
+      expectedCtc: 700000,
+      experienceSummary: 'Web development',
+    }]];
+
+    state.jobRows = [[
+      {
+        id: 'job-web-1',
+        companyName: 'WebSoft',
+        title: 'PHP Developer',
+        location: 'Chennai',
+        ctcMin: 600000,
+        ctcMax: 900000,
+        deadline: new Date('2025-09-15'),
+      },
+    ]];
+
+    // Vector returns invalid/non-finite scores
+    state.vectorMatch.mockResolvedValue([
+      { id: 'job-web-1', score: NaN },
+      { id: 'job-web-2', score: Infinity },
+      { id: 'job-web-3', score: -0.5 }, // negative score
+    ]);
+
+    const result = await getSkillupPlacement('student-invalid-scores');
+
+    // Invalid scores filtered out, status is unavailable (no valid vector results)
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].id).toBe('job-web-1');
+    expect(result.jobs[0].match).toBe(null);
+    expect(result.matchingStatus).toBe('unavailable'); // No valid vector results
   });
 });

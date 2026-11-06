@@ -356,10 +356,10 @@ export async function getSkillupPlacement(userId: string) {
         }
       : null;
 
-    // Track whether vector matching succeeded for matchingStatus
-    let vectorMatchingSucceeded = false;
+    // Process jobs: keep persisted jobs browsable in DB order, with null match when uncalibrated
+    let vectorMatchingAttempted = false;
+    let hasValidVectorResults = false;
 
-    // Process jobs: keep persisted jobs browsable in DB order, with null match when unavailable
     const jobsWithMatches = await (async () => {
       // Without profile, return jobs in DB order with null match (no matching available)
       if (profileRows[0] === undefined) {
@@ -374,6 +374,7 @@ export async function getSkillupPlacement(userId: string) {
 
       // With profile, attempt vector matching
       try {
+        vectorMatchingAttempted = true;
         const vectorMatches = await findJobsForStudent({
           userId,
           readinessScore: profileRows[0].readinessScore,
@@ -383,37 +384,33 @@ export async function getSkillupPlacement(userId: string) {
           expectedCtc: profileRows[0].expectedCtc,
         }, Math.max(2, jobs.length));
 
-        const jobMap = new Map(jobs.map((job) => [job.id, job]));
-        const ranked = vectorMatches
-          .map((match) => {
-            const job = jobMap.get(String(match.id));
-            if (job === undefined) {
-              return null;
-            }
-            // Return null for unavailable/zero scores (no calibrated measurement)
-            // Zero is valid when measured, but score is currently uncalibrated
-            const matchScore = match.score !== null && match.score !== undefined && match.score > 0
-              ? Math.round(match.score * 100)
-              : null;
-            return {
-              id: job.id,
-              company: job.companyName,
-              title: job.title,
-              location: job.location,
-              match: matchScore,
-            };
-          })
-          .filter((item): item is { id: string; company: string; title: string; location: string; match: number | null } => item !== null);
+        // Validate vector results: finite scores, non-negative
+        const validResults = vectorMatches.filter(
+          (match) => typeof match.score === 'number' &&
+                     Number.isFinite(match.score) &&
+                     match.score >= 0
+        );
 
-        if (ranked.length > 0) {
-          vectorMatchingSucceeded = true;
-          return ranked;
+        if (validResults.length > 0) {
+          hasValidVectorResults = true;
         }
+
+        // Preserve ALL jobs in DB order; vector results are uncalibrated raw similarity
+        // Return null match for all jobs since no calibrated percentage exists
+        return jobs.map((job) => ({
+          id: job.id,
+          company: job.companyName,
+          title: job.title,
+          location: job.location,
+          match: null as number | null,
+        }));
       } catch {
-        // Vector service failed, fall through to DB ordering below
+        // Vector service failed, return DB ordering with null match
+        vectorMatchingAttempted = true;
+        hasValidVectorResults = false;
       }
 
-      // Fall back to DB ordering with null match (matching unavailable)
+      // Return jobs in DB order with null match (matching unavailable)
       return jobs.map((job) => ({
         id: job.id,
         company: job.companyName,
@@ -423,12 +420,12 @@ export async function getSkillupPlacement(userId: string) {
       }));
     })();
 
-    // Determine matching status: missing_profile, unavailable, or matched
+    // Determine matching status: missing_profile, unavailable, uncalibrated, or matched
     const matchingStatus = profile === null
       ? 'missing_profile'
-      : vectorMatchingSucceeded && jobsWithMatches.some(job => job.match !== null)
-        ? 'matched'
-        : 'unavailable';
+      : !vectorMatchingAttempted || !hasValidVectorResults
+        ? 'unavailable'
+        : 'uncalibrated';
 
     return {
       profile,
