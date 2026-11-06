@@ -1,5 +1,14 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current standing completion handoff
+
+[Argon → Gemini → Sol standing completion authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
+governs the FULL remaining W1-W3 assignment. Argon owns all pending implementation,
+Gemini complete independent verification, Sol architecture/final review. Sonnet is
+optional disjoint-file support. Routine within-contract manifests no longer require
+a new Sol assignment for every slice. Policy and physical gates remain unchanged;
+no claim of closure or automatic dispatch follows from this assignment.
+
 ## Latest critical handoff at 7f6f788d
 
 Argon remains sole critical TC01-TC20 implementer. [Sol's current TC20-A review](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md)

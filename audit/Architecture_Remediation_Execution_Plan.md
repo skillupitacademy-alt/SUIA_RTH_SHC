@@ -5,6 +5,13 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**Standing completion authorization:** the owner assigns ALL pending W1-W3 implementation
+to Argon, complete integrated independent verification to Gemini, and final architecture/
+acceptance to Sol. [The standing packet](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
+retains every FND01-FND30/TC01-TC20 requirement and nine-group gate, allows routine
+within-contract corrections without repeated assignment requests, and preserves all
+new-policy/physical/runtime approval gates. No task or wave is closed by this assignment.
+
 **TC20-A review at 7f6f788d:** Sol reproduced eight files / 26 analytics passes and
 the package typecheck, accepting the narrow tracker caller repair within that
 boundary. A new direct merge control has one pass / one failure: cross-brand node

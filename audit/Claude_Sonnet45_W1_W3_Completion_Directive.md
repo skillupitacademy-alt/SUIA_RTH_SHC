@@ -1,5 +1,14 @@
 # Principal architect directive for completion of W1-W3
 
+## Current owner override: Argon completes, Gemini verifies, Sol approves
+
+All historical Sonnet/Tera implementation ownership below is superseded by
+[the standing full-scope authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md).
+Argon owns all remaining FND01-FND30 implementation and TC01-TC20. Gemini independently
+tests the full integrated result; Sol gives final acceptance/feedback. Sonnet may
+provide explicitly assigned disjoint noncritical assistance. The complete requirements
+below remain binding; none is removed by the ownership change.
+
 ## Current role allocation selected by the owner
 
 The 2026-11-06 owner routing decision in

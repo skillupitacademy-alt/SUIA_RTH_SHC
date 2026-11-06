@@ -1,5 +1,14 @@
 # Gemini independent foundation testing packet
 
+## Complete integrated W1-W3 verification assignment
+
+[Standing authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
+assigns Gemini independent verification of ALL Argon-submitted FND01-FND30 requirements,
+not only the latest analytics changes. Retain GM01-GM20, map all thirty tasks/nine
+groups to executed evidence or explicit gaps, return code defects to Argon, and
+rerun the integrated gates after corrections. Sol reviews the final frozen packet.
+No production edits, weakened security invariants or unauthorized physical execution.
+
 ## Current TC20-A checkpoint at 7f6f788d
 
 [Sol independently reproduced 26 passes but found a failing merge boundary](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md).

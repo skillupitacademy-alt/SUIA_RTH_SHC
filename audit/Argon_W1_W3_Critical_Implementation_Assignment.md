@@ -1,5 +1,15 @@
 # Current owner override
 
+## Standing completion approval
+
+[The owner-requested standing authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
+assigns Argon ALL remaining FND01-FND30 implementation and the full TC01-TC20 packet,
+followed by complete Gemini verification and Sol review. Continue routine corrections
+under existing decisions using exact per-slice manifests without repeated assignment
+requests. Earlier per-file approval waits are superseded only for within-contract
+implementation; new policy, destructive changes and physical execution remain gated.
+The cross-brand merge correction remains first. Do not stop after that small slice.
+
 ## Current priority at Gemini revision 7f6f788d
 
 Read [Sol's TC20-A review and next manifest](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md).
