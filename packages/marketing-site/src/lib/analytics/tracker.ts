@@ -43,6 +43,7 @@ class AnalyticsTracker {
   ) {
     const baseContext = buildBrowserAnalyticsContext(this.options.config.brand.brandId);
     const resolvedIdentity = resolveIdentity({
+      brandId: baseContext.brandId,
       anonymousId: baseContext.user.anonymousId,
       sessionId: baseContext.session.sessionId,
       userAgent: baseContext.device?.userAgent,
@@ -50,6 +51,7 @@ class AnalyticsTracker {
       campaignId: baseContext.attribution?.campaign,
     });
     const sessionSnapshot = updateSession({
+      brandId: baseContext.brandId,
       sessionId: baseContext.session.sessionId,
       at: baseContext.session.occurredAt,
       type:
