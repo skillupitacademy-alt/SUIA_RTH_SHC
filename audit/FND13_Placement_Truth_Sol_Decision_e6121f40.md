@@ -7,6 +7,58 @@ accept FND12, FND17, FND13-FND16 or G3 as complete.
 
 ## Placement contract selected
 
+### Authoritative clarification after eea4e53f submission
+
+Recorded at review HEAD c4b9269a on 2026-11-06. There is no unconditional rule requiring
+raw vector zero to become a match percentage of zero. The phrase "Zero match -> 0
+returned" in the local workflow review is not the selected current contract. Calibration
+applies to every numeric score, regardless of sign or magnitude.
+
+| Available evidence | match | matchingStatus |
+| --- | --- | --- |
+| No active profile | null | missing_profile |
+| Matching service fails or supplies no usable measurement | null | unavailable |
+| Usable raw vector similarity, including zero, but no percentage calibration | null | uncalibrated |
+| An independently established calibrated measurement of zero | 0 | matched |
+| An independently established valid calibrated positive measurement | That measurement in its defined units | matched |
+
+The inspected findJobsForStudent function directly returns vector index query results.
+No percentage calibration or numeric source acceptance predicate is established by this
+source. The current implementation must therefore keep both raw zero and raw positive
+scores null as match percentages. A positive number does not establish calibration.
+There is no authorized calibrated matched branch for the current raw query path.
+
+The eea4e53f implementation still uses score > 0 followed by Math.round(score * 100).
+That continues to publish unproved percentages for positive scores while treating only
+zero as unknown. Remove that transformation. Add uncalibrated to the actual shared
+matchingStatus union and response. Reserve matched for a future explicitly established
+calibrated contract. Validate finite/raw result shape for observation, with malformed,
+unknown-job or unusable results supplying no invented measurement.
+
+Preserve the full persisted job catalog in DB order when calibrated matching is
+unavailable, including a raw vector response containing only a subset or differently
+ordered IDs. Do not use an uncalibrated ranked subset as the returned catalog. Keep
+missing-profile null, source-backed profile fields and database failure propagation.
+
+Required correction evidence includes raw zero and positive similarity both producing
+null match, explicit uncalibrated status, invalid/non-finite and unknown-job results,
+partial/reordered vector responses, no profile, service failure and no jobs. Retain
+the existing legitimate source-data controls. Do not change expected denial merely
+because a local reviewer marked a passing fixture approved.
+
+The added placement auth-denial assertion must execute. Static syntax inspection of
+routes.test.ts does not verify handler composition. Use the documented config:false
+runner with an explicit @ alias to apps/skillup-web/src and the pre-import network guard,
+or isolate the placement handler in a focused fixture with the same real helper chain.
+Record tested auth/subject/serialization boundaries and actual mocked dependencies.
+Reading helper values out of a fixture does not satisfy real-helper composition.
+
+This clarification is within the already selected FND13 scope. Proceed with the bounded
+correction and exact tests, then submit IMPLEMENTED_UNVERIFIED. No additional product
+approval is needed for these requirements. Keep the complete FND01-FND30 assignment
+active and continue independent work during review. Functional completion and acceptance
+of the current submission remain unestablished.
+
 Unknown matching quality is unavailable. No-profile and failed/no matching computation
 must not produce a numeric match percentage from list position, readiness or a floor.
 The proposed match:1 placeholder is not selected. It remains an invented measurement.

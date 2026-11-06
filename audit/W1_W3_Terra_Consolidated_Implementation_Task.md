@@ -122,6 +122,12 @@ exhaustive coverage claims remain unaccepted and require row/count/source reconc
 All FND01-FND30 tasks below remain active, with checkpoint submission and continued
 independent implementation authorized. No repeat-loop verdict confers group acceptance.
 
+The same placement decision now includes the authoritative clarification after eea4e53f.
+Raw vector zero and positive scores both return null match until calibration is established.
+The current positive-score percentage conversion and matched status are not accepted.
+Add explicit uncalibrated status, preserve full DB-ordered catalog and execute the actual
+placement handler composition controls. This is already authorized FND13 implementation.
+
 W1_W3_Sol_Review_f6f698a7.md records PARTIAL independent review of the first foundation
 submission. All thirty FND tasks below remain active with individual dispositions.
 The original hidden-time and post-teardown regressions pass. Whole provider correction
