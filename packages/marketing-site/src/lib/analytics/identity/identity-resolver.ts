@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { AnalyticsBrandId } from "../../../../config/analytics";
+import type { AnalyticsBrandId } from "../../../config/analytics";
 import { addIdentityEdge, calculateDeterministicConfidence, calculateProbabilisticConfidence } from "./identity-graph";
 import { findIdentityNode, saveIdentityNode, type IdentityNode } from "./identity-store";
 import { mergeIdentityNodes } from "./user-merge-engine";

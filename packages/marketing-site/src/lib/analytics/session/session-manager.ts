@@ -1,4 +1,4 @@
-import type { AnalyticsBrandId } from "../../../../config/analytics";
+import type { AnalyticsBrandId } from "../../../config/analytics";
 import { computeEngagementMetrics } from "./engagement-engine";
 import { getIdleTimeMs, isSessionInactive } from "./inactivity-detector";
 import { computeSessionQuality } from "./quality-scoring";

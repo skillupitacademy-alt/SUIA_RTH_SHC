@@ -1,4 +1,4 @@
-import type { AnalyticsBrandId } from "../../../../config/analytics";
+import type { AnalyticsBrandId } from "../../../config/analytics";
 
 export type IdentityKey =
   | "anonymous_id"
