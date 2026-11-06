@@ -116,6 +116,14 @@ export function withRBAC(
       );
     }
 
+    if (!['skillup', 'realtutorialhub', 'skillhubcore'].includes(auth.brand)) {
+      return new Response(JSON.stringify({
+        code: 'PERMISSION_DENIED',
+        message: options.denialMessage || `Permission required: ${options.permission}`,
+        permission: options.permission,
+      }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+
     // 2. Create RBAC user
     let rbacUser;
     try {
