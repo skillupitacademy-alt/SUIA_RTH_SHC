@@ -212,6 +212,42 @@ export class OwnershipRBACService {
       hasExplicitPermission: hasReadPermission || hasWritePermission,
     };
   }
+
+  /**
+   * 🔐 Sol D1: Explicit administrative profile management boundary.
+   * Separates self-only learner profile ownership from tenant-scoped administrative user management.
+   */
+  static hasAdminProfileManagementAuthority(context: OwnershipContext): boolean {
+    const { requestingUserId, requestingTenant, resourceOwnerId, resourceTenant, userRoles } = context;
+    if (
+      !this.isValidTenantPair(requestingTenant, resourceTenant) ||
+      !requestingUserId?.trim() ||
+      !resourceOwnerId?.trim()
+    ) {
+      return false;
+    }
+
+    const allowed = RBACService.hasPermission(userRoles, PERMISSIONS.USER_MANAGE, requestingUserId);
+    logOwnershipCheck({
+      requestingUserId,
+      resourceOwnerId,
+      permission: PERMISSIONS.USER_MANAGE,
+      result: allowed ? 'GRANTED' : 'DENIED',
+      reason: allowed ? 'explicit_permission' : 'not_owner_and_no_permission',
+    });
+    return allowed;
+  }
+
+  static requireAdminProfileManagementAuthority(context: OwnershipContext): void {
+    if (!this.hasAdminProfileManagementAuthority(context)) {
+      if (context.requestingTenant !== context.resourceTenant) {
+        throw new ForbiddenError(
+          `Cross-tenant access denied: requesting tenant '${context.requestingTenant}' cannot manage profile in tenant '${context.resourceTenant}'`
+        );
+      }
+      throw new ForbiddenError(`Missing administrative profile management permission '${PERMISSIONS.USER_MANAGE}'`);
+    }
+  }
 }
 
 /**

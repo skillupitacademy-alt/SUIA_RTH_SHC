@@ -45,7 +45,7 @@ describe('OwnershipRBACService', () => {
         resourceOwnerId: 'user-2',
         resourceTenant: 'realtutorialhub',
         userRoles: ['admin'],
-      }, PERMISSIONS.PROFILE_WRITE);
+      }, PERMISSIONS.USER_MANAGE);
     }).not.toThrow();
   });
 
@@ -92,9 +92,29 @@ describe('OwnershipRBACService', () => {
       resourceOwnerId: 'user-2',
       resourceTenant: 'realtutorialhub',
       userRoles: ['admin'],
-    }, PERMISSIONS.PROFILE_READ);
+    }, PERMISSIONS.USER_MANAGE);
 
     expect(result).toBe(true);
+  });
+
+  test('hasPermissionOrOwnership denies non-owner admin on self-only PROFILE_READ / PROFILE_WRITE per Sol D1', () => {
+    expect(OwnershipRBACService.hasPermissionOrOwnership({
+      requestingUserId: 'admin-1',
+      requestingTenant: 'realtutorialhub',
+      resourceOwnerId: 'user-2',
+      resourceTenant: 'realtutorialhub',
+      userRoles: ['admin'],
+    }, PERMISSIONS.PROFILE_READ)).toBe(false);
+
+    expect(() => {
+      OwnershipRBACService.requirePermissionOrOwnership({
+        requestingUserId: 'admin-1',
+        requestingTenant: 'realtutorialhub',
+        resourceOwnerId: 'user-2',
+        resourceTenant: 'realtutorialhub',
+        userRoles: ['admin'],
+      }, PERMISSIONS.PROFILE_WRITE);
+    }).toThrow(/Missing permission/i);
   });
 
   test('hasPermissionOrOwnership returns false for neither owner nor permission holder', () => {

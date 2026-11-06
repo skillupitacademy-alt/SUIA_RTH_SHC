@@ -4,6 +4,7 @@ import { enforceBrandValidation } from '@quiz/auth';
 
 import { getSkillupProgramDetail } from '@/lib/skillup-data';
 import { extractAuthFromRequest } from '@/lib/auth';
+import { requireStudentAuth } from '@/lib/student-auth';
 
 const paramsSchema = z.object({
   slug: z.string().min(1),
@@ -17,18 +18,32 @@ const paramsSchema = z.object({
  */
 export async function GET(request: NextRequest, context: { params: Promise<unknown> }) {
   try {
-    // 🔥 SECURITY FIX: Require authentication
-    const auth = await extractAuthFromRequest(request);
-    
+    const hasCookiesApi = typeof (request as { cookies?: { get?: unknown } })?.cookies?.get === 'function';
+    let auth = hasCookiesApi ? await extractAuthFromRequest(request) : { isAuthenticated: false };
+
     if (!auth || !auth.userId) {
+      const studentAuth = await requireStudentAuth(request);
+      if (studentAuth.ok === false) {
+        return NextResponse.json(
+          { error: 'Unauthorized', reason: 'authentication_required' },
+          { status: 401 }
+        );
+      }
+      auth = {
+        isAuthenticated: true,
+        userId: studentAuth.userId,
+        brand: (studentAuth.payload?.brand as 'skillup' | undefined) ?? 'skillup',
+      };
+    }
+
+    if (hasCookiesApi) {
+      enforceBrandValidation(auth, request);
+    } else if (auth.brand !== 'skillup') {
       return NextResponse.json(
-        { error: 'Unauthorized', reason: 'authentication_required' },
-        { status: 401 }
+        { error: 'Forbidden', reason: 'brand_mismatch', message: 'Invalid brand context' },
+        { status: 403 }
       );
     }
-    
-    // 🔥 SECURITY FIX: Validate brand context
-    enforceBrandValidation(auth, request);
     
     // Validate params
     const params = paramsSchema.safeParse(await context.params);
@@ -43,7 +58,10 @@ export async function GET(request: NextRequest, context: { params: Promise<unkno
       return NextResponse.json({ error: 'Program not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ program });
+    return NextResponse.json(
+      { program },
+      { headers: { 'Cache-Control': 'private, no-store' } }
+    );
   } catch (error) {
     if (error instanceof Error && error.name === 'BrandValidationError') {
       return NextResponse.json(

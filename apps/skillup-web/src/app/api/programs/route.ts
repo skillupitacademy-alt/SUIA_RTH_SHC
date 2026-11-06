@@ -3,6 +3,7 @@ import { enforceBrandValidation } from '@quiz/auth';
 
 import { getSkillupPrograms } from '@/lib/skillup-data';
 import { extractAuthFromRequest } from '@/lib/auth';
+import { requireStudentAuth } from '@/lib/student-auth';
 
 /**
  * 🔐 GET /api/programs - List programs
@@ -10,23 +11,40 @@ import { extractAuthFromRequest } from '@/lib/auth';
  * SECURITY: Requires authentication + brand validation
  * RBAC: Any authenticated user can view programs
  */
-export async function GET(req: NextRequest) {
+export async function GET(req?: NextRequest) {
   try {
-    // 🔥 SECURITY FIX: Require authentication
-    const auth = await extractAuthFromRequest(req);
-    
+    const effectiveReq = req ?? (new Request('https://user.skillupitacademy.com/api/programs') as unknown as NextRequest);
+
+    const hasCookiesApi = typeof (effectiveReq as { cookies?: { get?: unknown } })?.cookies?.get === 'function';
+    let auth = hasCookiesApi ? await extractAuthFromRequest(effectiveReq) : { isAuthenticated: false };
+
     if (!auth || !auth.userId) {
+      const studentAuth = await requireStudentAuth(effectiveReq);
+      if (studentAuth.ok === false) {
+        return NextResponse.json(
+          { error: 'Unauthorized', reason: 'authentication_required' },
+          { status: 401 }
+        );
+      }
+      auth = {
+        isAuthenticated: true,
+        userId: studentAuth.userId,
+        brand: (studentAuth.payload?.brand as 'skillup' | undefined) ?? 'skillup',
+      };
+    }
+
+    if (req && hasCookiesApi) {
+      enforceBrandValidation(auth, effectiveReq);
+    } else if (auth.brand !== 'skillup') {
       return NextResponse.json(
-        { error: 'Unauthorized', reason: 'authentication_required' },
-        { status: 401 }
+        { error: 'Forbidden', reason: 'brand_mismatch', message: 'Invalid brand context' },
+        { status: 403 }
       );
     }
-    
-    // 🔥 SECURITY FIX: Validate brand context
-    enforceBrandValidation(auth, req);
-    
-    // ✅ Authenticated and brand-validated - proceed
-    return NextResponse.json(await getSkillupPrograms());
+
+    return NextResponse.json(await getSkillupPrograms(), {
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
   } catch (error) {
     if (error instanceof Error && error.name === 'BrandValidationError') {
       return NextResponse.json(
