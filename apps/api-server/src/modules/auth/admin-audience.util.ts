@@ -124,18 +124,12 @@ export async function requireAdminTargetUserAccess(
   targetTenantId: string
 ): Promise<TokenPayload> {
   const payload = await requireAdminRouteAccess(req);
-  requireAdminProfileManagementAuthority(
-    {
-      id: payload.userId,
-      tenantId: payload.brand,
-      roles: payload.roles ?? ['admin'],
-    },
-    {
-      ownerId: targetUserId,
-      tenantId: targetTenantId,
-      resourceId: targetUserId,
-      resourceType: 'user_profile',
-    }
-  );
+  requireAdminProfileManagementAuthority({
+    requestingUserId: payload.userId,
+    requestingTenant: payload.brand ?? '',
+    userRoles: (payload.roles ?? ['admin']) as Role[],
+    resourceOwnerId: targetUserId,
+    resourceTenant: targetTenantId,
+  });
   return payload;
 }

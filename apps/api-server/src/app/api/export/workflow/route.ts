@@ -6,7 +6,13 @@ import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
 import { ExportAggregator } from '@/lib/export/exportAggregator';
 import { ExportQueryBuilder } from '@/lib/export/exportQueryBuilder';
-import { ExportFormat, ExportPayload } from '@/lib/export/exportTypes';
+import {
+  type ExportFormat,
+  type ExportPayload,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+} from '@/lib/export/exportTypes';
 import { CsvFormatter } from '@/lib/export/formatters/csvFormatter';
 import { JsonFormatter } from '@/lib/export/formatters/jsonFormatter';
 import { logger } from '@/lib/logger';
@@ -29,15 +35,18 @@ async function getWorkflowHandler() {
       examId: string;
       userId: string;
       format: ExportFormat;
+      brand?: LearnerExportBrand;
       jobId: string;
     }>(async (context) => {
       const { examId, userId, format, jobId } = context.requestPayload;
+      const rawBrand = (context.requestPayload as { brand?: unknown }).brand;
+      const brandId: LearnerExportBrand = isLearnerExportBrand(rawBrand) ? rawBrand : 'realtutorialhub';
       const stateKey = `export:workflow:${jobId}`;
       const queryBuilder = new ExportQueryBuilder();
       const aggregator = new ExportAggregator();
       const jsonFormatter = new JsonFormatter();
       const csvFormatter = new CsvFormatter();
-      const cacheKey = `export:${examId}:${userId}:${format}`;
+      const cacheKey = `export:${brandId}:${examId}:${userId}:${format}`;
 
   const persistState = async (state: Record<string, unknown>) => {
     try {
@@ -60,7 +69,7 @@ async function getWorkflowHandler() {
 
       await persistState({ step: 'aggregate-data', examId, userId, format });
       // ExportEngine handles formatter + ReportPdfService + upload + exams.export_urls persistence.
-      const ref = await engine.processExport(examId, userId, 'student-insight-pdf');
+      const ref = await engine.processExport(examId, userId, 'student-insight-pdf', brandId);
 
       await persistState({ step: 'render-pdf', examId, userId, format });
       await persistState({ step: 'upload-report', examId, userId, format });
@@ -207,7 +216,7 @@ async function getWorkflowHandler() {
     const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
     const contentType = format === 'csv' ? 'application/zip' : 'application/json';
     const extension = format === 'csv' ? 'zip' : 'json';
-    const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
+    const filename = `exports/${brandId}/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
     const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
     await persistState({ step: 'upload-to-storage', examId, userId, format, downloadUrl: fileRef, bufferBytes: buffer.length });
     return fileRef;
