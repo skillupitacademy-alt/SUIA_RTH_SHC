@@ -1,0 +1,80 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "BLOCKER-1",
+      "severity": "CRITICAL",
+      "title": "Unsafe Fallback to Default Tenant",
+      "file": "packages/auth/src/rbac/rbac.guard.ts",
+      "line": 178,
+      "evidence": "requestingTenant: (auth as any).brand || 'realtutorialhub'",
+      "issue": "When JWT brand claim is missing, code falls back to 'realtutorialhub' tenant instead of rejecting access. Violates selected policy: 'Unknown provenance denies access.'",
+      "consequence": "Malformed or legacy JWTs without brand claim are granted implicit realtutorialhub access, bypassing multi-tenant isolation.",
+      "requiredFix": "Replace fallback with explicit rejection: if (!(auth as any).brand) throw new ForbiddenError('JWT brand claim required')"
+    },
+    {
+      "id": "BLOCKER-2",
+      "severity": "CRITICAL",
+      "title": "Enforcer Fallback Violates Policy",
+      "file": "packages/auth/src/rbac/enforcer.ts",
+      "line": 46,
+      "evidence": "requestingTenant: user.tenant || 'realtutorialhub'",
+      "issue": "Enforcer function defaults to 'realtutorialhub' when tenant parameter is missing, allowing routes to bypass tenant qualification silently.",
+      "consequence": "API routes that omit tenant parameter will use wrong tenant context, bypassing isolation.",
+      "requiredFix": "Make tenant mandatory: if (!user.tenant) throw new ForbiddenError('Tenant context required')"
+    },
+    {
+      "id": "BLOCKER-3",
+      "severity": "HIGH",
+      "title": "Missing Tenant Verification in Enforcer Signature",
+      "file": "packages/auth/src/rbac/enforcer.ts",
+      "lines": "38-42",
+      "evidence": "user: { userId: string; roles: Role[]; tenant?: string; ... }",
+      "issue": "Enforcer signature allows tenant to be optional (tenant?: string), inviting callers to omit it despite being required by FND03 policy.",
+      "consequence": "Downstream API routes can call enforcer without tenant parameter, relying on unsafe fallback.",
+      "requiredFix": "Change signature to tenant: string (required, not optional)"
+    },
+    {
+      "id": "FINDING-4",
+      "severity": "MEDIUM",
+      "title": "Integration Guidance Incomplete",
+      "file": ".agents/tasks/fnd03-ownership-architecture.md",
+      "section": "7.1",
+      "issue": "Integration guidance shows example pattern but provides no enforcement requiring downstream routes to migrate. Old signature still callable.",
+      "consequence": "Existing routes continue using old pattern with unsafe fallback instead of failing.",
+      "requiredFix": "After fixing BLOCKER-3, verify TypeScript compilation fails for old pattern. Document breaking change and migration checklist."
+    },
+    {
+      "id": "FINDING-5",
+      "severity": "MEDIUM",
+      "title": "Missing JWT Brand Claim Validation",
+      "file": "packages/auth/src/rbac/rbac.guard.ts",
+      "lines": "177-182",
+      "evidence": "(auth as any).brand without validation",
+      "issue": "Guard extracts brand using type assertion without validating brand claim exists. If JWT decoded but brand undefined, fallback assigns wrong tenant.",
+      "consequence": "Invalid JWTs silently get default tenant instead of 401 rejection.",
+      "requiredFix": "Add explicit validation before ownership check and return 401 if brand missing."
+    },
+    {
+      "id": "GAP-1",
+      "severity": "HIGH",
+      "title": "Migrations Not Applied to Any Environment",
+      "status": "DOCUMENTED_NOT_EXECUTED",
+      "evidence": "Section 8.1 checklist shows migrations generated but not applied to dev/staging",
+      "issue": "Schema changes exist only in SQL files. No evidence migrations executed against any database.",
+      "consequence": "Tests pass with mocks but actual database schema does not support tenant columns.",
+      "requiredEvidence": "Migration execution logs, database introspection output, query plan analysis"
+    },
+    {
+      "id": "GAP-2",
+      "severity": "MEDIUM",
+      "title": "No Integration Tests with Actual API Routes",
+      "status": "ACKNOWLEDGED",
+      "evidence": "Section 8.1: Integration tests pending downstream implementation",
+      "issue": "All 18 tests are isolated unit tests. No tests demonstrate actual API routes consume tenant-aware enforcement.",
+      "consequence": "Cannot verify end-to-end tenant boundary enforcement in real request flow.",
+      "requiredEvidence": "At least one e2e test with JWT brand claim attempting cross-tenant access and receiving 403"
+    }
+  ],
+  "reviewDoc": "e:/onlinewebsites/quiz-platform/.agents/tasks/fnd03-ownership-architecture/review.md"
+}
