@@ -1,5 +1,15 @@
 # Current owner override
 
+## Current residual review at f18da842, 2026-11-07
+
+[Sol's correction review](Sol_W1_W3_Correction_Review_f18da842.md) is CHANGES_REQUESTED.
+The old failing selections now pass, but new lease-ownership/CAS/provenance/Gate 1
+credential/scoring-identity cases fail. The review gives R1-R8 and the full twenty-item
+continuation. Standing FND01-FND30 authorization remains active; no routine reassignment
+is needed. Correct guessed RTH defaults introduced in e68a7f5d and review all actual
+producer/reader/worker paths. Gemini owns independent verification, not production fixes.
+Keep physical execution gates, historical source attribution and legitimate positives.
+
 ## Current integrated correction checkpoint at f574daa5
 
 [Sol's integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md) is CHANGES_REQUESTED

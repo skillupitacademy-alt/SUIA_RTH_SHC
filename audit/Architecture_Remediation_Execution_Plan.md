@@ -5,6 +5,14 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**Correction packet e4c9c9f0/e68a7f5d, fixtures edfa470a/report f18da842 (2026-11-07):**
+Sol independently reproduces the previously failing selected probes as passing, but
+[the residual review](Sol_W1_W3_Correction_Review_f18da842.md) remains CHANGES_REQUESTED.
+New event lease ownership, CAS conflict outcome, export provenance, Gate 1 credential
+class and canonical scoring identity cases fail. All-tasks VERIFIED is rejected.
+Argon continues the full twenty-item/thirty-FND assignment; Gemini independently
+tests and corrects evidence attribution. No foundation/physical/W4 readiness gate closes.
+
 **Integrated submission e4247a6e / Gemini f574daa5:** Sol disposition is
 CHANGES_REQUESTED in [the integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md).
 Eight retained export cases and the conflicting-admin/Gate 1 controls still fail;

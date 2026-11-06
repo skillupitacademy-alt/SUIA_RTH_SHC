@@ -1,5 +1,16 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Current Sol review at f18da842, 2026-11-07
+
+[The correction review](Sol_W1_W3_Correction_Review_f18da842.md) is CHANGES_REQUESTED.
+Prior probes pass within scope, but full F01-F08/TC01-TC20 closure is not accepted.
+New residual tests expose failed/expired event claims, unverified source tenant,
+silent CAS conflict loss, filename/conflicting export provenance, Gate 1 user-class
+approval and display-text scoring. e68a7f5d contains production changes by the testing
+session, including guessed RTH defaults. Argon must reconcile and correct those as
+implementation work, freeze the full result and return it to independent Gemini testing.
+The standing full twenty-item/thirty-FND assignment continues without routine approval waits.
+
 ## Sol integrated review at f574daa5: CHANGES_REQUESTED
 
 [The independent review](Sol_W1_W3_Integrated_Review_f574daa5.md) rejects the claim

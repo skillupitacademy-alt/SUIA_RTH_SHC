@@ -1,5 +1,15 @@
 # Gemini Independent W1–W3 Comprehensive Verification Report (`GM01`–`GM20`)
 
+> Sol review at f18da842, 2026-11-07: CHANGES_REQUESTED. Previous failure probes now
+> pass within their tested boundaries, but VERIFIED across all twenty tasks is not
+> accepted. Sol reproduced new failing lease/CAS/export-provenance/Gate 1 credential/
+> scoring-identity controls. [Detailed residual review and current continuation](Sol_W1_W3_Correction_Review_f18da842.md).
+> The e68a7f5d contribution changes four production files, not merely test typing;
+> disclose that implementer role and obtain independent verification of those paths.
+> Keep correct original GM01-GM20 attribution, real projection/atomic-store semantics,
+> exact counts and missing physical/whole-scope evidence. Historical claims below do
+> not constitute Sol acceptance. Argon repairs production, Gemini independently tests.
+
 ## Re-Verification at `edfa470a` Following Sol Integrated Review `429ee67f` & Argon Remediation `e4c9c9f0`
 
 Sol's integrated review ([Sol_W1_W3_Integrated_Review_f574daa5.md](file:///e:/onlinewebsites/quiz-platform/audit/Sol_W1_W3_Integrated_Review_f574daa5.md), commit `429ee67f`) issued **CHANGES_REQUESTED**, rejecting prior unverified completion claims and identifying eight blocking findings (`F01`–`F08` across export provenance, Gate 1 authority/self-approval, event payload conflict/lease, progress tenancy/concurrency, scoring option-ID credit, and conflicting admin request tenant context).

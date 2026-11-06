@@ -1,5 +1,15 @@
 # Gemini independent foundation testing packet
 
+## Residual correction verification at f18da842
+
+Read [Sol's current review](Sol_W1_W3_Correction_Review_f18da842.md). Keep the now-passing
+old probes, add unchanged new residual/credential/scoring probes, and design independent
+atomic-store acquisition/loss, repeated CAS conflict, real export projection, conflicting
+authority and full Gate 1 principal tests. Verify actual worker/ingress/producers, not
+only synthetic helpers. Disclose e68a7f5d as implementation work; no further production
+edits during testing. Argon repairs under standing authorization, Sol reviews integrated
+source/evidence. All thirty FND requirements and original GM01-GM20 meanings remain.
+
 ## Integrated review correction at f574daa5
 
 Read [Sol's integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md). The original

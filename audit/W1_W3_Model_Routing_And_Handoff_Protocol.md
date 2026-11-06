@@ -1,5 +1,14 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Latest Sol review at f18da842, 2026-11-07
+
+[Residual correction review](Sol_W1_W3_Correction_Review_f18da842.md): CHANGES_REQUESTED.
+Argon retains all critical/remaining implementation and full TC01-TC20/FND01-FND30
+scope; Gemini tests independently; Sol approves. Old selected failures now pass, but
+new residual lease/CAS/provenance/credential/scoring cases fail. Testing-role production
+edits in e68a7f5d must be disclosed and independently verified, not labeled typing-only.
+No physical/W1-W3 acceptance follows from the reported green selections.
+
 ## Latest Sol disposition at f574daa5
 
 [Integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md): CHANGES_REQUESTED.
