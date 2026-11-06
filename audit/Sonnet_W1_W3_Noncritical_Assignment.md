@@ -1,5 +1,15 @@
 # Claude Sonnet 4.5 noncritical foundation packet
 
+## Current routing and tooling documentation correction
+
+Argon replaces Tera as critical implementation owner; Sonnet retains only this
+noncritical packet. [Sol's current checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md)
+governs integration. Keep DOC01-DOC03 concise, remove stale acceptance/offline/savings
+claims and reflect optional advisory use with full-source fallback. Edit only the
+three docs/ai-context guides for that correction. Gemini owns tooling C1/C2 tests
+and evidence; Argon owns production. Do not modify central decisions, host rules,
+critical analytics/scoring/document/auth/event files or another role's tests.
+
 Assigned by the owner through Sol on 2026-11-06. Declare assigned project role,
 actual host model if exposed, baseline, exact editable files and next handoff as required
 by W1_W3_Model_Routing_And_Handoff_Protocol.md. The complete FND01-FND30 directive stays

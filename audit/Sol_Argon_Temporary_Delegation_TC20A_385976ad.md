@@ -1,5 +1,12 @@
 # Sol Decision — Temporary Critical Implementation Delegation to Argon
 
+> Current override: the owner now assigns ALL critical TC01-TC20 work to Argon,
+> including TC20-B. [Sol's resume checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md)
+> ratifies the bounded original TC20-A scope and approves exactly the tracker.ts
+> integration amendment plus Gemini's positive fixtures. Historical Tera ownership
+> and next-slice gates below are superseded only as explicitly stated there.
+> Existing no-push/live-execution/self-acceptance restrictions remain binding.
+
 - **Decision by**: Sol (Claude Opus 5.5, assigned by the owner), 2026-11-06
 - **Baseline**: branch `remediation/w1-2-batch-05-targeted`, HEAD `385976ad`
 - **Inputs read**: `W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md` (D5–D7), `Tera_W1_W3_Critical_Implementation_Assignment.md` (TC17, TC18, TC20), `Tera_W1_W3_Critical_Handoff.md` (L44–L57), `Gemini_W1_W3_Independent_Verification_Report.md` (FAIL-04–FAIL-06), and a source trace of `packages/marketing-site/src/lib/analytics`

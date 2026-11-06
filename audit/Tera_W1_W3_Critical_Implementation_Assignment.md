@@ -1,5 +1,13 @@
 # Tera critical implementation packet
 
+## Historical packet: owner superseded
+
+The owner has transferred ALL critical implementation to Argon, including TC20-B.
+Use [Argon's active TC01-TC20 packet](Argon_W1_W3_Critical_Implementation_Assignment.md)
+and [Sol's current checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md). Do not resume
+production writes from this historical Tera packet. Preserve existing edits and
+handoff their exact revision/paths without resetting or merging another workflow.
+
 ## Current Sol decision checkpoint, 2026-11-06
 
 Read [Sol decisions and independent review](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)

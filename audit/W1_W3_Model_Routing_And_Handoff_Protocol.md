@@ -1,5 +1,21 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current owner override at source 2ca1889b
+
+The owner now replaces Tera/Terra with Argon as sole critical implementer for ALL
+TC01-TC20, including TC20-B and critical FND01-FND30 work. Gemini remains independent
+tester; Claude Sonnet 4.5 remains noncritical documentation/presentation owner; Sol
+remains architect and final approver. Earlier Tera ownership references below and
+the temporary TC20-A split are historical and are superseded by this paragraph.
+
+Use [the current Sol checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md) and
+[Argon's full twenty-item packet](Argon_W1_W3_Critical_Implementation_Assignment.md).
+Argon first owns only the approved tracker.ts TC20-A production amendment while
+Gemini owns explicit-brand positive fixtures. Follow the checkpoint's exact exclusive
+paths, freeze each slice and obtain independent verification. No further push,
+overlapping writer, physical execution or self-acceptance is authorized.
+Tooling remains optional/advisory with C1/C2 unresolved. No host-rule edits.
+
 ## Separate developer-tooling assignment, 2026-11-06
 
 The owner additionally assigns developer-context optimization to the project role Argon.

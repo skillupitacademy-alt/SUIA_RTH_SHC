@@ -5,6 +5,16 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**Current owner routing at source 2ca1889b:** Argon replaces Tera for ALL critical
+TC01-TC20/FND implementation, Gemini independently tests, Sonnet owns noncritical
+documentation/presentation, Sol owns architecture and final acceptance. See
+[the consolidated Sol resume checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md)
+for twenty-item and thirty-FND dispositions, exact exclusive files and the approved
+narrow TC20-A tracker amendment. Published TC20-A remains IMPLEMENTED_UNVERIFIED,
+with three independently reproduced integration failures. Tooling is PARTIAL_ACCEPTANCE
+for optional advisory use; C1/C2 remain unresolved. No W1-W3/W4 readiness closure,
+physical execution, main merge or further push is authorized by this checkpoint.
+
 **2026-11-06 Sol checkpoint:** source 6d0217df and Gemini tests f88fef44 received
 partial acceptance for explicitly bounded offline containment, not FND/group closure.
 [The independent review and D1-D7 decisions](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)

@@ -1,5 +1,19 @@
 # Gemini independent foundation testing packet
 
+## Current handoff at source 2ca1889b
+
+Argon replaces Tera for ALL critical implementation; keep the full GM01-GM20
+matrix and independent role. Read [Sol's current checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md).
+For TC20-A, update only legitimate explicit-brand positives in marketing-phase2.test.ts
+and add independent controls in gemini-tc20a-*.test.ts after Argon freezes the approved
+tracker.ts correction. Preserve brand-dedupe-control.test.ts unchanged. Rerun actual
+tracker/provider, downstream isolation/continuity and zero-mutation negatives.
+Production failures go to Argon, architecture/acceptance to Sol.
+
+Correct tooling C1/C2 in your test/report paths separately; optional advisory tooling
+does not displace critical validation. Freeze source/test revisions and do not edit
+production files. No expanded live/browser/database/queue/push authority is granted.
+
 ## Current Sol decision checkpoint, 2026-11-06
 
 Use [Sol decisions and independent review](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)

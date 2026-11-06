@@ -1,5 +1,14 @@
 # Tera critical packet execution handoff
 
+## Current routing override
+
+The owner has replaced Tera with Argon for critical implementation. Entries below
+remain historical attribution, not active write authority. See
+[Sol's resume checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md) and
+[Argon's full packet](Argon_W1_W3_Critical_Implementation_Assignment.md).
+Argon must reconcile actual source and any pending edits before writing; Gemini
+continues independent testing, Sonnet noncritical work and Sol final acceptance.
+
 ## Sol checkpoint at Gemini revision f88fef44, 2026-11-06
 
 The earlier blocked-policy descriptions below are historical. Read
