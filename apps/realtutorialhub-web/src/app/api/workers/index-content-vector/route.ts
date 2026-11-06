@@ -182,6 +182,7 @@ function buildIndexContentVectorHandler() {
     async (envelope: unknown) => processIndexContentEnvelope(envelope as IndexContentEnvelope),
     {
       schema: IndexContentEnvelopeSchema,
+      tenantScope: 'realtutorialhub',
     }
   );
 }

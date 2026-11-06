@@ -43,6 +43,7 @@ const handler = createQStashHandler(
   },
   {
     schema: ExamCompletedEnvelopeSchema,
+    tenantScope: 'realtutorialhub',
   }
 )
 

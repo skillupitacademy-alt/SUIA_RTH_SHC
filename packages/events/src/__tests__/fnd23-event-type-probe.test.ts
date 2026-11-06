@@ -9,6 +9,7 @@ it('does not invoke a registered handler for a different custom-schema event typ
   const handler = createQStashHandler(PlatformEventTypes.PROJECT_SUBMITTED, effect, {
     receiver: { verify: async () => true } as never,
     schema: z.object({ type: z.literal('project.approved'), correlationId: z.string(), id: z.string() }),
+    tenantScope: 'skillup',
   });
   let accepted = false;
   try {
@@ -26,6 +27,7 @@ it('allows a verified message matching the registered event type', async () => {
   const handler = createQStashHandler(PlatformEventTypes.PROJECT_SUBMITTED, effect, {
     receiver: { verify: async () => true } as never,
     schema: z.object({ type: z.literal('project.submitted'), correlationId: z.string(), id: z.string() }),
+    tenantScope: 'skillup',
   });
   const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.submitted', correlationId: 'fixture', id: 'fixture' }) }));
   expect(response.ok).toBe(true);
