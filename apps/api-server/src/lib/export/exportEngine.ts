@@ -29,15 +29,21 @@ export class ExportEngine {
     return ExportEngine.instance;
   }
 
-  async processExport(examId: string, userId: string, format: ExportFormat): Promise<string> {
+  async processExport(
+    examId: string,
+    userId: string,
+    format: ExportFormat,
+    brandId: 'realtutorialhub' | 'skillup' = 'realtutorialhub'
+  ): Promise<string> {
     return withSpan('ExportEngine.processExport', async (span) => {
       span.setAttribute('examId', examId);
       span.setAttribute('userId', userId);
       span.setAttribute('format', format);
+      span.setAttribute('brandId', brandId);
 
-      this.log.info({ examId, userId, format }, 'Starting analytical export process');
+      this.log.info({ examId, userId, format, brandId }, 'Starting analytical export process');
 
-      const cacheKey = `export:${examId}:${userId}:${format}`;
+      const cacheKey = `export:${brandId}:${examId}:${userId}:${format}`;
       try {
         const cachedUrl = await redis.get<string>(cacheKey);
         if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
@@ -130,7 +136,12 @@ export class ExportEngine {
       const guidanceSignals = this.aggregator.buildGuidanceSignals(currentRows, historicalRows);
 
       const payload: ExportPayload = {
-        meta,
+        meta: {
+          ...meta,
+          brand: brandId,
+          tenantId: brandId,
+          ownerUserId: userId,
+        },
         rawAttempts: currentRows,
         aggregations,
         historicalProgress,
@@ -203,8 +214,8 @@ export class ExportEngine {
         throw new Error(`Unsupported format: ${format}`);
       }
 
-      // 4. Upload to shared storage provider
-      const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
+      // 4. Upload to shared storage provider (scoped by brand/tenant + owner + examId)
+      const filename = `exports/${brandId}/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
       const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
 
       try {

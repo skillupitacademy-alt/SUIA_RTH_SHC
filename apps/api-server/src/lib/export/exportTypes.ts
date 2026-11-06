@@ -24,6 +24,9 @@ export interface ExportMeta {
   vectorId: string;
   examId: string;
   startedAt: string;
+  brand?: 'realtutorialhub' | 'skillup';
+  tenantId?: 'realtutorialhub' | 'skillup';
+  ownerUserId?: string;
   lineage: {
     domain: string;
     subject: string;

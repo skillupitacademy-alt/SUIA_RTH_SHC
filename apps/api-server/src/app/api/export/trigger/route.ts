@@ -49,8 +49,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Derive userId from verified token — never from the request body
+    if (payload.brand !== 'realtutorialhub' && payload.brand !== 'skillup') {
+      return NextResponse.json({ error: 'Forbidden: Export requires learner tenant provenance' }, { status: 403 });
+    }
+
+    // Derive userId and brand from verified token — never from the request body
     const userId = payload.userId;
+    const brandId = payload.brand;
 
     // ── Body validation ─────────────────────────────────────────────
     const body = (await req.json()) as unknown;
@@ -109,7 +114,7 @@ export async function POST(req: NextRequest) {
     if (isDev) {
       const { ExportEngine } = await import('@/lib/export/exportEngine');
       const engine = ExportEngine.getInstance();
-      await engine.processExport(examId, userId, format as ExportFormat);
+      await engine.processExport(examId, userId, format as ExportFormat, brandId);
       const downloadUrl = buildExportDownloadUrl(examId, format);
       return NextResponse.json({ 
         downloadUrl, 

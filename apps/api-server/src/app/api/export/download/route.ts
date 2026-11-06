@@ -46,6 +46,9 @@ export async function GET(req: NextRequest) {
     if (!payload?.userId) {
       throw unauthorized('Unauthorized');
     }
+    if (payload.brand !== 'realtutorialhub' && payload.brand !== 'skillup') {
+      throw forbidden('Forbidden: Export requires learner tenant provenance');
+    }
 
     let fileRef: string;
     let format: string;
@@ -107,6 +110,14 @@ export async function GET(req: NextRequest) {
       format = 'csv';
     } else if (lowerUrl.endsWith('.json')) {
       format = 'json';
+    }
+
+    // Enforce brand/tenant provenance on scoped export keys when present
+    if (fileRef.startsWith('exports/realtutorialhub/') || fileRef.startsWith('exports/skillup/')) {
+      const [, keyBrand] = fileRef.split('/', 3);
+      if (keyBrand !== payload.brand) {
+        throw forbidden('Forbidden: Cross-brand export access denied');
+      }
     }
 
     const readUrl = await storage.getReadUrl(fileRef);

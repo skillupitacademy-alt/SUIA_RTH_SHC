@@ -300,16 +300,17 @@ export interface ITutorialContentRepository {
 
 export interface ITutorialProgressRepository {
   withDb(dbClient: TutorialDbClientLike): this;
-  findById(id: string): Promise<TutorialProgressRecord | undefined>;
-  getProgress(userId: string, subtopicId: string): Promise<TutorialProgressRecord | undefined>;
+  findById(id: string, tenantId?: string): Promise<TutorialProgressRecord | undefined>;
+  getProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord | undefined>;
   markBlockComplete(
     userId: string,
     subtopicId: string,
-    blockType: ContentBlockType
+    blockType: ContentBlockType,
+    tenantId?: string
   ): Promise<TutorialProgressRecord>;
-  isSubtopicComplete(userId: string, subtopicId: string): Promise<boolean>;
-  getCompletedSubtopics(userId: string): Promise<string[]>;
-  resetProgress(userId: string, subtopicId: string): Promise<TutorialProgressRecord>;
+  isSubtopicComplete(userId: string, subtopicId: string, tenantId?: string): Promise<boolean>;
+  getCompletedSubtopics(userId: string, tenantId?: string): Promise<string[]>;
+  resetProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord>;
 }
 
 /**

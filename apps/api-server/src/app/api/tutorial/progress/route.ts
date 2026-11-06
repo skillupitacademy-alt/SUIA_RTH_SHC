@@ -133,7 +133,6 @@ export async function GET(request: NextRequest) {
     if (authResult.errorResponse) {
       return authResult.errorResponse;
     }
-    const { userId } = authResult.authenticated!;
 
     const url = new URL(request.url);
     const subtopicId = url.searchParams.get('subtopicId');
@@ -146,8 +145,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get progress directly from repository
+    const { userId, brand } = authResult.authenticated!;
     const progressRepo = new TutorialProgressRepository();
-    const progress = await progressRepo.getProgress(userId, subtopicId);
+    const progress = await progressRepo.getProgress(userId, subtopicId, brand);
 
     const blocksCompleted = progress?.blocksCompleted || [];
     const snapshot = calculateTutorialProgress({ completedSections: blocksCompleted });
