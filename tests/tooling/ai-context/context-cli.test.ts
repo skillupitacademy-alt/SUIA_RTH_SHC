@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -261,25 +262,28 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
     }
   });
 
-  // SUPP-02 (Priority A.2): Synthetic external symlinks, untracked forbidden files, and alternate secret globs are rejected without leaking credentials
-  it('SUPP-02 (A.2): rejects external symlinks, untracked files and alternate forbidden paths without leaking secret values', () => {
-    const symlinkSubdir = path.join(FIXTURES_DIR, 'symlink-confinement-test');
-    fs.mkdirSync(symlinkSubdir, { recursive: true });
-    const outsideTarget = path.resolve(REPO_ROOT, '..', 'temp-outside-canary.txt');
+  // SUPP-02 (Priority A.2): Synthetic external symlinks, untracked forbidden files, and alternate secret globs in isolated disposable fixture directory
+  it('SUPP-02 (A.2): rejects external symlinks, untracked files and alternate forbidden paths in isolated disposable fixtures without leaking secret values', () => {
+    const disposableFixtureDir = path.join(FIXTURES_DIR, `disposable-symlink-test-${Date.now()}`);
+    fs.mkdirSync(disposableFixtureDir, { recursive: true });
+
+    // 1. External symlink target created strictly in isolated OS temporary directory (never writing outside repo or production paths)
+    const outsideTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gemini-val-outside-'));
+    const outsideTarget = path.join(outsideTempDir, 'temp-outside-canary.txt');
     fs.writeFileSync(outsideTarget, 'SUPER_SECRET_EXTERNAL_CANARY_VALUE_12345', 'utf8');
 
-    const junctionLink = path.join(symlinkSubdir, 'escape-link');
+    const junctionLink = path.join(disposableFixtureDir, 'escape-link');
     try {
-      fs.symlinkSync(path.resolve(REPO_ROOT, '..'), junctionLink, 'junction');
+      fs.symlinkSync(outsideTempDir, junctionLink, 'junction');
+      const relExtraPath = toPosixRel(path.join(junctionLink, 'temp-outside-canary.txt'));
 
-      // 1. External symlink target rejection
       const symlinkRes = runCli(
         [
           'build-packet',
           '--packet',
           'fnd03',
           '--extra-file',
-          'tests/tooling/ai-context/fixtures/symlink-confinement-test/escape-link/temp-outside-canary.txt',
+          relExtraPath,
           '--allow-dirty',
         ],
         { allowFailure: true }
@@ -290,36 +294,41 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
     } finally {
       if (fs.existsSync(junctionLink)) fs.unlinkSync(junctionLink);
       if (fs.existsSync(outsideTarget)) fs.unlinkSync(outsideTarget);
-      if (fs.existsSync(symlinkSubdir)) fs.rmdirSync(symlinkSubdir);
+      if (fs.existsSync(outsideTempDir)) fs.rmdirSync(outsideTempDir);
     }
 
-    // 2. Alternate forbidden secret path globs
-    const alternateSecretPaths = [
-      'packages/auth/.env.production',
-      'packages/auth/secrets.live.json',
-      'packages/auth/id_rsa_synthetic',
-      'packages/auth/server.pem',
+    // 2. Alternate forbidden secret path globs created ONLY in disposable fixture directory (never in packages/auth or real config paths)
+    const secretFileSubdir = path.join(disposableFixtureDir, 'disposable-secrets');
+    fs.mkdirSync(secretFileSubdir, { recursive: true });
+
+    const syntheticSecretFilenames = [
+      '.env.production',
+      'secrets.synthetic.json',
+      'id_rsa_synthetic',
+      'synthetic-server.pem',
     ];
 
-    for (const secretRelPath of alternateSecretPaths) {
-      const absPath = path.join(REPO_ROOT, secretRelPath);
-      fs.writeFileSync(absPath, 'MOCK_SECRET_CREDENTIAL_DATA', 'utf8');
-      try {
+    try {
+      for (const filename of syntheticSecretFilenames) {
+        const absPath = path.join(secretFileSubdir, filename);
+        fs.writeFileSync(absPath, 'MOCK_SECRET_CREDENTIAL_DATA', 'utf8');
+        const relPath = toPosixRel(absPath);
+
         const secretRes = runCli(
-          ['build-packet', '--packet', 'fnd03', '--extra-file', secretRelPath, '--allow-dirty'],
+          ['build-packet', '--packet', 'fnd03', '--extra-file', relPath, '--allow-dirty'],
           { allowFailure: true }
         );
         expect(secretRes.status).toBe(1);
         expect(secretRes.stderr).toContain('SECRET_SCAN_ABORT');
         expect(secretRes.stderr).not.toContain('MOCK_SECRET_CREDENTIAL_DATA');
-      } finally {
-        if (fs.existsSync(absPath)) fs.unlinkSync(absPath);
       }
+    } finally {
+      if (fs.existsSync(disposableFixtureDir)) fs.rmSync(disposableFixtureDir, { recursive: true, force: true });
     }
   });
 
-  // SUPP-03 (Priority A.3): Mutate selected source, test and Sol-decision inputs in isolated fixtures; prove checkpoint invalidation
-  it('SUPP-03 (A.3): invalidates checkpoints against mutated source hashes, Sol decisions, missing sections, and unauthorized status', () => {
+  // SUPP-03 (Priority A.3): Checkpoint-field tampering invalidation (distinguished from live disk source mutations)
+  it('SUPP-03 (A.3): invalidates checkpoints against tampered metadata fields (recorded hashes, Sol references, missing sections, unauthorized status) distinct from disk source mutations', () => {
     const tempDir = path.join(REPO_ROOT, '.context-packets/test-supp03-checkpoints');
     fs.mkdirSync(tempDir, { recursive: true });
 
@@ -329,7 +338,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
         fs.readFileSync(path.join(tempDir, 'fnd03-checkpoint.json'), 'utf8')
       );
 
-      // Mutation 1: Tracked source file hash mismatch
+      // Tampering 1: Tracked source file hash in checkpoint metadata
       const mutFile = {
         ...baseCheckpoint,
         fileFingerprints: baseCheckpoint.fileFingerprints.map((f: any, i: number) =>
@@ -342,7 +351,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
       expect(mutFileRes.status).toBe(1);
       expect(mutFileRes.stdout).toContain('FILE_HASH_MISMATCH');
 
-      // Mutation 2: Sol decision file hash mismatch
+      // Tampering 2: Sol decision file hash in checkpoint metadata
       const mutSol = {
         ...baseCheckpoint,
         solDecisionReference: {
@@ -356,7 +365,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
       expect(mutSolRes.status).toBe(1);
       expect(mutSolRes.stdout).toContain('SOL_DECISION_HASH_MISMATCH');
 
-      // Mutation 3: Sol decision missing verified sections
+      // Tampering 3: Sol decision missing verified sections in checkpoint metadata
       const mutSections = {
         ...baseCheckpoint,
         solDecisionReference: {
@@ -370,7 +379,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
       expect(mutSectionsRes.status).toBe(1);
       expect(mutSectionsRes.stdout).toContain('MISSING_SOL_SECTIONS');
 
-      // Mutation 4: Unauthorized status = "CLOSED"
+      // Tampering 4: Unauthorized status = "CLOSED" in checkpoint metadata
       const mutClosed = { ...baseCheckpoint, status: 'CLOSED' };
       const mutClosedPath = path.join(tempDir, 'mut-closed.json');
       fs.writeFileSync(mutClosedPath, JSON.stringify(mutClosed, null, 2), 'utf8');
@@ -378,7 +387,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
       expect(mutClosedRes.status).toBe(1);
       expect(mutClosedRes.stdout).toContain('UNAUTHORIZED_CLOSURE_STATUS');
 
-      // Mutation 5: Auto-execution flag enabled
+      // Tampering 5: Auto-execution flag enabled in checkpoint metadata
       const mutAutoExec = { ...baseCheckpoint, autoExecuteCommands: true };
       const mutAutoExecPath = path.join(tempDir, 'mut-auto-exec.json');
       fs.writeFileSync(mutAutoExecPath, JSON.stringify(mutAutoExec, null, 2), 'utf8');
@@ -427,7 +436,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
   });
 
   // SUPP-05 (Priority B.5): Force full-packet overflow; reconstruct generated chunks and verify complete byte/file coverage
-  it('SUPP-05 (B.5): forces budget overflow, writes safe multi-part chunks, and reconstructs 100% file coverage without omission', () => {
+  it('SUPP-05 (B.5): forces budget overflow, writes safe multi-part chunks, validates reconstructed file SHA-256 headers against source files, and confirms complete 30-file coverage', () => {
     const chunkDir = path.join(REPO_ROOT, '.context-packets/test-supp05-chunks');
     fs.mkdirSync(chunkDir, { recursive: true });
 
@@ -444,7 +453,7 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
       const safeChunks = manifest.budgetStatus.safeChunkFiles;
       expect(safeChunks.length).toBeGreaterThanOrEqual(2);
 
-      // Reconstruct union of files across all safe chunk files
+      // Reconstruct union of files across all safe chunk files and validate section SHA-256 headers against source files
       const reconstructedFiles: string[] = [];
       for (const chunk of safeChunks) {
         const chunkAbs = path.join(REPO_ROOT, chunk.path);
@@ -454,6 +463,11 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
         for (const filePath of chunk.files) {
           expect(chunkContent).toContain(filePath);
           reconstructedFiles.push(filePath);
+
+          // Validate that the chunk section header contains the exact SHA-256 matching the manifest entry
+          const manifestFile = manifest.selectedFiles.find((f: any) => f.path === filePath);
+          expect(manifestFile).toBeDefined();
+          expect(chunkContent).toContain(`- **SHA-256**: \`${manifestFile.sha256}\``);
         }
       }
 
@@ -524,8 +538,9 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
     expect(report.countingMethodology.repomixCalibration).toContain('o200k_base');
   });
 
-  // SUPP-08 (Priority C.8): Prove offline operation with actual network-denial boundary and blackhole proxy
-  it('SUPP-08 (C.8): proves offline operation under active network-denial preload and blackhole proxy configuration', () => {
+  // SUPP-08 (Priority C.8): Prove offline operation under scoped Node runtime network-denial boundary and blackhole proxy
+  it('SUPP-08 (C.8): proves offline operation under scoped Node runtime network-denial preload and blackhole proxy configuration', () => {
+    // Note: Scoped strictly to the context-cli Node.js runtime process and direct socket creation intercepted by offline-network-denial-guard.cjs.
     const preloadGuard = path.join(FIXTURES_DIR, 'offline-network-denial-guard.cjs');
     expect(fs.existsSync(preloadGuard)).toBe(true);
 
@@ -557,13 +572,14 @@ describe('VAL01–VAL12 Supplemental Acceptance Controls', () => {
     expect(queryOut).toContain('[query-graph] PASS');
   });
 
-  // SUPP-09 (Priority C.9): Clean-checkout setup, host-rule noninterference, and full-source rollback recovery
-  it('SUPP-09 (C.9): verifies clean-checkout artifact generation, AGENTS.md/CLAUDE.md noninterference, and full-source rollback recovery', () => {
+  // SUPP-09 (Priority C.9): Isolated output directory artifact generation, host-rule noninterference, and full-source rollback recovery
+  it('SUPP-09 (C.9): verifies isolated empty output directory artifact generation (--out-dir), AGENTS.md/CLAUDE.md noninterference, and full-source rollback recovery', () => {
+    // Note: This tests isolated execution into an empty target output directory (--out-dir), distinguished from a fresh git clone or fresh working tree.
     const cleanDir = path.join(REPO_ROOT, '.context-packets/test-supp09-clean');
     fs.mkdirSync(cleanDir, { recursive: true });
 
     try {
-      // 1. Clean checkout execution into an empty directory
+      // 1. Isolated execution into an empty output directory (distinguished from a fresh Git checkout)
       const buildRes = runCli([
         'build-packet',
         '--packet',
