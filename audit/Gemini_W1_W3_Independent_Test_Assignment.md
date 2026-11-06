@@ -1,5 +1,14 @@
 # Gemini independent foundation testing packet
 
+## Current TC20-A checkpoint at 7f6f788d
+
+[Sol independently reproduced 26 passes but found a failing merge boundary](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md).
+After Argon freezes the approved one-file correction, run the unchanged Sol merge
+probe, independent reverse-brand/no-effect/same-brand positives, existing analytics
+selection and typecheck. Keep FAIL-04 unchanged. Correct TC20-A report counts and
+overclaims. A2 has a separate four-file production manifest and new independent
+handler tests under the linked server-binding contract; never race its writer.
+
 ## Current handoff at source 2ca1889b
 
 Argon replaces Tera for ALL critical implementation; keep the full GM01-GM20

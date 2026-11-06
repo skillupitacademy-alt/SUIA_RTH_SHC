@@ -5,6 +5,15 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**TC20-A review at 7f6f788d:** Sol reproduced eight files / 26 analytics passes and
+the package typecheck, accepting the narrow tracker caller repair within that
+boundary. A new direct merge control has one pass / one failure: cross-brand node
+and graph-edge mutation remains possible through mergeIdentityNodes. TC20-A stays
+CHANGES_REQUESTED. [The current review](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md)
+authorizes Argon's one-file guard correction and subsequent isolated four-file A2
+server-binding manifest, with Gemini independent verification. No foundation or
+physical gate closes, and the full Argon TC01-TC20 assignment remains active.
+
 **Current owner routing at source 2ca1889b:** Argon replaces Tera for ALL critical
 TC01-TC20/FND implementation, Gemini independently tests, Sonnet owns noncritical
 documentation/presentation, Sol owns architecture and final acceptance. See

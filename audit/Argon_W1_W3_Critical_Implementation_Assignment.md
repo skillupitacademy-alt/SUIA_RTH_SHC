@@ -1,5 +1,16 @@
 # Current owner override
 
+## Current priority at Gemini revision 7f6f788d
+
+Read [Sol's TC20-A review and next manifest](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md).
+The approved tracker amendment passes the 26-case selection, but Sol's direct merge
+probe finds cross-brand node/edge mutation. TC20-A remains CHANGES_REQUESTED. Argon
+may edit only identity/user-merge-engine.ts for that corrective slice. Freeze for
+Gemini, then execute the separately approved four-file A2 manifest in an isolated
+checkout under the selected server-binding contract. The full TC01-TC20 assignment
+below remains active. TC17/TC18/TC20-B need their exact revised manifests, not broad
+directory edits or assumed policy reapproval. No push/live execution/self-acceptance.
+
 The owner replaces Tera/Terra with Argon for ALL critical TC01-TC20 implementation, including TC20-B. Sol resume checkpoint at source 2ca1889b governs current priority, exclusive files and acceptance. The copied TC01-TC20 requirements below remain in force; historical start references are superseded by the actual execution baseline. Read audit/Sol_W1_W3_Resume_Checkpoint_2ca1889b.md first. No new production slice starts without its exact allowed-file manifest. TC20-A tracker amendment is approved there. TC20-A2, TC18 and TC17 require the stated next manifest review, not automatic expansion.
 
 # Argon critical implementation packet

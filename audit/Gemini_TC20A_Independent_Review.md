@@ -1,5 +1,15 @@
 # GEMINI INDEPENDENT VERIFICATION REPORT: TC20-A ANALYTICS STATE ISOLATION
 
+> Sol independent addendum at 7f6f788d: eight files / 26 passing cases reproduced,
+> but per-file counts below need correction: Gemini suite 11, Argon suite 2, provider
+> suite 3 (omitted from the list). Earlier baseline was 13 passed / 2 failed cases.
+> Full TC20-A acceptance is CHANGES_REQUESTED: a separate direct merge probe produces
+> one legitimate pass / one cross-brand no-mutation failure. See
+> [Sol's review and exact corrective manifest](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md).
+> Current passing pipeline evidence does not prove all identity entry points deny
+> cross-brand merging. Preserve the report below as historical evidence; Gemini owns
+> its count/claim correction and independent verification after Argon's repair.
+
 **Role:** Independent Security & Regression Tester (Gemini)  
 **Tested Source Baseline:** `123a5450eb3d0817e5b26870de080966a059754c` (`123a5450`)  
 **Target Branch:** `remediation/w1-2-batch-05-targeted`  

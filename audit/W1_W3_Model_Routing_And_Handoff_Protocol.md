@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Latest critical handoff at 7f6f788d
+
+Argon remains sole critical TC01-TC20 implementer. [Sol's current TC20-A review](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md)
+records 26 analytics passes, a separate failing cross-brand identity merge control,
+the exact one-file correction and isolated A2 manifest. Gemini owns independent
+verification and report corrections; Sol owns acceptance. Follow these exclusive
+paths and freeze revisions. No new push, physical execution or self-closure authority.
+
 ## Current owner override at source 2ca1889b
 
 The owner now replaces Tera/Terra with Argon as sole critical implementer for ALL

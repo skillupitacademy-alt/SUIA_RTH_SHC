@@ -1,5 +1,16 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Sol review at Gemini revision 7f6f788d
+
+The tracker repair and unchanged FAIL-04 pass in Sol's independent 26-case run, but
+TC20-A overall remains CHANGES_REQUESTED. A direct merge entry mutates nodes and
+graph edges across brands. [Sol's review](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md)
+authorizes exactly identity/user-merge-engine.ts for the immediate correction and
+the subsequent isolated A2 four-file manifest under a strict server-binding policy.
+Gemini tests the frozen correction before Sol acceptance. TC17/TC18/TC20-B manifests
+need the specified precision/caller coverage. Do not repeat already selected D4-D7
+policy questions or claim all twenty items accepted. Historical evidence below stays.
+
 - **Issued**: 2026-11-06
 - **Assigned role**: `Argon` — Primary critical production implementer for `TC01`–`TC20` (including `TC20-B`) and critical portions of `FND01`–`FND30`
 - **Runtime identity**: `Gemini 4 Argon (Medium)`
