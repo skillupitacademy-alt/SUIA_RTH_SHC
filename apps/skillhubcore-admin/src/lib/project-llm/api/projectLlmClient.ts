@@ -613,8 +613,11 @@ export class ProjectLlmClient {
         currentState = 'AWAITING_GATE_1';
       }
       if (currentState === 'AWAITING_GATE_1') {
-        await this.transitionWorkflow(workflowId, 'GUI_APPROVED', 'Prototype GUI approved by admin');
-        currentState = 'GUI_APPROVED';
+        throw new ProjectLlmError(
+          ProjectLlmErrorCode.SERVICE_UNAVAILABLE,
+          409,
+          'Gate 1 human approval is required before candidate upload'
+        );
       }
       if (currentState === 'GUI_APPROVED') {
         await this.transitionWorkflow(workflowId, 'CANDIDATE_REQUESTED', 'Requested candidate package implementation');
@@ -622,6 +625,7 @@ export class ProjectLlmClient {
       }
     } catch (err) {
       console.warn('[ensureCandidateRequested] Transition note:', err);
+      throw err;
     }
   }
 
