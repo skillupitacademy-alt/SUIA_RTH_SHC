@@ -7,6 +7,7 @@ import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { jsonData, jsonError, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { admissions, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
 import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
+import { normalizeEmail } from '@quiz/db-people/utils/email-normalization';
 
 async function admit(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const forbidden = await requireAdminOrForbidden(request);
@@ -29,17 +30,31 @@ async function admit(request: NextRequest, context: { params: Promise<{ id: stri
     return jsonError('No active batch available', 409);
   }
 
+  const normalizedEmail = normalizeEmail(enquiry.email);
+  const targetPlatform = 'skillup';
+
+  // Check if email exists on ANY platform first (foreign-tenant collision detection)
+  const [anyPlatformUser] = await db
+    .select({ id: users.id, platform: users.platform })
+    .from(users)
+    .where(and(eq(users.email, normalizedEmail), isNull(users.deletedAt)))
+    .limit(1);
+
+  // Reject if email exists on a different platform
+  if (anyPlatformUser && anyPlatformUser.platform !== targetPlatform) {
+    return jsonError('Email already registered on a different platform', 409);
+  }
+
   const passwordHash = await bcrypt.hash('SkillUp@2025', 10);
-  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, enquiry.email)).limit(1);
   const userId =
-    existingUser?.id ??
+    anyPlatformUser?.id ??
     (await db
       .insert(users)
       .values({
-        email: enquiry.email,
+        email: normalizedEmail,
         passwordHash,
         role: 'student',
-        platform: 'skillup',
+        platform: targetPlatform,
         isActive: true,
         deletedAt: null,
       })
