@@ -1,4 +1,5 @@
-# Gemini Independent Validation Report (`VAL01`–`VAL12`)
+# Gemini Independent Tooling Validation Report (`VAL01`–`VAL12`)
+## Supplemental Acceptance Evidence & Coverage Analysis
 
 - **Assigned project role**: `Gemini` (Independent security, regression, and tooling validator)
 - **Runtime model**: Gemini 3.8 Flash (Medium)
@@ -6,162 +7,169 @@
 - **Documentation**: `Claude Sonnet 4.5` (`DOC01`–`DOC03` at commits `a3092abd` and `11ced9c1`)
 - **Architecture & acceptance authority**: `Sol`
 - **Assignment**: [Argon_Developer_Context_Optimization_Assignment.md](file:///e:/onlinewebsites/quiz-platform/audit/Argon_Developer_Context_Optimization_Assignment.md) (`VAL01`–`VAL12`)
-- **Verified revisions**:
-  - `toolHead` (`tools/ai-context/*`): `aa33e494`
-  - `docHead` (`docs/ai-context/*`): `11ced9c1` (includes `a3092abd`)
-  - `sourceHead` (`packages/auth`, `apps/api-server`, migrations): `f0216273`
-  - `testHead` (`packages/auth/src/rbac/__tests__/*`): `f88fef44`
-  - `repoHead`: `1e19922f`
-- **Verification test suite**: `tests/tooling/ai-context/context-cli.test.ts` (12/12 passing)
-- **Verdict**: **`VAL01`–`VAL12` VERIFIED (12/12 PASS)**. The v1.1.0 tooling corrections and Sonnet documentation satisfy all assigned offline validation controls. Final architectural acceptance remains with **Sol**. **FND03 is NOT marked complete; TC01–TC20 implementation by Tera continues without interruption.**
+- **Test suite**: `tests/tooling/ai-context/context-cli.test.ts` (**22/22 passing**: 12 baseline + 10 supplemental acceptance controls)
+- **Offline guard**: Enforced `tests/tooling/ai-context/fixtures/offline-network-denial-guard.cjs` and blackhole proxy `127.0.0.1:9`
+- **Verdict**: **`VAL01`–`VAL12` SUPPLEMENTAL VALIDATION COMPLETE (22/22 PASS)**. All adverse security, provenance, chunking, symlink, and mutation controls have been independently verified in an isolated test environment. Final architectural acceptance remains solely with **Sol**. **FND03 is NOT marked complete; TC01–TC20 production implementation by Tera continues without interruption.**
 
 ---
 
-## 1. Executive Summary of Validation Results (`VAL01`–`VAL12`)
+## 1. Acceptance Control Classification Matrix
 
-| Control ID | Required Verification Target | Test Strategy & Adverse Controls | Observed Outcome | Exit Code | Result |
-| :--- | :--- | :--- | :--- | :---: | :---: |
-| **VAL01** | Fresh-session reproduction without hidden history | Executed all CLI subcommands (`--help`, `record-graph-provenance`, `sql-coverage`, `query-graph`, `build-packet`, `benchmark`, `checkpoint-create`, `checkpoint-validate`, `host-inventory`) in a fresh Node process. | All subcommands execute cleanly and deterministically offline. | `0` | **PASS** |
-| **VAL02** | Graph reuse, focused query truncation & fallback | Reused `graphify-out/graph.json` (`36,024` nodes, `85,848` edges), executed BFS traversal, verified truncation within `16,384` byte budget, and confirmed ripgrep source fallback. | BFS reached 50 nodes, truncated to top 20 within `13,666` bytes; ripgrep returned 3 matching files. | `0` | **PASS** |
-| **VAL03** | FND03 core RBAC & caller retention | Built full packet and verified `.context-packets/fnd03-packet.manifest.json` against discovered callers. | Retained all 18 core RBAC files and 14 discovered API callers with `uncoveredCallersCount === 0`. | `0` | **PASS** |
-| **VAL04** | Sol D1/D3 decisions & negative tests preserved | Scanned `.context-packets/fnd03-packet.md` for complete uncompressed negative tests and Sol decision texts. | Complete test files and Sol D1 (lines 50–92) & D3 (lines 113–143) texts preserved with full bodies. | `0` | **PASS** |
-| **VAL05** | Progress schemas, repositories & migration safety | Inspected packet content for `db-tutorial` progress schemas, repository references, and SQL migration guards. | `tutorial-progress.ts`, `tutorial-progress.repository.ts`, and `RAISE EXCEPTION` migration blockers retained. | `0` | **PASS** |
-| **VAL06** | Navigation vs full mode & fail-closed on overflow | Compared `--mode navigation` outline vs `--mode full`, and tested `--max-bytes 32768` adverse budget overflow. | Navigation mode strips bodies (`auditSafe: false`). Full mode retains 100% code; overflow throws `PACKET_INCOMPLETE_FAIL_CLOSED`. | `1` on overflow | **PASS** |
-| **VAL07** | Secret canaries, path traversal & denylist | Tested parent traversal (`../outside.txt`), forbidden globs (`.npmrc`), and ran `verify-canaries` suite. | Traversal blocked (`PATH_CONFINEMENT_ERROR`), `.npmrc` blocked (`SECRET_SCAN_ABORT`), 15/15 synthetic canaries passed with value redaction. | `1` on attacks; `0` on verify | **PASS** |
-| **VAL08** | Stale checkpoints, commit mismatch & auto-exec guard | Validated checkpoint on clean HEAD, tested `--simulate-head` mismatch, and verified `autoExecuteCommands`. | Clean checkpoint validates `PASS`. Stale HEAD fails with `REPO_HEAD_MISMATCH`. Commands are recorded only (`autoExecuteCommands: false`). | `1` on stale HEAD; `0` on clean | **PASS** |
-| **VAL09** | Budget overflow safe chunking | Ran `build-packet --mode full --max-bytes 49152` and inspected disk outputs. | Exits with failure code `1` in terminal, but writes multi-part safe chunks (`part1.md`, `part2.md`) on disk without data loss. | `1` (terminal failure) | **PASS** |
-| **VAL10** | Benchmark comparability & discovery overhead | Inspected `.context-packets/fnd03-benchmark.json` methodology and file breakdowns. | Exactly identical 30-file security coverage; measures raw files (`181.7 KB`), discovery overhead (`240.7 KB`), and full workflow (`230.8 KB`, `-45.35%`). | `0` | **PASS** |
-| **VAL11** | Strictly offline packaging & zero runtime imports | Inspected `context-cli.mjs` imports, network usage, and application dependencies. | Uses only Node.js built-ins (`crypto`, `child_process`, `fs`, `path`, `url`). Zero application imports or network calls. | `0` | **PASS** |
-| **VAL12** | Gitignore isolation, host compatibility & closure gate | Checked `.gitignore` for `/.context-packets/`, inspected `host-inventory.json`, and checked checkpoint status. | `/.context-packets/` ignored. Sonnet `DOC01`–`DOC03` paths match. Checkpoint `status: IN_PROGRESS` (never `CLOSED`). | `0` | **PASS** |
+In accordance with the independent review instructions, each validation requirement is categorized into:
+- **Passing Test Cases**: Green assertions executed in the test runner.
+- **Fully Demonstrated Acceptance Controls**: Thoroughly exercised with adverse test conditions, active fault injection, or failure assertions.
+- **Partially Demonstrated Controls**: Verified in local offline tooling metrics but bounded by workflow/heuristic limitations.
+- **Remaining Unexecuted Conditions**: Intentionally gated or out-of-scope for offline testing.
 
----
-
-## 2. Detailed Technical Verification Evidence
-
-### VAL01: Fresh-Session Setup & Command Reproduction
-- Executed from repository root in an isolated Node subprocess with no prior conversation state:
-  - `node tools/ai-context/context-cli.mjs --help` -> Exit 0
-  - `node tools/ai-context/context-cli.mjs record-graph-provenance --packet fnd03` -> Exit 0
-  - `node tools/ai-context/context-cli.mjs sql-coverage` -> Exit 0
-  - `node tools/ai-context/context-cli.mjs host-inventory` -> Exit 0
-- Confirmed zero reliance on shell environment variables or global packages.
-
-### VAL02: Graph Provenance, Focused Traversal & Source Fallback
-- `sql-coverage` verified that `graphify-out/graph.json` contains:
-  - **36,024 nodes**, **85,848 edges**, and **833 SQL nodes across 131 `.sql` files**.
-  - `packages/db/migrations/0001_fnd03_add_tenant_ownership.sql` and `packages/db-tutorial/migrations/0029_fnd03_add_tenant_to_progress.sql` are indexed as file nodes.
-- Provenance verification:
-  - Per-file AST MD5 hashes in `graphify-out/manifest.json` match disk file MD5s (**27/27 tracked FND03 code/SQL files matched**).
-  - Graph provenance stamp in `.context-packets/graph-provenance.json` confirms `graph.json` SHA-256 (`708151ea...`), clean worktree, and git commit revision.
-- `query-graph "canAccessResource isValidTenantPair" --no-native-cli`:
-  - Identified 2 lexical seeds.
-  - Multi-hop BFS traversal reached 50 nodes and 30 edges, bounded to top 20 within `13,666` bytes (`explorationBudget: 16,384` bytes).
-  - Fallback search via `ripgrep` returned 3 files:
-    - `packages/auth/src/rbac/ownership.service.ts`
-    - `packages/auth/src/rbac/__tests__/ownership.service.test.ts`
-    - `packages/auth/src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts`
-
-### VAL03: Core FND03 RBAC & Caller Retention
-- Generated `.context-packets/fnd03-packet.md` and `.context-packets/fnd03-packet.manifest.json`:
-  - `selectedFilesCount`: **30 files**
-  - Core RBAC components: `ownership.service.ts`, `rbac.adapter.ts`, `rbac.guard.ts`, `enforcer.ts`, `normalize-roles.ts`, `role-permissions.ts`, `roles.ts`, `permissions.ts`, `index.ts`, `rbac.audit.ts`, `auth-errors.ts`.
-  - Discovered API callers: 14 matching files across `packages/auth` and `apps/api-server` (`profile/route.ts`, `brand-db.ts`, `onboarding/route.ts`, `me/route.ts`, `sessions/route.ts`, `sessions/[sessionId]/route.ts`).
-  - `uncoveredCallersCount`: **0** (`completenessStatus: COMPLETE_VERIFIED`).
-
-### VAL04: Preservation of Negative Tests & Sol Decisions
-- Verified that `build-packet --mode full` does not compress, outline, or truncate:
-  - `packages/auth/src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts`: all 6 test cases with full `expect(...)` assertions intact.
-  - `packages/auth/src/rbac/__tests__/ownership.service.test.ts`: all 27 unit tests intact.
-  - `audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md`: full text of Sol decisions `D1` (profile ownership) and `D3` (tenant persistence, progress, exports).
-
-### VAL05: Tutorial Progress & Blocked Migration Controls
-- Verified presence of:
-  - `packages/db-tutorial/src/schema/tutorial-progress.ts` (nullable `tenantId` quarantine representation).
-  - `packages/db-tutorial/src/repositories/tutorial-progress.repository.ts`.
-  - Blocked migrations `0001_fnd03_add_tenant_ownership.sql` and `0029_fnd03_add_tenant_to_progress.sql` containing `RAISE EXCEPTION 'FND03 migration blocked pending provenance review';`.
-
-### VAL06: Navigation vs Full Mode & Fail-Closed Budget Overflow
-- Navigation mode (`--mode navigation`):
-  - Emits imports and symbol line ranges (`39,321` bytes, `~9,808` est. tokens).
-  - Explicitly flags `auditSafeForSecuritySignOff: false` in `.manifest.json`.
-- Full mode (`--mode full`):
-  - Retains 100% of code with line numbers (`214,849` bytes, `~53,649` est. tokens).
-  - Adverse test: `build-packet --mode full --max-bytes 32768` fails closed with exit code `1` and error `PACKET_INCOMPLETE_FAIL_CLOSED: BUDGET_OVERFLOW_IN_FULL_SECURITY_MODE`.
-
-### VAL07: Secret Scanning & Path Traversal Guardrails
-- Adverse traversal: `build-packet --extra-file "../outside.txt"` fails with exit code `1` (`PATH_CONFINEMENT_ERROR: Parent traversal ('..') is forbidden`).
-- Adverse path glob: `build-packet --extra-file ".npmrc"` fails with exit code `1` (`SECRET_SCAN_ABORT: File path matches forbidden secret/environment file denylist`).
-- Synthetic canary self-test (`node tools/ai-context/context-cli.mjs verify-canaries`):
-  - **15/15 checks passed**.
-  - All synthetic credential patterns (PEM private key, DB connection string with password, GitHub PAT, Upstash token) detected with `secretValueRedactedFromOutput: true`.
-
-### VAL08: Commit-Aware Checkpoints & Stale Input Invalidation
-- Created `.context-packets/fnd03-checkpoint.json`:
-  - `repoHead`: `1e19922f`
-  - `sourceHead`: `f0216273`
-  - `toolHead`: `aa33e494`
-  - `testHead`: `f88fef44`
-  - `solDecisionRevision`: `c166119a` (Sections: `D1`, `D3`)
-  - Tracked file fingerprints: 30 files with SHA-256 hashes.
-- Adverse test: `checkpoint-validate --simulate-head 0000000000000000000000000000000000000000` fails closed with exit code `1` and error `REPO_HEAD_MISMATCH`.
-- `autoExecuteCommands`: strictly `false`.
-
-### VAL09: Output Budgets & Safe Multi-Part Chunking
-- Adverse test: `build-packet --mode full --max-bytes 49152 --out-dir .context-packets/val09-chunks`:
-  - Command exits with failure code `1` in the terminal to prevent silent truncation.
-  - Automatically writes multi-part safe chunks to disk:
-    - `.context-packets/val09-chunks/fnd03-full-chunk-part1.md` (49,045 bytes)
-    - `.context-packets/val09-chunks/fnd03-full-chunk-part2.md` (48,460 bytes)
-    - Additional chunks containing 100% of remaining files.
-  - Zero required security evidence is lost.
-
-### VAL10: Comparable Benchmark Methodology
-- `.context-packets/fnd03-benchmark.json` measured against frozen revision:
-  - **Coverage Guarantee**: `identicalSecurityFileSet: true` (exact same 30 required FND03 files).
-  - **Conventional End-to-End**: `422,469` bytes (`181,713` B raw code + `240,756` B discovery reports) | `~105,537` est. tokens (`chars/4`).
-  - **Raw Required Files Only**: `181,713` bytes | `~45,365` est. tokens (`chars/4`).
-  - **Optimized Full Security Workflow**: `230,886` bytes (`214,849` B packet + `16,037` B bounded query) | `~57,657` est. tokens (`chars/4`) | **`-45.35%` vs conventional end-to-end**.
-  - **Optimized Navigation Outline**: `39,321` bytes | `~9,808` est. tokens (`chars/4`) | **`-90.69%`**.
-  - Token counts explicitly labeled as `Math.ceil(chars / 4)` estimates; external Repomix `o200k_base` numbers documented separately.
-
-### VAL11: Strict Offline Operation
-- Code inspection of `tools/ai-context/context-cli.mjs`:
-  - Zero imports from `@quiz/*` or third-party npm packages.
-  - Zero outbound HTTP/HTTPS network calls or telemetry.
-  - Execution runs completely offline under `audit/W1_W3_Offline_Test_Network_Guard.ts`.
-
-### VAL12: Gitignore, Host Compatibility & Status Rules
-- Verified `.gitignore` contains `/.context-packets/` (lines 224–226).
-- Verified `tools/ai-context/config.json` and `context-cli.mjs` reference approved Sonnet paths:
-  - `DOC01`: `docs/ai-context/operating-guide.md`
-  - `DOC02`: `docs/ai-context/fnd-checkpoint-template.md`
-  - `DOC03`: `docs/ai-context/task-retrieval-guide.md`
-- Confirmed Sonnet commits `a3092abd` and `11ced9c1` populated these files without editing production code or host instruction files.
-- Confirmed `fnd03-checkpoint.json` records `status: "IN_PROGRESS"` and rejects `CLOSED`.
+| Control ID | Scope & Requirement | Executed Test Cases | Demonstration Status | Adverse Controls & Validation Evidence |
+| :--- | :--- | :--- | :---: | :--- |
+| **VAL01** | Clean-session subprocess reproduction without hidden history | `VAL01`, `SUPP-10` | **FULLY DEMONSTRATED** | Executed all CLI subcommands (`--help`, `record-graph-provenance`, `sql-coverage`, `query-graph`, `build-packet`, `benchmark`, `checkpoint-create`, `checkpoint-validate`, `host-inventory`) in isolated Node processes with zero conversation state. Exit code `0` on valid commands, `1` on unknown. |
+| **VAL02** | Graph reuse, focused BFS traversal, stale/missing graph source fallback | `VAL02`, `SUPP-01` | **FULLY DEMONSTRATED** | Bounded BFS traversal tested within 16 KB exploration budget. Provenance verification tested against absent graph (`absent-graph-file.json`): sets `provenance.exists: false` and `advisory: true`, falling back to ripgrep without silent omissions. Explicit fallback failure tested: invalid regex (`[invalid-regex`) fails closed with exit code `1` and `CALLER_SEARCH_INVALID_REGEX`. |
+| **VAL03** | Core FND03 RBAC & caller retention | `VAL03`, `SUPP-06` | **FULLY DEMONSTRATED** | Full packet preserves all 18 core RBAC files and 14 discovered callers (`uncoveredCallersCount === 0`). Discovered callers unioned with static AST edges. |
+| **VAL04** | Sol D1/D3 decision texts & negative test assertions | `VAL04`, `SUPP-04` | **FULLY DEMONSTRATED** | Full uncompressed text of Sol decisions D1 and D3 preserved. 100% of negative assertion expressions from `sol-fnd03-tenant-boundary.test.ts` verified directly against disk source files. |
+| **VAL05** | Progress schemas, repositories & migration safety | `VAL05` | **FULLY DEMONSTRATED** | Preserves `db-tutorial` progress schemas, repository references, and SQL migration guards containing `RAISE EXCEPTION 'FND03 migration blocked pending provenance review';`. |
+| **VAL06** | Navigation outline vs full mode; fail-closed overflow | `VAL06`, `SUPP-05` | **FULLY DEMONSTRATED** | Navigation mode strips symbol bodies and explicitly flags `auditSafeForSecuritySignOff: false`. Full mode retains 100% function bodies and fails closed (`exitCode: 1`, `PACKET_INCOMPLETE_FAIL_CLOSED`) when budget is exceeded. |
+| **VAL07** | Confinement, external symlinks, forbidden paths & canaries | `VAL07`, `SUPP-02` | **FULLY DEMONSTRATED** | Parent traversal (`..`) blocked (`PATH_CONFINEMENT_ERROR`). Synthetic external symlink escaping repository root via directory junction rejected with `PATH_CONFINEMENT_ERROR`. Forbidden globs (`.env.production`, `.npmrc`, `secrets.live.json`, `id_rsa_synthetic`, `server.pem`) aborted (`SECRET_SCAN_ABORT`) without echoing secret values. 15/15 synthetic canaries passed with value redaction. |
+| **VAL08** | Commit-aware checkpoints & input mutation invalidation | `VAL08`, `SUPP-03` | **FULLY DEMONSTRATED** | Clean checkpoint validates `PASS`. Adverse mutations systematically tested: stale HEAD (`REPO_HEAD_MISMATCH`), mutated source file SHA-256 (`FILE_HASH_MISMATCH`), mutated Sol decision SHA-256 (`SOL_DECISION_HASH_MISMATCH`), missing verified sections (`MISSING_SOL_SECTIONS`), unauthorized status `CLOSED` (`UNAUTHORIZED_CLOSURE_STATUS`), and auto-execution flag enabled (`INVALID_EXECUTION_FLAG`). All exit `1`. |
+| **VAL09** | Budget overflow safe chunking & un-truncated evidence | `VAL09`, `SUPP-05` | **FULLY DEMONSTRATED** | Forced overflow (`--max-bytes 32768`) exits with failure code `1` in terminal, but writes 9 multi-part safe chunks (`part1.md` through `part9.md`). Reconstructed file union across all chunks proves 100% of the 30 files are preserved without data loss. Full un-truncated packet (214,849 bytes) preserved on disk. |
+| **VAL10** | Benchmark comparability & independent set calculation | `VAL10`, `SUPP-06`, `SUPP-07` | **PARTIALLY DEMONSTRATED** | Independently proved symmetric set equality (`conventionalRequired` vs `manifestSelectedFiles` symmetric difference is `[]`). Accounted for raw code (181.7 KB), conventional workflow with discovery (437.0 KB), line formatting (+18.24%), bounded query discovery (16.2 KB), and optimized payload (214.8 KB, `-47.13%` to `-50.84%`). **Partially demonstrated** because measurements represent UTF-8 bytes and `chars/4` token heuristics, not live provider billed tokens. |
+| **VAL11** | Strictly offline packaging & network denial boundary | `VAL11`, `SUPP-08` | **FULLY DEMONSTRATED** | Static code inspection confirmed zero `@quiz/*` or HTTP/HTTPS imports. Active dynamic verification executed with preload guard (`offline-network-denial-guard.cjs`) that throws on any `net.connect`, `tls.connect`, `dgram.Socket.send`, or `fetch`, plus blackhole proxy `127.0.0.1:9`. Zero network calls attempted across all subcommands. |
+| **VAL12** | Gitignore isolation, host compatibility, rollback & gate | `VAL12`, `SUPP-09` | **FULLY DEMONSTRATED** | Clean checkout verified from empty directory (`--out-dir`). Host files `AGENTS.md` and `CLAUDE.md` verified completely unmodified (`git status` clean). Rollback from navigation mode to full uncompressed mode verified. Checkpoint rejects `status: CLOSED`. Mandatory adoption remains unexecuted. |
 
 ---
 
-## 3. Remaining Boundaries & Operational Limitations
+## 2. Detailed Verification Evidence by Category
 
-1. **Context Packet Size vs Single-Fix Needs**:
-   - The full uncompressed FND03 packet is **214.8 KB (~53,649 estimated tokens)**. While it saves **45.35%** compared to reading full handoffs and `GRAPH_REPORT.md`, it is still large. When investigating a narrow function or single failing test, agents should use the `39.3 KB` navigation outline first or load individual bounded chunk files rather than the entire 30-file bundle.
-2. **Procedural PL/pgSQL & Drizzle Graph Limitations**:
-   - `tree_sitter_sql` indexes table and index definitions, but does not extract symbols from `DO $$ BEGIN RAISE EXCEPTION ... END $$;` blocks, nor does it create cross-language edges between Drizzle TypeScript schemas and SQL tables. Direct file inclusion in `--mode full` packets remains necessary.
-3. **No Automated Tooling Adoption or FND Acceptance**:
-   - This tooling remains optional and unverified for production rollout until Sol reviews and accepts `OPT01`–`OPT05`, `DOC01`–`DOC03`, and `VAL01`–`VAL12`.
-   - `AGENTS.md` and `CLAUDE.md` must not be modified until Sol authorizes applying the minimal reference diff.
-   - Passing retrieval validation does not close any FND task or foundation gate.
+### Category A: Fully Demonstrated Acceptance Controls
+
+#### 1. Provenance & Source Fallback Without Silent Omissions (VAL02 & SUPP-01)
+- Simulated absent Graphify data by pointing custom config to `graphify-out/absent-graph-file.json`.
+- `query-graph "canAccessResource isValidTenantPair" --config <customConfig> --no-native-cli`:
+  - Did not crash or hang.
+  - Successfully logged: `Provenance verified: false | Advisory: true`.
+  - Fell back to ripgrep search across configured roots, locating all 3 caller files (`ownership.service.ts`, `ownership.service.test.ts`, `sol-fnd03-tenant-boundary.test.ts`).
+  - Recorded in JSON: `truncation.incompletenessReason: "No graph nodes matched; rely on sourceFallbackResults."`.
+- Adverse regex failure: Executed `query-graph test --fallback-pattern "[invalid-regex" --no-native-cli`. Failed closed with exit code `1` and error `CALLER_SEARCH_INVALID_REGEX`.
+
+#### 2. Synthetic External Symlinks & Forbidden Secret Paths (VAL07 & SUPP-02)
+- Created an external directory junction in `tests/tooling/ai-context/fixtures/symlink-confinement-test/escape-link` pointing outside the workspace root to `../temp-outside-canary.txt` containing `SUPER_SECRET_EXTERNAL_CANARY_VALUE_12345`.
+- Attempted packet build with `--extra-file` targeting the symlinked file.
+- The CLI aborted with exit code `1` and error:
+  ```
+  PATH_CONFINEMENT_ERROR: Symlink target escapes repository root: tests/tooling/ai-context/fixtures/symlink-confinement-test/escape-link/temp-outside-canary.txt
+  ```
+  Confirmed zero leakage of `SUPER_SECRET_EXTERNAL_CANARY_VALUE_12345` in terminal stdout or stderr.
+- Tested alternate forbidden path globs: `.env.production`, `secrets.live.json`, `id_rsa_synthetic`, `server.pem`. All were rejected with exit code `1` and `SECRET_SCAN_ABORT` without printing file contents.
+
+#### 3. Isolated Fixture Checkpoint Invalidation (VAL08 & SUPP-03)
+Created a clean baseline checkpoint in an isolated directory and performed systematic mutation testing:
+1. **Tracked source file hash mutation**: Mutated SHA-256 of `packages/auth/src/rbac/ownership.service.ts` -> Failed validation with exit code `1` and `FILE_HASH_MISMATCH`.
+2. **Sol decision hash mutation**: Mutated `solDecisionSha256` -> Failed validation with exit code `1` and `SOL_DECISION_HASH_MISMATCH`.
+3. **Missing verified sections**: Cleared `verifiedSections: []` -> Failed validation with exit code `1` and `MISSING_SOL_SECTIONS`.
+4. **Unauthorized status closure**: Set `status: "CLOSED"` -> Failed validation with exit code `1` and `UNAUTHORIZED_CLOSURE_STATUS: Checkpoints cannot self-certify status === "CLOSED" without Sol acceptance`.
+5. **Auto-execution flag**: Set `autoExecuteCommands: true` -> Failed validation with exit code `1` and `INVALID_EXECUTION_FLAG`.
+
+#### 4. Direct Source Hash & Negative Assertion Verification (VAL04 & SUPP-04)
+- Verified all 30 files in `fnd03-packet.manifest.json` against current disk files. Computed SHA-256 for each file matched the manifest entry with 100% equality.
+- Inspected `packages/auth/src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts` on disk. Verified that exact negative assertion lines (`expect(result.canRead).toBe(false);`, `expect(result.canWrite).toBe(false);`, `expect(OwnershipRBACService.hasPermissionOrOwnership(...)`) are preserved character-for-character inside `fnd03-packet.md`.
+
+#### 5. Budget Overflow Safe Multi-Part Chunk Reconstruction (VAL09 & SUPP-05)
+- Ran `build-packet --packet fnd03 --mode full --max-bytes 32768`.
+- Command failed closed in terminal with exit code `1` and error `BUDGET_OVERFLOW_IN_FULL_SECURITY_MODE`.
+- On disk, wrote 9 safe chunk files (`fnd03-full-chunk-part1.md` through `part9.md`).
+- Reconstructed the file union across all 9 chunks: exactly matched the 30 required security files (30/30 accounted for).
+- Verified that the full un-truncated artifact (`fnd03-packet.md`, 214,849 bytes) was also preserved on disk.
+
+#### 6. Dynamic Offline Network Denial Verification (VAL11 & SUPP-08)
+- Executed `context-cli.mjs` subcommands with Node `-r ./tests/tooling/ai-context/fixtures/offline-network-denial-guard.cjs`.
+- The preload guard directly overrides `net.connect`, `net.createConnection`, `net.Socket.prototype.connect`, `tls.connect`, `dgram.Socket.prototype.send`, and `globalThis.fetch` to throw `OFFLINE_NETWORK_VIOLATION`.
+- Concurrently configured environment variables to point to blackhole proxy `127.0.0.1:9`.
+- Subcommands `host-inventory`, `query-graph`, and `build-packet` executed cleanly with exit code `0` and zero network attempts.
+
+#### 7. Clean-Checkout Setup & Non-Interference (VAL12 & SUPP-09)
+- Executed packet generation targeting a completely empty directory. All artifacts (`fnd03-packet.md`, `fnd03-packet.manifest.json`) were generated cleanly without depending on existing files in `.context-packets/`.
+- Verified `git status --porcelain AGENTS.md CLAUDE.md`: output was strictly empty (zero modifications or line changes).
+- Verified rollback and recovery: building with `--mode navigation` produces `auditSafeForSecuritySignOff: false`; re-running with `--mode full` safely recovers the 30-file full-source packet with `auditSafeForSecuritySignOff: true`.
 
 ---
 
-## 4. Required Sequential Handoff
+### Category B: Partially Demonstrated Controls
 
-**Next required model — Sol**
-- Sol holds sole acceptance authority for:
-  1. Argon's v1.1.0 tooling implementation (`OPT01`–`OPT05` at commit `aa33e494`).
-  2. Claude Sonnet 4.5's documentation deliverables (`DOC01`–`DOC03` at commit `11ced9c1`).
-  3. Gemini's independent validation results (`VAL01`–`VAL12` at commit `1e19922f` and this report).
-  4. Authorization for optional adoption by Terra and sequential application of the minimal reference diff to `AGENTS.md` and `CLAUDE.md`.
+#### Benchmark Methodology & Savings Scope (VAL10 & SUPP-06 / SUPP-07)
+- **Independent Set Verification**: Extracted `requiredSecurityFiles` from `config.json` (30 paths) and `selectedFiles` from `fnd03-packet.manifest.json` (30 paths). Independently calculated symmetric set difference:
+  - Missing in optimized: `0`
+  - Extra in optimized: `0`
+  - Exact 1-to-1 symmetric set equality established without relying on the internal boolean flag.
+- **Accurate Overhead Breakdown**:
+  - Raw 30 required files: **181,713 bytes** (45,365 tokens est.)
+  - Line-number and markdown framing overhead: **+33,136 bytes (+18.24%)**
+  - Full packet payload: **214,849 bytes** (53,649 tokens est.)
+  - Bounded graph query overhead: **16,204 bytes** (4,051 tokens est.)
+  - Manifest overhead: **48,611 bytes** (on-disk metadata)
+  - End-to-end optimized workflow with discovery: **231,053 bytes** (57,699 tokens est.)
+  - Conventional workflow with unscoped discovery: **437,041 bytes** (109,180 tokens est.)
+  - Net end-to-end workflow reduction: **`-47.13%`** (vs conventional discovery + raw files)
+- **Why this control is classified as PARTIALLY DEMONSTRATED**:
+  The reported 47.13% reduction is an exact mathematical measurement of workflow-context UTF-8 bytes and `chars/4` heuristic token counts. However, it does not represent an empirical measurement of live provider billing tokens (e.g. Claude or OpenAI API usage meters) or platform rate-limit consumption during actual LLM reasoning turns.
 
-*Note*: **Terra / Tera** continues critical implementation work on `TC01`–`TC20` without interruption.
+---
 
+### Category C: Remaining Unexecuted Conditions
+
+1. **Live Platform/Provider Token Billing Calibration**:
+   - Measuring actual model tokens billed by external platforms (Anthropic API / OpenAI API / Gemini API) requires live outbound network access and live LLM inference queries.
+   - Because the offline test network guard (`audit/W1_W3_Offline_Test_Network_Guard.ts`) strictly forbids network calls, live billing validation remains unexecuted. Offline token metrics are explicitly bounded to `Math.ceil(chars / 4)` estimates and Repomix `o200k_base` static references.
+2. **Mandatory Adoption & Host Instruction Modification**:
+   - Rollout of context optimization instructions into `AGENTS.md` and `CLAUDE.md` is intentionally unexecuted.
+   - In accordance with Sol's governance authority, host instruction files remain untouched until Sol grants formal architectural acceptance.
+3. **FND Task Closure**:
+   - Tooling validation does not close or advance `FND03`, `TC01`–`TC20`, or any foundation security gate.
+
+---
+
+## 3. Test Suite Execution Summary
+
+Command executed:
+```bash
+npx vitest run tests/tooling/ai-context/context-cli.test.ts
+```
+
+Output:
+```
+ ✓ tests/tooling/ai-context/context-cli.test.ts (22 tests) 35530ms
+     ✓ VAL01: executes all context-cli subcommands without hidden history and exits 0 on valid inputs
+     ✓ VAL02: reuses graph.json, enforces exploration budget, and runs ripgrep source fallback with accurate provenance
+     ✓ VAL03: retains all 18 RBAC core files and 14 discovered API/route callers with 0 uncovered
+     ✓ VAL04: preserves complete negative test files and Sol D1/D3 decision texts uncompressed
+     ✓ VAL05: retains tutorial progress schema/repository and blocked migration safety exceptions
+     ✓ VAL06: navigation mode outlines symbols while full mode retains 100% function bodies and fails closed on overflow
+     ✓ VAL07: rejects parent traversal, forbidden secret path globs, and redacts synthetic credential canaries
+     ✓ VAL08: checkpoint validate fails closed on simulated stale HEAD or changed inputs and never auto-executes commands
+     ✓ VAL09: budget overflow in full mode writes multi-part safe chunks while failing closed in terminal output
+     ✓ VAL10: benchmark preserves identical 30-file security coverage and reports exact bytes and chars div 4
+     ✓ VAL11: context-cli runs strictly offline using Node built-ins without loading application runtime or network
+     ✓ VAL12: .gitignore isolates /.context-packets/, Sonnet DOC01-DOC03 targets match assignment, and status is never CLOSED
+     ✓ SUPP-01 (A.1): handles absent/stale graphify data via source fallback and rejects invalid regex
+     ✓ SUPP-02 (A.2): rejects external symlinks, untracked files and alternate forbidden paths without leaking secret values
+     ✓ SUPP-03 (A.3): invalidates checkpoints against mutated source hashes, Sol decisions, missing sections, and unauthorized status
+     ✓ SUPP-04 (A.4): matches 100% of manifest file SHA-256 hashes and negative assertions to source files on disk
+     ✓ SUPP-05 (B.5): forces budget overflow, writes safe multi-part chunks, and reconstructs 100% file coverage without omission
+     ✓ SUPP-06 (B.6): independently proves exact symmetric set equality of conventional and optimized security file paths
+     ✓ SUPP-07 (B.7): accounts for discovery, line formatting and manifest overhead, distinguishing heuristic tokens from billed usage
+     ✓ SUPP-08 (C.8): proves offline operation under active network-denial preload and blackhole proxy configuration
+     ✓ SUPP-09 (C.9): verifies clean-checkout artifact generation, AGENTS.md/CLAUDE.md noninterference, and full-source rollback recovery
+     ✓ SUPP-10 (C.10): preserves exact CLI exit codes (0 for valid, 1 for fail-closed) without ambiguous execution states
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Duration  35.82s
+```
+
+---
+
+## 4. Architectural Handoff & Boundaries
+
+1. **Tooling Status**: Argon's v1.1.0 tooling (`OPT01`–`OPT05`) and Sonnet's documentation (`DOC01`–`DOC03`) have been rigorously tested against all 12 validation requirements and 10 supplemental acceptance controls. No tooling defects were encountered; all adverse fail-closed mechanisms behaved as specified.
+2. **Next Sequential Model**: **Sol** (for final policy review, disposition of partially demonstrated controls, and optional adoption authority).
+3. **Tera Unblocked**: Tera's capacity allocation on critical tasks `TC01`–`TC20` remains completely independent of tooling validation.
+4. **Zero Self-Acceptance**: Gemini does not declare OPT01–OPT05, DOC01–DOC03, or VAL01–VAL12 architecturally accepted.
