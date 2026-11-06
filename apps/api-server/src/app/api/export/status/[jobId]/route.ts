@@ -4,8 +4,15 @@ import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ApiError, forbidden, unauthorized } from '@/lib/api-error';
+import {
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+  resolveStoredJobBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -97,6 +104,7 @@ export async function GET(
     const isInternal = internalKey !== null && internalSecret !== '' && internalKey === internalSecret;
 
     let userId: string | undefined;
+    let requesterBrand: LearnerExportBrand | undefined;
     if (!isInternal) {
       const tokenService = container.get(TokenService);
       const token = tokenService.getAccessToken(req, { scope: 'user' });
@@ -111,12 +119,27 @@ export async function GET(
         throw unauthorized('Unauthorized');
       }
       if (!isNonEmptyString(payload.userId)) throw unauthorized('Unauthorized');
+      if (
+        !isLearnerExportBrand(payload.brand) ||
+        hasConflictingRequestTenantContext(
+          payload.brand,
+          payload.tokenType,
+          req.headers,
+          new URL(req.url).hostname
+        )
+      ) {
+        throw forbidden('Forbidden');
+      }
       userId = payload.userId;
+      requesterBrand = payload.brand;
     }
 
     const job = await JobsService.getJobStatus(jobId);
-    if (job && !isInternal && job.userId !== userId) {
-      throw forbidden('Forbidden');
+    if (job && !isInternal) {
+      const jobBrand = resolveStoredJobBrand(job);
+      if (job.userId !== userId || jobBrand !== requesterBrand) {
+        throw forbidden('Forbidden');
+      }
     }
     if (!job) {
       if (examId === '') return NextResponse.json({ error: 'Job not found' }, { status: 404 });
@@ -124,8 +147,19 @@ export async function GET(
         where: eq(exams.id, examId), columns: { userId: true, exportUrls: true },
       });
       if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
-      if (!isInternal && exam.userId !== userId) throw forbidden('Forbidden');
-      const artifact = await resolveExamFallbackArtifact({ examId, format: requestedFormat, userId, exam });
+      if (!isInternal) {
+        const examBrand = resolveStoredExamBrand(exam);
+        if (exam.userId !== userId || examBrand !== requesterBrand) {
+          throw forbidden('Forbidden');
+        }
+      }
+      const artifact = await resolveExamFallbackArtifact({
+        examId,
+        format: requestedFormat,
+        userId,
+        brand: requesterBrand,
+        exam,
+      });
       if (artifact && await storage.exists(artifact.fileRef).catch(() => false)) {
         return NextResponse.json({
           jobId, status: 'completed', stage: 'ready',
@@ -302,11 +336,13 @@ async function resolveExamFallbackArtifact({
   examId,
   format,
   userId,
+  brand,
   exam: authorizedExam,
 }: {
   examId: string;
   format: ExportFormat;
   userId?: string;
+  brand?: LearnerExportBrand;
   exam?: { userId: string; exportUrls: unknown };
 }): Promise<{ fileRef: string } | null> {
   if (examId === '') return null;
@@ -321,6 +357,10 @@ async function resolveExamFallbackArtifact({
   }
 
   if (typeof userId === 'string' && userId !== '' && exam.userId !== userId) {
+    return null;
+  }
+
+  if (brand !== undefined && resolveStoredExamBrand(exam) !== brand) {
     return null;
   }
 

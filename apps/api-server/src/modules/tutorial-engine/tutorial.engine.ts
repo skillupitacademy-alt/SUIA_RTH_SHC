@@ -128,7 +128,7 @@ export class TutorialEngine {
       // 4. Get user progress if requested
       let progress;
       if (includeProgress) {
-        const tenantScope = brandId === 'realtutorialhub' || brandId === 'skillup' ? brandId : undefined;
+        if (brandId !== 'realtutorialhub' && brandId !== 'skillup') throw new Error(`Invalid learner brand for tutorial progress: ${String(brandId)}`); const tenantScope = brandId;
         const progressData = await this.progressRepo.getProgress(userId, subtopicId, tenantScope);
         progress = this.formatProgress(progressData as unknown as Record<string, unknown>);
       }
@@ -174,7 +174,7 @@ export class TutorialEngine {
       }
 
       // 2. Mark block as complete
-      const tenantScope = brandId === 'realtutorialhub' || brandId === 'skillup' ? brandId : undefined;
+      if (brandId !== 'realtutorialhub' && brandId !== 'skillup') throw new Error(`Invalid learner brand for tutorial progress: ${String(brandId)}`); const tenantScope = brandId;
       const progress = await this.progressRepo.markBlockComplete(userId, subtopicId, blockType, tenantScope);
 
       // 3. Check if remediation needed

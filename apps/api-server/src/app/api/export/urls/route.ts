@@ -4,8 +4,10 @@ import { type NextRequest } from 'next/server';
 
 import { badRequest, forbidden, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import { isLearnerExportBrand, resolveStoredExamBrand } from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -38,6 +40,18 @@ async function getHandler(req: NextRequest) {
     }
     const payload = await container.get(TokenService).verifyUserAccessToken(token);
     const userId = payload.userId;
+    if (
+      !isLearnerExportBrand(payload.brand) ||
+      hasConflictingRequestTenantContext(
+        payload.brand,
+        payload.tokenType,
+        req.headers,
+        new URL(req.url).hostname
+      )
+    ) {
+      throw forbidden('Forbidden: Export requires learner tenant provenance');
+    }
+    const brandId = payload.brand;
 
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
@@ -47,11 +61,12 @@ async function getHandler(req: NextRequest) {
     if (!exam) {
       throw notFound('Exam', examId);
     }
-    if (exam.userId !== userId) {
+    const storedBrand = resolveStoredExamBrand(exam);
+    if (exam.userId !== userId || storedBrand !== brandId) {
       throw forbidden('Forbidden: ownership mismatch');
     }
 
-    const cacheKey = `export:${examId}:${userId}:${format}`;
+    const cacheKey = `export:${brandId}:${examId}:${userId}:${format}`;
     try {
       const cachedUrl = await redis.get<string>(cacheKey);
       if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {

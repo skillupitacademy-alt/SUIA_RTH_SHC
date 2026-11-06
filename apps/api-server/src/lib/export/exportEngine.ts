@@ -8,7 +8,13 @@ import { withSpan } from '@/lib/tracer';
 
 import { ExportAggregator } from './exportAggregator';
 import { ExportQueryBuilder } from './exportQueryBuilder';
-import type { ExportFormat, ExportPayload } from './exportTypes';
+import {
+  type ExportFormat,
+  type ExportPayload,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+} from './exportTypes';
 import { CsvFormatter } from './formatters/csvFormatter';
 import { JsonFormatter } from './formatters/jsonFormatter';
 
@@ -33,8 +39,11 @@ export class ExportEngine {
     examId: string,
     userId: string,
     format: ExportFormat,
-    brandId: 'realtutorialhub' | 'skillup' = 'realtutorialhub'
+    brandId: LearnerExportBrand
   ): Promise<string> {
+    if (!isLearnerExportBrand(brandId)) {
+      throw new Error('Export requires verified learner tenant brand provenance');
+    }
     return withSpan('ExportEngine.processExport', async (span) => {
       span.setAttribute('examId', examId);
       span.setAttribute('userId', userId);
@@ -59,9 +68,15 @@ export class ExportEngine {
       try {
         const examRow = await db.query.exams.findFirst({
           where: eq(exams.id, examId),
-          columns: { exportUrls: true }
+          columns: { userId: true, exportUrls: true }
         });
-        const exportUrls = (examRow?.exportUrls as Record<string, unknown> | null) ?? null;
+        const storedBrand = resolveStoredExamBrand(examRow);
+        const ownerMatches = examRow?.userId === undefined || examRow.userId === userId;
+        const brandMatches = storedBrand === undefined || storedBrand === brandId;
+        const exportUrls =
+          ownerMatches && brandMatches
+            ? ((examRow?.exportUrls as Record<string, unknown> | null) ?? null)
+            : null;
         const existingUrl = format === 'json'
           ? (exportUrls as { analytics_json?: string } | null)?.analytics_json
           : format === 'csv'

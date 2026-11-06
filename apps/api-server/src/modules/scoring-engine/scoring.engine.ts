@@ -20,7 +20,14 @@ import {
 import { eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
-import { normalizeQuestionOptions, normalizeQuestionType, parseAnswer, serializeAnswerTokens } from '@/modules/question/question-contract';
+import {
+  isVersionedOptionIds,
+  normalizeQuestionOptions,
+  normalizeQuestionType,
+  parseAnswer,
+  serializeAnswerTokens,
+  validateQuestionAnswerOptionIds,
+} from '@/modules/question/question-contract';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { ExamObserver } from '../exam-engine/exam.observer';
@@ -48,6 +55,17 @@ function resolveAnswerForScoring(question: ScorableQuestion, answer: string): st
     return normalizedType === 'multi_select' ? serializeAnswerTokens(parseAnswer(answer)) : answer.trim();
   }
 
+  if (isVersionedOptionIds(answer)) {
+    const validation = validateQuestionAnswerOptionIds(question.options, answer, {
+      rejectDuplicates: true,
+      rejectUnknownIds: true,
+      strictIdOnly: true,
+    });
+    if (!validation.valid) {
+      throw new Error(`Invalid versioned option ID answer: ${validation.reason ?? 'invalid'}`);
+    }
+  }
+
   const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
   const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
   const optionByLabel = new Map(
@@ -58,7 +76,9 @@ function resolveAnswerForScoring(question: ScorableQuestion, answer: string): st
 
   const resolvedAnswers = answerIds.map((answerId) => {
     const key = answerId.toLowerCase();
-    const option = optionById.get(key) ?? optionByLabel.get(key);
+    const option = isVersionedOptionIds(answer)
+      ? optionById.get(key)
+      : (optionById.get(key) ?? optionByLabel.get(key));
     return option?.text ?? option?.code ?? option?.label ?? answerId;
   });
 

@@ -180,13 +180,17 @@ export function parseAnswer(answer: string | readonly string[]): string[] {
 export function validateQuestionAnswerOptionIds(
   options: unknown,
   answer: string | readonly string[],
-  optionsConfig?: { rejectDuplicates?: boolean; rejectUnknownIds?: boolean }
+  optionsConfig?: { rejectDuplicates?: boolean; rejectUnknownIds?: boolean; strictIdOnly?: boolean }
 ): { valid: boolean; optionIds: string[]; reason?: string } {
   const normalizedOptions = normalizeQuestionOptions(options);
   const tokens = parseAnswer(answer);
   if (tokens.length === 0) {
     return { valid: false, optionIds: [], reason: 'empty_answer' };
   }
+
+  const strictIdOnly =
+    optionsConfig?.strictIdOnly ??
+    (typeof answer === 'string' && isVersionedOptionIds(answer));
 
   const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
   const optionByLabel = new Map(
@@ -200,7 +204,9 @@ export function validateQuestionAnswerOptionIds(
 
   for (const token of tokens) {
     const key = token.toLowerCase();
-    const matched = optionById.get(key) ?? optionByLabel.get(key);
+    const matched = strictIdOnly
+      ? optionById.get(key)
+      : (optionById.get(key) ?? optionByLabel.get(key));
     if (!matched) {
       if (optionsConfig?.rejectUnknownIds !== false) {
         return { valid: false, optionIds: [], reason: 'unknown_option_id' };

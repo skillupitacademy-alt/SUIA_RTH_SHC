@@ -120,10 +120,10 @@ export class ProjectService {
     this.now = dependencies.now ?? (() => new Date());
   }
 
-  private async getProjectProgressMissingRequirements(project: ProjectRecord, userId: string) {
+  private async getProjectProgressMissingRequirements(project: ProjectRecord, userId: string, tenantId = 'realtutorialhub') {
     const missing = [];
     for (const subtopicId of project.subtopicsCovered) {
-      const complete = await this.progressRepository.isSubtopicComplete(userId, subtopicId);
+      const complete = await this.progressRepository.isSubtopicComplete(userId, subtopicId, tenantId);
       if (!complete) {
         missing.push(`subtopic:${subtopicId}`);
       }

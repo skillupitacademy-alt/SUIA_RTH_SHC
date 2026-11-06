@@ -8,7 +8,10 @@ import { NextResponse } from 'next/server';
 
 import { container } from '@/modules/core/container';
 
-import { resolveRequestHostnameFromHeaders } from './lib/request-brand';
+import {
+  hasConflictingRequestTenantContext,
+  resolveRequestHostnameFromHeaders,
+} from './lib/request-brand';
 import { applyApiVersion } from './middleware/api-version.middleware';
 import { withEtags } from './middleware/etag.middleware';
 import { corsMiddleware } from './modules/auth/cors.middleware';
@@ -207,6 +210,22 @@ export async function proxy(request: NextRequest) {
             return corsMiddleware(request, res);
           }
         } else if (isAdminRoute) {
+          if (
+            hasConflictingRequestTenantContext(
+              _payload.brand,
+              _payload.tokenType,
+              request.headers,
+              request.nextUrl?.hostname
+            )
+          ) {
+            const res = NextResponse.json(
+              { error: 'Forbidden: Conflicting request tenant context' },
+              { status: 403 }
+            );
+            res.headers.set('x-request-id', requestId);
+            return corsMiddleware(request, res);
+          }
+
           const hasAdminAccess = await _verifyAdmin(_payload);
           if (!hasAdminAccess) {
             const res = NextResponse.json({ error: 'Forbidden: Admin access only' }, { status: 403 });

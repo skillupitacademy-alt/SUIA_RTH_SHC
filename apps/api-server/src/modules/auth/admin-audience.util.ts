@@ -1,12 +1,14 @@
+import { requireAdminProfileManagementAuthority, type Role } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
 import { forbidden, unauthorized } from '@/lib/api-error';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 
 import { _verifyActiveAccount, _verifyAdmin } from './rbac.service';
-import { TokenService } from './token.service';
+import { type TokenPayload, TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra' | 'shc-admin';
 
@@ -90,6 +92,19 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
       }
     }
   } else {
+    if (
+      hasConflictingRequestTenantContext(
+        payload.brand,
+        payload.tokenType,
+        _req.headers,
+        _req.nextUrl?.hostname
+      )
+    ) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'conflicting_tenant_context' });
+      recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'conflicting_tenant_context' });
+      throw forbidden('Forbidden: Conflicting request tenant context');
+    }
+
     const hasAdminAccess = await _verifyAdmin(payload);
     if (!hasAdminAccess) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'rbac_denied' });
@@ -100,5 +115,27 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
 
   recordCounter(METRICS.AUTH.LOGIN + '.route_access', 1, { scope: audience, route, outcome: 'success' });
   recordTimer(METRICS.AUTH.LOGIN + '.route_access.duration', Date.now() - startedAt, { scope: audience, route, outcome: 'success' });
+  return payload;
+}
+
+export async function requireAdminTargetUserAccess(
+  req: NextRequest,
+  targetUserId: string,
+  targetTenantId: string
+): Promise<TokenPayload> {
+  const payload = await requireAdminRouteAccess(req);
+  requireAdminProfileManagementAuthority(
+    {
+      id: payload.userId,
+      tenantId: payload.brand,
+      roles: payload.roles ?? ['admin'],
+    },
+    {
+      ownerId: targetUserId,
+      tenantId: targetTenantId,
+      resourceId: targetUserId,
+      resourceType: 'user_profile',
+    }
+  );
   return payload;
 }

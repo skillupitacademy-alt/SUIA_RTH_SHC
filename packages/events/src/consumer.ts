@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Receiver } from '@upstash/qstash';
 import type { ZodTypeAny } from 'zod';
 
@@ -20,6 +21,9 @@ export interface QStashHandlerOptions<TType extends PlatformEventType> {
   keyPrefix?: string;
   onDuplicate?: (envelope: EventEnvelope<TType, unknown>) => void | Promise<void>;
 }
+
+const CANONICAL_EVENT_TENANTS = new Set(['realtutorialhub', 'skillup', 'skillhubcore']);
+const activeInFlightEventClaims = new Map<string, string>();
 
 const getReceiver = (receiver?: Receiver) => {
   if (receiver !== undefined) return receiver;
@@ -51,7 +55,12 @@ function stableJsonSerialize(value: unknown): string {
   return `{${keys.map((key) => `${JSON.stringify(key)}:${stableJsonSerialize(record[key])}`).join(',')}}`;
 }
 
-function computePayloadFingerprint(value: unknown): string {
+function computePayloadSha256(value: unknown): string {
+  const serialized = stableJsonSerialize(value);
+  return `sha256:${createHash('sha256').update(serialized).digest('hex')}`;
+}
+
+function computePayloadFnv1a(value: unknown): string {
   const serialized = stableJsonSerialize(value);
   let hash = 2166136261;
   for (let i = 0; i < serialized.length; i += 1) {
@@ -61,21 +70,96 @@ function computePayloadFingerprint(value: unknown): string {
   return `fnv1a:${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
+function parseIdempotencyRecord(raw: string): {
+  state: 'pending' | 'completed' | 'legacy_completed';
+  fingerprint: string | null;
+} {
+  if (raw.startsWith('pending:')) {
+    const rest = raw.slice('pending:'.length);
+    const match = /^(sha256:[0-9a-f]+|fnv1a:[0-9a-f]+)(?::.*)?$/i.exec(rest);
+    return { state: 'pending', fingerprint: match ? match[1].toLowerCase() : null };
+  }
+  if (raw.startsWith('completed:')) {
+    const rest = raw.slice('completed:'.length);
+    const match = /^(sha256:[0-9a-f]+|fnv1a:[0-9a-f]+)(?::.*)?$/i.exec(rest);
+    return { state: 'completed', fingerprint: match ? match[1].toLowerCase() : null };
+  }
+  return { state: 'legacy_completed', fingerprint: null };
+}
+
+function resolveVerifiedTenantScope<TType extends PlatformEventType>(
+  parsedRecord: Record<string, unknown>,
+  rawRecord: Record<string, unknown>,
+  options: QStashHandlerOptions<TType>
+): string {
+  if (typeof options.tenantScope === 'string' && options.tenantScope.trim().length > 0) {
+    const normalized = options.tenantScope.trim().toLowerCase();
+    if (!CANONICAL_EVENT_TENANTS.has(normalized)) {
+      throw new Error(`Invalid consumer tenantScope: ${options.tenantScope}`);
+    }
+    return normalized;
+  }
+
+  const nestedData =
+    typeof parsedRecord.data === 'object' && parsedRecord.data !== null
+      ? (parsedRecord.data as Record<string, unknown>)
+      : {};
+
+  const explicitTenantCandidate =
+    parsedRecord.tenantId ??
+    parsedRecord.brandId ??
+    parsedRecord.brand ??
+    rawRecord.tenantId ??
+    rawRecord.brandId ??
+    rawRecord.brand ??
+    nestedData.tenantId ??
+    nestedData.brandId ??
+    nestedData.brand;
+
+  if (typeof explicitTenantCandidate === 'string' && explicitTenantCandidate.trim().length > 0) {
+    const normalized = explicitTenantCandidate.trim().toLowerCase();
+    if (!CANONICAL_EVENT_TENANTS.has(normalized)) {
+      throw new Error(`Invalid event tenant authority: ${explicitTenantCandidate}`);
+    }
+    return normalized;
+  }
+
+  const rawSource =
+    typeof parsedRecord.source === 'string'
+      ? parsedRecord.source.trim().toLowerCase()
+      : typeof rawRecord.source === 'string'
+        ? rawRecord.source.trim().toLowerCase()
+        : '';
+
+  if (rawSource !== '' && CANONICAL_EVENT_TENANTS.has(rawSource)) {
+    return rawSource;
+  }
+
+  if (options.schema !== undefined && rawSource !== '') {
+    throw new Error(
+      `Unresolved canonical tenant authority for event consumer; cannot use non-tenant source "${rawSource}" as tenant scope`
+    );
+  }
+
+  return 'default';
+}
+
 function resolveEventIdentityAndType<TType extends PlatformEventType>(
   parsed: unknown,
   rawBody: unknown,
   registeredType: TType,
-  allowedTypes?: readonly string[]
+  options: QStashHandlerOptions<TType>
 ): {
   envelopeType: string;
   eventId: string;
   tenantScope: string;
   fingerprint: string;
+  fnv1aFingerprint: string;
 } {
   const parsedRecord = (parsed !== null && typeof parsed === 'object' ? parsed : {}) as Record<string, unknown>;
   const rawRecord = (rawBody !== null && typeof rawBody === 'object' ? rawBody : {}) as Record<string, unknown>;
 
-  const permittedTypes = new Set<string>([registeredType, ...(allowedTypes ?? [])]);
+  const permittedTypes = new Set<string>([registeredType, ...(options.allowedTypes ?? [])]);
   const explicitType =
     typeof parsedRecord.type === 'string' && parsedRecord.type.trim().length > 0
       ? parsedRecord.type.trim()
@@ -87,15 +171,15 @@ function resolveEventIdentityAndType<TType extends PlatformEventType>(
     if (!permittedTypes.has(explicitType)) {
       throw new Error(`Event envelope type mismatch: expected ${registeredType}, received ${explicitType}`);
     }
-  } else if (!allowedTypes || allowedTypes.length === 0) {
-    // Legacy body-only schema adapter allowed only when no conflicting type field is present
+  } else if (!options.allowedTypes || options.allowedTypes.length === 0) {
     if ('type' in rawRecord && rawRecord.type !== registeredType) {
       throw new Error(`Event envelope type mismatch: expected ${registeredType}`);
     }
   }
 
   const envelopeType = explicitType ?? registeredType;
-  const fingerprint = computePayloadFingerprint(parsed);
+  const fingerprint = computePayloadSha256(parsed);
+  const fnv1aFingerprint = computePayloadFnv1a(parsed);
   const explicitId =
     typeof parsedRecord.id === 'string' && parsedRecord.id.trim().length > 0
       ? parsedRecord.id.trim()
@@ -107,16 +191,14 @@ function resolveEventIdentityAndType<TType extends PlatformEventType>(
             ? parsedRecord.submissionId.trim()
             : fingerprint;
 
-  const tenantScope =
-    typeof parsedRecord.source === 'string' && parsedRecord.source.trim().length > 0
-      ? parsedRecord.source.trim()
-      : 'default';
+  const tenantScope = resolveVerifiedTenantScope(parsedRecord, rawRecord, options);
 
   return {
     envelopeType,
     eventId: explicitId,
     tenantScope,
     fingerprint,
+    fnv1aFingerprint,
   };
 }
 
@@ -141,45 +223,89 @@ export function createQStashHandler<TType extends PlatformEventType>(
 
     const rawJson: unknown = JSON.parse(body);
     const parsed = (options.schema ?? PlatformEventEnvelopeSchemas[type]).parse(rawJson) as EventEnvelope<TType, unknown>;
-    const resolvedMeta = resolveEventIdentityAndType(parsed, rawJson, type, options.allowedTypes);
-    const scopePrefix = options.tenantScope ?? resolvedMeta.tenantScope;
+    const resolvedMeta = resolveEventIdentityAndType(parsed, rawJson, type, options);
+    const scopePrefix = resolvedMeta.tenantScope;
     const idempotencyKey = `${options.keyPrefix ?? 'event'}:${scopePrefix}:${type}:${resolvedMeta.eventId}`;
 
     if (options.idempotencyStore !== undefined) {
-      const existingRecord = await options.idempotencyStore.get(idempotencyKey);
-      if (existingRecord !== null && existingRecord !== undefined && String(existingRecord).length > 0) {
-        const serializedRecord = String(existingRecord);
-        if (serializedRecord.startsWith('completed:') || serializedRecord.startsWith('pending:')) {
-          const [, recordedFingerprint] = serializedRecord.split(':', 3);
-          if (
-            recordedFingerprint &&
-            recordedFingerprint.startsWith('fnv1a:') &&
-            recordedFingerprint !== resolvedMeta.fingerprint
-          ) {
-            return new Response('Conflicting event payload for existing event ID', { status: 409 });
+      if (activeInFlightEventClaims.has(idempotencyKey)) {
+        return new Response('Event processing already in progress', { status: 409 });
+      }
+      activeInFlightEventClaims.set(idempotencyKey, resolvedMeta.fingerprint);
+    }
+
+    try {
+      if (options.idempotencyStore !== undefined) {
+        const existingRecord = await options.idempotencyStore.get(idempotencyKey);
+        if (existingRecord !== null && existingRecord !== undefined && String(existingRecord).trim().length > 0) {
+          const serializedRecord = String(existingRecord);
+          const parsedRecord = parseIdempotencyRecord(serializedRecord);
+          if (parsedRecord.state === 'pending') {
+            return new Response('Event processing already in progress', { status: 409 });
+          }
+          if (parsedRecord.state === 'completed' && parsedRecord.fingerprint !== null) {
+            const expectedDigest = parsedRecord.fingerprint.startsWith('fnv1a:')
+              ? resolvedMeta.fnv1aFingerprint.toLowerCase()
+              : resolvedMeta.fingerprint.toLowerCase();
+            if (parsedRecord.fingerprint !== expectedDigest) {
+              return new Response('Conflicting event payload for existing event ID', { status: 409 });
+            }
+          }
+          await options.onDuplicate?.(parsed);
+          return new Response('Duplicate event ignored', { status: 200 });
+        }
+
+        await options.idempotencyStore.set(
+          idempotencyKey,
+          `pending:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}`,
+          {
+            ex: options.leaseTtlSeconds ?? 300,
+            nx: true,
+          }
+        );
+      }
+
+      let response: Response | void;
+      try {
+        response = await handler(parsed);
+      } catch (error) {
+        if (options.idempotencyStore !== undefined) {
+          if (typeof options.idempotencyStore.del === 'function') {
+            await options.idempotencyStore.del(idempotencyKey);
+          } else {
+            await options.idempotencyStore.set(idempotencyKey, '');
           }
         }
-        await options.onDuplicate?.(parsed);
-        return new Response('Duplicate event ignored', { status: 200 });
+        throw error;
+      }
+
+      if (response instanceof Response && !response.ok && response.status >= 500) {
+        if (options.idempotencyStore !== undefined) {
+          if (typeof options.idempotencyStore.del === 'function') {
+            await options.idempotencyStore.del(idempotencyKey);
+          } else {
+            await options.idempotencyStore.set(idempotencyKey, '');
+          }
+        }
+        return response;
+      }
+
+      if (options.idempotencyStore !== undefined) {
+        await options.idempotencyStore.set(
+          idempotencyKey,
+          `completed:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}`,
+          {
+            ex: options.idempotencyTtlSeconds ?? 86_400,
+          }
+        );
+      }
+
+      if (response instanceof Response) return response;
+      return new Response('OK', { status: 200 });
+    } finally {
+      if (options.idempotencyStore !== undefined) {
+        activeInFlightEventClaims.delete(idempotencyKey);
       }
     }
-
-    const response = await handler(parsed);
-    if (response instanceof Response && !response.ok && response.status >= 500) {
-      return response;
-    }
-
-    if (options.idempotencyStore !== undefined) {
-      await options.idempotencyStore.set(
-        idempotencyKey,
-        `completed:${resolvedMeta.fingerprint}:${resolvedMeta.eventId}`,
-        {
-          ex: options.idempotencyTtlSeconds ?? 86_400,
-        }
-      );
-    }
-
-    if (response instanceof Response) return response;
-    return new Response('OK', { status: 200 });
   };
 }

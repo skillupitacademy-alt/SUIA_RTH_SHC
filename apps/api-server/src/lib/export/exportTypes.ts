@@ -1,4 +1,79 @@
 export type ExportFormat = 'pdf' | 'json' | 'csv' | 'student-insight-pdf';
+export type LearnerExportBrand = 'realtutorialhub' | 'skillup';
+
+export function isLearnerExportBrand(value: unknown): value is LearnerExportBrand {
+  return value === 'realtutorialhub' || value === 'skillup';
+}
+
+function extractBrandFromArtifactRef(ref: unknown): LearnerExportBrand | undefined {
+  if (typeof ref !== 'string') return undefined;
+  const trimmed = ref.trim();
+  if (trimmed.startsWith('exports/realtutorialhub/')) return 'realtutorialhub';
+  if (trimmed.startsWith('exports/skillup/')) return 'skillup';
+  return undefined;
+}
+
+export function resolveStoredExamBrand(exam: unknown): LearnerExportBrand | undefined {
+  if (typeof exam !== 'object' || exam === null) return undefined;
+  const record = exam as Record<string, unknown>;
+  if (isLearnerExportBrand(record.brand)) return record.brand;
+  if (isLearnerExportBrand(record.tenantId)) return record.tenantId;
+
+  const exportUrls =
+    typeof record.exportUrls === 'object' && record.exportUrls !== null
+      ? (record.exportUrls as Record<string, unknown>)
+      : null;
+
+  if (exportUrls !== null) {
+    if (isLearnerExportBrand(exportUrls.brand)) return exportUrls.brand;
+    if (isLearnerExportBrand(exportUrls.tenantId)) return exportUrls.tenantId;
+    const meta =
+      typeof exportUrls._meta === 'object' && exportUrls._meta !== null
+        ? (exportUrls._meta as Record<string, unknown>)
+        : null;
+    if (meta !== null) {
+      if (isLearnerExportBrand(meta.brand)) return meta.brand;
+      if (isLearnerExportBrand(meta.tenantId)) return meta.tenantId;
+    }
+    const fromJson = extractBrandFromArtifactRef(exportUrls.analytics_json);
+    if (fromJson !== undefined) return fromJson;
+    const fromCsv = extractBrandFromArtifactRef(exportUrls.analytics_csv);
+    if (fromCsv !== undefined) return fromCsv;
+    const fromPdf = extractBrandFromArtifactRef(exportUrls.student_insight_pdf);
+    if (fromPdf !== undefined) return fromPdf;
+  }
+
+  return undefined;
+}
+
+export function resolveStoredJobBrand(job: unknown): LearnerExportBrand | undefined {
+  if (typeof job !== 'object' || job === null) return undefined;
+  const record = job as Record<string, unknown>;
+  if (isLearnerExportBrand(record.brand)) return record.brand;
+  if (isLearnerExportBrand(record.tenantId)) return record.tenantId;
+
+  const payload =
+    typeof record.payload === 'object' && record.payload !== null
+      ? (record.payload as Record<string, unknown>)
+      : null;
+  if (payload !== null) {
+    if (isLearnerExportBrand(payload.brand)) return payload.brand;
+    if (isLearnerExportBrand(payload.tenantId)) return payload.tenantId;
+  }
+
+  const result =
+    typeof record.result === 'object' && record.result !== null
+      ? (record.result as Record<string, unknown>)
+      : null;
+  if (result !== null) {
+    if (isLearnerExportBrand(result.brand)) return result.brand;
+    if (isLearnerExportBrand(result.tenantId)) return result.tenantId;
+    const fromRef = extractBrandFromArtifactRef(result.downloadUrl);
+    if (fromRef !== undefined) return fromRef;
+  }
+
+  return undefined;
+}
 
 export interface ExportRequest {
   examId: string;

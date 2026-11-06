@@ -4,8 +4,13 @@ import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ExportSaga } from '@/lib/export/export.saga';
-import { ExportFormat } from '@/lib/export/exportTypes';
+import {
+  type ExportFormat,
+  isLearnerExportBrand,
+  resolveStoredExamBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { JobsService } from '@/modules/system/jobs.service';
@@ -26,7 +31,7 @@ function buildExportDownloadUrl(examId: string, format: string) {
  * POST /api/export/trigger
  *
  * 🔐 SECURITY FIX (EXPORT-TRIGGER-01): Authenticate caller and derive userId
- * from verified JWT. Client-supplied userId is no longer trusted.
+ * and learner brand from verified JWT. Client-supplied userId is no longer trusted.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -49,8 +54,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (payload.brand !== 'realtutorialhub' && payload.brand !== 'skillup') {
-      return NextResponse.json({ error: 'Forbidden: Export requires learner tenant provenance' }, { status: 403 });
+    if (
+      !isLearnerExportBrand(payload.brand) ||
+      hasConflictingRequestTenantContext(
+        payload.brand,
+        payload.tokenType,
+        req.headers,
+        req.nextUrl?.hostname
+      )
+    ) {
+      return NextResponse.json(
+        { error: 'Forbidden: Export requires learner tenant provenance' },
+        { status: 403 }
+      );
     }
 
     // Derive userId and brand from verified token — never from the request body
@@ -71,19 +87,23 @@ export async function POST(req: NextRequest) {
     const { examId, format } = body;
     const exam = await db.query.exams.findFirst({
       where: eq(exams.id, examId),
-      columns: { userId: true },
+      columns: { userId: true, exportUrls: true },
     });
     if (!exam) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    if (exam.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    log.info({ examId, format, userId }, 'Triggering analytical export');
+    const storedBrand = resolveStoredExamBrand(exam);
+    if (exam.userId !== userId || storedBrand !== brandId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    log.info({ examId, format, userId, brandId }, 'Triggering analytical export');
 
     const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
     const hasQstash = typeof process.env.QSTASH_TOKEN === 'string' && process.env.QSTASH_TOKEN.trim() !== '';
     const isDev = process.env.NODE_ENV !== 'production';
 
     if (queuesEnabled) {
-      const jobId = await ExportSaga.start(examId, userId, format as ExportFormat);
+      const jobId = await ExportSaga.start(examId, userId, format as ExportFormat, brandId);
       return NextResponse.json({ 
         jobId, 
         status: 'processing',
@@ -95,13 +115,17 @@ export async function POST(req: NextRequest) {
       const job = await JobsService.createJob({
         userId,
         type: JobType.EXPORT_SAGA,
-        payload: { examId, format }
+        payload: { examId, format, brand: brandId, tenantId: brandId }
       });
 
       const { queueService } = await import('@/modules/core/queue.service');
-      const enqueueResult = await queueService.enqueue('export_saga', { jobId: job.id, userId });
+      const enqueueResult = await queueService.enqueue('export_saga', {
+        jobId: job.id,
+        userId,
+        brand: brandId,
+      });
       if (!enqueueResult.success) {
-        await ExportSaga.execute(job.id, { examId, userId, format });
+        await ExportSaga.execute(job.id, { examId, userId, format, brand: brandId });
       }
 
       return NextResponse.json({ 
@@ -122,7 +146,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const jobId = await ExportSaga.start(examId, userId, format as ExportFormat);
+    const jobId = await ExportSaga.start(examId, userId, format as ExportFormat, brandId);
     return NextResponse.json({ 
       jobId, 
       status: 'processing',

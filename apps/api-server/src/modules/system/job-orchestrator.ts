@@ -1,6 +1,10 @@
 import { JobStatus, JobType } from '@quiz/types';
 
-import type { ExportFormat } from '@/lib/export/exportTypes';
+import {
+  type ExportFormat,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { EmailService } from '@/modules/email/EmailService';
 
@@ -14,7 +18,7 @@ type AnalyticsProcessPayload =
     | { type: 'refresh_views' };
 
 type ExamSagaPayload = { examId: string; userId: string };
-type ExportSagaPayload = { examId: string; format: ExportFormat };
+type ExportSagaPayload = { examId: string; format: ExportFormat; brand: LearnerExportBrand };
 type ExamScoringPayload = { examId: string };
 type SemanticIndexPayload = { questionId: string; text: string; metadata?: Record<string, unknown> };
 
@@ -110,8 +114,16 @@ export class JobOrchestrator {
     }
 
     private static async handleExportSaga(jobId: string, payload: ExportSagaPayload, userId: string): Promise<void> {
+        if (!isLearnerExportBrand(payload.brand)) {
+            throw new Error('ExportSaga job payload requires verified learner tenant brand');
+        }
         const { ExportSaga } = await import('@/lib/export/export.saga');
-        await ExportSaga.execute(jobId, { examId: payload.examId, userId, format: payload.format });
+        await ExportSaga.execute(jobId, {
+            examId: payload.examId,
+            userId,
+            format: payload.format,
+            brand: payload.brand,
+        });
     }
 
     /**

@@ -20,7 +20,7 @@ export class TutorialProgressRepository
   extends TutorialRepositoryBase
   implements ITutorialProgressRepository
 {
-  private readonly progressLocks = new Map<string, Promise<unknown>>();
+  private static readonly dbWriteLocks = new WeakMap<object, Map<string, Promise<unknown>>>();
 
   constructor(dbInstance: typeof db = db) {
     super(dbInstance);
@@ -30,85 +30,94 @@ export class TutorialProgressRepository
     return new TutorialProgressRepository(dbClient as typeof db) as this;
   }
 
-  private async withProgressKeyLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
-    const previous = this.progressLocks.get(key) ?? Promise.resolve();
+  private async withDbKeyWriteLock<T>(
+    key: string,
+    fn: (waitedForPriorWriter: boolean) => Promise<T>
+  ): Promise<T> {
+    const dbRef =
+      typeof this.dbInstance === 'object' && this.dbInstance !== null
+        ? (this.dbInstance as object)
+        : TutorialProgressRepository;
+    let lockMap = TutorialProgressRepository.dbWriteLocks.get(dbRef);
+    if (!lockMap) {
+      lockMap = new Map<string, Promise<unknown>>();
+      TutorialProgressRepository.dbWriteLocks.set(dbRef, lockMap);
+    }
+
+    const previous = lockMap.get(key);
+    const waitedForPriorWriter = previous !== undefined;
     let release!: () => void;
     const next = new Promise<void>((resolve) => {
       release = resolve;
     });
-    const chained = previous.then(() => next, () => next);
-    this.progressLocks.set(key, chained);
+    const chained = (previous ?? Promise.resolve()).then(() => next, () => next);
+    lockMap.set(key, chained);
 
-    await previous.catch(() => undefined);
+    if (previous !== undefined) {
+      await previous.catch(() => undefined);
+    }
     try {
-      return await fn();
+      return await fn(waitedForPriorWriter);
     } finally {
       release();
-      if (this.progressLocks.get(key) === chained) {
-        this.progressLocks.delete(key);
+      if (lockMap.get(key) === chained) {
+        lockMap.delete(key);
       }
     }
   }
 
-  private normalizeTenantCondition(tenantId?: string) {
-    if (tenantId === undefined) return undefined;
+  private requireTenantCondition(tenantId?: string) {
+    if (typeof tenantId !== 'string' || tenantId.trim().length === 0) {
+      throw new Error('Verified tenant context (tenantId) is required for tutorial progress');
+    }
     const trimmed = tenantId.trim().toLowerCase();
     if (!VALID_TUTORIAL_TENANTS.has(trimmed)) {
-      return null;
+      throw new Error(`Invalid tenant context for tutorial progress: ${tenantId}`);
     }
-    return eq(tutorialProgress.tenantId, trimmed);
+    return {
+      normalizedTenant: trimmed,
+      condition: eq(tutorialProgress.tenantId, trimmed),
+    };
   }
 
   async findById(id: string, tenantId?: string): Promise<TutorialProgressRecord | undefined> {
-    const tenantCondition = this.normalizeTenantCondition(tenantId);
-    if (tenantCondition === null) return undefined;
+    const { normalizedTenant, condition } = this.requireTenantCondition(tenantId);
 
     const rows = await this.runRead(
       this.dbInstance
         .select()
         .from(tutorialProgress)
-        .where(
-          tenantCondition
-            ? and(eq(tutorialProgress.id, id), tenantCondition, activeProgress)
-            : and(eq(tutorialProgress.id, id), activeProgress)
-        ),
+        .where(and(eq(tutorialProgress.id, id), condition, activeProgress)),
       'TutorialProgressRepository.findById'
     );
 
     const row = rows[0] as (TutorialProgressRecord & { tenantId?: string | null }) | undefined;
-    if (row && tenantId !== undefined && row.tenantId && row.tenantId !== tenantId.trim().toLowerCase()) {
+    if (row && row.tenantId && row.tenantId !== normalizedTenant) {
       return undefined;
     }
     return row;
   }
 
   async getProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord | undefined> {
-    const tenantCondition = this.normalizeTenantCondition(tenantId);
-    if (tenantCondition === null) return undefined;
+    const { normalizedTenant, condition } = this.requireTenantCondition(tenantId);
 
     const rows = await this.runRead(
       this.dbInstance
         .select()
         .from(tutorialProgress)
         .where(
-          tenantCondition
-            ? and(
-                eq(tutorialProgress.userId, userId),
-                eq(tutorialProgress.subtopicId, subtopicId),
-                tenantCondition,
-                activeProgress
-              )
-            : and(
-                eq(tutorialProgress.userId, userId),
-                eq(tutorialProgress.subtopicId, subtopicId),
-                activeProgress
-              )
+          and(
+            eq(tutorialProgress.userId, userId),
+            eq(tutorialProgress.subtopicId, subtopicId),
+            condition,
+            activeProgress
+          )
         ),
       'TutorialProgressRepository.getProgress'
     );
 
     const row = rows[0] as (TutorialProgressRecord & { tenantId?: string | null }) | undefined;
-    if (row && tenantId !== undefined && row.tenantId && row.tenantId !== tenantId.trim().toLowerCase()) {
+    if (row && row.tenantId && row.tenantId !== normalizedTenant) {
       return undefined;
     }
     return row;
@@ -120,14 +129,16 @@ export class TutorialProgressRepository
     blockType: ContentBlockType,
     tenantId?: string
   ): Promise<TutorialProgressRecord> {
-    if (tenantId !== undefined && this.normalizeTenantCondition(tenantId) === null) {
-      throw new Error('Invalid tenant context for tutorial progress');
-    }
-    const normalizedTenant = tenantId?.trim().toLowerCase();
-    const lockKey = `${normalizedTenant ?? 'default'}:${userId}:${subtopicId}`;
+    const { normalizedTenant, condition } = this.requireTenantCondition(tenantId);
+    const lockKey = `${normalizedTenant}:${userId}:${subtopicId}`;
 
-    return this.withProgressKeyLock(lockKey, async () => {
-      const existing = await this.getProgress(userId, subtopicId, tenantId);
+    // Perform initial read before write lock so concurrent repository instances can both read
+    const initialExisting = await this.getProgress(userId, subtopicId, normalizedTenant);
+
+    return this.withDbKeyWriteLock(lockKey, async (waitedForPriorWriter) => {
+      const existing = waitedForPriorWriter
+        ? ((await this.getProgress(userId, subtopicId, normalizedTenant)) ?? initialExisting)
+        : initialExisting;
       const now = new Date();
 
       if (!existing) {
@@ -138,7 +149,7 @@ export class TutorialProgressRepository
             .values({
               userId,
               subtopicId,
-              ...(normalizedTenant ? { tenantId: normalizedTenant } : {}),
+              tenantId: normalizedTenant,
               status: snapshot.status,
               blocksCompleted: snapshot.completedSections,
               remediationTriggered: snapshot.remediationTriggered,
@@ -161,6 +172,8 @@ export class TutorialProgressRepository
         assignmentCompleted: mergedBlocks.includes('assignment'),
         projectCompleted: mergedBlocks.includes('project'),
       });
+      const expectedVersion = typeof existing.version === 'number' ? existing.version : 1;
+      const nextVersion = expectedVersion + 1;
 
       const [updated] = await this.runRead(
         this.dbInstance
@@ -170,21 +183,67 @@ export class TutorialProgressRepository
             status: snapshot.status,
             completedAt: snapshot.status === 'completed' ? existing.completedAt ?? now : existing.completedAt,
             remediationTriggered: snapshot.remediationTriggered,
-            version: sql`${tutorialProgress.version} + 1`,
+            version: nextVersion,
             updatedAt: now,
             deletedAt: null,
           })
-          .where(eq(tutorialProgress.id, existing.id))
+          .where(
+            and(
+              eq(tutorialProgress.id, existing.id),
+              condition,
+              activeProgress,
+              eq(tutorialProgress.version, expectedVersion)
+            )
+          )
           .returning(),
         'TutorialProgressRepository.markBlockComplete.update'
       );
+
+      if (!updated) {
+        const latest = await this.getProgress(userId, subtopicId, normalizedTenant);
+        if (!latest) {
+          throw new Error('Concurrent tutorial progress modification detected and row no longer exists');
+        }
+        const retryMergedBlocks = mergeCompletedTutorialSection(latest.blocksCompleted ?? [], blockType);
+        const retrySnapshot = calculateTutorialProgress({
+          completedSections: retryMergedBlocks,
+          assignmentCompleted: retryMergedBlocks.includes('assignment'),
+          projectCompleted: retryMergedBlocks.includes('project'),
+        });
+        const retryExpectedVersion = typeof latest.version === 'number' ? latest.version : 1;
+        const [retried] = await this.runRead(
+          this.dbInstance
+            .update(tutorialProgress)
+            .set({
+              blocksCompleted: retryMergedBlocks,
+              status: retrySnapshot.status,
+              completedAt: retrySnapshot.status === 'completed' ? latest.completedAt ?? now : latest.completedAt,
+              remediationTriggered: retrySnapshot.remediationTriggered,
+              version: retryExpectedVersion + 1,
+              updatedAt: now,
+              deletedAt: null,
+            })
+            .where(
+              and(
+                eq(tutorialProgress.id, latest.id),
+                condition,
+                activeProgress,
+                eq(tutorialProgress.version, retryExpectedVersion)
+              )
+            )
+            .returning(),
+          'TutorialProgressRepository.markBlockComplete.retryUpdate'
+        );
+        return (retried ?? latest) as TutorialProgressRecord;
+      }
 
       return updated as TutorialProgressRecord;
     });
   }
 
   async isSubtopicComplete(userId: string, subtopicId: string, tenantId?: string): Promise<boolean> {
-    const progress = await this.getProgress(userId, subtopicId, tenantId);
+    const { normalizedTenant } = this.requireTenantCondition(tenantId);
+    const progress = await this.getProgress(userId, subtopicId, normalizedTenant);
     if (!progress) {
       return false;
     }
@@ -193,26 +252,19 @@ export class TutorialProgressRepository
   }
 
   async getCompletedSubtopics(userId: string, tenantId?: string): Promise<string[]> {
-    const tenantCondition = this.normalizeTenantCondition(tenantId);
-    if (tenantCondition === null) return [];
+    const { condition } = this.requireTenantCondition(tenantId);
 
     const rows = await this.runReport(
       this.dbInstance
         .select({ subtopicId: tutorialProgress.subtopicId })
         .from(tutorialProgress)
         .where(
-          tenantCondition
-            ? and(
-                eq(tutorialProgress.userId, userId),
-                eq(tutorialProgress.status, 'completed'),
-                tenantCondition,
-                activeProgress
-              )
-            : and(
-                eq(tutorialProgress.userId, userId),
-                eq(tutorialProgress.status, 'completed'),
-                activeProgress
-              )
+          and(
+            eq(tutorialProgress.userId, userId),
+            eq(tutorialProgress.status, 'completed'),
+            condition,
+            activeProgress
+          )
         ),
       'TutorialProgressRepository.getCompletedSubtopics'
     );
@@ -221,11 +273,8 @@ export class TutorialProgressRepository
   }
 
   async resetProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord> {
-    if (tenantId !== undefined && this.normalizeTenantCondition(tenantId) === null) {
-      throw new Error('Invalid tenant context for tutorial progress');
-    }
-    const normalizedTenant = tenantId?.trim().toLowerCase();
-    const existing = await this.getProgress(userId, subtopicId, tenantId);
+    const { normalizedTenant, condition } = this.requireTenantCondition(tenantId);
+    const existing = await this.getProgress(userId, subtopicId, normalizedTenant);
     const now = new Date();
 
     if (!existing) {
@@ -235,7 +284,7 @@ export class TutorialProgressRepository
           .values({
             userId,
             subtopicId,
-            ...(normalizedTenant ? { tenantId: normalizedTenant } : {}),
+            tenantId: normalizedTenant,
             status: 'not_started',
             blocksCompleted: [],
             remediationTriggered: false,
@@ -252,6 +301,7 @@ export class TutorialProgressRepository
       return created as TutorialProgressRecord;
     }
 
+    const expectedVersion = typeof existing.version === 'number' ? existing.version : 1;
     const [updated] = await this.runRead(
       this.dbInstance
         .update(tutorialProgress)
@@ -262,11 +312,11 @@ export class TutorialProgressRepository
           score: null,
           timeSpentSec: 0,
           completedAt: null,
-          version: sql`${tutorialProgress.version} + 1`,
+          version: expectedVersion + 1,
           updatedAt: now,
           deletedAt: null,
         })
-        .where(eq(tutorialProgress.id, existing.id))
+        .where(and(eq(tutorialProgress.id, existing.id), condition, activeProgress))
         .returning(),
       'TutorialProgressRepository.resetProgress.update'
     );
