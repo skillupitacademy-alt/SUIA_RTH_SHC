@@ -17,8 +17,10 @@ async function runNavigation(path: string) {
 it('does not cache authenticated student navigation', async () => {
   expect(await runNavigation('/student')).not.toHaveBeenCalled();
 });
-it('retains public navigation caching', async () => {
-  expect(await runNavigation('/programs')).toHaveBeenCalledOnce();
+it('treats public catalog navigation as network-only and does not cache per Sol D2', async () => {
+  // Sol D2 (c166119a): Select network-only HTML/navigation, RSC and API responses for SkillUp, including /programs.
+  // Obsolete catalog caching positive replaced per authorized D2 policy.
+  expect(await runNavigation('/programs')).not.toHaveBeenCalled();
 });
 it('does not serve a prior private navigation while offline', async () => {
   const handlers = new Map<string, (event: any) => void>();
@@ -65,4 +67,39 @@ it('caches immutable /_next/static/* assets when online', async () => {
   const result = await response!;
   expect(result.status).toBe(200);
   expect(put).toHaveBeenCalledTimes(1);
+});
+it('deletes legacy skillup-app-shell-v1 during activation without touching unrelated caches', async () => {
+  const handlers = new Map<string, (event: any) => void>();
+  const deleteMock = vi.fn().mockResolvedValue(true);
+  const claimMock = vi.fn().mockResolvedValue(undefined);
+  vi.stubGlobal('self', {
+    location: { origin: 'https://fixture.invalid' },
+    __SW_MANIFEST: [],
+    clients: { claim: claimMock },
+    addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler)
+  });
+  vi.stubGlobal('caches', { delete: deleteMock });
+  await import('../sw');
+
+  const waitUntil = vi.fn((p: Promise<unknown>) => p);
+  handlers.get('activate')!({ waitUntil });
+  await waitUntil.mock.results[0].value;
+
+  expect(deleteMock).toHaveBeenCalledWith('skillup-app-shell-v1');
+  expect(deleteMock).not.toHaveBeenCalledWith('skillup-static-assets-v2');
+  expect(claimMock).toHaveBeenCalled();
+});
+it('returns 503 offline for /programs despite prior cache entries per Sol D2', async () => {
+  const handlers = new Map<string, (event: any) => void>();
+  const cache = { match: vi.fn().mockResolvedValue(new Response('stale-catalog', { status: 200 })), put: vi.fn() };
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline fixture')));
+  await import('../sw');
+
+  let response: Promise<Response> | undefined;
+  handlers.get('fetch')!({ request: { method: 'GET', url: 'https://fixture.invalid/programs', mode: 'navigate' }, respondWith: (p: Promise<Response>) => { response = p; } });
+  const result = await response!;
+  expect(result.status).toBe(503);
+  expect(await result.text()).toBe('offline');
 });
