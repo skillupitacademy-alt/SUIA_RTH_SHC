@@ -172,10 +172,15 @@ export function withRBAC(
         const resourceUserId = await options.getResourceUserId(req);
         const resourceTenant = await options.getResourceTenant(req);
         
+        // FND03: Validate JWT brand claim is present (tenant context required)
+        if (!(auth as any).brand) {
+          throw new ForbiddenError('JWT brand claim required for tenant-qualified ownership');
+        }
+        
         OwnershipRBACService.requirePermissionOrOwnership(
           {
             requestingUserId: auth.userId,
-            requestingTenant: (auth as any).brand || 'realtutorialhub',
+            requestingTenant: (auth as any).brand,
             requestingShadowUserId: (auth as any).shadowUserId,
             resourceOwnerId: resourceUserId,
             resourceTenant,
