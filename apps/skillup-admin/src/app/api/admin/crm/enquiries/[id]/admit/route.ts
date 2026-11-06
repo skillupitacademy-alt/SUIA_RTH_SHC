@@ -1,13 +1,12 @@
 import { NextRequest } from 'next/server';
 
 import { PlatformEventTypes, publishEvent } from '@quiz/events';
-import bcrypt from 'bcryptjs';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 
 import { jsonData, jsonError, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { admissions, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
 import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
-import { normalizeEmail } from '@quiz/db-people/utils/email-normalization';
+import { normalizeEmail } from '@quiz/db-people';
 
 async function admit(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const forbidden = await requireAdminOrForbidden(request);
@@ -33,35 +32,20 @@ async function admit(request: NextRequest, context: { params: Promise<{ id: stri
   const normalizedEmail = normalizeEmail(enquiry.email);
   const targetPlatform = 'skillup';
 
-  // Check if email exists on ANY platform first (foreign-tenant collision detection)
-  // Per requirement: Option B (reject collision) - foreign-tenant admission must return 409
-  // Aligns with VERIFICATION_FAILED test requirement (audit/W1.2_Batch_08_Sol_Probe.py)
-  const [anyPlatformUser] = await db
-    .select({ id: users.id, platform: users.platform })
+  const localUsers = await db
+    .select({ id: users.id })
     .from(users)
-    .where(and(eq(users.email, normalizedEmail), isNull(users.deletedAt)))
-    .limit(1);
+    .where(and(
+      sql`lower(trim(${users.email})) = ${normalizedEmail}`,
+      eq(users.platform, targetPlatform),
+      isNull(users.deletedAt),
+    ))
+    .limit(2);
 
-  // Reject if email exists on a different platform
-  if (anyPlatformUser && anyPlatformUser.platform !== targetPlatform) {
-    return jsonError('Email already registered on a different platform', 409);
+  if (localUsers.length !== 1) {
+    return jsonError('A unique local account is required for admission', 409);
   }
-
-  const passwordHash = await bcrypt.hash('SkillUp@2025', 10);
-  const userId =
-    anyPlatformUser?.id ??
-    (await db
-      .insert(users)
-      .values({
-        email: normalizedEmail,
-        passwordHash,
-        role: 'student',
-        platform: targetPlatform,
-        isActive: true,
-        deletedAt: null,
-      })
-      .returning({ id: users.id })
-      .then((rows) => rows[0]?.id ?? null));
+  const userId = localUsers[0].id;
 
   if (userId === null) {
     return jsonError('Could not create student user', 500);
