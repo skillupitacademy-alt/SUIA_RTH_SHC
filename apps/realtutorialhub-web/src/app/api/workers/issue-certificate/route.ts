@@ -95,11 +95,12 @@ const handler = createQStashHandler(
           return new Response('Duplicate event ignored', { status: 200 });
         }
 
+        const rawIssuedAt: unknown = existingRow.issuedAt;
         const issuedAtIso =
-          existingRow.issuedAt instanceof Date
-            ? existingRow.issuedAt.toISOString()
-            : typeof existingRow.issuedAt === 'string' && existingRow.issuedAt.trim().length > 0
-              ? existingRow.issuedAt
+          rawIssuedAt instanceof Date
+            ? rawIssuedAt.toISOString()
+            : typeof rawIssuedAt === 'string' && rawIssuedAt.trim().length > 0
+              ? rawIssuedAt
               : new Date().toISOString();
 
         const recoveryIntent = upsertWorkerOutboxIntent({

@@ -16,7 +16,7 @@ export async function acquireJobLock(
   ownerToken: string = randomUUID()
 ): Promise<boolean> {
   const key = `job-lock:${jobId}`;
-  const result = await redis.set(key, ownerToken, { nx: true, ex: ttlSeconds });
+  const result: unknown = await redis.set(key, ownerToken, { nx: true, ex: ttlSeconds });
   if (result === 'OK' || result === true) {
     activeOwnerTokensByJobId.set(jobId, ownerToken);
     return true;
