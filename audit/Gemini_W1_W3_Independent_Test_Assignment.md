@@ -1,5 +1,15 @@
 # Gemini independent foundation testing packet
 
+## Integrated review correction at f574daa5
+
+Read [Sol's integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md). The original
+GM01-GM20 matrix below remains authoritative; do not rename IDs to match convenient
+suites. Add unchanged Sol event/progress/scoring probes, retained foreign-export,
+conflicting-admin and Gate 1 controls to independent verification. Require actual
+ingress/management/approval and versioned-scoring composition, not helper-only passes.
+Correct report scope/atomicity/completion overclaims. Argon repairs production and
+Gemini independently tests complete integrated scope under standing authorization.
+
 ## Complete integrated W1-W3 verification assignment
 
 [Standing authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)

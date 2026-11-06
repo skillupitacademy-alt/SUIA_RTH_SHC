@@ -5,6 +5,15 @@
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
 
+**Integrated submission e4247a6e / Gemini f574daa5:** Sol disposition is
+CHANGES_REQUESTED in [the integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md).
+Eight retained export cases and the conflicting-admin/Gate 1 controls still fail;
+new event/progress/scoring probes expose missing selected-contract enforcement.
+Passing boundary/placement/nested/event/analytics selections remain bounded evidence,
+not comprehensive GM01-GM20 or FND01-FND30 acceptance. Argon continues the full
+twenty-item corrective packet, Gemini independently verifies, Sol retains approval.
+All nine foundation groups, W4 entry and physical verification gates remain open.
+
 **Standing completion authorization:** the owner assigns ALL pending W1-W3 implementation
 to Argon, complete integrated independent verification to Gemini, and final architecture/
 acceptance to Sol. [The standing packet](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)

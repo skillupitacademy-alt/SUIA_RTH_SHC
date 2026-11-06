@@ -1,5 +1,17 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Sol integrated review at f574daa5: CHANGES_REQUESTED
+
+[The independent review](Sol_W1_W3_Integrated_Review_f574daa5.md) rejects the claim
+that all twenty TC/thirty FND implementation requirements are complete. Retained
+export/admin/Gate 1 failures and new event/progress/scoring failures are reproduced.
+The full twenty-item continuation is listed there. Correct within the standing
+authorization; do not wait for another assignment or repeat selected D1-D7 policy
+questions. In particular, D4 already forbids requester self-approval, D3 rejects
+instance-mutex substitution for SQL atomicity, and D7 rejects marker-after-handler
+as a complete durable delivery solution. Preserve legitimate positives and every
+denial invariant. Gemini tests frozen repairs and Sol retains final acceptance.
+
 ## Executive Summary & Standing Completion Status (`a7ef55ad`)
 
 - **Issued**: 2026-11-06

@@ -1,5 +1,15 @@
 # Current owner override
 
+## Current integrated correction checkpoint at f574daa5
+
+[Sol's integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md) is CHANGES_REQUESTED
+and includes eight findings and the full twenty-item continuation. Argon retains ALL
+FND01-FND30/TC01-TC20 work under the standing authorization. Fix retained export/admin
+and Gate 1 authority failures plus event/progress/scoring defects; do not call all
+implementation complete from eight slices or request the same D1-D7 decisions again.
+Use exact per-slice manifests, freeze integrated repairs for Gemini and retain all
+physical execution gates. Scope acceptance in earlier paragraphs is historical.
+
 ## Standing completion approval
 
 [The owner-requested standing authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)

@@ -1,5 +1,16 @@
 # Gemini Independent W1–W3 Comprehensive Verification Report (`GM01`–`GM20`)
 
+> Sol independent review at f574daa5: CHANGES_REQUESTED. The broad completion and
+> VERIFIED claims below are not accepted. Sol reproduced eight failing export cases,
+> the conflicting-admin-context failure, Gate 1 self-approval, six new event/progress
+> failures and unknown versioned-option-ID credit. Existing selected green results
+> remain bounded evidence. See [Sol's review and full twenty-item continuation](Sol_W1_W3_Integrated_Review_f574daa5.md).
+> Restore the original GM01-GM20 meanings and exact selection/layer attribution.
+> A process-local mutex is not database atomicity, inspection is not execution, and
+> FAIL-07 is an existing D4 violation rather than a new policy question. Gemini owns
+> independent report/coverage correction; Argon owns production repair under the
+> standing full-scope authorization. Historical assertions below remain for audit.
+
 - **Assigned project role**: `Gemini` (Independent security and regression tester)
 - **Runtime model**: Gemini 3.8 Flash (Medium)
 - **Governing protocols & standing authorizations**:

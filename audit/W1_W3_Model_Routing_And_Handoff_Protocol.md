@@ -1,5 +1,14 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Latest Sol disposition at f574daa5
+
+[Integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md): CHANGES_REQUESTED.
+Argon continues the complete twenty-item/thirty-FND assignment; Gemini supplies
+full independent coverage and corrects overclaims; Sol reviews frozen repairs.
+Retained export/admin/Gate 1 and new event/progress/scoring failures remain required.
+The standing authorization continues without routine per-slice assignment requests.
+Do not claim completion, physical guarantees or W4 readiness from the selected passes.
+
 ## Current standing completion handoff
 
 [Argon → Gemini → Sol standing completion authorization](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
