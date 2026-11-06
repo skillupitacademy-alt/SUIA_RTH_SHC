@@ -10,8 +10,17 @@ export class MultiSelectEvaluator implements IAnswerEvaluator {
   evaluate(correctAnswer: string, userAnswer: string): number {
     if (!correctAnswer || !userAnswer) return 0;
 
-    const correctSet = new Set(parseAnswer(correctAnswer).map((item) => item.toLowerCase()));
-    const userSet = new Set(parseAnswer(userAnswer).map((item) => item.toLowerCase()));
+    const parsedCorrect = parseAnswer(correctAnswer).map((item) => item.toLowerCase());
+    const parsedUser = parseAnswer(userAnswer).map((item) => item.toLowerCase());
+    if (parsedCorrect.length === 0 || parsedUser.length === 0) return 0;
+
+    // Reject duplicate option selections in a single submission
+    if (new Set(parsedUser).size !== parsedUser.length) {
+      return 0;
+    }
+
+    const correctSet = new Set(parsedCorrect);
+    const userSet = new Set(parsedUser);
 
     let matchedCorrect = 0;
     let incorrectSelections = 0;

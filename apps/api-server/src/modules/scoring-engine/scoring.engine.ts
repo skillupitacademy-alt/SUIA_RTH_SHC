@@ -20,7 +20,7 @@ import {
 import { eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
-import { normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
+import { normalizeQuestionOptions, normalizeQuestionType, parseAnswer, serializeAnswerTokens } from '@/modules/question/question-contract';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { ExamObserver } from '../exam-engine/exam.observer';
@@ -45,7 +45,7 @@ function resolveAnswerForScoring(question: ScorableQuestion, answer: string): st
   const normalizedOptions = normalizeQuestionOptions(question.options);
 
   if (normalizedOptions.length === 0) {
-    return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+    return normalizedType === 'multi_select' ? serializeAnswerTokens(parseAnswer(answer)) : answer.trim();
   }
 
   const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
@@ -62,16 +62,25 @@ function resolveAnswerForScoring(question: ScorableQuestion, answer: string): st
     return option?.text ?? option?.code ?? option?.label ?? answerId;
   });
 
-  return resolvedAnswers.join(',');
+  return normalizedType === 'multi_select'
+    ? serializeAnswerTokens(resolvedAnswers)
+    : (resolvedAnswers[0] ?? '');
 }
 
 function resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
+  const normalizedType = normalizeQuestionType(question.type);
   const normalizedOptions = normalizeQuestionOptions(question.options);
   const flaggedCorrect = normalizedOptions
     .filter((option) => option.isCorrect === true)
     .map((option) => option.text ?? option.code ?? option.label ?? option.id);
 
-  return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer ?? '';
+  if (flaggedCorrect.length === 0) {
+    return question.correctAnswer ?? '';
+  }
+
+  return normalizedType === 'multi_select' || flaggedCorrect.length > 1
+    ? serializeAnswerTokens(flaggedCorrect)
+    : flaggedCorrect.join(',');
 }
 
 export class ScoringEngine {

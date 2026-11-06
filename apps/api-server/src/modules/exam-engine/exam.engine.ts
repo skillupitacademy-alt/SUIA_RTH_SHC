@@ -5,7 +5,7 @@ import { eventBus } from '@/lib/event-bus';
 import { AppEvents, type ExamStartedPayload } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
-import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
+import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer, serializeAnswerTokens } from '@/modules/question/question-contract';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
@@ -102,7 +102,7 @@ export class ExamEngine {
     const normalizedOptions = normalizeQuestionOptions(question.options);
 
     if (normalizedOptions.length === 0) {
-      return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+      return normalizedType === 'multi_select' ? serializeAnswerTokens(parseAnswer(answer)) : answer.trim();
     }
 
     const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
@@ -119,16 +119,25 @@ export class ExamEngine {
       return option?.text ?? option?.code ?? option?.label ?? answerId;
     });
 
-    return resolvedAnswers.join(',');
+    return normalizedType === 'multi_select'
+      ? serializeAnswerTokens(resolvedAnswers)
+      : (resolvedAnswers[0] ?? '');
   }
 
   private resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
+    const normalizedType = normalizeQuestionType(question.type);
     const normalizedOptions = normalizeQuestionOptions(question.options);
     const flaggedCorrect = normalizedOptions
       .filter((option) => option.isCorrect === true)
       .map((option) => option.text ?? option.code ?? option.label ?? option.id);
 
-    return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer;
+    if (flaggedCorrect.length === 0) {
+      return question.correctAnswer;
+    }
+
+    return normalizedType === 'multi_select' || flaggedCorrect.length > 1
+      ? serializeAnswerTokens(flaggedCorrect)
+      : flaggedCorrect.join(',');
   }
 
   /**
