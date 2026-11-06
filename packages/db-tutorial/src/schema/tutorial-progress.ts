@@ -1,12 +1,16 @@
 /* istanbul ignore file */
-import { boolean, decimal, integer, jsonb, pgTable, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, decimal, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 import { tutorialProgressStatusEnum } from './enums';
+
+export const tenantEnum = pgEnum('tenant', ['realtutorialhub', 'skillup', 'skillhubcore']);
 
 export const tutorialProgress = pgTable('tutorial_progress', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull(),
   subtopicId: uuid('subtopic_id').notNull(),
+  // FND03: Tenant boundary enforcement
+  tenantId: text('tenant_id').notNull().default('realtutorialhub'),
   status: tutorialProgressStatusEnum('status').notNull().default('not_started'),
   blocksCompleted: jsonb('blocks_completed').$type<string[]>().notNull().default([]),
   remediationTriggered: boolean('remediation_triggered').notNull().default(false),
@@ -19,5 +23,6 @@ export const tutorialProgress = pgTable('tutorial_progress', {
   deletedAt: timestamp('deleted_at', { mode: 'date' }),
 }, (table) => ({
   idxTutorialProgressUser: index('idx_tutorial_progress_user').on(table.userId),
-  uqTutorialProgressUserSubtopic: uniqueIndex('uq_tutorial_progress_user_subtopic').on(table.userId, table.subtopicId),
+  idxTutorialProgressTenant: index('idx_tutorial_progress_tenant').on(table.tenantId),
+  uqTutorialProgressTenantUserSubtopic: uniqueIndex('uq_tutorial_progress_tenant_user_subtopic').on(table.tenantId, table.userId, table.subtopicId),
 }));
