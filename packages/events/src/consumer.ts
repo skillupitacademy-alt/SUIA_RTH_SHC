@@ -60,7 +60,10 @@ local current = redis.call("GET", KEYS[1])
 if current then
   return current
 end
-redis.call("SET", KEYS[1], ARGV[1], "EX", tonumber(ARGV[2]), "NX")
+local ok = redis.call("SET", KEYS[1], ARGV[1], "EX", tonumber(ARGV[2]), "NX")
+if not ok then
+  return redis.call("GET", KEYS[1]) or "BUSY"
+end
 return "ACQUIRED"
 `.trim();
 
@@ -76,12 +79,18 @@ export const RELEASE_IF_OWNER_LUA = `
 if redis.call("GET", KEYS[1]) ~= ARGV[1] then
   return 0
 end
-redis.call("DEL", KEYS[1])
-return 1
+return redis.call("DEL", KEYS[1])
 `.trim();
 
 const CANONICAL_EVENT_TENANTS = new Set(['realtutorialhub', 'skillup', 'skillhubcore']);
-const claimingKeysByStore = new WeakMap<object, Set<string>>();
+const MAX_LEASE_TTL_SECONDS = 31_536_000;
+
+function assertPositiveBoundedTtl(ttlSeconds: number, label: string): number {
+  if (!Number.isInteger(ttlSeconds) || ttlSeconds <= 0 || ttlSeconds > MAX_LEASE_TTL_SECONDS) {
+    throw new Error(`Invalid ${label}: expected positive integer seconds`);
+  }
+  return ttlSeconds;
+}
 
 const getReceiver = (receiver?: Receiver) => {
   if (receiver !== undefined) return receiver;
@@ -181,7 +190,7 @@ export function createDurableEventLeaseStore(
   store: ConsumerRedisLike | DurableEventLeaseStore
 ): DurableEventLeaseStore {
   if (store === null || typeof store !== 'object') {
-    throw new Error('Unsupported event idempotency store adapter');
+    throw new Error('Unsupported atomic event lease adapter');
   }
   if (isDurableEventLeaseStore(store)) {
     return store;
@@ -192,14 +201,18 @@ export function createDurableEventLeaseStore(
     const evalFn = redisStore.eval.bind(redisStore);
     return {
       async claim(input) {
+        const leaseSeconds = assertPositiveBoundedTtl(input.leaseSeconds, 'leaseSeconds');
         const pendingRecord = input.pendingRecord ?? `pending:${input.fingerprint}:${input.eventId}:${input.ownerToken}`;
         const rawResult = await evalFn(
           CLAIM_EVENT_LEASE_LUA,
           [input.key],
-          [pendingRecord, input.leaseSeconds]
+          [pendingRecord, leaseSeconds]
         );
         if (rawResult === 'ACQUIRED') {
           return { kind: 'acquired', ownerToken: input.ownerToken, pendingRecord };
+        }
+        if (rawResult === 'BUSY') {
+          return { kind: 'busy' };
         }
         if (typeof rawResult === 'string' && rawResult.trim().length > 0) {
           return classifyExistingRecord(rawResult, input.fingerprint, input.fnv1aFingerprint);
@@ -207,105 +220,36 @@ export function createDurableEventLeaseStore(
         return { kind: 'busy' };
       },
       async completeIfOwner(input) {
+        const retentionSeconds = assertPositiveBoundedTtl(input.retentionSeconds, 'retentionSeconds');
+        if (typeof input.expectedPending !== 'string' || input.expectedPending.trim().length === 0) {
+          return 'owner-lost';
+        }
         const result = await evalFn(
           COMPLETE_IF_OWNER_LUA,
           [input.key],
-          [input.expectedPending, input.completedValue, input.retentionSeconds]
+          [input.expectedPending, input.completedValue, retentionSeconds]
         );
-        return result === 1 || result === '1' || result === 'OK' || result === true
+        return result === 1 || result === '1'
           ? 'applied'
           : 'owner-lost';
       },
       async releaseIfOwner(input) {
+        if (typeof input.expectedPending !== 'string' || input.expectedPending.trim().length === 0) {
+          return 'owner-lost';
+        }
         const result = await evalFn(
           RELEASE_IF_OWNER_LUA,
           [input.key],
           [input.expectedPending]
         );
-        return result === 1 || result === '1' || result === 'OK' || result === true
+        return result === 1 || result === '1'
           ? 'applied'
           : 'owner-lost';
       },
     };
   }
 
-  if (typeof redisStore.get !== 'function' || typeof redisStore.set !== 'function') {
-    throw new Error('Unsupported event idempotency store adapter: get and set are required');
-  }
-
-  return {
-    async claim(input) {
-      const pendingRecord = input.pendingRecord ?? `pending:${input.fingerprint}:${input.eventId}:${input.ownerToken}`;
-      let storeClaims = claimingKeysByStore.get(redisStore);
-      if (storeClaims === undefined) {
-        storeClaims = new Set<string>();
-        claimingKeysByStore.set(redisStore, storeClaims);
-      }
-      if (storeClaims.has(input.key)) {
-        return { kind: 'busy' };
-      }
-      storeClaims.add(input.key);
-
-      try {
-        const existingRecord = await redisStore.get(input.key);
-        if (existingRecord !== null && existingRecord !== undefined && String(existingRecord).trim().length > 0) {
-          return classifyExistingRecord(String(existingRecord), input.fingerprint, input.fnv1aFingerprint);
-        }
-
-        const claimResult = await redisStore.set(input.key, pendingRecord, {
-          ex: input.leaseSeconds,
-          nx: true,
-        });
-
-        const claimAcquired = claimResult === 'OK' || claimResult === true;
-        if (!claimAcquired) {
-          return { kind: 'busy' };
-        }
-
-        return {
-          kind: 'acquired',
-          ownerToken: input.ownerToken,
-          pendingRecord,
-        };
-      } finally {
-        storeClaims.delete(input.key);
-      }
-    },
-
-    async completeIfOwner(input) {
-      const firstSnapshot = await redisStore.get(input.key);
-      if (firstSnapshot === null || firstSnapshot === undefined || String(firstSnapshot) !== input.expectedPending) {
-        return 'owner-lost';
-      }
-      const secondSnapshot = await redisStore.get(input.key);
-      if (secondSnapshot === null || secondSnapshot === undefined || String(secondSnapshot) !== input.expectedPending) {
-        return 'owner-lost';
-      }
-
-      await redisStore.set(input.key, input.completedValue, {
-        ex: input.retentionSeconds,
-      });
-      return 'applied';
-    },
-
-    async releaseIfOwner(input) {
-      const firstSnapshot = await redisStore.get(input.key);
-      if (firstSnapshot === null || firstSnapshot === undefined || String(firstSnapshot) !== input.expectedPending) {
-        return 'owner-lost';
-      }
-      const secondSnapshot = await redisStore.get(input.key);
-      if (secondSnapshot === null || secondSnapshot === undefined || String(secondSnapshot) !== input.expectedPending) {
-        return 'owner-lost';
-      }
-
-      if (typeof redisStore.del === 'function') {
-        await redisStore.del(input.key);
-      } else {
-        await redisStore.set(input.key, '');
-      }
-      return 'applied';
-    },
-  };
+  throw new Error('Unsupported atomic event lease adapter');
 }
 
 export interface InMemoryEventLeaseStoreHooks {

@@ -3,6 +3,8 @@ import { Client } from '@upstash/qstash';
 import { createEventEnvelope, type EventEnvelope, type PlatformEventPayloadMap, type PlatformEventType } from './types';
 
 export interface PublishEventOptions {
+  id?: string;
+  tenantId?: string;
   destinationUrl?: string;
   correlationId?: string;
   source?: string;
@@ -27,7 +29,7 @@ export async function publishEvent<TType extends PlatformEventType>(
   options: PublishEventOptions = {}
 ): Promise<{ messageId: string; envelope: EventEnvelope<TType, PlatformEventPayloadMap[TType]> }> {
   const envelope = createEventEnvelope(type, payload, {
-    id: crypto.randomUUID(),
+    id: options.id ?? crypto.randomUUID(),
     correlationId: options.correlationId ?? crypto.randomUUID(),
     source: options.source ?? 'quiz-platform',
     occurredAt: options.occurredAt ?? new Date().toISOString(),
