@@ -1,9 +1,14 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
+import { and, eq, isNull } from 'drizzle-orm';
 
-import { jsonData, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
+import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { listAdminStudents } from '@/lib/skillup-admin-data';
+import {
+  generateRandomBootstrapPasswordHash,
+  issueStudentInvitation,
+  normalizeStudentEmail,
+} from '@/lib/student-invitation';
 import { admissions, db, enquiries, userProfiles, users } from '@quiz/db-people';
 
 const createStudentSchema = z.object({
@@ -26,12 +31,33 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJsonOrFormBody(request, createStudentSchema);
   if (!parsed.ok) return parsed.response;
 
-  const passwordHash = await bcrypt.hash('SkillUp@2025', 10);
+  const normalizedEmail = normalizeStudentEmail(parsed.data.email);
+
+  const selectFn = (db as unknown as { select?: (...args: unknown[]) => { from?: (...args: unknown[]) => { where?: (...args: unknown[]) => { limit?: (n: number) => Promise<Array<{ id: string }>> } } } }).select;
+  if (typeof selectFn === 'function') {
+    const existingSkillupAccounts = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.email, normalizedEmail),
+          eq(users.platform, 'skillup'),
+          isNull(users.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (existingSkillupAccounts.length > 0) {
+      return jsonError('An active SkillUp account already exists for this email', 409);
+    }
+  }
+
+  const bootstrapPasswordHash = await generateRandomBootstrapPasswordHash();
   const [user] = await db
     .insert(users)
     .values({
-      email: parsed.data.email,
-      passwordHash,
+      email: normalizedEmail,
+      passwordHash: bootstrapPasswordHash,
       role: 'student',
       platform: 'skillup',
       isActive: true,
@@ -39,12 +65,18 @@ export async function POST(request: NextRequest) {
     })
     .returning({ id: users.id });
 
+  const invitation = issueStudentInvitation({
+    userId: user.id,
+    email: normalizedEmail,
+    platform: 'skillup',
+  });
+
   const [enquiry] = await db
     .insert(enquiries)
     .values({
       fullName: parsed.data.name,
-      email: parsed.data.email,
-      phone: parsed.data.email,
+      email: normalizedEmail,
+      phone: normalizedEmail,
       source: 'walkin',
       status: 'qualified',
       notes: `Admitted from admin create flow for batch ${parsed.data.batchName}`,
@@ -58,7 +90,15 @@ export async function POST(request: NextRequest) {
     studentUserId: user.id,
     admissionType: 'training',
     status: 'approved',
-    documents: {},
+    documents: {
+      invitation: {
+        invitationId: invitation.record.invitationId,
+        tokenHash: invitation.record.tokenHash,
+        status: invitation.record.status,
+        issuedAt: invitation.record.issuedAt,
+        expiresAt: invitation.record.expiresAt,
+      },
+    },
   });
 
   return jsonData(
@@ -66,12 +106,18 @@ export async function POST(request: NextRequest) {
       id: user.id,
       userId: user.id,
       name: parsed.data.name,
-      email: parsed.data.email,
+      email: normalizedEmail,
       batchId: parsed.data.batchId,
       batchName: parsed.data.batchName,
       attendancePct: 0,
       paymentStatus: 'due',
       upcomingSessionAt: new Date().toISOString(),
+      invitation: {
+        invitationId: invitation.record.invitationId,
+        invitationToken: invitation.invitationToken,
+        expiresAt: invitation.record.expiresAt,
+        redeemPath: '/api/admin/students/invite/redeem',
+      },
     },
     201
   );
