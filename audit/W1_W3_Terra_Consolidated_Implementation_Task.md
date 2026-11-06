@@ -1,5 +1,14 @@
 # Consolidated W1-W3 foundation implementation assignment for Terra
 
+## Latest owner-directed role allocation
+
+audit/W1_W3_Model_Routing_And_Handoff_Protocol.md now allocates critical production to
+Tera, noncritical presentation/documentation to Claude Sonnet 4.5 and independent testing
+to Gemini. Sol retains architecture/integration acceptance. This supersedes the previous
+single-Sonnet ownership heading below. All FND01-FND30 tasks and selected contracts remain
+active. Role-specific packets, exclusive file ownership, actual model declarations and
+mandatory next-model user notifications are defined by the routing protocol.
+
 ## Current implementation ownership and completion directive
 
 As directed by the owner, Claude Sonnet 4.5 now owns the complete remaining FND01-FND30

@@ -102,6 +102,23 @@ accepted. Passing functional tests or builds alone is insufficient.
 
 # 3. AI Model Responsibility Matrix
 
+## Current owner-directed W1-W3 routing
+
+Effective 2026-11-06, the owner assigns critical production implementation to Tera/Terra,
+noncritical presentation/documentation to Claude Sonnet 4.5 and independent testing to
+Gemini. Sol retains architecture, integration review and final acceptance. This routing
+overrides historical default roles and the single-Sonnet foundation ownership below.
+The exact FND01-FND30 matrix and user notification/identity protocol are in
+audit/W1_W3_Model_Routing_And_Handoff_Protocol.md. Use its role-specific packets for
+twenty critical implementation items, twelve noncritical items and twenty testing items.
+
+No model may infer actual runtime identity, dispatch or acceptance from a nickname in
+a prompt. Each declares assigned role, host identity if exposed, baseline and scope.
+At handoff it tells the user the next required model, exact revision, packet and action.
+Parallel writers need isolated worktrees/branches and exclusive file ownership. Otherwise
+serialize writes. Gemini tests frozen revisions, returns failures to the assigned
+implementer and submits evidence to Sol. All thirty tasks and nine groups remain active.
+
 The model names below follow the available models stated by the project owner. Their use is governed primarily by **role separation**, not by assuming any one model is infallible.
 
 | AI Model | Primary Role | Use For | Do NOT Use For | Expected Output |

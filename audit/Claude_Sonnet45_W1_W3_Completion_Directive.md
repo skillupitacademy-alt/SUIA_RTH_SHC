@@ -1,5 +1,21 @@
 # Principal architect directive for completion of W1-W3
 
+## Current role allocation selected by the owner
+
+The 2026-11-06 owner routing decision in
+audit/W1_W3_Model_Routing_And_Handoff_Protocol.md supersedes sole-Sonnet implementation
+ownership in historical paragraphs below. The complete FND01-FND30 requirements remain.
+Tera implements critical production changes, Claude Sonnet 4.5 handles noncritical
+presentation/documentation and Gemini owns independent testing. Sol retains principal
+architecture, integration review and acceptance. Each model declares assigned role,
+actual host identity if exposed, baseline and exact scope, then notifies the user of the
+next required model and handoff packet. Use isolated worktrees for independent writers
+or serialize shared-checkout writes. Do not alter a source file owned by another role.
+
+Read the Tera critical, Sonnet noncritical and Gemini independent-test packets linked
+by that protocol. This allocation carries every pending requirement forward and creates
+no task/group closure. Historical single-worker wording is subordinate to this allocation.
+
 Issued by Sol / Codex on 2026-11-06 following the owner's request to complete the entire
 foundation assignment. Implementation owner is Claude Sonnet 4.5. Sol owns independent
 verification, architecture disposition and final acceptance. Starting reviewed repository
