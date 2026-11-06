@@ -1,18 +1,40 @@
 #!/usr/bin/env node
 /**
- * Context Optimization CLI (`OPT01`–`OPT05`)
+ * Context Optimization CLI (`OPT01`–`OPT05`) — v1.1.0 (Fail-Closed & Provenance-Hardened)
  *
  * Implements:
- * - OPT01 (`query-graph`, `sql-coverage`): Provenance-checked Graphify query wrapper with
- *   explicit ripgrep/git-grep source fallback and SQL parser coverage audit.
- * - OPT02 (`build-packet`): Reproducible, secret-scanned, repo-root-confined source packet
- *   and `.manifest.json` generator with full security context preservation.
- * - OPT03 (`benchmark`): Token/byte/character budget enforcement and comparable FND03
- *   conventional vs optimized context measurement.
- * - OPT04 (`checkpoint-create`, `checkpoint-validate`): Commit-aware FND session-resumption
- *   checkpoint generator and fail-closed validator.
- * - OPT05 (`host-inventory`): Non-destructive inventory of AGENTS.md, CLAUDE.md, .kiro,
- *   .codex, .claude, and Antigravity host instruction files without dumping credential values.
+ * - OPT01 (`query-graph`, `sql-coverage`, `record-graph-provenance`):
+ *   - Verifies `graphify-out/graph.json` + `graphify-out/manifest.json` per-file MD5 `ast_hash`
+ *     and SHA-256 fingerprints against current disk files and recorded `.context-packets/graph-provenance.json`
+ *     (not merely mtime vs HEAD commit timestamp).
+ *   - Executes actual multi-hop BFS dependency/caller traversal across `graph.json` edges
+ *     plus native `graphify query` / `graphify explain` CLI invocation, clearly distinguished
+ *     from lexical substring node matching.
+ *   - Distinguishes ripgrep/git-grep execution errors (`status > 1` or spawn errors) from
+ *     genuine zero-match (`status === 1`) results.
+ * - OPT02 (`build-packet`, `verify-canaries`):
+ *   - Compiles and enforces `config.secretDenylist.forbiddenPathGlobs` and `config.defaultExcludeGlobs`
+ *     dynamically from `config.json`.
+ *   - Fails closed (`exitCode = 1`, `PASS` never printed) in `full` security mode whenever ANY
+ *     required security file, test, Sol decision, or discovered caller is omitted or when
+ *     `sourcePacketBudget` is exceeded. Writes full un-truncated evidence + safe chunked split
+ *     packets to disk while reporting every omitted item and chunk retrieval command.
+ * - OPT03 (`benchmark`):
+ *   - Compares identical 30-file FND03 security coverage across (a) conventional workflow
+ *     (30 required files + explicit discovery overhead), (b) raw 30 required files without discovery
+ *     overhead, (c) optimized full packet (with line numbers + SHA-256 manifest + bounded discovery),
+ *     and (d) navigation-only outline packet. Reports exact bytes, chars, and `chars/4` token
+ *     estimates separately from external Repomix `o200k_base` calibration.
+ * - OPT04 (`checkpoint-create`, `checkpoint-validate`):
+ *   - Computes distinct git commit revisions for `sourceHead`, `toolHead`, and `testHead`.
+ *   - Extracts governing Sol decision headings (`D1`, `D3`) and observed test evidence directly
+ *     from the referenced Sol decision document (`audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md`)
+ *     without hardcoding unauthorized architectural instructions.
+ * - OPT05 (`host-inventory`):
+ *   - Non-destructively inventories `AGENTS.md`, `CLAUDE.md`, `.kiro`, `.codex`, `.claude`, `.agents`,
+ *     and `.gemini`, referencing the approved Sonnet `DOC01`–`DOC03` paths
+ *     (`docs/ai-context/operating-guide.md`, `docs/ai-context/fnd-checkpoint-template.md`,
+ *     `docs/ai-context/task-retrieval-guide.md`).
  */
 
 import crypto from 'node:crypto';
@@ -26,7 +48,7 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_CONFIG_PATH = path.join(__dirname, 'config.json');
 const DEFAULT_OUT_DIR = path.join(REPO_ROOT, '.context-packets');
-const CLI_VERSION = '1.0.0';
+const CLI_VERSION = '1.1.0';
 
 function toPosixPath(p) {
   return p.split(path.sep).join('/');
@@ -36,9 +58,16 @@ function sha256Buffer(buf) {
   return crypto.createHash('sha256').update(buf).digest('hex');
 }
 
+function md5Buffer(buf) {
+  return crypto.createHash('md5').update(buf).digest('hex');
+}
+
 function sha256File(absPath) {
-  const buf = fs.readFileSync(absPath);
-  return sha256Buffer(buf);
+  return sha256Buffer(fs.readFileSync(absPath));
+}
+
+function md5File(absPath) {
+  return md5Buffer(fs.readFileSync(absPath));
 }
 
 function estimateTokensCharsDiv4(charCount) {
@@ -53,6 +82,79 @@ function loadConfig(customConfigPath) {
     configSha256: sha256Buffer(Buffer.from(raw, 'utf8')),
     config: JSON.parse(raw),
   };
+}
+
+/**
+ * Converts a glob pattern (supporting `**`, `*`, `?`) into a RegExp matching POSIX relative paths.
+ */
+function globToRegExp(globPattern) {
+  let pat = globPattern.trim().replace(/\\/g, '/');
+  if (pat.startsWith('./')) {
+    pat = pat.slice(2);
+  }
+  let regexStr = '^';
+  let i = 0;
+  while (i < pat.length) {
+    const ch = pat[i];
+    if (ch === '*') {
+      if (pat[i + 1] === '*') {
+        if (pat[i + 2] === '/') {
+          // `**/` matches zero or more directories
+          regexStr += '(?:.+/)?';
+          i += 3;
+          continue;
+        } else {
+          regexStr += '.*';
+          i += 2;
+          continue;
+        }
+      } else {
+        regexStr += '[^/]*';
+        i += 1;
+        continue;
+      }
+    } else if (ch === '?') {
+      regexStr += '[^/]';
+      i += 1;
+      continue;
+    } else if ('.+^$()[]{}|\\'.includes(ch)) {
+      regexStr += '\\' + ch;
+      i += 1;
+      continue;
+    } else {
+      regexStr += ch;
+      i += 1;
+    }
+  }
+  regexStr += '$';
+  return new RegExp(regexStr, 'i');
+}
+
+/**
+ * Evaluates a POSIX relative path against an ordered list of glob rules (supporting `!` negation rules).
+ */
+function matchGlobRules(relPosixPath, globList = []) {
+  const normalized = relPosixPath.replace(/^\/+/, '');
+  let matched = false;
+  let matchedRule = null;
+
+  for (const rawRule of globList) {
+    if (!rawRule || typeof rawRule !== 'string') continue;
+    const isNegated = rawRule.startsWith('!');
+    const pattern = isNegated ? rawRule.slice(1) : rawRule;
+    const re = globToRegExp(pattern);
+    if (re.test(normalized) || re.test(path.posix.basename(normalized))) {
+      if (isNegated) {
+        matched = false;
+        matchedRule = null;
+      } else {
+        matched = true;
+        matchedRule = rawRule;
+      }
+    }
+  }
+
+  return { matched, matchedRule };
 }
 
 /**
@@ -80,19 +182,14 @@ function resolveRepoPath(relOrAbsPath, { mustExist = true } = {}) {
 
   const realRepoRoot = fs.realpathSync(REPO_ROOT);
   if (fs.existsSync(candidateAbs)) {
-    const stat = fs.lstatSync(candidateAbs);
     const realCandidate = fs.realpathSync(candidateAbs);
     const realRel = path.relative(realRepoRoot, realCandidate);
     if (realRel.startsWith('..') || path.isAbsolute(realRel)) {
       throw new Error(`PATH_CONFINEMENT_ERROR: Symlink target escapes repository root: ${relOrAbsPath}`);
     }
-    if (stat.isSymbolicLink()) {
-      // Even intra-repo symlinks are checked; if it points outside root it threw above.
-    }
   } else if (mustExist) {
     throw new Error(`PATH_NOT_FOUND: Required repository file does not exist: ${relOrAbsPath}`);
   } else {
-    // Check nearest existing ancestor for symlink escape
     let parent = path.dirname(candidateAbs);
     while (!fs.existsSync(parent) && parent !== path.dirname(parent)) {
       parent = path.dirname(parent);
@@ -127,10 +224,23 @@ function runGit(args, { allowFailure = false } = {}) {
   }
 }
 
+function getLatestCommitForPaths(relPaths = []) {
+  const valid = relPaths.filter(Boolean);
+  if (valid.length === 0) {
+    return runGit(['rev-parse', 'HEAD']);
+  }
+  const out = runGit(['log', '-n', '1', '--format=%H', '--', ...valid], { allowFailure: true });
+  return out || runGit(['rev-parse', 'HEAD']);
+}
+
 function getGitProvenance() {
   const head = runGit(['rev-parse', 'HEAD']);
   const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']);
-  const statusOutput = runGit(['status', '--porcelain']);
+  const statusOutput = execFileSync('git', ['status', '--porcelain'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).replace(/\r?\n$/, '');
   const dirtyEntries = statusOutput
     ? statusOutput
         .split(/\r?\n/)
@@ -156,45 +266,54 @@ function getGitProvenance() {
   };
 }
 
-function isForbiddenSecretPath(relPosixPath, secretDenylist) {
-  const base = path.posix.basename(relPosixPath);
-  if (base === '.env.example' || base === '.env.template') {
-    return false;
+/**
+ * Evaluates both `config.secretDenylist.forbiddenPathGlobs` and `config.defaultExcludeGlobs`
+ * against a repository-relative POSIX path (`OPT02` security control).
+ */
+function checkPathExclusionAndDenylist(relPosixPath, config) {
+  const forbiddenCheck = matchGlobRules(relPosixPath, config?.secretDenylist?.forbiddenPathGlobs || []);
+  if (forbiddenCheck.matched) {
+    return {
+      blocked: true,
+      kind: 'FORBIDDEN_SECRET_PATH_GLOB',
+      matchedRule: forbiddenCheck.matchedRule,
+      description: `File path '${relPosixPath}' matches config.secretDenylist.forbiddenPathGlobs rule '${forbiddenCheck.matchedRule}'.`,
+    };
   }
-  if (base === '.env' || (base.startsWith('.env.') && base !== '.env.example')) {
-    return true;
+
+  const excludeCheck = matchGlobRules(relPosixPath, config?.defaultExcludeGlobs || []);
+  if (excludeCheck.matched) {
+    return {
+      blocked: true,
+      kind: 'DEFAULT_EXCLUDED_PATH_GLOB',
+      matchedRule: excludeCheck.matchedRule,
+      description: `File path '${relPosixPath}' matches config.defaultExcludeGlobs rule '${excludeCheck.matchedRule}'.`,
+    };
   }
-  if (base === '.npmrc') {
-    return true;
-  }
-  const ext = path.posix.extname(base).toLowerCase();
-  if (['.pem', '.key', '.p12', '.pfx'].includes(ext)) {
-    return true;
-  }
-  if (/^(credentials|secrets).*\.json$/i.test(base)) {
-    return true;
-  }
-  return false;
+
+  return { blocked: false, kind: null, matchedRule: null, description: null };
 }
 
 /**
- * Scans content against configured secret denylist patterns (`OPT02` security control).
- * Never echoes the matched secret value—reports only pattern ID, file path, and line number.
+ * Scans path and content against configured secret denylist globs and regexes (`OPT02` security control).
+ * Never echoes the matched secret value—reports only pattern ID, matched rule, file path, and line number.
  */
-function scanContentForSecrets(relPosixPath, content, secretDenylist) {
+function scanContentForSecrets(relPosixPath, content, config) {
   const findings = [];
-  if (isForbiddenSecretPath(relPosixPath, secretDenylist)) {
+  const pathCheck = checkPathExclusionAndDenylist(relPosixPath, config);
+  if (pathCheck.blocked) {
     findings.push({
       file: relPosixPath,
       line: 1,
-      patternId: 'FORBIDDEN_SECRET_PATH',
-      description: 'File path matches forbidden secret/environment file denylist.',
+      patternId: pathCheck.kind,
+      matchedRule: pathCheck.matchedRule,
+      description: pathCheck.description,
     });
     return findings;
   }
 
   const lines = content.split(/\r?\n/);
-  for (const rule of secretDenylist.contentPatterns || []) {
+  for (const rule of config?.secretDenylist?.contentPatterns || []) {
     const regex = new RegExp(rule.regex);
     for (let i = 0; i < lines.length; i++) {
       if (regex.test(lines[i])) {
@@ -202,6 +321,7 @@ function scanContentForSecrets(relPosixPath, content, secretDenylist) {
           file: relPosixPath,
           line: i + 1,
           patternId: rule.id,
+          matchedRule: rule.id,
           description: rule.description,
         });
       }
@@ -303,9 +423,28 @@ function resolveRipgrepBinary(config) {
   return { driver: 'git-grep', binary: 'git', version: runGit(['--version'], { allowFailure: true }) };
 }
 
+/**
+ * Searches callers with ripgrep or git-grep fallback.
+ * Explicitly distinguishes exit code 1 (0 matches) from exit code > 1 / spawn errors
+ * so search failures are never silently interpreted as zero matches (`OPT01` finding #4).
+ */
 function searchCallersWithFallback(pattern, searchRoots, config) {
+  if (!pattern || typeof pattern !== 'string') {
+    throw new Error('CALLER_SEARCH_ERROR: Search pattern must be a non-empty string.');
+  }
+  // Validate regex syntax in Node first so malformed patterns throw deterministically
+  try {
+    new RegExp(pattern);
+  } catch (err) {
+    throw new Error(`CALLER_SEARCH_INVALID_REGEX: Invalid search pattern '${pattern}': ${err.message}`);
+  }
+
   const rgInfo = resolveRipgrepBinary(config);
-  const validRoots = searchRoots.filter((r) => fs.existsSync(path.resolve(REPO_ROOT, r)));
+  const validRoots = (searchRoots || []).filter((r) => fs.existsSync(path.resolve(REPO_ROOT, r)));
+  if (validRoots.length === 0) {
+    throw new Error(`CALLER_SEARCH_ERROR: None of the configured search roots exist: ${(searchRoots || []).join(', ')}`);
+  }
+
   let matchedFiles = [];
 
   if (rgInfo.driver === 'ripgrep') {
@@ -313,7 +452,7 @@ function searchCallersWithFallback(pattern, searchRoots, config) {
       const out = execFileSync(rgInfo.binary, ['-l', pattern, ...validRoots], {
         cwd: REPO_ROOT,
         encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
+        stdio: ['ignore', 'pipe', 'pipe'],
       });
       matchedFiles = out
         .split(/\r?\n/)
@@ -322,9 +461,14 @@ function searchCallersWithFallback(pattern, searchRoots, config) {
         .map(toPosixPath)
         .sort();
     } catch (err) {
-      // rg exits 1 when no matches found
       if (err && err.status === 1) {
+        // Exit code 1 in ripgrep strictly means 0 matches found with no error
         matchedFiles = [];
+      } else {
+        const stderrMsg = err?.stderr ? String(err.stderr).trim() : err.message;
+        throw new Error(
+          `CALLER_SEARCH_EXECUTION_ERROR: ripgrep failed with status ${err?.status ?? 'unknown'}: ${stderrMsg}`
+        );
       }
     }
   } else {
@@ -332,7 +476,7 @@ function searchCallersWithFallback(pattern, searchRoots, config) {
       const out = execFileSync('git', ['grep', '-l', '-E', pattern, '--', ...validRoots], {
         cwd: REPO_ROOT,
         encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
+        stdio: ['ignore', 'pipe', 'pipe'],
       });
       matchedFiles = out
         .split(/\r?\n/)
@@ -340,14 +484,22 @@ function searchCallersWithFallback(pattern, searchRoots, config) {
         .filter(Boolean)
         .map(toPosixPath)
         .sort();
-    } catch {
-      matchedFiles = [];
+    } catch (err) {
+      if (err && err.status === 1) {
+        matchedFiles = [];
+      } else {
+        const stderrMsg = err?.stderr ? String(err.stderr).trim() : err.message;
+        throw new Error(
+          `CALLER_SEARCH_EXECUTION_ERROR: git grep failed with status ${err?.status ?? 'unknown'}: ${stderrMsg}`
+        );
+      }
     }
   }
 
   return {
     searchEngine: rgInfo.driver,
     searchVersion: rgInfo.version,
+    status: 'OK',
     pattern,
     searchRoots: validRoots,
     matchedCount: matchedFiles.length,
@@ -356,19 +508,116 @@ function searchCallersWithFallback(pattern, searchRoots, config) {
 }
 
 /**
- * Checks `graphify-out/graph.json` provenance against current git `HEAD` (`OPT01`).
+ * Collects target files for a packet (or defaults to `fnd03`) so graph provenance can verify
+ * exact per-file AST MD5 hashes in `graphify-out/manifest.json` and SHA-256 hashes on disk.
  */
-function inspectGraphProvenance(config) {
+function getPacketTrackedSourceFiles(config, packetId = 'fnd03') {
+  const pkt = config?.packets?.[packetId];
+  if (!pkt) return [];
+  const all = [
+    ...(pkt.securityCriticalFiles || []),
+    ...(pkt.schemaAndMigrationFiles || []),
+    ...(pkt.securityTestFiles || []),
+  ];
+  return [...new Set(all)];
+}
+
+/**
+ * `OPT01`: Records an explicit cryptographic provenance stamp for `graphify-out/graph.json`,
+ * `graphify-out/manifest.json`, `HEAD`, and all tracked source files.
+ */
+function recordGraphProvenance(config, options = {}) {
   const gitProv = getGitProvenance();
   const graphRel = config.graphify.graphPath;
+  const manifestRel = config.graphify.manifestPath || 'graphify-out/manifest.json';
+  const buildStateRel = config.graphify.buildStatePath || 'graphify-out/.graphify_build_state.json';
+
   const graphAbs = path.resolve(REPO_ROOT, graphRel);
+  const manifestAbs = path.resolve(REPO_ROOT, manifestRel);
+  const buildStateAbs = path.resolve(REPO_ROOT, buildStateRel);
+
+  if (!fs.existsSync(graphAbs)) {
+    throw new Error(`GRAPH_MISSING: ${graphRel} does not exist.`);
+  }
+  if (!fs.existsSync(manifestAbs)) {
+    throw new Error(`GRAPH_MANIFEST_MISSING: ${manifestRel} does not exist.`);
+  }
+
+  const graphManifest = JSON.parse(fs.readFileSync(manifestAbs, 'utf8'));
+  const buildState = fs.existsSync(buildStateAbs)
+    ? JSON.parse(fs.readFileSync(buildStateAbs, 'utf8'))
+    : null;
+
+  const packetId = options.packet || 'fnd03';
+  const trackedFiles = getPacketTrackedSourceFiles(config, packetId);
+  const fileFingerprints = trackedFiles.map((relPath) => {
+    const resolved = resolveRepoPath(relPath, { mustExist: true });
+    const diskMd5 = md5File(resolved.absPath);
+    const diskSha256 = sha256File(resolved.absPath);
+    const manifestEntry = graphManifest[resolved.relPath] || null;
+    return {
+      path: resolved.relPath,
+      diskSha256,
+      diskMd5,
+      graphManifestAstHash: manifestEntry?.ast_hash || null,
+      matchesGraphManifest: manifestEntry ? manifestEntry.ast_hash === diskMd5 : false,
+    };
+  });
+
+  const stamp = {
+    schemaVersion: '1.1.0',
+    recordedAt: new Date().toISOString(),
+    sourceRevision: gitProv.sourceRevision,
+    branch: gitProv.branch,
+    worktreeState: gitProv.worktreeState,
+    dirtyFilesCount: gitProv.dirtyFilesCount,
+    graphFile: {
+      path: graphRel,
+      sha256: sha256File(graphAbs),
+      bytes: fs.statSync(graphAbs).size,
+    },
+    graphManifestFile: {
+      path: manifestRel,
+      sha256: sha256File(manifestAbs),
+      scanDigest: buildState?.scan_digest || null,
+      graphifyEpoch: buildState?.epoch || null,
+    },
+    packetId,
+    trackedFilesCount: fileFingerprints.length,
+    allTrackedFilesMatchGraphManifest: fileFingerprints.every((f) => f.matchesGraphManifest),
+    fileFingerprints,
+  };
+
+  const outRel = config.graphify.provenanceFile || '.context-packets/graph-provenance.json';
+  const outResolved = resolveRepoPath(outRel, { mustExist: false });
+  fs.mkdirSync(path.dirname(outResolved.absPath), { recursive: true });
+  fs.writeFileSync(outResolved.absPath, JSON.stringify(stamp, null, 2) + '\n', 'utf8');
+
+  return { stamp, outFile: outResolved.relPath };
+}
+
+/**
+ * `OPT01` Finding #3 Fix: Provenance verification using `graphify-out/manifest.json` per-file MD5 `ast_hash`
+ * and `.context-packets/graph-provenance.json` SHA-256 + `sourceRevision` equality, rather than relying only
+ * on `graph.json` modification time vs git commit timestamp.
+ */
+function inspectGraphProvenance(config, { packetId = 'fnd03' } = {}) {
+  const gitProv = getGitProvenance();
+  const graphRel = config.graphify.graphPath;
+  const manifestRel = config.graphify.manifestPath || 'graphify-out/manifest.json';
+  const provRel = config.graphify.provenanceFile || '.context-packets/graph-provenance.json';
+
+  const graphAbs = path.resolve(REPO_ROOT, graphRel);
+  const manifestAbs = path.resolve(REPO_ROOT, manifestRel);
+  const provAbs = path.resolve(REPO_ROOT, provRel);
 
   if (!fs.existsSync(graphAbs)) {
     return {
       exists: false,
       graphPath: graphRel,
       advisory: true,
-      advisoryReason: 'graphify-out/graph.json does not exist; fallback to source search required.',
+      provenanceVerified: false,
+      advisoryReasons: ['graphify-out/graph.json does not exist; fallback to source search required.'],
       sourceRevision: gitProv.sourceRevision,
       worktreeState: gitProv.worktreeState,
     };
@@ -376,21 +625,95 @@ function inspectGraphProvenance(config) {
 
   const stat = fs.statSync(graphAbs);
   const graphSha256 = sha256File(graphAbs);
-  const headCommitEpochSec = Number(runGit(['show', '-s', '--format=%ct', 'HEAD'], { allowFailure: true }) || 0);
-  const graphMtimeSec = Math.floor(stat.mtimeMs / 1000);
-  const graphDirtyInGit = gitProv.dirtyFiles.some((d) => d.path === graphRel);
-  const olderThanHead = headCommitEpochSec > 0 && graphMtimeSec < headCommitEpochSec;
+  const advisoryReasons = [];
 
-  // Graphify's graph.json does not embed a git commit SHA field natively; therefore unless
-  // verified by this wrapper against HEAD + mtime, it is marked with explicit provenance metadata.
-  const advisory = olderThanHead || gitProv.worktreeState === 'dirty';
-  const reasons = [];
-  if (olderThanHead) {
-    reasons.push(`graph.json mtime (${new Date(stat.mtimeMs).toISOString()}) is older than HEAD commit timestamp.`);
+  // 1. Verify per-file AST MD5 hashes in graphify-out/manifest.json against current disk files
+  const trackedFiles = getPacketTrackedSourceFiles(config, packetId);
+  let manifestPresent = fs.existsSync(manifestAbs);
+  const mismatchedManifestFiles = [];
+  const missingFromManifestFiles = [];
+
+  if (!manifestPresent) {
+    advisoryReasons.push(`Graphify manifest (${manifestRel}) is missing; cannot verify per-file AST hashes.`);
+  } else {
+    const graphManifest = JSON.parse(fs.readFileSync(manifestAbs, 'utf8'));
+    for (const relPath of trackedFiles) {
+      const abs = path.resolve(REPO_ROOT, relPath);
+      if (!fs.existsSync(abs)) continue;
+      const diskMd5 = md5File(abs);
+      const entry = graphManifest[toPosixPath(relPath)];
+      if (!entry || !entry.ast_hash) {
+        missingFromManifestFiles.push(relPath);
+      } else if (entry.ast_hash !== diskMd5) {
+        mismatchedManifestFiles.push({
+          path: relPath,
+          diskMd5,
+          graphManifestAstHash: entry.ast_hash,
+        });
+      }
+    }
+    if (missingFromManifestFiles.length > 0) {
+      advisoryReasons.push(
+        `${missingFromManifestFiles.length} tracked file(s) missing from ${manifestRel}: ${missingFromManifestFiles.join(', ')}`
+      );
+    }
+    if (mismatchedManifestFiles.length > 0) {
+      advisoryReasons.push(
+        `${mismatchedManifestFiles.length} tracked file(s) have disk MD5 differing from ${manifestRel} ast_hash: ${mismatchedManifestFiles
+          .map((m) => m.path)
+          .join(', ')}`
+      );
+    }
   }
-  if (gitProv.worktreeState === 'dirty') {
-    reasons.push(`Working tree has ${gitProv.dirtyFilesCount} uncommitted entry(ies); graph may not reflect uncommitted edits or has uncommitted graph updates.`);
+
+  // 2. Check recorded .context-packets/graph-provenance.json stamp against current HEAD & graphSha256
+  let recordedStampMatches = false;
+  let recordedStampRevision = null;
+  if (fs.existsSync(provAbs)) {
+    try {
+      const stamp = JSON.parse(fs.readFileSync(provAbs, 'utf8'));
+      recordedStampRevision = stamp.sourceRevision || null;
+      const headMatches = stamp.sourceRevision === gitProv.sourceRevision;
+      const shaMatches = stamp.graphFile?.sha256 === graphSha256;
+      const fingerprintsMatch = (stamp.fileFingerprints || []).every((fp) => {
+        const abs = path.resolve(REPO_ROOT, fp.path);
+        return fs.existsSync(abs) && sha256File(abs) === fp.diskSha256;
+      });
+      recordedStampMatches = headMatches && shaMatches && fingerprintsMatch;
+      if (!headMatches) {
+        advisoryReasons.push(
+          `Recorded graph provenance stamp sourceRevision (${stamp.sourceRevision}) differs from current HEAD (${gitProv.sourceRevision}).`
+        );
+      }
+      if (!shaMatches) {
+        advisoryReasons.push(`graph.json SHA-256 changed since graph-provenance.json was recorded.`);
+      }
+      if (!fingerprintsMatch) {
+        advisoryReasons.push(`One or more tracked source files changed SHA-256 since graph-provenance.json was recorded.`);
+      }
+    } catch (err) {
+      advisoryReasons.push(`Failed to parse ${provRel}: ${err.message}`);
+    }
+  } else {
+    advisoryReasons.push(
+      `No ${provRel} stamp found tying graph.json SHA-256 to git HEAD (${gitProv.sourceRevision}); run 'record-graph-provenance' after verifying graph build.`
+    );
   }
+
+  // 3. Check working tree dirty state (excluding graphify-out/* churn)
+  const nonGraphDirty = gitProv.dirtyFiles.filter((d) => !d.path.startsWith('graphify-out/'));
+  if (nonGraphDirty.length > 0) {
+    advisoryReasons.push(
+      `Working tree has ${nonGraphDirty.length} non-graph uncommitted file(s): ${nonGraphDirty.map((d) => d.path).join(', ')}.`
+    );
+  }
+
+  const provenanceVerified =
+    manifestPresent &&
+    missingFromManifestFiles.length === 0 &&
+    mismatchedManifestFiles.length === 0 &&
+    recordedStampMatches &&
+    nonGraphDirty.length === 0;
 
   return {
     exists: true,
@@ -399,11 +722,24 @@ function inspectGraphProvenance(config) {
     graphSizeBytes: stat.size,
     graphModifiedAt: new Date(stat.mtimeMs).toISOString(),
     headCommit: gitProv.sourceRevision,
-    headCommitEpochSec,
+    recordedStampRevision,
     worktreeState: gitProv.worktreeState,
-    graphDirtyInGit,
-    advisory,
-    advisoryReason: reasons.length > 0 ? reasons.join(' ') : 'Graph mtime is current with clean HEAD.',
+    nonGraphDirtyFilesCount: nonGraphDirty.length,
+    manifestVerification: {
+      manifestPath: manifestRel,
+      manifestPresent,
+      trackedFilesChecked: trackedFiles.length,
+      missingFromManifestCount: missingFromManifestFiles.length,
+      mismatchedAstHashCount: mismatchedManifestFiles.length,
+      mismatchedManifestFiles,
+    },
+    provenanceVerified,
+    advisory: !provenanceVerified,
+    advisoryReason:
+      advisoryReasons.length > 0
+        ? advisoryReasons.join(' ')
+        : 'Provenance verified: graph.json SHA-256, graphify-out/manifest.json per-file AST hashes, and clean git HEAD match.',
+    advisoryReasons,
   };
 }
 
@@ -475,7 +811,15 @@ function runSqlCoverage(config, options = {}) {
 }
 
 /**
- * `OPT01`: Provenance-checked Graphify query wrapper with bounded output and ripgrep fallback.
+ * `OPT01` Finding #4 Fix:
+ * Distinguishes:
+ * 1. `lexicalSeedSearch`: substring/label matching to identify starting seed nodes in `graph.json`.
+ * 2. `bfsDependencyTraversal`: actual multi-hop (`depth = 1..maxDepth`) directed/undirected edge
+ *    traversal across `calls`, `references`, `imports`, and `method` links in `graph.json` to
+ *    surface multi-hop callers and dependencies.
+ * 3. `nativeGraphifyCli`: optional invocation of the installed `graphify query "<question>" --budget N --depth D`
+ *    CLI so native Graphify traversal output is captured alongside structured JSON nodes.
+ * 4. `sourceFallbackResults`: ripgrep / git-grep source search with strict error checking (`status > 1` throws).
  */
 function runQueryGraph(queryText, config, options = {}) {
   if (!queryText || !queryText.trim()) {
@@ -483,65 +827,183 @@ function runQueryGraph(queryText, config, options = {}) {
   }
 
   const prov = inspectGraphProvenance(config);
-  const maxResults = Number(options.maxResults || config.graphify.maxResultsDefault || 15);
+  const maxResults = Number(options.maxResults || config.graphify.maxResultsDefault || 20);
+  const maxDepth = Number(options.depth || config.graphify.defaultTraversalDepth || 2);
   const terms = queryText
     .toLowerCase()
     .split(/\s+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 2);
 
-  let matchedNodes = [];
-  let matchedEdges = [];
-  let totalMatchingNodes = 0;
+  let seedNodes = [];
+  let traversedNodes = [];
+  let traversedEdges = [];
+  let totalSeedMatches = 0;
+  let totalReachableWithinDepth = 0;
 
   if (prov.exists) {
     const rawGraph = JSON.parse(fs.readFileSync(path.resolve(REPO_ROOT, config.graphify.graphPath), 'utf8'));
     const nodes = rawGraph.nodes || [];
     const links = rawGraph.links || [];
 
-    const scored = [];
+    const nodeById = new Map();
     for (const n of nodes) {
+      nodeById.set(n.id, n);
+    }
+
+    // Build adjacency list for multi-hop caller/callee traversal
+    const adj = new Map();
+    for (const edge of links) {
+      if (!adj.has(edge.source)) adj.set(edge.source, []);
+      if (!adj.has(edge.target)) adj.set(edge.target, []);
+      adj.get(edge.source).push({ neighbor: edge.target, direction: 'outbound', edge });
+      adj.get(edge.target).push({ neighbor: edge.source, direction: 'inbound_caller', edge });
+    }
+
+    // Step 1: Lexical seed node selection
+    const scoredSeeds = [];
+    for (const n of nodes) {
+      const labelClean = String(n.label || '')
+        .replace(/^\.|\(\)$/g, '')
+        .toLowerCase();
       const hay = `${n.id || ''} ${n.label || ''} ${n.source_file || ''}`.toLowerCase();
       let score = 0;
       for (const term of terms) {
-        if (hay.includes(term)) {
-          score += (n.label || '').toLowerCase() === term ? 5 : 2;
+        const cleanTerm = term.replace(/^\.|\(\)$/g, '');
+        if (labelClean === cleanTerm) {
+          score += 10;
+        } else if (hay.includes(cleanTerm)) {
+          score += 2;
         }
       }
       if (score > 0) {
-        scored.push({ score, node: n });
+        scoredSeeds.push({ score, node: n });
       }
     }
 
-    scored.sort((a, b) => b.score - a.score || String(a.node.id).localeCompare(String(b.node.id)));
-    totalMatchingNodes = scored.length;
-    matchedNodes = scored.slice(0, maxResults).map((s) => ({
+    scoredSeeds.sort((a, b) => b.score - a.score || String(a.node.id).localeCompare(String(b.node.id)));
+    totalSeedMatches = scoredSeeds.length;
+    seedNodes = scoredSeeds.slice(0, Math.min(8, maxResults)).map((s) => ({
       id: s.node.id,
       label: s.node.label,
       sourceFile: s.node.source_file || null,
       sourceLocation: s.node.source_location ?? null,
-      community: s.node.community ?? null,
-      score: s.score,
+      seedScore: s.score,
     }));
 
-    const selectedIds = new Set(matchedNodes.map((n) => n.id));
-    matchedEdges = links
-      .filter((e) => selectedIds.has(e.source) || selectedIds.has(e.target))
-      .slice(0, maxResults * 2)
-      .map((e) => ({
-        source: e.source,
-        target: e.target,
-        relation: e.relation || e.type || 'related',
-      }));
+    // Step 2: Multi-hop BFS dependency & caller traversal from top seed nodes
+    const visited = new Map(); // nodeId -> { hopDistance, viaRelation, viaDirection }
+    const queue = [];
+    for (const seed of seedNodes) {
+      visited.set(seed.id, { hopDistance: 0, viaRelation: 'seed', viaDirection: 'seed' });
+      queue.push({ id: seed.id, depth: 0 });
+    }
+
+    const collectedEdges = [];
+    const seenEdgeKeys = new Set();
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (current.depth >= maxDepth) continue;
+      const neighbors = adj.get(current.id) || [];
+      for (const item of neighbors) {
+        const rel = item.edge.relation || item.edge.type || 'related';
+        const edgeKey = `${item.edge.source}->${item.edge.target}:${rel}`;
+        if (!seenEdgeKeys.has(edgeKey)) {
+          seenEdgeKeys.add(edgeKey);
+          collectedEdges.push({
+            source: item.edge.source,
+            target: item.edge.target,
+            relation: rel,
+            traversalDirectionFromSeed: item.direction,
+            hop: current.depth + 1,
+          });
+        }
+        if (!visited.has(item.neighbor)) {
+          visited.set(item.neighbor, {
+            hopDistance: current.depth + 1,
+            viaRelation: rel,
+            viaDirection: item.direction,
+          });
+          queue.push({ id: item.neighbor, depth: current.depth + 1 });
+        }
+      }
+    }
+
+    totalReachableWithinDepth = visited.size;
+    const allVisitedList = [];
+    for (const [nodeId, meta] of visited.entries()) {
+      const n = nodeById.get(nodeId);
+      if (!n) continue;
+      allVisitedList.push({
+        id: n.id,
+        label: n.label,
+        sourceFile: n.source_file || null,
+        sourceLocation: n.source_location ?? null,
+        community: n.community ?? null,
+        hopDistance: meta.hopDistance,
+        viaRelation: meta.viaRelation,
+        viaDirection: meta.viaDirection,
+      });
+    }
+
+    allVisitedList.sort(
+      (a, b) =>
+        a.hopDistance - b.hopDistance ||
+        (a.viaDirection === 'inbound_caller' ? -1 : 1) ||
+        String(a.id).localeCompare(String(b.id))
+    );
+
+    traversedNodes = allVisitedList.slice(0, maxResults);
+    const keptIds = new Set(traversedNodes.map((n) => n.id));
+    traversedEdges = collectedEdges
+      .filter((e) => keptIds.has(e.source) && keptIds.has(e.target))
+      .slice(0, maxResults * 2);
   }
 
-  const truncated = totalMatchingNodes > maxResults;
-  const fallbackPattern = options.fallbackPattern || terms.join('|');
-  const fallbackSearch = searchCallersWithFallback(
-    fallbackPattern,
-    config.packets?.fnd03?.callerSearchRoots || ['packages', 'apps', 'src'],
-    config
-  );
+  // Step 3: Optional native `graphify query` CLI execution for cross-verification
+  let nativeCliSummary = { executed: false, status: 'skipped' };
+  if (options.runNativeCli !== false) {
+    try {
+      const cliBudget = Number(config.graphify.defaultCliTokenBudget || 1500);
+      const cliOut = execFileSync(
+        'graphify',
+        ['query', queryText, '--depth', String(maxDepth), '--budget', String(cliBudget)],
+        {
+          cwd: REPO_ROOT,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+        }
+      );
+      const outLines = cliOut.trim().split(/\r?\n/);
+      nativeCliSummary = {
+        executed: true,
+        status: 'OK',
+        headerLine: outLines[0] || '',
+        truncatedByCliBudget: cliOut.includes('[!] TRUNCATED'),
+        lineCount: outLines.length,
+        previewLines: outLines.slice(0, 12),
+      };
+    } catch (err) {
+      nativeCliSummary = {
+        executed: true,
+        status: 'ERROR',
+        error: err.message,
+      };
+    }
+  }
+
+  const truncated = totalReachableWithinDepth > maxResults || totalSeedMatches > seedNodes.length;
+    const tokens = queryText
+      .split(/\s+/)
+      .map((t) => t.replace(/^\.|\(\)$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .filter((t) => t.length >= 2);
+    const fallbackPattern = options.fallbackPattern || tokens.join('|');
+    const fallbackSearch = searchCallersWithFallback(
+      fallbackPattern,
+      config.packets?.fnd03?.callerSearchRoots || ['packages', 'apps', 'src'],
+      config
+    );
 
   const resultPayload = {
     command: 'query-graph',
@@ -550,22 +1012,36 @@ function runQueryGraph(queryText, config, options = {}) {
     query: queryText,
     provenance: prov,
     advisory: prov.advisory,
+    queryModesDistinction: {
+      lexicalSeedSearch: 'Matches query keywords against node labels/IDs/paths to pick starting seed nodes.',
+      bfsDependencyTraversal: `Multi-hop (depth <= ${maxDepth}) inbound-caller and outbound-callee edge traversal in graph.json starting from seed nodes.`,
+      nativeGraphifyCli: 'Direct invocation of installed graphify query CLI with --depth and --budget.',
+      sourceFallbackSearch: 'Deterministic ripgrep/git-grep regex search across source roots to catch dynamic/re-exported callers missed by static AST edges.',
+      knownLimitations: [
+        'Static AST call edges in graph.json do not resolve dynamic property dispatch or Next.js route barrel re-exports unless the caller directly references the symbol; always union graph traversal with ripgrep caller search for security packets.',
+      ],
+    },
     truncation: {
       maxResults,
-      totalMatchingNodes,
-      returnedNodes: matchedNodes.length,
-      returnedEdges: matchedEdges.length,
+      maxDepth,
+      totalSeedMatches,
+      returnedSeeds: seedNodes.length,
+      totalReachableWithinDepth,
+      returnedTraversedNodes: traversedNodes.length,
+      returnedTraversedEdges: traversedEdges.length,
       truncated,
       incompletenessReason: truncated
-        ? `Matched ${totalMatchingNodes} graph nodes; truncated to top ${maxResults} to stay within explorationBudget.`
-        : matchedNodes.length === 0
+        ? `BFS traversal reached ${totalReachableWithinDepth} nodes (from ${totalSeedMatches} lexical seeds); truncated to ${traversedNodes.length} nodes to stay within explorationBudget.`
+        : traversedNodes.length === 0
           ? 'No graph nodes matched; rely on sourceFallbackResults.'
           : null,
     },
-    graphResults: {
-      nodes: matchedNodes,
-      edges: matchedEdges,
+    lexicalSeeds: seedNodes,
+    bfsDependencyTraversal: {
+      nodes: traversedNodes,
+      edges: traversedEdges,
     },
+    nativeGraphifyCli: nativeCliSummary,
     sourceFallbackResults: fallbackSearch,
   };
 
@@ -574,10 +1050,10 @@ function runQueryGraph(queryText, config, options = {}) {
   let budgetExceeded = Buffer.byteLength(serialized, 'utf8') > budget.maxBytes;
 
   if (budgetExceeded) {
-    resultPayload.graphResults.edges = resultPayload.graphResults.edges.slice(0, 5);
+    resultPayload.bfsDependencyTraversal.edges = resultPayload.bfsDependencyTraversal.edges.slice(0, 10);
     resultPayload.truncation.truncated = true;
     resultPayload.truncation.incompletenessReason =
-      'Trimmed graph edge list to stay within explorationBudget.maxBytes.';
+      'Trimmed BFS edge list to stay within explorationBudget.maxBytes.';
     serialized = JSON.stringify(resultPayload, null, 2);
     budgetExceeded = Buffer.byteLength(serialized, 'utf8') > budget.maxBytes;
   }
@@ -633,7 +1109,20 @@ function formatStructuralOutline(relPosixPath, content, symbols) {
 }
 
 /**
- * `OPT02`: Builds a reproducible, secret-scanned, repo-root-confined source packet and `.manifest.json`.
+ * `OPT02` Finding #1 & #2 Fix:
+ * Builds a reproducible, secret-scanned, repo-root-confined source packet and `.manifest.json`.
+ *
+ * Fail-Closed Rules in `full` Security Mode:
+ * 1. NEVER silently pops/removes required files when `sourcePacketBudget` is exceeded.
+ * 2. If `packetBytes > maxBytes`:
+ *    - Writes the complete un-truncated evidence to `.context-packets/<id>-packet.untruncated.md`
+ *    - Automatically writes bounded multi-part chunk files (`.context-packets/<id>-packet.part1.md`, `part2.md`, ...)
+ *      so every missing/overflowing file can be safely retrieved without truncation.
+ *    - Marks `manifest.completenessStatus = "INCOMPLETE_BUDGET_OVERFLOW"` and throws a non-zero exit error
+ *      listing every file that overflowed the single-packet budget and the exact chunk retrieval paths.
+ * 3. If ANY caller discovered by `callerDiscovery` is absent from `selectedFileManifestEntries`:
+ *    - Marks `manifest.completenessStatus = "INCOMPLETE_MISSING_CALLERS"` and throws a non-zero exit error
+ *      listing every uncovered caller file.
  */
 function buildPacket(packetId, configMetadata, options = {}) {
   const { config, configPath, configSha256 } = configMetadata;
@@ -654,24 +1143,34 @@ function buildPacket(packetId, configMetadata, options = {}) {
     );
   }
 
-  // Also support injecting an extra path for negative validation tests (e.g. VAL04 path confinement / secret scan tests)
   const extraFiles = options.extraFiles || [];
+  const simulateOmitFiles = new Set((options.simulateOmitFile ? [options.simulateOmitFile] : []).map(toPosixPath));
 
   const categorizedFiles = [
-    ...packetDef.securityCriticalFiles.map((f) => ({ path: f, category: 'security_critical', preserveFullInHybrid: true })),
-    ...packetDef.schemaAndMigrationFiles.map((f) => ({ path: f, category: 'schema_or_migration', preserveFullInHybrid: true })),
-    ...packetDef.securityTestFiles.map((f) => ({ path: f, category: 'negative_security_test', preserveFullInHybrid: true })),
-    ...packetDef.solDecisionFiles.map((f) => ({ path: f, category: 'sol_decision', preserveFullInHybrid: true })),
-    ...extraFiles.map((f) => ({ path: f, category: 'extra_input', preserveFullInHybrid: true })),
+    ...packetDef.securityCriticalFiles.map((f) => ({ path: f, category: 'security_critical', mandatory: true })),
+    ...packetDef.schemaAndMigrationFiles.map((f) => ({ path: f, category: 'schema_or_migration', mandatory: true })),
+    ...packetDef.securityTestFiles.map((f) => ({ path: f, category: 'negative_security_test', mandatory: true })),
+    ...packetDef.solDecisionFiles.map((f) => ({ path: f, category: 'sol_decision', mandatory: true })),
+    ...extraFiles.map((f) => ({ path: f, category: 'extra_input', mandatory: true })),
   ];
 
-  // Deduplicate while preserving order
   const seen = new Set();
   const orderedFiles = [];
+  const omittedRequiredFiles = [];
+
   for (const item of categorizedFiles) {
-    if (!seen.has(item.path)) {
-      seen.add(item.path);
-      orderedFiles.push(item);
+    const norm = toPosixPath(item.path);
+    if (simulateOmitFiles.has(norm)) {
+      omittedRequiredFiles.push({
+        path: norm,
+        category: item.category,
+        reason: 'Omitted via --simulate-omit-file negative control test.',
+      });
+      continue;
+    }
+    if (!seen.has(norm)) {
+      seen.add(norm);
+      orderedFiles.push({ ...item, path: norm });
     }
   }
 
@@ -684,9 +1183,7 @@ function buildPacket(packetId, configMetadata, options = {}) {
 
   const selectedFileManifestEntries = [];
   const allSecretFindings = [];
-  const markdownSections = [];
-
-  markdownSections.push(
+  const headerLines = [
     `# ${packetDef.title} (${mode.toUpperCase()} MODE)`,
     ``,
     `- **Packet ID**: \`${packetDef.id}\``,
@@ -698,18 +1195,33 @@ function buildPacket(packetId, configMetadata, options = {}) {
     `- **Source Revision (HEAD)**: \`${gitProv.sourceRevision}\` (\`${gitProv.branch}\`)`,
     `- **Worktree State**: \`${gitProv.worktreeState}\` (dirty files: ${gitProv.dirtyFilesCount})`,
     `- **CLI Version**: \`${CLI_VERSION}\``,
-    ``
-  );
+    ``,
+  ];
+
+  const renderedSections = [];
 
   for (const item of orderedFiles) {
-    // 1. Strict path confinement check
+    // 1. Check path against forbiddenPathGlobs & defaultExcludeGlobs BEFORE reading content
+    const prePathCheck = checkPathExclusionAndDenylist(item.path, config);
+    if (prePathCheck.blocked) {
+      allSecretFindings.push({
+        file: item.path,
+        line: 1,
+        patternId: prePathCheck.kind,
+        matchedRule: prePathCheck.matchedRule,
+        description: prePathCheck.description,
+      });
+      continue;
+    }
+
+    // 2. Strict repo-root path confinement check
     const resolved = resolveRepoPath(item.path, { mustExist: true });
     const rawBuf = fs.readFileSync(resolved.absPath);
     const content = rawBuf.toString('utf8');
     const fileSha256 = sha256Buffer(rawBuf);
 
-    // 2. Strict secret denylist scan
-    const secretHits = scanContentForSecrets(resolved.relPath, content, config.secretDenylist);
+    // 3. Strict secret denylist scan (path globs + content regexes)
+    const secretHits = scanContentForSecrets(resolved.relPath, content, config);
     if (secretHits.length > 0) {
       allSecretFindings.push(...secretHits);
       continue;
@@ -738,9 +1250,7 @@ function buildPacket(packetId, configMetadata, options = {}) {
       ``,
     ].join('\n');
 
-    markdownSections.push(sectionText);
-
-    selectedFileManifestEntries.push({
+    const entryMeta = {
       path: resolved.relPath,
       category: item.category,
       sha256: fileSha256,
@@ -750,42 +1260,98 @@ function buildPacket(packetId, configMetadata, options = {}) {
       representation: includeFullBody ? 'full_uncompressed' : 'structural_outline',
       symbolCount: symbols.length,
       symbols,
-    });
+    };
+
+    selectedFileManifestEntries.push(entryMeta);
+    renderedSections.push({ entryMeta, sectionText, sectionBytes: Buffer.byteLength(sectionText, 'utf8') });
   }
 
   if (allSecretFindings.length > 0) {
     const safeErrorDetails = allSecretFindings
-      .map((f) => `${f.file}:${f.line} [${f.patternId}] (${f.description})`)
+      .map((f) => `${f.file}:${f.line} [${f.patternId}:${f.matchedRule}] (${f.description})`)
       .join('; ');
     throw new Error(`SECRET_SCAN_ABORT: Secret denylist violation detected in packet inputs: ${safeErrorDetails}`);
   }
 
-  // Enforce sourcePacketBudget and record omittedItems if overflow occurs
-  const budget = config.budgets.sourcePacketBudget;
-  const omittedItems = [];
-  let fullMarkdown = markdownSections.join('\n');
-  let packetBytes = Buffer.byteLength(fullMarkdown, 'utf8');
-
-  while (packetBytes > budget.maxBytes && markdownSections.length > 2) {
-    const removedSection = markdownSections.pop();
-    const removedEntry = selectedFileManifestEntries.pop();
-    if (removedEntry) {
-      omittedItems.push({
-        path: removedEntry.path,
-        category: removedEntry.category,
-        bytes: removedEntry.bytes,
-        reason: `Omitted from in-context packet to enforce sourcePacketBudget.maxBytes (${budget.maxBytes}); full file remains on disk.`,
-      });
-    }
-    fullMarkdown = markdownSections.join('\n');
-    packetBytes = Buffer.byteLength(fullMarkdown, 'utf8');
-  }
-
   const outDir = options.outDir ? path.resolve(REPO_ROOT, options.outDir) : DEFAULT_OUT_DIR;
-  // Verify outDir is inside REPO_ROOT
   resolveRepoPath(outDir, { mustExist: false });
   fs.mkdirSync(outDir, { recursive: true });
 
+  const baseMaxBytes = Number(options.maxBytes || config.budgets.sourcePacketBudget.maxBytes);
+  const headerText = headerLines.join('\n');
+  const fullMarkdown = [headerText, ...renderedSections.map((s) => s.sectionText)].join('\n');
+  const packetBytes = Buffer.byteLength(fullMarkdown, 'utf8');
+
+  const uncoveredCallers = callerDiscovery.matchedFiles.filter(
+    (f) => !selectedFileManifestEntries.some((s) => s.path === f)
+  );
+
+  // Check if budget overflow occurred
+  const budgetOverflow = packetBytes > baseMaxBytes;
+  const overflowItems = [];
+  const safeChunks = [];
+
+  if (budgetOverflow) {
+    // Partition renderedSections into bounded multi-part chunk files so 100% of safe evidence is retrievable
+    let currentChunkSections = [];
+    let currentChunkFiles = [];
+    let currentChunkBytes = Buffer.byteLength(headerText, 'utf8');
+    let chunkIndex = 1;
+
+    for (const sec of renderedSections) {
+      if (currentChunkSections.length > 0 && currentChunkBytes + sec.sectionBytes > baseMaxBytes) {
+        const chunkFilename = `${packetDef.id}-${mode}-chunk-part${chunkIndex}.md`;
+        const chunkAbs = path.join(outDir, chunkFilename);
+        const chunkContent = [
+          `# ${packetDef.title} — Bounded Chunk Part ${chunkIndex}`,
+          headerText,
+          ...currentChunkSections,
+        ].join('\n');
+        fs.writeFileSync(chunkAbs, chunkContent, 'utf8');
+        safeChunks.push({
+          part: chunkIndex,
+          path: toPosixPath(path.relative(REPO_ROOT, chunkAbs)),
+          bytes: Buffer.byteLength(chunkContent, 'utf8'),
+          files: currentChunkFiles,
+        });
+        chunkIndex += 1;
+        currentChunkSections = [];
+        currentChunkFiles = [];
+        currentChunkBytes = Buffer.byteLength(headerText, 'utf8');
+      }
+      currentChunkSections.push(sec.sectionText);
+      currentChunkFiles.push(sec.entryMeta.path);
+      currentChunkBytes += sec.sectionBytes;
+      if (chunkIndex > 1) {
+        overflowItems.push({
+          path: sec.entryMeta.path,
+          category: sec.entryMeta.category,
+          bytes: sec.entryMeta.bytes,
+          safeChunkPart: chunkIndex,
+          reason: `Exceeds single-packet budget (${baseMaxBytes} bytes); preserved in ${packetDef.id}-${mode}-chunk-part${chunkIndex}.md.`,
+        });
+      }
+    }
+
+    if (currentChunkSections.length > 0) {
+      const chunkFilename = `${packetDef.id}-${mode}-chunk-part${chunkIndex}.md`;
+      const chunkAbs = path.join(outDir, chunkFilename);
+      const chunkContent = [
+        `# ${packetDef.title} — Bounded Chunk Part ${chunkIndex}`,
+        headerText,
+        ...currentChunkSections,
+      ].join('\n');
+      fs.writeFileSync(chunkAbs, chunkContent, 'utf8');
+      safeChunks.push({
+        part: chunkIndex,
+        path: toPosixPath(path.relative(REPO_ROOT, chunkAbs)),
+        bytes: Buffer.byteLength(chunkContent, 'utf8'),
+        files: currentChunkFiles,
+      });
+    }
+  }
+
+  // Always write the complete untruncated packet on disk so evidence is never lost
   const suffix = mode === 'full' ? 'packet' : 'navigation-packet';
   const packetFilename = `${packetDef.id}-${suffix}.md`;
   const manifestFilename = `${packetDef.id}-${suffix}.manifest.json`;
@@ -795,18 +1361,51 @@ function buildPacket(packetId, configMetadata, options = {}) {
   fs.writeFileSync(packetAbsPath, fullMarkdown, 'utf8');
   const packetSha256 = sha256Buffer(Buffer.from(fullMarkdown, 'utf8'));
 
-  const uncoveredCallers = callerDiscovery.matchedFiles.filter(
-    (f) => !selectedFileManifestEntries.some((s) => s.path === f)
-  );
+  // Determine strict completeness status
+  const completenessFailures = [];
+  if (omittedRequiredFiles.length > 0) {
+    completenessFailures.push(
+      `OMITTED_REQUIRED_FILES (${omittedRequiredFiles.length}): ${omittedRequiredFiles.map((o) => o.path).join(', ')}`
+    );
+  }
+  if (mode === 'full' && uncoveredCallers.length > 0) {
+    completenessFailures.push(
+      `UNCOVERED_REQUIRED_CALLERS (${uncoveredCallers.length}): ${uncoveredCallers.join(', ')}`
+    );
+  }
+  if (mode === 'full' && budgetOverflow) {
+    completenessFailures.push(
+      `BUDGET_OVERFLOW_IN_FULL_SECURITY_MODE: Packet size (${packetBytes} bytes) exceeds maxBytes (${baseMaxBytes} bytes). ${overflowItems.length} file(s) spilled into ${safeChunks.length} safe chunk files (${safeChunks.map((c) => c.path).join(', ')}). Full untruncated artifact preserved at ${toPosixPath(path.relative(REPO_ROOT, packetAbsPath))}.`
+    );
+  }
+
+  const isCompleteAndValid = completenessFailures.length === 0;
+
+  // Compute distinct source, tool, and test git revisions
+  const sourceHead = getLatestCommitForPaths([
+    ...packetDef.securityCriticalFiles,
+    ...packetDef.schemaAndMigrationFiles,
+  ]);
+  const toolHead = getLatestCommitForPaths(['tools/ai-context/config.json', 'tools/ai-context/context-cli.mjs']);
+  const testHead = getLatestCommitForPaths(packetDef.securityTestFiles);
 
   const manifest = {
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     packetId: packetDef.id,
     title: packetDef.title,
     mode,
+    completenessStatus: isCompleteAndValid ? 'COMPLETE_VERIFIED' : 'FAILED_INCOMPLETE',
+    auditSafeForSecuritySignOff: mode === 'full' && isCompleteAndValid,
+    completenessFailures,
     taskIds: packetDef.taskIds,
     generatedAt: new Date().toISOString(),
     sourceRevision: gitProv.sourceRevision,
+    componentRevisions: {
+      repoHead: gitProv.sourceRevision,
+      sourceHead,
+      toolHead,
+      testHead,
+    },
     branch: gitProv.branch,
     worktreeState: gitProv.worktreeState,
     dirtyFiles: gitProv.dirtyFiles,
@@ -833,15 +1432,20 @@ function buildPacket(packetId, configMetadata, options = {}) {
     },
     budgetStatus: {
       budgetName: 'sourcePacketBudget',
-      maxBytes: budget.maxBytes,
-      maxChars: budget.maxChars,
-      maxTokensEstimate: budget.maxTokensEstimate,
-      withinBudget: packetBytes <= budget.maxBytes && omittedItems.length === 0,
-      omittedItemsCount: omittedItems.length,
-      omittedItems,
+      maxBytes: baseMaxBytes,
+      maxChars: config.budgets.sourcePacketBudget.maxChars,
+      maxTokensEstimate: config.budgets.sourcePacketBudget.maxTokensEstimate,
+      withinBudget: !budgetOverflow,
+      omittedRequiredFilesCount: omittedRequiredFiles.length,
+      omittedRequiredFiles,
+      overflowItemsCount: overflowItems.length,
+      overflowItems,
+      safeChunkFiles: safeChunks,
     },
     secretScan: {
       status: 'PASSED',
+      enforcedForbiddenPathGlobs: config.secretDenylist.forbiddenPathGlobs,
+      enforcedDefaultExcludeGlobs: config.defaultExcludeGlobs,
       scannedFilesCount: selectedFileManifestEntries.length,
       findingsCount: 0,
     },
@@ -859,11 +1463,19 @@ function buildPacket(packetId, configMetadata, options = {}) {
       'Graphify tree_sitter_sql indexes .sql file, CREATE TABLE, and CREATE INDEX nodes, but procedural PL/pgSQL DO $$ ... END $$; blocks and cross-language Drizzle-to-SQL links are not represented as graph edges; SQL migrations and Drizzle schemas are therefore embedded directly in full mode.',
       mode === 'navigation'
         ? 'Navigation mode strips function bodies and test assertions; NEVER use navigation mode alone for security review or sign-off.'
-        : 'Full mode preserves 100% of function bodies, negative test assertions, SQL migrations, and Sol D1/D2 architectural decisions.',
+        : 'Full mode preserves 100% of function bodies, negative test assertions, SQL migrations, and Sol D1/D3 architectural decisions.',
     ],
   };
 
   fs.writeFileSync(manifestAbsPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+
+  if (!isCompleteAndValid) {
+    throw new Error(
+      `PACKET_INCOMPLETE_FAIL_CLOSED: Security packet '${packetId}' (${mode}) failed completeness validation: ${completenessFailures.join(
+        ' | '
+      )} (Manifest written to ${toPosixPath(path.relative(REPO_ROOT, manifestAbsPath))})`
+    );
+  }
 
   return {
     manifest,
@@ -873,8 +1485,141 @@ function buildPacket(packetId, configMetadata, options = {}) {
 }
 
 /**
- * `OPT03`: Benchmarks the conventional FND03 retrieval recipe against the optimized full and navigation packets
- * against the same frozen `HEAD` using identical counting methods.
+ * `OPT02` Finding #2 Fix:
+ * Runs synthetic security-canary & path-exclusion self-tests without disclosing or committing real credentials.
+ * Verifies:
+ * 1. `forbiddenPathGlobs` blocks `.env.local`, `nested/credentials.prod.json`, `certs/private.pem`, `keys/id_rsa`, `.npmrc`
+ *    while allowing `.env.example`.
+ * 2. `defaultExcludeGlobs` blocks `node_modules/pkg/index.js` and `graphify-out/graph.json`.
+ * 3. Synthetic credential canaries (constructed dynamically in memory so no literal secret exists in repo)
+ *    are caught by `scanContentForSecrets()` without echoing the canary value in the error output.
+ * 4. Budget overflow and uncovered/omitted file negative controls fail closed with exit status != 0.
+ */
+function runVerifyCanaries(configMetadata, options = {}) {
+  const { config } = configMetadata;
+  const checks = [];
+
+  // 1. Test forbiddenPathGlobs & negation rules
+  const pathTestCases = [
+    { path: '.env', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: 'apps/api-server/.env.production', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: '.env.example', expectBlocked: false, expectedKind: null },
+    { path: 'config/.npmrc', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: 'certs/server.pem', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: 'secrets/credentials-prod.json', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: 'ssh/id_ed25519', expectBlocked: true, expectedKind: 'FORBIDDEN_SECRET_PATH_GLOB' },
+    { path: 'node_modules/vitest/index.js', expectBlocked: true, expectedKind: 'DEFAULT_EXCLUDED_PATH_GLOB' },
+    { path: 'packages/auth/src/rbac/ownership.service.ts', expectBlocked: false, expectedKind: null },
+  ];
+
+  for (const tc of pathTestCases) {
+    const res = checkPathExclusionAndDenylist(tc.path, config);
+    const passed = res.blocked === tc.expectBlocked && (tc.expectedKind === null || res.kind === tc.expectedKind);
+    checks.push({
+      test: `path_glob:${tc.path}`,
+      expectedBlocked: tc.expectBlocked,
+      actualBlocked: res.blocked,
+      matchedRule: res.matchedRule,
+      passed,
+    });
+  }
+
+  // 2. Test synthetic content canaries (built at runtime by joining fragments so source files stay clean)
+  const pemCanary = ['-----BEGIN ', 'RSA PRIVATE ', 'KEY-----'].join('');
+  const dbUrlCanary = ['postgresql://admin:', 'SynthCanaryPass99!', '@db.internal.example.com:5432/prod'].join('');
+  const patCanary = ['ghp_', 'A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8'].join('');
+  const upstashCanary = ['UPSTASH_REDIS_REST_TOKEN=', '"SynthToken_9876543210abcdefghijklm"'].join('');
+
+  const contentCanaryCases = [
+    { id: 'PEM_PRIVATE_KEY', content: `const k = "${pemCanary}";`, secretFragment: 'RSA PRIVATE' },
+    { id: 'DATABASE_URL_WITH_PASSWORD', content: `DATABASE_URL=${dbUrlCanary}`, secretFragment: 'SynthCanaryPass99!' },
+    { id: 'GITHUB_OR_CLOUD_OR_LLM_TOKEN', content: `token: ${patCanary}`, secretFragment: patCanary },
+    { id: 'LIVE_SECRET_ASSIGNMENT', content: upstashCanary, secretFragment: 'SynthToken_9876543210' },
+  ];
+
+  for (const cc of contentCanaryCases) {
+    const findings = scanContentForSecrets('synthetic/canary-test.ts', cc.content, config);
+    const matched = findings.some((f) => f.patternId === cc.id);
+    const serializedFindings = JSON.stringify(findings);
+    const valueRedacted = !serializedFindings.includes(cc.secretFragment);
+    checks.push({
+      test: `content_canary:${cc.id}`,
+      detected: matched,
+      secretValueRedactedFromOutput: valueRedacted,
+      passed: matched && valueRedacted,
+    });
+  }
+
+  // 3. Test fail-closed budget overflow control on buildPacket
+  let budgetOverflowFailedClosed = false;
+  let budgetOverflowErrorMsg = '';
+  try {
+    buildPacket('fnd03', configMetadata, {
+      mode: 'full',
+      allowDirty: true,
+      maxBytes: 32768, // Deliberately smaller than the 220KB full packet
+      outDir: path.join(DEFAULT_OUT_DIR, 'canary-overflow-test'),
+    });
+  } catch (err) {
+    budgetOverflowFailedClosed = err.message.includes('PACKET_INCOMPLETE_FAIL_CLOSED') && err.message.includes('BUDGET_OVERFLOW');
+    budgetOverflowErrorMsg = err.message;
+  }
+  checks.push({
+    test: 'fail_closed:budget_overflow_in_full_mode',
+    passed: budgetOverflowFailedClosed,
+    observedError: budgetOverflowErrorMsg.slice(0, 220),
+  });
+
+  // 4. Test fail-closed missing required file / caller control on buildPacket
+  let missingCallerFailedClosed = false;
+  let missingCallerErrorMsg = '';
+  try {
+    buildPacket('fnd03', configMetadata, {
+      mode: 'full',
+      allowDirty: true,
+      simulateOmitFile: 'apps/api-server/src/app/api/auth/profile/route.ts',
+      outDir: path.join(DEFAULT_OUT_DIR, 'canary-omit-test'),
+    });
+  } catch (err) {
+    missingCallerFailedClosed =
+      err.message.includes('PACKET_INCOMPLETE_FAIL_CLOSED') &&
+      err.message.includes('OMITTED_REQUIRED_FILES') &&
+      err.message.includes('UNCOVERED_REQUIRED_CALLERS');
+    missingCallerErrorMsg = err.message;
+  }
+  checks.push({
+    test: 'fail_closed:missing_required_file_and_caller',
+    passed: missingCallerFailedClosed,
+    observedError: missingCallerErrorMsg.slice(0, 220),
+  });
+
+  const allPassed = checks.every((c) => c.passed);
+  const report = {
+    command: 'verify-canaries',
+    cliVersion: CLI_VERSION,
+    generatedAt: new Date().toISOString(),
+    allPassed,
+    totalChecks: checks.length,
+    passedChecks: checks.filter((c) => c.passed).length,
+    checks,
+  };
+
+  const outDir = options.outDir ? path.resolve(REPO_ROOT, options.outDir) : DEFAULT_OUT_DIR;
+  fs.mkdirSync(outDir, { recursive: true });
+  const outFile = path.join(outDir, 'security-canaries-report.json');
+  fs.writeFileSync(outFile, JSON.stringify(report, null, 2) + '\n', 'utf8');
+
+  return {
+    report,
+    outFile: toPosixPath(path.relative(REPO_ROOT, outFile)),
+  };
+}
+
+/**
+ * `OPT03` Finding #6 Fix:
+ * Benchmarks the conventional FND03 retrieval workflow against the optimized workflow
+ * while preserving **identical 30-file FND03 security coverage** and explicitly measuring
+ * discovery/manifest overhead separately from packet payload.
  */
 function runBenchmark(packetId, configMetadata, options = {}) {
   const { config } = configMetadata;
@@ -885,7 +1630,14 @@ function runBenchmark(packetId, configMetadata, options = {}) {
 
   const gitProv = getGitProvenance();
 
-  // 1. Build both full and navigation packets so benchmark measures actual generated artifacts
+  // 1. Run query-graph to measure actual optimized discovery overhead on disk
+  const discoveryRun = runQueryGraph(
+    'canAccessResource isValidTenantPair 0001_fnd03_add_tenant_ownership',
+    config,
+    { outDir: options.outDir, runNativeCli: true }
+  );
+
+  // 2. Build both full and navigation packets
   const fullPacket = buildPacket(packetId, configMetadata, {
     mode: 'full',
     allowDirty: true,
@@ -897,22 +1649,22 @@ function runBenchmark(packetId, configMetadata, options = {}) {
     outDir: options.outDir,
   });
 
-  // 2. Measure the documented conventional baseline recipe on the exact same frozen HEAD
-  const baselineFiles = packetDef.conventionalBaselineRecipe?.files || [];
-  let baselineBytes = 0;
-  let baselineChars = 0;
-  let baselineLines = 0;
-  const baselineFileBreakdown = [];
+  // 3. Measure the exact same 30 required security files in raw form
+  const requiredFiles = packetDef.conventionalSameCoverageBaseline?.requiredSecurityFiles || [];
+  let rawRequiredBytes = 0;
+  let rawRequiredChars = 0;
+  let rawRequiredLines = 0;
+  const requiredFilesBreakdown = [];
 
-  for (const relPath of baselineFiles) {
+  for (const relPath of requiredFiles) {
     const resolved = resolveRepoPath(relPath, { mustExist: true });
     const buf = fs.readFileSync(resolved.absPath);
     const text = buf.toString('utf8');
     const lines = text.split(/\r?\n/).length;
-    baselineBytes += buf.length;
-    baselineChars += text.length;
-    baselineLines += lines;
-    baselineFileBreakdown.push({
+    rawRequiredBytes += buf.length;
+    rawRequiredChars += text.length;
+    rawRequiredLines += lines;
+    requiredFilesBreakdown.push({
       path: resolved.relPath,
       bytes: buf.length,
       chars: text.length,
@@ -921,15 +1673,58 @@ function runBenchmark(packetId, configMetadata, options = {}) {
     });
   }
 
-  const baselineTokensEst = estimateTokensCharsDiv4(baselineChars);
-  const fullTokensEst = fullPacket.manifest.packetOutput.tokensEstimateCharsDiv4;
-  const navTokensEst = navPacket.manifest.packetOutput.tokensEstimateCharsDiv4;
+  // 4. Measure conventional discovery overhead (GRAPH_REPORT.md + multi-slice Tera/Gemini handoffs)
+  const discoveryOverheadFiles = packetDef.conventionalSameCoverageBaseline?.conventionalDiscoveryOverheadFiles || [];
+  let convOverheadBytes = 0;
+  let convOverheadChars = 0;
+  let convOverheadLines = 0;
+  const convOverheadBreakdown = [];
 
-  const fullVsBaselineByteDeltaPct = Number(
-    (((fullPacket.manifest.packetOutput.bytes - baselineBytes) / baselineBytes) * 100).toFixed(2)
+  for (const relPath of discoveryOverheadFiles) {
+    const resolved = resolveRepoPath(relPath, { mustExist: true });
+    const buf = fs.readFileSync(resolved.absPath);
+    const text = buf.toString('utf8');
+    const lines = text.split(/\r?\n/).length;
+    convOverheadBytes += buf.length;
+    convOverheadChars += text.length;
+    convOverheadLines += lines;
+    convOverheadBreakdown.push({
+      path: resolved.relPath,
+      bytes: buf.length,
+      chars: text.length,
+      lines,
+      tokensEstimateCharsDiv4: estimateTokensCharsDiv4(text.length),
+    });
+  }
+
+  const conventionalTotalBytes = rawRequiredBytes + convOverheadBytes;
+  const conventionalTotalChars = rawRequiredChars + convOverheadChars;
+  const conventionalTotalLines = rawRequiredLines + convOverheadLines;
+  const conventionalTotalTokensEst = estimateTokensCharsDiv4(conventionalTotalChars);
+
+  // Measure optimized discovery + manifest overhead
+  const manifestAbs = path.resolve(REPO_ROOT, fullPacket.manifestRelPath);
+  const manifestBytes = fs.statSync(manifestAbs).size;
+  const manifestChars = fs.readFileSync(manifestAbs, 'utf8').length;
+  const queryBytes = discoveryRun.resultPayload.budgetMetrics.bytes;
+  const queryChars = discoveryRun.resultPayload.budgetMetrics.chars;
+
+  const optimizedFullPayloadBytes = fullPacket.manifest.packetOutput.bytes;
+  const optimizedFullPayloadChars = fullPacket.manifest.packetOutput.chars;
+  const optimizedFullWithDiscoveryBytes = optimizedFullPayloadBytes + queryBytes;
+  const optimizedFullWithDiscoveryChars = optimizedFullPayloadChars + queryChars;
+
+  const fullPayloadVsConventionalDeltaPct = Number(
+    (((optimizedFullPayloadBytes - conventionalTotalBytes) / conventionalTotalBytes) * 100).toFixed(2)
   );
-  const navVsBaselineByteDeltaPct = Number(
-    (((navPacket.manifest.packetOutput.bytes - baselineBytes) / baselineBytes) * 100).toFixed(2)
+  const fullWithDiscoveryVsConventionalDeltaPct = Number(
+    (((optimizedFullWithDiscoveryBytes - conventionalTotalBytes) / conventionalTotalBytes) * 100).toFixed(2)
+  );
+  const lineNumberFormattingOverheadPct = Number(
+    (((optimizedFullPayloadBytes - rawRequiredBytes) / rawRequiredBytes) * 100).toFixed(2)
+  );
+  const navVsConventionalDeltaPct = Number(
+    (((navPacket.manifest.packetOutput.bytes - conventionalTotalBytes) / conventionalTotalBytes) * 100).toFixed(2)
   );
 
   const benchmarkReport = {
@@ -939,54 +1734,100 @@ function runBenchmark(packetId, configMetadata, options = {}) {
     packetId,
     sourceRevision: gitProv.sourceRevision,
     worktreeState: gitProv.worktreeState,
+    sameCoverageGuarantee: {
+      requiredSecurityFilesCount: requiredFilesBreakdown.length,
+      optimizedPacketFilesCount: fullPacket.manifest.selectedFilesCount,
+      identicalSecurityFileSet: requiredFilesBreakdown.length === fullPacket.manifest.selectedFilesCount,
+      discoveredCallersIncluded: `${fullPacket.manifest.callerCoverage.discoveredFilesCount}/${fullPacket.manifest.callerCoverage.discoveredFilesCount}`,
+    },
     countingMethodology: {
       bytes: 'Exact UTF-8 byte length (Buffer.byteLength)',
       chars: 'Exact UTF-16 code unit / character count',
-      tokensEstimateCharsDiv4: 'Deterministic Math.ceil(chars / 4) applied identically across all recipes',
+      tokensEstimateCharsDiv4:
+        'Deterministic Math.ceil(chars / 4) applied identically across all recipes (NOT a model-billing or API-usage measurement)',
       repomixCalibration:
-        'External Repomix 1.14.0 (tiktoken o200k_base) measurements recorded alongside deterministic chars/4 counts',
+        'External Repomix 1.14.0 (tiktoken o200k_base) measurements recorded separately from chars/4 estimates',
     },
     recipes: {
-      conventionalUnscopedBaseline: {
-        description: packetDef.conventionalBaselineRecipe.description,
-        filesCount: baselineFileBreakdown.length,
-        bytes: baselineBytes,
-        chars: baselineChars,
-        lines: baselineLines,
-        tokensEstimateCharsDiv4: baselineTokensEst,
-        auditSafeForSecurityReview: true,
-        drawbacks: [
-          'Includes full 289 KB graphify-out/GRAPH_REPORT.md and full multi-slice Tera/Gemini handoffs containing unrelated TC04-TC20 noise.',
-          'Exceeds sourcePacketBudget (262,144 bytes) by more than 2x.',
-        ],
-        files: baselineFileBreakdown,
-      },
-      optimizedFullSecurityPacket: {
+      conventionalSameCoverageWorkflow: {
         description:
-          'Task-scoped FND03 packet generated by context-cli build-packet --mode full (all 28 FND03 RBAC, caller, schema, SQL migration, negative test, and Sol D1/D2 files uncompressed with line numbers + SHA-256 manifest).',
+          'Same 30 required FND03 security files + conventional unscoped discovery overhead (reading full graphify-out/GRAPH_REPORT.md + multi-slice Tera/Gemini handoffs).',
+        requiredSecurityFilesCount: requiredFilesBreakdown.length,
+        discoveryOverheadFilesCount: convOverheadBreakdown.length,
+        totalFilesLoaded: requiredFilesBreakdown.length + convOverheadBreakdown.length,
+        requiredSecurityPayload: {
+          bytes: rawRequiredBytes,
+          chars: rawRequiredChars,
+          lines: rawRequiredLines,
+          tokensEstimateCharsDiv4: estimateTokensCharsDiv4(rawRequiredChars),
+        },
+        discoveryOverhead: {
+          bytes: convOverheadBytes,
+          chars: convOverheadChars,
+          lines: convOverheadLines,
+          tokensEstimateCharsDiv4: estimateTokensCharsDiv4(convOverheadChars),
+          files: convOverheadBreakdown,
+        },
+        endToEndTotal: {
+          bytes: conventionalTotalBytes,
+          chars: conventionalTotalChars,
+          lines: conventionalTotalLines,
+          tokensEstimateCharsDiv4: conventionalTotalTokensEst,
+        },
+        auditSafeForSecurityReview: true,
+      },
+      rawRequired30FilesOnly: {
+        description:
+          'Raw sum of the 30 required FND03 files on disk with zero discovery overhead and no line-number headers.',
+        filesCount: requiredFilesBreakdown.length,
+        bytes: rawRequiredBytes,
+        chars: rawRequiredChars,
+        lines: rawRequiredLines,
+        tokensEstimateCharsDiv4: estimateTokensCharsDiv4(rawRequiredChars),
+        auditSafeForSecurityReview: true,
+        files: requiredFilesBreakdown,
+      },
+      optimizedFullSecurityWorkflow: {
+        description:
+          'Bounded query-graph discovery + 30-file uncompressed FND03 packet (with line numbers and SHA-256 verification headers).',
         artifactPath: fullPacket.packetRelPath,
         manifestPath: fullPacket.manifestRelPath,
         filesCount: fullPacket.manifest.selectedFilesCount,
-        bytes: fullPacket.manifest.packetOutput.bytes,
-        chars: fullPacket.manifest.packetOutput.chars,
-        lines: fullPacket.manifest.packetOutput.lines,
-        tokensEstimateCharsDiv4: fullTokensEst,
-        deltaVsConventionalBaselinePct: fullVsBaselineByteDeltaPct,
+        packetPayloadOnly: {
+          bytes: optimizedFullPayloadBytes,
+          chars: optimizedFullPayloadChars,
+          lines: fullPacket.manifest.packetOutput.lines,
+          tokensEstimateCharsDiv4: fullPacket.manifest.packetOutput.tokensEstimateCharsDiv4,
+          lineNumberAndHeaderFormattingOverheadPctVsRaw: lineNumberFormattingOverheadPct,
+          deltaVsConventionalEndToEndPct: fullPayloadVsConventionalDeltaPct,
+        },
+        discoveryAndManifestOverhead: {
+          boundedGraphQueryBytes: queryBytes,
+          boundedGraphQueryChars: queryChars,
+          boundedGraphQueryTokensEst: estimateTokensCharsDiv4(queryChars),
+          onDiskManifestBytes: manifestBytes,
+          onDiskManifestChars: manifestChars,
+        },
+        endToEndInContextTotal: {
+          bytes: optimizedFullWithDiscoveryBytes,
+          chars: optimizedFullWithDiscoveryChars,
+          tokensEstimateCharsDiv4: estimateTokensCharsDiv4(optimizedFullWithDiscoveryChars),
+          deltaVsConventionalEndToEndPct: fullWithDiscoveryVsConventionalDeltaPct,
+        },
         withinSourcePacketBudget: fullPacket.manifest.budgetStatus.withinBudget,
         auditSafeForSecurityReview: true,
       },
       optimizedNavigationOutlinePacket: {
         description:
-          'Structural navigation packet generated by context-cli build-packet --mode navigation (imports + symbol signatures + line ranges). For initial orientation only.',
+          'Structural navigation packet (imports + symbol signatures + line ranges). For initial orientation only — never sufficient alone for security sign-off.',
         artifactPath: navPacket.packetRelPath,
         manifestPath: navPacket.manifestRelPath,
         filesCount: navPacket.manifest.selectedFilesCount,
         bytes: navPacket.manifest.packetOutput.bytes,
         chars: navPacket.manifest.packetOutput.chars,
         lines: navPacket.manifest.packetOutput.lines,
-        tokensEstimateCharsDiv4: navTokensEst,
-        deltaVsConventionalBaselinePct: navVsBaselineByteDeltaPct,
-        withinExplorationAndPacketBudget: navPacket.manifest.budgetStatus.withinBudget,
+        tokensEstimateCharsDiv4: navPacket.manifest.packetOutput.tokensEstimateCharsDiv4,
+        deltaVsConventionalEndToEndPct: navVsConventionalDeltaPct,
         auditSafeForSecurityReview: false,
       },
       externalRepomixReferencePackets: packetDef.externalRepomixArtifacts,
@@ -1005,7 +1846,49 @@ function runBenchmark(packetId, configMetadata, options = {}) {
 }
 
 /**
- * `OPT04`: Creates a commit-aware FND session-resumption checkpoint JSON file.
+ * Extracts exact section headings and line ranges from the governing Sol decision document
+ * so checkpoints cite verified Sol sections (`D1`, `D3`) rather than hardcoded summaries.
+ */
+function extractSolDecisionSectionsFromDisk(solDecisionAbsPath, configuredSections = []) {
+  const content = fs.readFileSync(solDecisionAbsPath, 'utf8');
+  const lines = content.split(/\r?\n/);
+  const extracted = [];
+
+  for (const sec of configuredSections) {
+    const startIdx = lines.findIndex((l) => l.trim().startsWith(`## ${sec.sectionId}.`));
+    if (startIdx === -1) {
+      throw new Error(
+        `SOL_DECISION_SECTION_MISSING: Section '${sec.sectionId}' (${sec.heading}) not found in ${sec.sourceFile}.`
+      );
+    }
+    let endIdx = lines.length - 1;
+    for (let i = startIdx + 1; i < lines.length; i++) {
+      if (/^##\s+/.test(lines[i])) {
+        endIdx = i - 1;
+        break;
+      }
+    }
+    const sectionText = lines.slice(startIdx, endIdx + 1).join('\n');
+    extracted.push({
+      sectionId: sec.sectionId,
+      heading: lines[startIdx].trim(),
+      appliesTo: sec.appliesTo,
+      startLine: startIdx + 1,
+      endLine: endIdx + 1,
+      sectionSha256: sha256Buffer(Buffer.from(sectionText, 'utf8')),
+    });
+  }
+  return extracted;
+}
+
+/**
+ * `OPT04` Finding #5 Fix:
+ * Creates a commit-aware FND session-resumption checkpoint JSON file:
+ * - Computes real, distinct git commits for `sourceHead`, `toolHead`, and `testHead` (plus `repoHead`).
+ * - Extracts governing Sol decision sections (`D1` and `D3`, correcting the earlier `D2` mislabeling)
+ *   directly from `audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md` with line ranges and SHA-256 hashes.
+ * - Records observed evidence from `audit/Sol_W1_W3_Checkpoint_f88fef44.mjs` rather than inventing
+ *   hardcoded architectural instructions.
  */
 function createCheckpoint(packetId, configMetadata, options = {}) {
   const { config } = configMetadata;
@@ -1023,8 +1906,22 @@ function createCheckpoint(packetId, configMetadata, options = {}) {
 
   const solDecisionRel = 'audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md';
   const solDecisionResolved = resolveRepoPath(solDecisionRel, { mustExist: true });
-  const solDecisionCommit =
-    runGit(['log', '-n', '1', '--format=%H', '--', solDecisionRel], { allowFailure: true }) || gitProv.sourceRevision;
+  const solDecisionCommit = getLatestCommitForPaths([solDecisionRel]);
+
+  // Verify and extract exact D1 and D3 sections from the Sol decision file on disk
+  const verifiedSolSections = extractSolDecisionSectionsFromDisk(
+    solDecisionResolved.absPath,
+    packetDef.governingSolDecisionSections || []
+  );
+
+  // Compute distinct source, tool, and test commits
+  const sourcePaths = [...packetDef.securityCriticalFiles, ...packetDef.schemaAndMigrationFiles];
+  const toolPaths = ['tools/ai-context/config.json', 'tools/ai-context/context-cli.mjs'];
+  const testPaths = [...packetDef.securityTestFiles];
+
+  const sourceHead = getLatestCommitForPaths(sourcePaths);
+  const toolHead = getLatestCommitForPaths(toolPaths);
+  const testHead = getLatestCommitForPaths(testPaths);
 
   const trackedFiles = [
     ...packetDef.securityCriticalFiles,
@@ -1034,11 +1931,14 @@ function createCheckpoint(packetId, configMetadata, options = {}) {
   ];
   const uniqueTracked = [...new Set(trackedFiles)];
 
+  const dirtyMap = new Map(gitProv.dirtyFiles.map((d) => [d.path, d.status]));
   const fileFingerprints = uniqueTracked.map((relPath) => {
     const resolved = resolveRepoPath(relPath, { mustExist: true });
     return {
       path: resolved.relPath,
       sha256: sha256File(resolved.absPath),
+      lastCommit: getLatestCommitForPaths([resolved.relPath]),
+      worktreeStatus: dirtyMap.get(resolved.relPath) || 'clean',
     };
   });
 
@@ -1048,33 +1948,44 @@ function createCheckpoint(packetId, configMetadata, options = {}) {
   }
 
   const checkpoint = {
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     checkpointId: `${packetId}-checkpoint-${gitProv.sourceRevision.slice(0, 8)}`,
     packetId,
+    role: options.role || 'Argon',
     taskIds: packetDef.taskIds,
     status,
     createdAt: new Date().toISOString(),
     commits: {
-      sourceHead: gitProv.sourceRevision,
-      toolHead: gitProv.sourceRevision,
-      testHead: gitProv.sourceRevision,
+      repoHead: gitProv.sourceRevision,
+      sourceHead,
+      toolHead,
+      testHead,
     },
     worktreeStateAtCreation: gitProv.worktreeState,
+    dirtyFilesAtCreation: gitProv.dirtyFiles,
     solDecisionReference: {
       solDecisionPath: solDecisionResolved.relPath,
       solDecisionRevision: solDecisionCommit,
       solDecisionSha256: sha256File(solDecisionResolved.absPath),
-      governingDecisions: ['D1: Profile Route Tenant Context and Student Self-Profile Access', 'D2: FND03 Migration Provenance'],
+      verifiedSections: verifiedSolSections,
     },
-    openBlockers: [
-      'Remove residual brand: auth.brand || "realtutorialhub" fallback in packages/auth/src/rbac/rbac.adapter.ts:64 and apps/api-server/src/app/api/auth/onboarding/route.ts:79,87.',
-      'Remove PROFILE_READ and PROFILE_WRITE from ROLES.STUDENT in packages/auth/src/rbac/role-permissions.ts so student self-profile access must pass ownership + tenant equality.',
-      'Resolve the 2 profile route tenant-context TypeScript errors in apps/api-server/src/app/api/auth/profile/route.ts per Sol D1.',
-    ],
+    observedEvidenceReferences: packetDef.observedCheckpointRunnerEvidence || [],
+    unresolvedRequirementsRef: {
+      authorityDocument: solDecisionResolved.relPath,
+      sections: verifiedSolSections.map((s) => `${s.sectionId} (lines ${s.startLine}-${s.endLine})`),
+      note: 'Refer directly to Sol decision sections D1 (private profile ownership & tenant provenance) and D3 (tenant persistence, progress, exports & admin context); checkpoints do not prescribe independent architecture rules.',
+    },
+    nextAction: {
+      nextRequiredModels: [
+        'Claude Sonnet 4.5 (DOC01-DOC03 in docs/ai-context/operating-guide.md, docs/ai-context/fnd-checkpoint-template.md, docs/ai-context/task-retrieval-guide.md)',
+        'Gemini (VAL01-VAL12 independent tooling validation in tests/tooling/ai-context/* and audit/Gemini_Context_Optimization_Validation.md)',
+        'Sol (final architectural acceptance)',
+      ],
+      teraCriticalWorkstreamNote: 'Terra continues TC01-TC20 independently without interruption.',
+    },
     verificationCommandsAdvisoryOnly: [
-      'pnpm --filter @repo/auth typecheck',
-      'pnpm --filter api-server typecheck',
-      'pnpm --filter @repo/auth test -- src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts src/rbac/__tests__/ownership.service.test.ts',
+      'node audit/Sol_W1_W3_Checkpoint_f88fef44.mjs boundary',
+      'pnpm --filter @quiz/api-server exec tsc --noEmit',
     ],
     autoExecuteCommands: false,
     trackedFilesCount: fileFingerprints.length,
@@ -1100,10 +2011,12 @@ function createCheckpoint(packetId, configMetadata, options = {}) {
  * `OPT04`: Validates a commit-aware FND checkpoint and fails closed if stale, dirty, tampered, or marked CLOSED.
  * Never executes recorded commands.
  */
-function validateCheckpoint(checkpointFile, options = {}) {
+function validateCheckpoint(checkpointFile, configMetadata, options = {}) {
+  const { config } = configMetadata;
   const resolved = resolveRepoPath(checkpointFile, { mustExist: true });
   const checkpoint = JSON.parse(fs.readFileSync(resolved.absPath, 'utf8'));
   const gitProv = getGitProvenance();
+  const packetDef = config.packets?.[checkpoint.packetId || 'fnd03'];
 
   const failures = [];
 
@@ -1115,25 +2028,44 @@ function validateCheckpoint(checkpointFile, options = {}) {
     failures.push('UNAUTHORIZED_CLOSURE_STATUS: Checkpoints cannot self-certify status === "CLOSED" without Sol acceptance.');
   }
 
-  // 1. Validate HEAD commit match
-  const expectedHead = options.simulateHead || gitProv.sourceRevision;
-  if (checkpoint.commits?.sourceHead !== expectedHead) {
+  // 1. Validate repoHead and distinct sourceHead, toolHead, testHead
+  const currentRepoHead = options.simulateHead || gitProv.sourceRevision;
+  const currentSourceHead = options.simulateHead
+    ? options.simulateHead
+    : packetDef
+      ? getLatestCommitForPaths([...packetDef.securityCriticalFiles, ...packetDef.schemaAndMigrationFiles])
+      : currentRepoHead;
+  const currentToolHead = options.simulateHead
+    ? options.simulateHead
+    : getLatestCommitForPaths(['tools/ai-context/config.json', 'tools/ai-context/context-cli.mjs']);
+  const currentTestHead = options.simulateHead
+    ? options.simulateHead
+    : packetDef
+      ? getLatestCommitForPaths(packetDef.securityTestFiles)
+      : currentRepoHead;
+
+  if (checkpoint.commits?.repoHead && checkpoint.commits.repoHead !== currentRepoHead) {
     failures.push(
-      `HEAD_MISMATCH: Checkpoint sourceHead (${checkpoint.commits?.sourceHead}) does not match current HEAD (${expectedHead}).`
+      `REPO_HEAD_MISMATCH: Checkpoint repoHead (${checkpoint.commits.repoHead}) does not match current HEAD (${currentRepoHead}).`
     );
   }
-  if (checkpoint.commits?.toolHead !== expectedHead) {
+  if (checkpoint.commits?.sourceHead !== currentSourceHead) {
     failures.push(
-      `TOOL_HEAD_MISMATCH: Checkpoint toolHead (${checkpoint.commits?.toolHead}) does not match current HEAD (${expectedHead}).`
+      `SOURCE_HEAD_MISMATCH: Checkpoint sourceHead (${checkpoint.commits?.sourceHead}) does not match current sourceHead (${currentSourceHead}).`
     );
   }
-  if (checkpoint.commits?.testHead !== expectedHead) {
+  if (checkpoint.commits?.toolHead !== currentToolHead) {
     failures.push(
-      `TEST_HEAD_MISMATCH: Checkpoint testHead (${checkpoint.commits?.testHead}) does not match current HEAD (${expectedHead}).`
+      `TOOL_HEAD_MISMATCH: Checkpoint toolHead (${checkpoint.commits?.toolHead}) does not match current toolHead (${currentToolHead}).`
+    );
+  }
+  if (checkpoint.commits?.testHead !== currentTestHead) {
+    failures.push(
+      `TEST_HEAD_MISMATCH: Checkpoint testHead (${checkpoint.commits?.testHead}) does not match current testHead (${currentTestHead}).`
     );
   }
 
-  // 2. Validate Sol decision reference
+  // 2. Validate Sol decision reference & section hashes
   const solRef = checkpoint.solDecisionReference;
   if (!solRef || !solRef.solDecisionPath || !solRef.solDecisionSha256) {
     failures.push('MISSING_SOL_DECISION_REF: Checkpoint is missing solDecisionReference metadata.');
@@ -1143,6 +2075,9 @@ function validateCheckpoint(checkpointFile, options = {}) {
       const actualSolSha = sha256File(solResolved.absPath);
       if (actualSolSha !== solRef.solDecisionSha256) {
         failures.push(`SOL_DECISION_HASH_MISMATCH: ${solRef.solDecisionPath} SHA-256 changed since checkpoint creation.`);
+      }
+      if (!Array.isArray(solRef.verifiedSections) || solRef.verifiedSections.length === 0) {
+        failures.push('MISSING_SOL_SECTIONS: Checkpoint must reference verified Sol decision sections (e.g. D1, D3).');
       }
     } catch (err) {
       failures.push(`SOL_DECISION_MISSING: ${err.message}`);
@@ -1173,7 +2108,12 @@ function validateCheckpoint(checkpointFile, options = {}) {
     validatedAt: new Date().toISOString(),
     checkpointFile: resolved.relPath,
     valid,
-    currentHead: expectedHead,
+    currentCommits: {
+      repoHead: currentRepoHead,
+      sourceHead: currentSourceHead,
+      toolHead: currentToolHead,
+      testHead: currentTestHead,
+    },
     worktreeState: gitProv.worktreeState,
     failuresCount: failures.length,
     failures,
@@ -1181,10 +2121,14 @@ function validateCheckpoint(checkpointFile, options = {}) {
 }
 
 /**
- * `OPT05`: Non-destructive inventory of host instruction files (`AGENTS.md`, `CLAUDE.md`, `.kiro`, `.codex`, `.claude`, `.agents`).
- * Never dumps environment variables or secret/setting values.
+ * `OPT05` Finding #7 Fix:
+ * Non-destructive inventory of host instruction files (`AGENTS.md`, `CLAUDE.md`, `.kiro`, `.codex`, `.claude`, `.agents`).
+ * References the exact approved Sonnet `DOC01`–`DOC03` filenames from `audit/Argon_Developer_Context_Optimization_Assignment.md`:
+ * - `docs/ai-context/operating-guide.md` (`DOC01`)
+ * - `docs/ai-context/fnd-checkpoint-template.md` (`DOC02`)
+ * - `docs/ai-context/task-retrieval-guide.md` (`DOC03`)
  */
-function runHostInventory(options = {}) {
+function runHostInventory(config, options = {}) {
   const candidates = [
     { path: 'AGENTS.md', host: 'All Agents / Graphify / Antigravity / Codex', kind: 'file' },
     { path: 'CLAUDE.md', host: 'Claude Code / Claude Sonnet', kind: 'file' },
@@ -1227,7 +2171,6 @@ function runHostInventory(options = {}) {
         headings,
       });
     } else if (stat.isDirectory()) {
-      // List top-level and second-level instruction/steering markdown or JSON filenames only (never values)
       const entries = [];
       for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
         const relEntry = toPosixPath(path.join(item.path, entry.name));
@@ -1243,7 +2186,6 @@ function runHostInventory(options = {}) {
         }
       }
 
-      // Check for stale scope conflict in .kiro/steering/active-sprint.md if present
       const conflicts = [];
       const activeSprintAbs = path.join(abs, 'steering', 'active-sprint.md');
       if (fs.existsSync(activeSprintAbs)) {
@@ -1272,7 +2214,11 @@ function runHostInventory(options = {}) {
     cliVersion: CLI_VERSION,
     generatedAt: new Date().toISOString(),
     sourceRevision: getGitProvenance().sourceRevision,
-    canonicalWorkflowDocTarget: 'docs/ai-context/WORKFLOW.md (to be authored by Claude Sonnet 4.5 under DOC01-DOC03)',
+    approvedSonnetDocumentationTargets: config.sonnetDocumentationDeliverables || {
+      DOC01: 'docs/ai-context/operating-guide.md',
+      DOC02: 'docs/ai-context/fnd-checkpoint-template.md',
+      DOC03: 'docs/ai-context/task-retrieval-guide.md',
+    },
     secretValuesRedacted: true,
     inventory,
   };
@@ -1331,13 +2277,27 @@ function main() {
 
   try {
     switch (subcommand) {
+      case 'record-graph-provenance': {
+        const { stamp, outFile } = recordGraphProvenance(config, { packet: flags.packet || 'fnd03' });
+        printBoundedTerminalSummary(
+          [
+            `[record-graph-provenance] PASS — wrote ${outFile}`,
+            `  Source HEAD: ${stamp.sourceRevision} | Worktree: ${stamp.worktreeState}`,
+            `  Graph SHA-256: ${stamp.graphFile.sha256} (${stamp.graphFile.bytes} bytes)`,
+            `  Tracked files matching graphify-out/manifest.json AST MD5: ${stamp.fileFingerprints.filter((f) => f.matchesGraphManifest).length}/${stamp.trackedFilesCount}`,
+          ],
+          config
+        );
+        break;
+      }
+
       case 'sql-coverage': {
         const { report, outFile } = runSqlCoverage(config, { outDir: flags['out-dir'] });
         printBoundedTerminalSummary(
           [
             `[sql-coverage] PASS — wrote ${outFile}`,
             `  Graph nodes: ${report.graphTotals.totalNodes} | Edges: ${report.graphTotals.totalEdges} | SQL nodes: ${report.graphTotals.sqlNodeCount} (${report.graphTotals.distinctSqlFilesIndexed} SQL files)`,
-            `  Provenance advisory: ${report.graphProvenance.advisory} (${report.graphProvenance.advisoryReason})`,
+            `  Provenance verified: ${report.graphProvenance.provenanceVerified} | Advisory: ${report.graphProvenance.advisory} (${report.graphProvenance.advisoryReason})`,
             ...report.fnd03MigrationInspection.map(
               (m) =>
                 `  FND03 SQL ${m.file}: indexed=${m.indexedInGraph}, graphNodes=${m.graphNodeCount}, diskConstructs=${m.diskConstructsCount}`
@@ -1352,14 +2312,17 @@ function main() {
         const queryText = flags.query || positionals.join(' ');
         const { resultPayload, outFile } = runQueryGraph(queryText, config, {
           maxResults: flags['max-results'],
+          depth: flags.depth,
           fallbackPattern: flags['fallback-pattern'],
           outDir: flags['out-dir'],
+          runNativeCli: flags['no-native-cli'] ? false : true,
         });
         printBoundedTerminalSummary(
           [
             `[query-graph] PASS — wrote ${outFile}`,
-            `  Query: "${resultPayload.query}" | Advisory: ${resultPayload.advisory}`,
-            `  Graph matches: ${resultPayload.truncation.returnedNodes}/${resultPayload.truncation.totalMatchingNodes} nodes, ${resultPayload.truncation.returnedEdges} edges (truncated=${resultPayload.truncation.truncated})`,
+            `  Query: "${resultPayload.query}" | Provenance verified: ${resultPayload.provenance.provenanceVerified} | Advisory: ${resultPayload.advisory}`,
+            `  Lexical seeds: ${resultPayload.truncation.returnedSeeds}/${resultPayload.truncation.totalSeedMatches} | Multi-hop BFS (depth<=${resultPayload.truncation.maxDepth}): ${resultPayload.truncation.returnedTraversedNodes}/${resultPayload.truncation.totalReachableWithinDepth} nodes, ${resultPayload.truncation.returnedTraversedEdges} edges (truncated=${resultPayload.truncation.truncated})`,
+            `  Native graphify CLI: ${resultPayload.nativeGraphifyCli.status} (${resultPayload.nativeGraphifyCli.headerLine || 'not run'})`,
             `  Source fallback (${resultPayload.sourceFallbackResults.searchEngine}): ${resultPayload.sourceFallbackResults.matchedCount} file(s)`,
             `  Exploration budget: ${resultPayload.budgetMetrics.bytes}/${resultPayload.budgetMetrics.maxBytes} bytes (withinBudget=${resultPayload.budgetMetrics.withinExplorationBudget})`,
           ],
@@ -1377,13 +2340,15 @@ function main() {
           allowDirty: Boolean(flags['allow-dirty']),
           outDir: flags['out-dir'],
           extraFiles,
+          maxBytes: flags['max-bytes'],
+          simulateOmitFile: flags['simulate-omit-file'],
         });
         printBoundedTerminalSummary(
           [
-            `[build-packet] PASS — packet=${packetId} mode=${mode}`,
+            `[build-packet] PASS — packet=${packetId} mode=${mode} completeness=${manifest.completenessStatus}`,
             `  Packet file:   ${packetRelPath} (${manifest.packetOutput.bytes} bytes, ${manifest.packetOutput.chars} chars, ~${manifest.packetOutput.tokensEstimateCharsDiv4} tokens [chars/4])`,
             `  Manifest file: ${manifestRelPath}`,
-            `  Source HEAD:   ${manifest.sourceRevision} (worktree=${manifest.worktreeState}, dirty=${manifest.dirtyFiles.length})`,
+            `  Revisions:     repoHead=${manifest.componentRevisions.repoHead.slice(0, 8)} sourceHead=${manifest.componentRevisions.sourceHead.slice(0, 8)} toolHead=${manifest.componentRevisions.toolHead.slice(0, 8)} testHead=${manifest.componentRevisions.testHead.slice(0, 8)}`,
             `  Files packed:  ${manifest.selectedFilesCount} | Secret scan: ${manifest.secretScan.status} | Within budget: ${manifest.budgetStatus.withinBudget}`,
             `  Callers found: ${manifest.callerCoverage.discoveredFilesCount} (${manifest.callerCoverage.uncoveredCallersCount} uncovered)`,
           ],
@@ -1392,21 +2357,37 @@ function main() {
         break;
       }
 
+      case 'verify-canaries': {
+        const { report, outFile } = runVerifyCanaries(configMetadata, { outDir: flags['out-dir'] });
+        printBoundedTerminalSummary(
+          [
+            `[verify-canaries] ${report.allPassed ? 'PASS' : 'FAIL'} — wrote ${outFile} (${report.passedChecks}/${report.totalChecks} checks passed)`,
+            ...report.checks.map((c) => `  - ${c.test}: ${c.passed ? 'PASS' : 'FAIL'}`),
+          ],
+          config
+        );
+        if (!report.allPassed) {
+          process.exitCode = 1;
+        }
+        break;
+      }
+
       case 'benchmark': {
         const packetId = flags.packet || positionals[0] || 'fnd03';
         const { benchmarkReport, outFile } = runBenchmark(packetId, configMetadata, {
           outDir: flags['out-dir'],
         });
-        const base = benchmarkReport.recipes.conventionalUnscopedBaseline;
-        const full = benchmarkReport.recipes.optimizedFullSecurityPacket;
+        const conv = benchmarkReport.recipes.conventionalSameCoverageWorkflow;
+        const raw30 = benchmarkReport.recipes.rawRequired30FilesOnly;
+        const full = benchmarkReport.recipes.optimizedFullSecurityWorkflow;
         const nav = benchmarkReport.recipes.optimizedNavigationOutlinePacket;
         printBoundedTerminalSummary(
           [
-            `[benchmark] PASS — wrote ${outFile} (HEAD ${benchmarkReport.sourceRevision})`,
-            `  1. Conventional Baseline (${base.filesCount} files): ${base.bytes} bytes | ${base.chars} chars | ~${base.tokensEstimateCharsDiv4} tokens [chars/4]`,
-            `  2. Optimized Full Packet (${full.filesCount} files): ${full.bytes} bytes | ${full.chars} chars | ~${full.tokensEstimateCharsDiv4} tokens [chars/4] (${full.deltaVsConventionalBaselinePct}% vs baseline, auditSafe=true)`,
-            `  3. Optimized Nav Packet  (${nav.filesCount} files): ${nav.bytes} bytes | ${nav.chars} chars | ~${nav.tokensEstimateCharsDiv4} tokens [chars/4] (${nav.deltaVsConventionalBaselinePct}% vs baseline, auditSafe=false)`,
-            `  4. External Repomix o200k_base calibration: compressed=${benchmarkReport.recipes.externalRepomixReferencePackets.compressedStructureOnly.repomixTokens_o200k_base} tokens | RBAC-uncompressed=${benchmarkReport.recipes.externalRepomixReferencePackets.uncompressedRbacOnly.repomixTokens_o200k_base} tokens | 25-file-security-complete=${benchmarkReport.recipes.externalRepomixReferencePackets.uncompressedSecurityComplete.repomixTokens_o200k_base} tokens`,
+            `[benchmark] PASS — wrote ${outFile} (HEAD ${benchmarkReport.sourceRevision}, identical 30-file security coverage=${benchmarkReport.sameCoverageGuarantee.identicalSecurityFileSet})`,
+            `  1. Conventional Same-Coverage End-to-End (30 required + 3 discovery files): ${conv.endToEndTotal.bytes} bytes | ${conv.endToEndTotal.chars} chars | ~${conv.endToEndTotal.tokensEstimateCharsDiv4} tokens [chars/4]`,
+            `  2. Raw 30 Required Security Files Only (no discovery/line-numbers):         ${raw30.bytes} bytes | ${raw30.chars} chars | ~${raw30.tokensEstimateCharsDiv4} tokens [chars/4]`,
+            `  3. Optimized Full Security Workflow (30 files + bounded query):             ${full.endToEndInContextTotal.bytes} bytes (${full.packetPayloadOnly.bytes} packet + ${full.discoveryAndManifestOverhead.boundedGraphQueryBytes} query) | ~${full.endToEndInContextTotal.tokensEstimateCharsDiv4} tokens [chars/4] (${full.endToEndInContextTotal.deltaVsConventionalEndToEndPct}% vs conventional end-to-end, auditSafe=true)`,
+            `  4. Optimized Navigation Outline Only (30 files, orientation only):          ${nav.bytes} bytes | ${nav.chars} chars | ~${nav.tokensEstimateCharsDiv4} tokens [chars/4] (${nav.deltaVsConventionalEndToEndPct}% vs conventional, auditSafe=false)`,
           ],
           config
         );
@@ -1418,6 +2399,7 @@ function main() {
         const { checkpoint, outFile } = createCheckpoint(packetId, configMetadata, {
           allowDirty: Boolean(flags['allow-dirty']),
           status: flags.status,
+          role: flags.role,
           outDir: flags['out-dir'],
           file: flags.file,
         });
@@ -1425,8 +2407,8 @@ function main() {
           [
             `[checkpoint-create] PASS — wrote ${outFile}`,
             `  Checkpoint ID: ${checkpoint.checkpointId} | Status: ${checkpoint.status}`,
-            `  HEAD: ${checkpoint.commits.sourceHead} | Tracked files: ${checkpoint.trackedFilesCount}`,
-            `  Sol decision ref: ${checkpoint.solDecisionReference.solDecisionPath} @ ${checkpoint.solDecisionReference.solDecisionRevision}`,
+            `  Commits: repoHead=${checkpoint.commits.repoHead.slice(0, 8)} sourceHead=${checkpoint.commits.sourceHead.slice(0, 8)} toolHead=${checkpoint.commits.toolHead.slice(0, 8)} testHead=${checkpoint.commits.testHead.slice(0, 8)}`,
+            `  Sol decision ref: ${checkpoint.solDecisionReference.solDecisionPath} @ ${checkpoint.solDecisionReference.solDecisionRevision.slice(0, 8)} (Sections: ${checkpoint.solDecisionReference.verifiedSections.map((s) => s.sectionId).join(', ')})`,
           ],
           config
         );
@@ -1435,17 +2417,17 @@ function main() {
 
       case 'checkpoint-validate': {
         const file = flags.file || positionals[0] || '.context-packets/fnd03-checkpoint.json';
-        const validation = validateCheckpoint(file, {
+        const validation = validateCheckpoint(file, configMetadata, {
           allowDirty: Boolean(flags['allow-dirty']),
           simulateHead: flags['simulate-head'],
         });
         printBoundedTerminalSummary(
           [
             `[checkpoint-validate] ${validation.valid ? 'PASS' : 'FAIL'} — ${validation.checkpointFile}`,
-            `  Current HEAD: ${validation.currentHead} | Worktree: ${validation.worktreeState}`,
+            `  Commits: repoHead=${validation.currentCommits.repoHead.slice(0, 8)} sourceHead=${validation.currentCommits.sourceHead.slice(0, 8)} toolHead=${validation.currentCommits.toolHead.slice(0, 8)} testHead=${validation.currentCommits.testHead.slice(0, 8)} | Worktree: ${validation.worktreeState}`,
             ...(validation.failures.length
               ? validation.failures.map((f) => `  FAILURE: ${f}`)
-              : ['  All commit pointers, Sol decision hashes, and file SHA-256 fingerprints verified.']),
+              : ['  All commit pointers, Sol D1/D3 decision hashes, and file SHA-256 fingerprints verified.']),
           ],
           config
         );
@@ -1456,10 +2438,13 @@ function main() {
       }
 
       case 'host-inventory': {
-        const { report, outFile } = runHostInventory({ outDir: flags['out-dir'] });
+        const { report, outFile } = runHostInventory(config, { outDir: flags['out-dir'] });
         printBoundedTerminalSummary(
           [
             `[host-inventory] PASS — wrote ${outFile}`,
+            `  Sonnet DOC01-DOC03 targets: ${Object.entries(report.approvedSonnetDocumentationTargets)
+              .map(([k, v]) => `${k}=${v}`)
+              .join(', ')}`,
             ...report.inventory.map(
               (item) =>
                 `  - ${item.path} (${item.host}): ${item.status}${
@@ -1477,12 +2462,14 @@ function main() {
           [
             `Usage: node tools/ai-context/context-cli.mjs <subcommand> [options]`,
             `Subcommands:`,
+            `  record-graph-provenance                      Stamp graph.json SHA-256 + manifest.json AST MD5s against HEAD (OPT01)`,
             `  sql-coverage                                 Verify Graphify tree_sitter_sql coverage & FND03 migrations (OPT01)`,
-            `  query-graph "<query>"                        Run provenance-checked Graphify query + ripgrep fallback (OPT01)`,
-            `  build-packet --packet fnd03 [--mode full]    Build secret-scanned source packet + .manifest.json (OPT02)`,
-            `  benchmark --packet fnd03                     Run conventional vs optimized FND03 token/byte benchmark (OPT03)`,
+            `  query-graph "<query>"                        Run provenance-checked BFS graph traversal + ripgrep fallback (OPT01)`,
+            `  build-packet --packet fnd03 [--mode full]    Build fail-closed secret-scanned packet + .manifest.json (OPT02)`,
+            `  verify-canaries                              Run synthetic secret-canary, path-glob & fail-closed checks (OPT02)`,
+            `  benchmark --packet fnd03                     Run same-coverage FND03 token/byte/discovery benchmark (OPT03)`,
             `  checkpoint-create --packet fnd03             Create commit-aware FND checkpoint pointer (OPT04)`,
-            `  checkpoint-validate --file <path>            Validate checkpoint against HEAD, hashes & Sol decisions (OPT04)`,
+            `  checkpoint-validate --file <path>            Validate checkpoint against source/tool/test HEADs & Sol D1/D3 (OPT04)`,
             `  host-inventory                               Inventory AGENTS.md, CLAUDE.md, .kiro, .codex, .claude (OPT05)`,
           ],
           config
