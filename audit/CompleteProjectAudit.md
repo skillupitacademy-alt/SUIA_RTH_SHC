@@ -3,9 +3,9 @@
 ```md
 # SkillUp Marketing — Initial Source Architecture Audit
 
-**Scope:** `apps/skillupitacademy-site` and shared dependency `packages/marketing-site/src`.  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC` on `main` (as retrieved in this review).  
-**Standard:** `FinalAechitecture.md`; shared components only when responsibility is genuinely common, independent brand ownership, secure-by-default behavior, SOLID/DRY/KISS/YAGNI/SoC, frontend performance and SEO.  
+**Scope:** `apps/skillupitacademy-site` and shared dependency `packages/marketing-site/src`.
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC` on `main` (as retrieved in this review).
+**Standard:** `FinalAechitecture.md`; shared components only when responsibility is genuinely common, independent brand ownership, secure-by-default behavior, SOLID/DRY/KISS/YAGNI/SoC, frontend performance and SEO.
 **Status:** Partial source audit, **not** a line-by-line certification of every shared file. No code changes or test execution performed.
 
 ## Scope inventory
@@ -79,10 +79,10 @@ The GitHub tree inspection returned 345 tree entries under `packages/marketing-s
 ```md
 # SkillUp Marketing — Principal Architect Source Audit, Tranche 02
 
-**Repository**: `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch**: `main`  
-**Pinned HEAD**: `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Mode**: Read-only repository source inspection; no code changes; no lint/build/runtime/test execution.  
+**Repository**: `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch**: `main`
+**Pinned HEAD**: `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Mode**: Read-only repository source inspection; no code changes; no lint/build/runtime/test execution.
 **Governing method**: Evidence → architecture decision → implementation → verification.
 
 ## Scope reviewed in this tranche
@@ -198,9 +198,9 @@ No remediation commit was made. No code was modified.
 ```md
 # SkillUp Marketing — Principal Architect Source Audit, Tranche 03
 
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch / baseline:** `main`, commit `5efd1129d905d05c912acfef66e52df9ca15120b` (baseline observed during review; files fetched from `main`).  
-**Scope:** source inspection of homepage hero, navigation, course-card filtering and scroll behaviors in `packages/marketing-site/src/components`. **Read-only.** No build or browser tests performed. 
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch / baseline:** `main`, commit `5efd1129d905d05c912acfef66e52df9ca15120b` (baseline observed during review; files fetched from `main`).
+**Scope:** source inspection of homepage hero, navigation, course-card filtering and scroll behaviors in `packages/marketing-site/src/components`. **Read-only.** No build or browser tests performed.
 
 ## File-by-file review ledger
 
@@ -226,53 +226,53 @@ No remediation commit was made. No code was modified.
 ## Source-backed findings
 
 ### MKT-020 — HIGH — Browser scrolling loop lifecycle
-**Source:** `components/Providers/LenisProvider.tsx`. The function `raf(time)` schedules `requestAnimationFrame(raf)` recursively, but `useEffect` teardown only calls `lenisInstance?.destroy()` and sets the instance to null. The RAF callback remains scheduled and continues scheduling new frames. In a route-changing app, multiple loops can accumulate.  
-**Decision:** Maintain the request ID and cancel it in cleanup; use an effect-local Lenis instance, or remove the global scroll library if it does not justify its cost. Avoid nesting multiple Lenis providers.  
+**Source:** `components/Providers/LenisProvider.tsx`. The function `raf(time)` schedules `requestAnimationFrame(raf)` recursively, but `useEffect` teardown only calls `lenisInstance?.destroy()` and sets the instance to null. The RAF callback remains scheduled and continues scheduling new frames. In a route-changing app, multiple loops can accumulate.
+**Decision:** Maintain the request ID and cancel it in cleanup; use an effect-local Lenis instance, or remove the global scroll library if it does not justify its cost. Avoid nesting multiple Lenis providers.
 **Verification:** Mount, route-change and unmount tests, plus profiler validation that only one active RAF loop exists.
 
 ### MKT-021 — MEDIUM — Dead state and ignored children in HeroClient
-**Source:** `components/HeroSection/HeroClient.tsx`. `children`, `ready` and `current` are not used to render or control behavior; an extra 600ms state update serves no output. `MarketingHome.tsx` passes `<HeroText />` as children but it is ignored.  
-**Decision:** Clarify hero ownership; remove unused state/timer/props or properly render intended content, with one authoritative hero heading and responsive variant.  
+**Source:** `components/HeroSection/HeroClient.tsx`. `children`, `ready` and `current` are not used to render or control behavior; an extra 600ms state update serves no output. `MarketingHome.tsx` passes `<HeroText />` as children but it is ignored.
+**Decision:** Clarify hero ownership; remove unused state/timer/props or properly render intended content, with one authoritative hero heading and responsive variant.
 **Verification:** Homepage desktop/mobile initial HTML, heading hierarchy and screenshot regression.
 
 ### MKT-022 — HIGH — Primary hero above-the-fold image delayed
-**Source:** `components/HeroSection/HeroSlider.tsx`. Desktop image renders only when `startSlider` becomes true; that state is set inside `requestAnimationFrame` + `requestIdleCallback`. A browser may delay idle callbacks, and `requestIdleCallback` is not universally supported. `priority={current === 0}` cannot prioritize an image not initially rendered. Mobile image explicitly has `loading="lazy"`, `fetchPriority="low"`.  
-**Decision:** Render a static, visible first hero slide (including LCP image) promptly, then progressively enhance autoplay/animation. Feature-detect optional browser APIs.  
+**Source:** `components/HeroSection/HeroSlider.tsx`. Desktop image renders only when `startSlider` becomes true; that state is set inside `requestAnimationFrame` + `requestIdleCallback`. A browser may delay idle callbacks, and `requestIdleCallback` is not universally supported. `priority={current === 0}` cannot prioritize an image not initially rendered. Mobile image explicitly has `loading="lazy"`, `fetchPriority="low"`.
+**Decision:** Render a static, visible first hero slide (including LCP image) promptly, then progressively enhance autoplay/animation. Feature-detect optional browser APIs.
 **Verification:** Production build / mobile and desktop LCP trace, JS disabled and WebKit fallback tests.
 
 ### MKT-023 — MEDIUM — Non-functional hero CTA
-**Source:** `components/HeroSection/HeroSlider.tsx`, `renderButtons()`. First button navigates to courses; the second displays `{currentSlide.btn2}` but has no click handler, href or defined action.  
-**Decision:** Give it a real, brand-appropriate destination or render as non-interactive text if no action is intended.  
+**Source:** `components/HeroSection/HeroSlider.tsx`, `renderButtons()`. First button navigates to courses; the second displays `{currentSlide.btn2}` but has no click handler, href or defined action.
+**Decision:** Give it a real, brand-appropriate destination or render as non-interactive text if no action is intended.
 **Verification:** Pointer and keyboard interaction against every slide.
 
 ### MKT-024 — HIGH — Duplicate courses section ID
-**Source:** `MarketingHome.tsx` wraps course component in `<section id="courses">`; `components/CourseCards/CourseCards.tsx` renders a second nested `<section id="courses">`. Duplicate IDs break document uniqueness and make hash/DOM targeting ambiguous.  
-**Decision:** One component should own the section ID.  
+**Source:** `MarketingHome.tsx` wraps course component in `<section id="courses">`; `components/CourseCards/CourseCards.tsx` renders a second nested `<section id="courses">`. Duplicate IDs break document uniqueness and make hash/DOM targeting ambiguous.
+**Decision:** One component should own the section ID.
 **Verification:** DOM uniqueness audit and scroll-to-section test.
 
 ### MKT-025 — MEDIUM — Fixed navigation hydration delay
-**Source:** `components/NavBar/NavbarWrapper.tsx`. `loading` starts `true` and only switches to navigation after a 500ms timer started by a client `useEffect`.  
-**Decision:** Render semantic nav from the first response where content is already available; defer only genuinely expensive client behaviors.  
+**Source:** `components/NavBar/NavbarWrapper.tsx`. `loading` starts `true` and only switches to navigation after a 500ms timer started by a client `useEffect`.
+**Decision:** Render semantic nav from the first response where content is already available; defer only genuinely expensive client behaviors.
 **Verification:** Server HTML, no-JS navigation, accessibility tree and visual stability.
 
 ### MKT-026 — MEDIUM — In-page nav exposes debug alert/log
-**Source:** `components/NavBar/useScrollSpy.ts`. `scrollToSection` logs `SCROLL TARGET:` and calls `alert('Section ... NOT FOUND')` when target absent. Shared navbar should handle cross-route navigation explicitly, without exposing diagnostic alert to users.  
-**Decision:** Use actual anchors and route-aware navigation; remove debug log and alert.  
+**Source:** `components/NavBar/useScrollSpy.ts`. `scrollToSection` logs `SCROLL TARGET:` and calls `alert('Section ... NOT FOUND')` when target absent. Shared navbar should handle cross-route navigation explicitly, without exposing diagnostic alert to users.
+**Decision:** Use actual anchors and route-aware navigation; remove debug log and alert.
 **Verification:** From homepage and course detail route, click every nav item.
 
 ### MKT-027 — MEDIUM — Dialog keyboard accessibility
-**Source:** `components/CourseCards/MobileFilterPanel.tsx`. `role="dialog"` and `aria-modal="true"` are present, but focus management and Escape behavior are not implemented in the component.  
-**Decision:** Add accessible dialog handling using proven primitives or well-tested focus management; ensure reduced-motion behavior.  
+**Source:** `components/CourseCards/MobileFilterPanel.tsx`. `role="dialog"` and `aria-modal="true"` are present, but focus management and Escape behavior are not implemented in the component.
+**Decision:** Add accessible dialog handling using proven primitives or well-tested focus management; ensure reduced-motion behavior.
 **Verification:** Tab/Shift+Tab, Escape, focus return, screen reader checks.
 
 ### MKT-028 — MEDIUM — Slide controls lack complete carousel keyboard/pause behavior
-**Source:** `components/HeroSection/HeroSlider.tsx` and `useAutoSlider.ts`. Slide dots declare `tablist` / `tab` but the expected directional-key navigation is absent; autoplay pause only reacts to mouse entry, not keyboard focus or reduced-motion settings.  
-**Decision:** Either implement a complete tab pattern and carousel semantics, or use appropriate simple buttons and add keyboard/focus pause and reduced-motion support.  
+**Source:** `components/HeroSection/HeroSlider.tsx` and `useAutoSlider.ts`. Slide dots declare `tablist` / `tab` but the expected directional-key navigation is absent; autoplay pause only reacts to mouse entry, not keyboard focus or reduced-motion settings.
+**Decision:** Either implement a complete tab pattern and carousel semantics, or use appropriate simple buttons and add keyboard/focus pause and reduced-motion support.
 **Verification:** Keyboard screen reader interaction, reduced-motion simulation.
 
 ### MKT-029 — LOW/MEDIUM — Static vs remote course category drift
-**Source:** `components/CourseCards/FilterButtons.tsx` imports static `CATEGORIES` while `CourseCards.tsx` receives `catalog.categories` from dynamic snapshot. Actual component usage not confirmed.  
-**Decision:** Prefer passed catalog categories if this component is live; delete dead component only after verifying its imports.  
+**Source:** `components/CourseCards/FilterButtons.tsx` imports static `CATEGORIES` while `CourseCards.tsx` receives `catalog.categories` from dynamic snapshot. Actual component usage not confirmed.
+**Decision:** Prefer passed catalog categories if this component is live; delete dead component only after verifying its imports.
 **Verification:** Dynamic catalog test with changed categories, import graph check.
 
 ## Decision and review status
@@ -289,10 +289,10 @@ No remediation commit was made. No code was modified.
 ```md
 # SkillUp Marketing — Principal Architect Audit, Tranche 04
 
-**Audit target:** `apps/skillupitacademy-site` and `packages/marketing-site/src`  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `main`; reviewed against previously pinned commit `5efd1129d905d05c912acfef66e52df9ca15120b` (branch may move; individual file contents retrieved from `main`).  
-**Mode:** Read-only; no tests, deployment or code changes performed.  
+**Audit target:** `apps/skillupitacademy-site` and `packages/marketing-site/src`
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `main`; reviewed against previously pinned commit `5efd1129d905d05c912acfef66e52df9ca15120b` (branch may move; individual file contents retrieved from `main`).
+**Mode:** Read-only; no tests, deployment or code changes performed.
 **Audit contract:** `FinalAechitecture.md` — SRP, DIP, SoC, DRY, KISS, YAGNI, brand isolation, runtime contracts, security, resilience, SEO and accessible interactions.
 
 ## Files examined in this tranche
@@ -396,9 +396,9 @@ Rows have `cursor-pointer` and hover treatment but no link or click behavior. **
 ```md
 # SkillUp Marketing — Principal Architect Audit, Tranche 05
 
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Ref examined:** `main` (previously established baseline commit `5efd1129d905d05c912acfef66e52df9ca15120b`; this tranche used `ref=main` and must be reconfirmed against the exact SHA before implementing changes).  
-**Scope:** Shared analytics ingestion, identity, consent-adjacent contracts, quality checks, provider delivery, tests.  
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Ref examined:** `main` (previously established baseline commit `5efd1129d905d05c912acfef66e52df9ca15120b`; this tranche used `ref=main` and must be reconfirmed against the exact SHA before implementing changes).
+**Scope:** Shared analytics ingestion, identity, consent-adjacent contracts, quality checks, provider delivery, tests.
 **Method:** Read-only, file-by-file source analysis. No repository modifications, build, tests or live traffic validation completed.
 
 ## Files read in this tranche
@@ -531,8 +531,8 @@ Yes — that is the right way to understand the relationship, with one nuance.
 
 So the flow is essentially:
 
-**FinalArchitecture.md → defines what the system should be**  
-**ProjectAuditReport.md → checks what the system actually is and identifies gaps**  
+**FinalArchitecture.md → defines what the system should be**
+**ProjectAuditReport.md → checks what the system actually is and identifies gaps**
 **ResolveProjectAuditReport.md → records changes made to close those gaps**
 
 One important distinction: `ProjectAuditReport.md` is not itself the implementation of the architecture. It is the **gap-analysis / audit layer** that tells you what needs to be changed so the repository moves toward the architecture defined in `FinalAechitecture.md`.
@@ -19781,7 +19781,7 @@ with no deterministic priority.
 
 But its comment says:
 
-> Prioritizes exact brand match  
+> Prioritizes exact brand match
 > Falls back to shared
 
 The code as inspected does **not explicitly enforce that priority**.
@@ -20384,7 +20384,7 @@ That last qualification is intentional. I will not inflate the reviewed-file cou
 
 ### Phase decision
 
-**SkillUp Phase 2A — NOT ACCEPTED yet.**  
+**SkillUp Phase 2A — NOT ACCEPTED yet.**
 **SkillUp Phase 2B — NOT ACCEPTED yet.**
 
 But we now have enough evidence to say the **correct architectural direction is V2/ILS consolidation rather than repairing the legacy engine into a parallel second authority**.
@@ -20713,7 +20713,7 @@ with no deterministic priority.
 
 But its comment says:
 
-> Prioritizes exact brand match  
+> Prioritizes exact brand match
 > Falls back to shared
 
 The code as inspected does **not explicitly enforce that priority**.
@@ -21316,7 +21316,7 @@ That last qualification is intentional. I will not inflate the reviewed-file cou
 
 ### Phase decision
 
-**SkillUp Phase 2A — NOT ACCEPTED yet.**  
+**SkillUp Phase 2A — NOT ACCEPTED yet.**
 **SkillUp Phase 2B — NOT ACCEPTED yet.**
 
 But we now have enough evidence to say the **correct architectural direction is V2/ILS consolidation rather than repairing the legacy engine into a parallel second authority**.
@@ -32517,11 +32517,11 @@ Final Phase A verdict: Static source review reconciled; production readiness not
 ```md
 # SkillUp-Web — Phase 01 Inventory and Audit Reconciliation Report
 
-**Date:** 1 November 2026  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
-**Tree SHA:** `f243bd7d8435fb4a35627774d6994b4542878006`  
+**Date:** 1 November 2026
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
+**Tree SHA:** `f243bd7d8435fb4a35627774d6994b4542878006`
 **Mode:** read-only; no tests or repository changes.
 
 ## Executive decision
@@ -32593,10 +32593,10 @@ No file is labeled fully **verified** because source retrieval alone does not pr
 ```md
 # SkillUp-Web — Phase 02 Authentication and Security Audit
 
-**Report date:** 1 November 2026  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Pinned revision:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
+**Report date:** 1 November 2026
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Pinned revision:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
 **Audit mode:** Read-only static source review, cross-referencing preceding audit rounds. No live deployment access, exploits, tests, fixes, commits, or build execution.
 
 ## Executive decision
@@ -32726,10 +32726,10 @@ The request was to complete Phase 02. The current review produces a defensible s
 ```md
 # Phase A — Principal Architect Audit Report
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Reviewed branch reference:** `feature/project-llm-linux-worker`  
-**Mode:** Read-only static source audit and cross-file reconciliation. No code changes, tests, builds, migration execution or live deployment verification.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Reviewed branch reference:** `feature/project-llm-linux-worker`
+**Mode:** Read-only static source audit and cross-file reconciliation. No code changes, tests, builds, migration execution or live deployment verification.
 **Decision:** **STATIC REVIEW RECONCILED; PHASE A CERTIFICATION NOT PASSED.**
 
 ## Executive decision
@@ -32816,10 +32816,10 @@ Foundational smaller schemas, builders, SQL helpers, telemetry repository and au
 ```md
 # Phase A — Principal Architect Closure Audit (Iteration 2)
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Assessment:** Read-only GitHub source inspection, cross-file analysis, historical-document comparison.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Assessment:** Read-only GitHub source inspection, cross-file analysis, historical-document comparison.
 **Overall decision:** **PHASE A NOT CLOSED — FAIL / BLOCKED**. Phase B is on hold as requested.
 
 ## Executive summary
@@ -32920,11 +32920,11 @@ Current branch source provides enough evidence to **refuse completion/sign-off**
 ```md
 # Phase A — Final Pre-Implementation Principal Architect Audit
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Audit mode:** Read-only current-branch source review, line-range reconciliation and historical architecture/report comparison.  
-**Phase B:** On hold.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Audit mode:** Read-only current-branch source review, line-range reconciliation and historical architecture/report comparison.
+**Phase B:** On hold.
 **Decision:** **PRE-IMPLEMENTATION AUDIT REPORT ISSUED — PHASE A ACCEPTANCE FAILED.**
 
 ## 1. Scope, evidence and limits
@@ -33025,9 +33025,9 @@ For ILS, inspected mutation routes call `validateRequest(request,{requireInterna
 
 ## Final decision
 
-**PRE-IMPLEMENTATION AUDIT: REPORT COMPLETE FOR THE IDENTIFIED PHASE A SCOPE.**  
-**PHASE A IMPLEMENTATION / VERIFICATION: NOT STARTED IN THIS AUDIT.**  
-**PHASE A TECHNICAL ACCEPTANCE: FAIL — SIGN-OFF WITHHELD.**  
+**PRE-IMPLEMENTATION AUDIT: REPORT COMPLETE FOR THE IDENTIFIED PHASE A SCOPE.**
+**PHASE A IMPLEMENTATION / VERIFICATION: NOT STARTED IN THIS AUDIT.**
+**PHASE A TECHNICAL ACCEPTANCE: FAIL — SIGN-OFF WITHHELD.**
 **PHASE B: HOLD.**
 
 This is a report of observed code and outstanding evidence, not a claim that the entire monorepo or deployment was conclusively certified.
@@ -33039,10 +33039,10 @@ This is a report of observed code and outstanding evidence, not a claim that the
 ```md
 # SkillUp-Web — Phase 02 Security Audit, Re-audit 2
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
 **Method:** Read-only static code review and cross-layer tracing. No code changes or test execution.
 
 ## Executive disposition
@@ -33151,12 +33151,12 @@ This re-audit expanded the earlier eight-finding assessment into the actual API 
 ```md
 # SUIA Marketing — Phase 01 Coverage & Evidence Audit Report
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Scope:** `packages/marketing-site/src/` only  
-**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Phase:** 01 — Inventory and coverage reconciliation  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Scope:** `packages/marketing-site/src/` only
+**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Phase:** 01 — Inventory and coverage reconciliation
 **Decision:** **INVENTORY PASS; COVERAGE-CERTIFICATION GATE NOT PASSED**
 
 ## Executive assessment
@@ -33248,11 +33248,11 @@ Use batches of up to 50–60 **small/moderate** files, but cap batch size for la
 ```md
 # SUIA Marketing — Phase 02 Source Audit Report (Evidence-Based Interim Submission)
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Subtree SHA:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Scope:** `packages/marketing-site/src/` (290 Git blobs)  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Subtree SHA:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Scope:** `packages/marketing-site/src/` (290 Git blobs)
 **Phase 02 decision:** **NOT COMPLETE — FULL-COVERAGE GATE FAILS**
 
 ## Executive verdict
@@ -33352,9 +33352,9 @@ After these reviews, **at least 126** paths have evidence of pinned-commit sourc
 ```md
 # Phase B — Principal Architect Source Audit Report
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Ref:** `feature/project-llm-linux-worker`  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Ref:** `feature/project-llm-linux-worker`
 **Mode:** Read-only static inspection of GitHub repository sources. No commits, migrations, test runs, build, production verification or deployment access.
 
 ## Executive decision
@@ -33531,10 +33531,10 @@ The reviewed Phase B functional source files supply adequate evidence for a cons
 ```md
 # SkillUp-Web — Phase 03 Principal Architect Audit Report
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)  
-**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)
+**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.
 **Phase objective:** Trace student onboarding, dashboard, batch enrollment, attendance, payments, placement, programs and faculty from application API into relevant data helpers; establish correctness, truthful empty/error states, and authorization dependencies.
 
 ## Executive decision
@@ -33670,11 +33670,11 @@ Related end-user pages and shared dependencies previously inspected and cross-re
 ```md
 # SUIA Marketing — Phase 03 Cross-System Integration and Security Audit
 
-**Assessment date:** 2026-11-01  
-**Role:** Principal Architect — independent read-only source review  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Scope:** `packages/marketing-site/src`, with related deployment boundaries listed as unverified.  
+**Assessment date:** 2026-11-01
+**Role:** Principal Architect — independent read-only source review
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Scope:** `packages/marketing-site/src`, with related deployment boundaries listed as unverified.
 **Status:** Phase 03 source-level assessment delivered; **critical integration verification NOT PASSED**; production sign-off **WITHHELD**.
 
 ## Executive decision
@@ -33795,10 +33795,10 @@ The critical integration paths **cannot be certified production-safe** at this s
 ```md
 # SkillUp-Web — Phase 03 Principal Architect Audit Report
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)  
-**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)
+**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.
 **Phase objective:** Trace student onboarding, dashboard, batch enrollment, attendance, payments, placement, programs and faculty from application API into relevant data helpers; establish correctness, truthful empty/error states, and authorization dependencies.
 
 ## Re-audit update (2026-11-01)
@@ -33957,11 +33957,11 @@ Related end-user pages and shared dependencies previously inspected and cross-re
 ```md
 # SUIA Marketing — Phase 04 Principal Architect Findings Consolidation Report
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Git subtree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Scope:** Source-led consolidation for `packages/marketing-site/src/`, plus audit evidence review.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Git subtree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Scope:** Source-led consolidation for `packages/marketing-site/src/`, plus audit evidence review.
 **Decision:** **Phase 04 evidence-based consolidation delivered; complete historical-ledger certification NOT PASSED; production release NOT APPROVED.**
 
 ## Executive assessment
@@ -34127,9 +34127,9 @@ These historical IDs have concrete references in prior round summaries, but **we
 ```md
 # Phase C — Principal Architect Audit: Current Block-Based Tutorial Experience
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
 **Mode:** Read-only GitHub source inspection. No builds, automated tests, browser tests or edits.
 
 ## Executive decision
@@ -34255,13 +34255,13 @@ OUT: legacy section/subsection interaction implementations (`apps/api-server/src
 ```md
 # SUIA Marketing — Phase 05 Final Architectural Audit Assessment
 
-**Assessment date:** 2026-11-01  
-**Principal Architect disposition:** **NO-GO / NOT APPROVED FOR PRODUCTION RELEASE**  
-**Assessment state:** **Phase 05 report complete; overall audit closure NOT certified**  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Marketing source subtree:** `packages/marketing-site/src/`  
-**Tree SHA:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
+**Assessment date:** 2026-11-01
+**Principal Architect disposition:** **NO-GO / NOT APPROVED FOR PRODUCTION RELEASE**
+**Assessment state:** **Phase 05 report complete; overall audit closure NOT certified**
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Immutable commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Marketing source subtree:** `packages/marketing-site/src/`
+**Tree SHA:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
 **Source tree size:** **290 Git blobs**
 
 ## 1. Executive decision
@@ -34327,9 +34327,9 @@ The attached `Phase05_Release_Gate_Register.csv` is the controlling exit checkli
 
 ## 8. Formal assessment statement
 
-**Decision:** **NO-GO / HOLD RELEASE.**  
-**Reason:** unresolved high-risk source-level integration behavior, incomplete whole-tree review certification, incomplete historical finding closure evidence, and absent runtime validation.  
-**Reassessment trigger:** engineering submits fixes at a new pinned commit, completed evidence registers, and independently repeatable successful verification for all mandatory gates.  
+**Decision:** **NO-GO / HOLD RELEASE.**
+**Reason:** unresolved high-risk source-level integration behavior, incomplete whole-tree review certification, incomplete historical finding closure evidence, and absent runtime validation.
+**Reassessment trigger:** engineering submits fixes at a new pinned commit, completed evidence registers, and independently repeatable successful verification for all mandatory gates.
 **Sign-off:** Principal Architect *assessment issued*; production sign-off **WITHHELD**. This is not a claim of human security attestation or completed runtime certification.
 
 ### Source documents reviewed
@@ -34347,9 +34347,9 @@ The attached `Phase05_Release_Gate_Register.csv` is the controlling exit checkli
 ```md
 # SkillUp-Web — Phase 04 Principal Architect Audit
 
-**Scope:** Tutorial V2, published navigation/content, client rendering, session tracking, ILS and legacy progress endpoints.  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Source pin:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker` at the selected audit baseline)  
+**Scope:** Tutorial V2, published navigation/content, client rendering, session tracking, ILS and legacy progress endpoints.
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Source pin:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker` at the selected audit baseline)
 **Method:** Read-only GitHub source retrieval, end-to-end call-path tracing and selective full-file inspection. No runtime tests, browser E2E, builds, migrations or changes performed.
 
 ## Executive decision
@@ -34369,7 +34369,7 @@ The attached `Phase05_Release_Gate_Register.csv` is the controlling exit checkli
 
 ### PH04-001 — P1 — Legacy progress API trusts caller-provided `x-user-id` without verifying internal identity
 
-**Confirmed source behavior.** `apps/api-server/src/app/api/tutorial/progress/route.ts` lines 28–49 obtains `x-brand` and `x-user-id` directly from headers; lines 57–80 (GET) and 115–153 (POST) use those values to query or update progress. Unlike the ILS routes, this handler does not invoke `validateRequest`, `getAuthContext`, or JWT verification. Authentication may exist at a separate gateway, but the handler does not enforce it, so directly reachable deployments or incorrectly configured routing expose an identity-spoofing risk. 
+**Confirmed source behavior.** `apps/api-server/src/app/api/tutorial/progress/route.ts` lines 28–49 obtains `x-brand` and `x-user-id` directly from headers; lines 57–80 (GET) and 115–153 (POST) use those values to query or update progress. Unlike the ILS routes, this handler does not invoke `validateRequest`, `getAuthContext`, or JWT verification. Authentication may exist at a separate gateway, but the handler does not enforce it, so directly reachable deployments or incorrectly configured routing expose an identity-spoofing risk.
 
 **Remediation:** require a validated trusted service context at the handler; reject direct unverified identity headers; enforce user and brand in repository queries; test GET and POST with forged headers and absent/incorrect internal credentials.
 
@@ -34478,9 +34478,9 @@ The attached `Phase05_Release_Gate_Register.csv` is the controlling exit checkli
 ```md
 # Phase C — Block-Based Tutorial Principal Architect Audit, Iteration 2
 
-**Date:** 2026-11-01  
-**Repo:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
+**Date:** 2026-11-01
+**Repo:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
 **Mode:** Read-only, GitHub source inspection. **No code edits or runtime tests.**
 
 ## Executive verdict
@@ -34559,9 +34559,9 @@ Obtain an authenticated git tree/listing at the target branch or provide a repos
 ```md
 # Phase C — Block-Based Tutorial Principal Architect Audit, Iteration 2
 
-**Date:** 2026-11-01  
-**Repo:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
+**Date:** 2026-11-01
+**Repo:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
 **Mode:** Read-only, GitHub source inspection. **No code edits or runtime tests.**
 
 ## Executive verdict
@@ -34640,10 +34640,10 @@ Obtain an authenticated git tree/listing at the target branch or provide a repos
 ```md
 # Phase C — Consolidated Block-Based Tutorial Source Audit and Disposition
 
-Date: 2026-11-01  
-Repository: `skillupitacademy-alt/SUIA_RTH_SHC`  
-Branch: `feature/project-llm-linux-worker`  
-Method: Read-only inspection of private GitHub connector source, reconciled with Phase C iteration reports. No build, browser, integration test, or deployment access.  
+Date: 2026-11-01
+Repository: `skillupitacademy-alt/SUIA_RTH_SHC`
+Branch: `feature/project-llm-linux-worker`
+Method: Read-only inspection of private GitHub connector source, reconciled with Phase C iteration reports. No build, browser, integration test, or deployment access.
 Exclusions: legacy tutorial implementation, including the hard-coded `src/share-branding/LearningExperience/TutorialPage.tsx` used by `/learning-path` (inspected only sufficiently to classify/exclude).
 
 ## Decision
@@ -34722,8 +34722,8 @@ Phase D begins with session refresh, cache coherency, query configuration, and d
 ```md
 # Phase 05 — Principal Architect Audit: Exams, Reporting, Exports and Reliability
 
-**Repository:** skillupitacademy-alt/SUIA_RTH_SHC  
-**Commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)  
+**Repository:** skillupitacademy-alt/SUIA_RTH_SHC
+**Commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)
 **Audit mode:** Read-only static inspection, plus dependency traces. No tests/builds/deployments or source changes.
 
 ## Executive decision
@@ -34821,10 +34821,10 @@ Exam controls, timer announcements, accessible error feedback, keyboard navigati
 
 ```md
 # SUIA — Consolidated Audit Continuation Report
-**Scope:** `packages/marketing-site/src/` only  
-**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Disposition:** **Source audit remains unverified as complete; production release NO-GO.**  
+**Scope:** `packages/marketing-site/src/` only
+**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Disposition:** **Source audit remains unverified as complete; production release NO-GO.**
 **Working rule:** Read-only. No remediation or implementation changes.
 
 ## Executive finding
@@ -34878,10 +34878,10 @@ Eight full source files were retrieved from the same pinned commit and their fil
 ```md
 # SkillUp IT Academy — Consolidated Principal Architect Source Audit
 
-**Audit snapshot:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (feature branch `feature/project-llm-linux-worker`)  
-**Audit mode:** read-only; no changes, builds, automated tests, deployments, penetration tests, load tests, or cloud-state validation were performed in this review.  
+**Audit snapshot:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (feature branch `feature/project-llm-linux-worker`)
+**Audit mode:** read-only; no changes, builds, automated tests, deployments, penetration tests, load tests, or cloud-state validation were performed in this review.
 **Status:** **Consolidated source-assessment delivered. Exhaustive code-by-code certification NOT substantiated. Production sign-off NOT granted.**
 
 ## Executive statement
@@ -35106,11 +35106,11 @@ This file consolidates all **five supplied phase reports**, the Phase 01 invento
 
 # SkillUp-Web — Phase 01 Inventory and Audit Reconciliation Report
 
-**Date:** 1 November 2026  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
-**Tree SHA:** `f243bd7d8435fb4a35627774d6994b4542878006`  
+**Date:** 1 November 2026
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
+**Tree SHA:** `f243bd7d8435fb4a35627774d6994b4542878006`
 **Mode:** read-only; no tests or repository changes.
 
 ## Executive decision
@@ -35181,10 +35181,10 @@ No file is labeled fully **verified** because source retrieval alone does not pr
 
 # SkillUp-Web — Phase 02 Security Audit, Re-audit 2
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Pinned commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
 **Method:** Read-only static code review and cross-layer tracing. No code changes or test execution.
 
 ## Executive disposition
@@ -35292,10 +35292,10 @@ This re-audit expanded the earlier eight-finding assessment into the actual API 
 
 # SkillUp-Web — Phase 03 Principal Architect Audit Report
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)  
-**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)
+**Mode:** Read-only static review; no builds, tests, credentials, DB queries, deployments or modifications performed.
 **Phase objective:** Trace student onboarding, dashboard, batch enrollment, attendance, payments, placement, programs and faculty from application API into relevant data helpers; establish correctness, truthful empty/error states, and authorization dependencies.
 
 ## Re-audit update (2026-11-01)
@@ -35453,9 +35453,9 @@ Related end-user pages and shared dependencies previously inspected and cross-re
 
 # SkillUp-Web — Phase 04 Principal Architect Audit
 
-**Scope:** Tutorial V2, published navigation/content, client rendering, session tracking, ILS and legacy progress endpoints.  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Source pin:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker` at the selected audit baseline)  
+**Scope:** Tutorial V2, published navigation/content, client rendering, session tracking, ILS and legacy progress endpoints.
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Source pin:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker` at the selected audit baseline)
 **Method:** Read-only GitHub source retrieval, end-to-end call-path tracing and selective full-file inspection. No runtime tests, browser E2E, builds, migrations or changes performed.
 
 ## Executive decision
@@ -35475,7 +35475,7 @@ Related end-user pages and shared dependencies previously inspected and cross-re
 
 ### PH04-001 — P1 — Legacy progress API trusts caller-provided `x-user-id` without verifying internal identity
 
-**Confirmed source behavior.** `apps/api-server/src/app/api/tutorial/progress/route.ts` lines 28–49 obtains `x-brand` and `x-user-id` directly from headers; lines 57–80 (GET) and 115–153 (POST) use those values to query or update progress. Unlike the ILS routes, this handler does not invoke `validateRequest`, `getAuthContext`, or JWT verification. Authentication may exist at a separate gateway, but the handler does not enforce it, so directly reachable deployments or incorrectly configured routing expose an identity-spoofing risk. 
+**Confirmed source behavior.** `apps/api-server/src/app/api/tutorial/progress/route.ts` lines 28–49 obtains `x-brand` and `x-user-id` directly from headers; lines 57–80 (GET) and 115–153 (POST) use those values to query or update progress. Unlike the ILS routes, this handler does not invoke `validateRequest`, `getAuthContext`, or JWT verification. Authentication may exist at a separate gateway, but the handler does not enforce it, so directly reachable deployments or incorrectly configured routing expose an identity-spoofing risk.
 
 **Remediation:** require a validated trusted service context at the handler; reject direct unverified identity headers; enforce user and brand in repository queries; test GET and POST with forged headers and absent/incorrect internal credentials.
 
@@ -35583,8 +35583,8 @@ Related end-user pages and shared dependencies previously inspected and cross-re
 
 # Phase 05 — Principal Architect Audit: Exams, Reporting, Exports and Reliability
 
-**Repository:** skillupitacademy-alt/SUIA_RTH_SHC  
-**Commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)  
+**Repository:** skillupitacademy-alt/SUIA_RTH_SHC
+**Commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c` (`feature/project-llm-linux-worker`)
 **Audit mode:** Read-only static inspection, plus dependency traces. No tests/builds/deployments or source changes.
 
 ## Executive decision
@@ -35688,10 +35688,10 @@ This consolidated document retains the phase reports verbatim as supplied, rathe
 
 ```md
 # Phase D — Consolidated Principal Architect Source Audit
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Scope:** Current block-based tutorial: client/server state, authentication refresh, cache freshness, canonical block telemetry, concurrency, and scaling dependencies. Legacy lesson UI intentionally excluded.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Scope:** Current block-based tutorial: client/server state, authentication refresh, cache freshness, canonical block telemetry, concurrency, and scaling dependencies. Legacy lesson UI intentionally excluded.
 **Method:** Read-only GitHub connector source examination, line-scoped verification, cross-file tracing and architecture-document comparison; no local repository clone, test execution or production telemetry.
 
 ## Executive determination
@@ -35829,9 +35829,9 @@ Implementation is intentionally deferred until all audit phases finish per user 
 ```md
 # Phase E — Consolidated Principal Architect Audit
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
 **Scope:** tests, database migration governance, CI/release configuration and runtime assurance for **the current block-based tutorial** (RTH/SUIA and shared ILS). Legacy tutorial implementation excluded from target behavior, but legacy-dependent assurance artifacts noted as migration/release risks.
 
 ## Executive disposition
@@ -35937,10 +35937,10 @@ Reviewed current-branch source contents and SHA identifiers of test configuratio
 ```md
 # SkillUp-Web — Audit evidence-closure statement
 
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Immutable commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`  
-**Date:** 2026-11-01  
-**Authorization:** read-only  
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Immutable commit:** `e1b26a9e0e4feb0da38adf400e94dc911f495b2c`
+**Date:** 2026-11-01
+**Authorization:** read-only
 
 ## Executive decision
 
@@ -35993,11 +35993,11 @@ Prioritize P1 identity/session boundaries, legacy progress and export ownership,
 ```md
 # Phase F — Final Principal Architect Architecture Reconciliation and Implementation Blueprint
 
-**Audit date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Audited branch:** `feature/project-llm-linux-worker`  
-**Authority:** `FinalAechitecture.md` (target architecture), reconciled against Phase A–E source-audit reports.  
-**Scope:** Current **block-based tutorial (Tutorial V2 / ILS)**, RTH/SkillUp and shared SkillHubCore dependencies, learner state, project/achievement pipeline, trust boundaries, data integrity, and release qualification. **Legacy tutorial is explicitly excluded as an implementation target**; references to legacy paths below only diagnose dependencies or incorrectly targeted release checks.  
+**Audit date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Audited branch:** `feature/project-llm-linux-worker`
+**Authority:** `FinalAechitecture.md` (target architecture), reconciled against Phase A–E source-audit reports.
+**Scope:** Current **block-based tutorial (Tutorial V2 / ILS)**, RTH/SkillUp and shared SkillHubCore dependencies, learner state, project/achievement pipeline, trust boundaries, data integrity, and release qualification. **Legacy tutorial is explicitly excluded as an implementation target**; references to legacy paths below only diagnose dependencies or incorrectly targeted release checks.
 **Mode:** Pre-implementation architecture reconciliation; repository not modified. No tests/build/migrations/load runs or production checks were executed by this audit.
 
 ## 1. Executive architect's decision
@@ -36088,7 +36088,7 @@ The following register is transcribed from the five previous reports for traceab
 - **B-02 — High — Unpublished assignments are returned to learner calls** — `packages/db-tutorial/src/repositories/assignment.repository.ts:44–51`; `packages/db-tutorial/src/schema/tutorial-assignments.ts:19`; `apps/realtutorialhub-web/src/server/assignment.service.ts:58–78`.. `getAssignments` does not filter `isPublished`. **Fix:** learner-facing published-only query, separate admin draft queries. **Test:** published + draft rows in a real database query.
 - **B-03 — High — Assignment progress write lacks conditional lifecycle/version enforcement** — `packages/db-tutorial/src/repositories/assignment.repository.ts:79–131`.. `upsertProgress` reads then writes by row ID without expected status/version; the insert path can race against another insert despite a unique index. **Fix:** conditional updates with expected state/version and conflict handling; tests with simultaneous start/complete.
 - **B-04 — High — Project submission accepts unpublished projects** — `apps/realtutorialhub-web/src/server/project.service.ts:134–152`; `packages/db-tutorial/src/schema/tutorial-projects.ts:24`.. The existence, prerequisites and deliverable are checked, not `isPublished`. **Fix:** reject draft projects at the service boundary. **Test:** authenticated learner submitting an unpublished project ID.
-- **B-05 — High — Project idempotency cannot survive split Redis/DB transaction reliably** — `apps/realtutorialhub-web/src/server/project.service.ts:153–205`; `packages/db-tutorial/src/schema/tutorial-project-submissions.ts:7–33`.. Redis NX marker is created inside a DB transaction but is not part of the SQL transaction; the result of `set` is not used as authoritative conflict control. The table has no logical unique constraint on a permitted active attempt. Publishing the QStash review event occurs after commit; failure can return an error after durable submission, without 
+- **B-05 — High — Project idempotency cannot survive split Redis/DB transaction reliably** — `apps/realtutorialhub-web/src/server/project.service.ts:153–205`; `packages/db-tutorial/src/schema/tutorial-project-submissions.ts:7–33`.. Redis NX marker is created inside a DB transaction but is not part of the SQL transaction; the result of `set` is not used as authoritative conflict control. The table has no logical unique constraint on a permitted active attempt. Publishing the QStash review event occurs after commit; failure can return an error after durable submission, without
 - **B-06 — High — Project status updates race** — `packages/db-tutorial/src/repositories/project.repository.ts:114–163`.. Allowed transitions are checked against a fetched status, but UPDATE predicates contain ID/soft-delete only, not old status/version. **Fix:** compare-and-swap / `WHERE version = expected AND status = expected`, conflict response. **Test:** competing approval/revision transitions.
 - **B-07 — High — Review worker can discard retries as duplicates after failed processing** — `apps/realtutorialhub-web/src/app/api/workers/review-project/route.ts:51–64,69–116`.. `processing` Redis marker is set before DB work; on DB failure the marker is not cleared, while subsequent retries return 200. **Fix:** recovery-aware lease, durable completion marker after commit, and operational replay path. **Test:** failure between claim and status updates, retry to final state.
 - **B-08 — Critical — Badge worker likewise suppresses failed retries** — `apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts:52–89`.. The marker is claimed before lookup/transaction, without failure cleanup. **Fix/test:** same as B-07, with badge uniqueness verification.
@@ -36284,10 +36284,10 @@ These are **not reasons to re-audit unchanged source indefinitely**. They are de
 ```md
 # SUIA — Read-only cumulative audit evidence assessment
 
-**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Pinned source tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Primary scope:** `packages/marketing-site/src` (290 blobs)  
-**Disposition:** **Audit evidence incomplete — no full-completion certificate; production release NO-GO.**  
+**Pinned commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Pinned source tree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Primary scope:** `packages/marketing-site/src` (290 blobs)
+**Disposition:** **Audit evidence incomplete — no full-completion certificate; production release NO-GO.**
 **Repository changes:** None.
 
 ## Important statement on scope
@@ -36383,10 +36383,10 @@ Maintain **NO-GO** for production. Keep this report as an evidence-backed record
 ```md
 # RTH Web — Remaining Block-Based Tutorial Audit, Consolidated Addendum
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `feature/project-llm-linux-worker`  
-**Method:** Read-only GitHub file-content review; no repository writes, application build, database access, browser session, or executed tests.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `feature/project-llm-linux-worker`
+**Method:** Read-only GitHub file-content review; no repository writes, application build, database access, browser session, or executed tests.
 **Scope:** Current `/tutorial-v2` learner experience, canonical block rendering in `@quiz/ui`, ILS/telemetry integration, relevant RTH BFF routes, content delivery, and outstanding dashboard/UI gaps. **Legacy tutorial content and standalone demonstration page are excluded as remediation targets.** A legacy *fallback within the current route* is documented because it affects the active implementation.
 
 ## Executive architectural finding

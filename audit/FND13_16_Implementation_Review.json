@@ -1,0 +1,24 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "truth-accuracy",
+      "finding_id": "FND13-PLACEMENT-SCORING",
+      "description": "Fabricated placement match percentages without profile: apps/skillup-web/src/lib/skillup-data.ts:379 returns `match: Math.max(60, 90 - index * 3)` when profileRows[0] === undefined, creating fake calibration scores (90%, 87%, 84%...) that suggest algorithmic matching when no profile vector exists. Users see ranked job matches implying semantic similarity analysis that never occurred. This is fabricated data presented as real per review criteria.",
+      "file": "apps/skillup-web/src/lib/skillup-data.ts",
+      "line": 379,
+      "recommendation": "Implement immediate truth correction: Change line 379 to `match: 1` (honest floor when no calibration exists), OR return empty jobs array until profile created, OR gate placement dashboard as 'unavailable pending profile'. Decision brief exists at audit/FND13_Placement_Zero_Vector_Decision_Brief.md with three options. Single-line fix required regardless of which option chosen. Estimated time: 30 minutes."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "truth-accuracy",
+      "finding_id": "FND13-FALLBACK-PROFILE",
+      "description": "FALLBACK_PLACEMENT constant (lines 37-54) contains demo profile data (roleGoal: 'Frontend Developer', skills: ['React', 'Next.js', ...], profileCompletion: 82) that is returned when no actual profile exists (line 373). UI presentation must be verified: if shown without 'demo' or 'example' label, this presents prototype data as user's actual profile. Manifest documents this as 'fallback demo' but code returns it as .profile without distinguishing marker.",
+      "file": "apps/skillup-web/src/lib/skillup-data.ts",
+      "line": 373,
+      "recommendation": "Verify UI presentation of placement profile data. If FALLBACK_PLACEMENT.profile is displayed without clear 'Demo profile' or 'Example data' label, either: (1) add UI label indicating demo data, OR (2) return empty/null profile fields when no actual profile exists, OR (3) gate entire placement section until profile created. Check apps/skillup-web/src/app/placement/page.tsx or equivalent UI component."
+    }
+  ],
+  "reviewDoc": "e:/onlinewebsites/quiz-platform/audit/FND13_16_Review.md"
+}

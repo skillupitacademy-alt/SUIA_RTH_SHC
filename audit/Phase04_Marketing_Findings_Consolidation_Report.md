@@ -1,10 +1,10 @@
 # SUIA Marketing — Phase 04 Principal Architect Findings Consolidation Report
 
-**Date:** 2026-11-01  
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Pinned source commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`  
-**Git subtree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`  
-**Scope:** Source-led consolidation for `packages/marketing-site/src/`, plus audit evidence review.  
+**Date:** 2026-11-01
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Pinned source commit:** `5efd1129d905d05c912acfef66e52df9ca15120b`
+**Git subtree:** `a1753abdf166364bdc76c55df6ed33e1a014a8c4`
+**Scope:** Source-led consolidation for `packages/marketing-site/src/`, plus audit evidence review.
 **Decision:** **Phase 04 evidence-based consolidation delivered; complete historical-ledger certification NOT PASSED; production release NOT APPROVED.**
 
 ## Executive assessment

@@ -20,8 +20,8 @@ Yes — that is the right way to understand the relationship, with one nuance.
 
 So the flow is essentially:
 
-**FinalArchitecture.md → defines what the system should be**  
-**ProjectAuditReport.md → checks what the system actually is and identifies gaps**  
+**FinalArchitecture.md → defines what the system should be**
+**ProjectAuditReport.md → checks what the system actually is and identifies gaps**
 **ResolveProjectAuditReport.md → records changes made to close those gaps**
 
 One important distinction: `ProjectAuditReport.md` is not itself the implementation of the architecture. It is the **gap-analysis / audit layer** that tells you what needs to be changed so the repository moves toward the architecture defined in `FinalAechitecture.md`.
