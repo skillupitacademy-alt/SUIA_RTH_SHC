@@ -38,6 +38,7 @@ async function admit(request: NextRequest, context: { params: Promise<{ id: stri
     .where(and(
       sql`lower(trim(${users.email})) = ${normalizedEmail}`,
       eq(users.platform, targetPlatform),
+      eq(users.isActive, true),
       isNull(users.deletedAt),
     ))
     .limit(2);
