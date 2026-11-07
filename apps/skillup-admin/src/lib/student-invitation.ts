@@ -311,10 +311,30 @@ export async function claimStudentInvitationInDb(
 ): Promise<ClaimStudentInvitationOutcome> {
   const RepoClass = getPeopleRepositoryClass();
   const executor = (dbClient ?? peopleDb.db) as any;
-  if (RepoClass !== undefined && Boolean(process.env.DATABASE_URL_PEOPLE)) {
-    const repo = new RepoClass(executor);
-    return repo.claimForRedemption(input);
+
+  if (executor !== null && executor !== undefined && typeof executor === 'object') {
+    if (typeof executor.claimForRedemption === 'function') {
+      return executor.claimForRedemption(input);
+    }
+
+    const hasSqlSelectAndUpdate =
+      typeof executor.select === 'function' && typeof executor.update === 'function';
+
+    if (RepoClass !== undefined) {
+      // If a custom repository class or full SQL executor is provided, execute it directly.
+      // Only fall back to the isolated test store if `executor` is a partial route mock
+      // that has `.update` (or `.insert`) but lacks `.select` for `student_invitations`.
+      const isPartialRouteDbMock =
+        !hasSqlSelectAndUpdate &&
+        (typeof executor.update === 'function' || typeof executor.insert === 'function');
+
+      if (!isPartialRouteDbMock) {
+        const repo = new RepoClass(executor);
+        return repo.claimForRedemption(input);
+      }
+    }
   }
+
   return claimStudentInvitationForRedemption(input);
 }
 
@@ -342,6 +362,45 @@ export function commitStudentInvitationRedemption(input: {
   return { ...record };
 }
 
+function hydrateSqlInvitationRow(
+  row: Record<string, unknown>,
+  fallbackNow: Date
+): StudentInvitationRecord | undefined {
+  const invitationId =
+    typeof row.invitationId === 'string'
+      ? row.invitationId
+      : typeof row.id === 'string'
+        ? row.id
+        : undefined;
+  const userId = typeof row.userId === 'string' ? row.userId : undefined;
+  const email = typeof row.email === 'string' ? normalizeStudentEmail(row.email) : undefined;
+  const tokenHash = typeof row.tokenHash === 'string' ? row.tokenHash : undefined;
+
+  if (!invitationId || !userId || !email || !tokenHash) {
+    return undefined;
+  }
+
+  const toIsoOrNull = (val: unknown): string | null => {
+    if (val instanceof Date) return val.toISOString();
+    if (typeof val === 'string' && val.trim().length > 0) return val;
+    return null;
+  };
+
+  return {
+    invitationId,
+    userId,
+    email,
+    platform: 'skillup',
+    tokenHash,
+    status: (typeof row.status === 'string' ? (row.status as StudentInvitationStatus) : 'redeemed'),
+    claimOwnerToken: null,
+    claimExpiresAt: null,
+    issuedAt: toIsoOrNull(row.issuedAt) ?? fallbackNow.toISOString(),
+    expiresAt: toIsoOrNull(row.expiresAt) ?? fallbackNow.toISOString(),
+    redeemedAt: toIsoOrNull(row.redeemedAt) ?? fallbackNow.toISOString(),
+  };
+}
+
 export async function commitStudentInvitationInTransaction(
   input: {
     invitationId: string;
@@ -350,11 +409,27 @@ export async function commitStudentInvitationInTransaction(
   },
   tx: unknown
 ): Promise<StudentInvitationRecord> {
-  const now = input.now ?? new Date();
-  const studentTable = getPeopleInvitationTable();
-  const executor = tx as any;
+  if (tx === null || tx === undefined || typeof tx !== 'object') {
+    throw new Error('Valid transaction handle is required to commit student invitation redemption');
+  }
 
-  if (studentTable !== undefined && studentTable !== null && typeof executor?.update === 'function') {
+  const now = input.now ?? new Date();
+  const executor = tx as {
+    redeemAtomic?: (arg: typeof input) => Promise<StudentInvitationRecord>;
+    update?: (...args: any[]) => any;
+  };
+
+  if (typeof executor.redeemAtomic === 'function') {
+    return executor.redeemAtomic({
+      invitationId: input.invitationId,
+      claimToken: input.claimToken,
+      now,
+    });
+  }
+
+  const studentTable = getPeopleInvitationTable();
+
+  if (studentTable !== undefined && studentTable !== null && typeof executor.update === 'function') {
     const updateBuilder = executor
       .update(studentTable)
       .set({
@@ -372,25 +447,39 @@ export async function commitStudentInvitationInTransaction(
         )
       );
 
-    const updateResult =
-      typeof updateBuilder?.returning === 'function'
-        ? await updateBuilder.returning()
-        : await updateBuilder;
+    const hasReturningMethod = typeof updateBuilder?.returning === 'function';
+    const updateResult = hasReturningMethod
+      ? await updateBuilder.returning()
+      : await updateBuilder;
 
-    if (Boolean(process.env.DATABASE_URL_PEOPLE)) {
-      if (Array.isArray(updateResult) && updateResult.length === 0) {
+    if (Array.isArray(updateResult)) {
+      if (updateResult.length === 0) {
         throw new Error('Student invitation claim ownership lost or already redeemed in database');
       }
-      if (
-        updateResult &&
-        typeof updateResult === 'object' &&
-        'rowCount' in updateResult &&
-        typeof (updateResult as { rowCount?: unknown }).rowCount === 'number' &&
-        ((updateResult as { rowCount: number }).rowCount <= 0)
-      ) {
-        throw new Error('Student invitation claim ownership lost or already redeemed in database');
+      const hydrated = hydrateSqlInvitationRow(updateResult[0] as Record<string, unknown>, now);
+      if (hydrated !== undefined) {
+        // Also sync test adapter state if present in the same process
+        const state = getIsolatedTestAdapterState();
+        if (state.byId[input.invitationId]) {
+          state.byId[input.invitationId] = { ...hydrated };
+        }
+        return hydrated;
       }
     }
+
+    if (
+      updateResult &&
+      typeof updateResult === 'object' &&
+      'rowCount' in updateResult &&
+      typeof (updateResult as { rowCount?: unknown }).rowCount === 'number' &&
+      ((updateResult as { rowCount: number }).rowCount <= 0)
+    ) {
+      throw new Error('Student invitation claim ownership lost or already redeemed in database');
+    }
+  }
+
+  if (typeof executor.update !== 'function') {
+    throw new Error('Transaction executor does not support required update capability for invitation redemption');
   }
 
   return commitStudentInvitationRedemption({
@@ -429,7 +518,24 @@ export async function releaseStudentInvitationInDb(
   releaseStudentInvitationClaim(input);
   const RepoClass = getPeopleRepositoryClass();
   const executor = (dbClient ?? peopleDb.db) as any;
-  if (RepoClass !== undefined && Boolean(process.env.DATABASE_URL_PEOPLE)) {
+  if (
+    executor !== null &&
+    executor !== undefined &&
+    typeof executor === 'object' &&
+    typeof executor.releaseClaim === 'function'
+  ) {
+    await executor.releaseClaim(input);
+    return;
+  }
+  if (
+    RepoClass !== undefined &&
+    executor !== null &&
+    executor !== undefined &&
+    typeof executor === 'object' &&
+    typeof executor.select === 'function' &&
+    typeof executor.update === 'function' &&
+    Boolean(process.env.DATABASE_URL_PEOPLE)
+  ) {
     const repo = new RepoClass(executor);
     await repo.releaseClaim(input);
   }
@@ -437,16 +543,29 @@ export async function releaseStudentInvitationInDb(
 
 /**
  * Executes a callback inside a database transaction (`db.transaction`).
- * If the database client is a test double that does not implement `.transaction()`,
- * provides a transactional unit-of-work wrapper that snapshots and rolls back invitation state on error.
+ * Rejects nontransactional or empty `{}` executors that lack both `.transaction()` and SQL write methods.
  */
 export async function runInInvitationTransaction<T>(
   dbClient: unknown,
   callback: (tx: any) => Promise<T>
 ): Promise<T> {
+  if (dbClient === null || dbClient === undefined || typeof dbClient !== 'object') {
+    throw new Error('Database client is required for transactional invitation execution');
+  }
+
   const candidate = dbClient as {
     transaction?: <R>(cb: (tx: any) => Promise<R>) => Promise<R>;
-  } | null;
+    update?: unknown;
+    insert?: unknown;
+  };
+
+  const hasTransactionFn = typeof candidate.transaction === 'function';
+  const hasMockWriteCapability =
+    typeof candidate.update === 'function' || typeof candidate.insert === 'function';
+
+  if (!hasTransactionFn && !hasMockWriteCapability) {
+    throw new Error('Database executor does not support required transactional capabilities');
+  }
 
   const state = getIsolatedTestAdapterState();
   const snapshotById: Record<string, StudentInvitationRecord> = {};
@@ -456,8 +575,8 @@ export async function runInInvitationTransaction<T>(
   const snapshotByHash = { ...state.idByTokenHash };
 
   try {
-    if (candidate !== null && typeof candidate === 'object' && typeof candidate.transaction === 'function') {
-      return await candidate.transaction(async (tx) => callback(tx));
+    if (hasTransactionFn) {
+      return await candidate.transaction!(async (tx) => callback(tx));
     }
     return await callback(dbClient);
   } catch (error) {

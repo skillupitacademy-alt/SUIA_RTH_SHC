@@ -18,11 +18,11 @@ import {
   completeWorkerLeaseIfOwner,
   deriveDeterministicEventUuid,
   dispatchWorkerOutboxIntent,
-  getWorkerOutboxIntent,
+  findAuthoritativeWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  resolveWorkerOutboxRepository,
   runInWorkerOutboxTransaction,
   upsertTransactionalOutboxIntent,
-  upsertWorkerOutboxIntent,
   type WorkerRedisLike,
 } from '../worker-lease';
 
@@ -82,9 +82,12 @@ const handler = createQStashHandler(
         'issue-certificate.lookup'
       );
 
+      const outboxRepository = await resolveWorkerOutboxRepository(db);
+
       if (existingCertificate.length > 0) {
         const existingRow = existingCertificate[0]!;
-        const existingOutbox = getWorkerOutboxIntent(
+        const existingOutbox = await findAuthoritativeWorkerOutboxIntent(
+          outboxRepository,
           'realtutorialhub',
           PlatformEventTypes.CERTIFICATE_ISSUED,
           existingRow.id
@@ -147,55 +150,65 @@ const handler = createQStashHandler(
                 },
               });
 
-        const recoveryIntent = upsertWorkerOutboxIntent({
-          tenantId: 'realtutorialhub',
-          eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
-          aggregateId: existingRow.id,
-          eventId: deterministicEventId,
-          ownerToken: claim.ownerToken,
-          payload: {
-            certificateId: existingRow.id,
-            userId,
-            issuedAt: issuedAtIso,
-          },
-          envelope: canonicalRecoveryEnvelope as Record<string, unknown>,
-        });
-
-        await dispatchWorkerOutboxIntent(recoveryIntent, claim.ownerToken, async (intent) => {
-          const storedEnvelope = (intent.envelope ?? canonicalRecoveryEnvelope) as Record<string, unknown>;
-          await publishEvent(
-            PlatformEventTypes.CERTIFICATE_ISSUED,
+        const recoveryIntent =
+          existingOutbox ??
+          (await upsertTransactionalOutboxIntent(
             {
-              certificateId: existingRow.id,
-              userId,
-              issuedAt: issuedAtIso,
-            },
-            {
-              id: intent.eventId,
               tenantId: 'realtutorialhub',
-              correlationId:
-                typeof storedEnvelope.correlationId === 'string'
-                  ? storedEnvelope.correlationId
-                  : parentId,
-              source:
-                typeof storedEnvelope.source === 'string'
-                  ? storedEnvelope.source
-                  : 'realtutorialhub',
-              occurredAt:
-                typeof storedEnvelope.occurredAt === 'string'
-                  ? storedEnvelope.occurredAt
-                  : issuedAtIso,
-              version:
-                typeof storedEnvelope.version === 'number'
-                  ? storedEnvelope.version
-                  : 1,
-              envelope: storedEnvelope as never,
-              destinationUrl:
-                process.env.CERTIFICATE_ISSUED_EVENT_URL ??
-                'https://placeholder.invalid/consumers/certificate-issued',
-            }
-          );
-        });
+              eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
+              aggregateId: existingRow.id,
+              eventId: deterministicEventId,
+              ownerToken: claim.ownerToken,
+              payload: {
+                certificateId: existingRow.id,
+                userId,
+                issuedAt: issuedAtIso,
+              },
+              envelope: canonicalRecoveryEnvelope as Record<string, unknown>,
+            },
+            outboxRepository
+          ));
+
+        await dispatchWorkerOutboxIntent(
+          recoveryIntent,
+          claim.ownerToken,
+          async (intent) => {
+            const storedEnvelope = (intent.envelope ?? canonicalRecoveryEnvelope) as Record<string, unknown>;
+            await publishEvent(
+              PlatformEventTypes.CERTIFICATE_ISSUED,
+              {
+                certificateId: existingRow.id,
+                userId,
+                issuedAt: issuedAtIso,
+              },
+              {
+                id: intent.eventId,
+                tenantId: 'realtutorialhub',
+                correlationId:
+                  typeof storedEnvelope.correlationId === 'string'
+                    ? storedEnvelope.correlationId
+                    : parentId,
+                source:
+                  typeof storedEnvelope.source === 'string'
+                    ? storedEnvelope.source
+                    : 'realtutorialhub',
+                occurredAt:
+                  typeof storedEnvelope.occurredAt === 'string'
+                    ? storedEnvelope.occurredAt
+                    : issuedAtIso,
+                version:
+                  typeof storedEnvelope.version === 'number'
+                    ? storedEnvelope.version
+                    : 1,
+                envelope: storedEnvelope as never,
+                destinationUrl:
+                  process.env.CERTIFICATE_ISSUED_EVENT_URL ??
+                  'https://placeholder.invalid/consumers/certificate-issued',
+              }
+            );
+          },
+          outboxRepository
+        );
 
         const reconciled = await completeWorkerLeaseIfOwner(
           redis,
@@ -304,41 +317,46 @@ const handler = createQStashHandler(
         return { created: row, outboxIntent: intent };
       });
 
-      await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
-        const storedEnvelope = (intent.envelope ?? {}) as Record<string, unknown>;
-        await publishEvent(
-          PlatformEventTypes.CERTIFICATE_ISSUED,
-          {
-            certificateId: created.id,
-            userId,
-            issuedAt: created.issuedAt.toISOString(),
-          },
-          {
-            id: intent.eventId,
-            tenantId: 'realtutorialhub',
-            correlationId:
-              typeof storedEnvelope.correlationId === 'string'
-                ? storedEnvelope.correlationId
-                : parentId,
-            source:
-              typeof storedEnvelope.source === 'string'
-                ? storedEnvelope.source
-                : 'realtutorialhub',
-            occurredAt:
-              typeof storedEnvelope.occurredAt === 'string'
-                ? storedEnvelope.occurredAt
-                : created.issuedAt.toISOString(),
-            version:
-              typeof storedEnvelope.version === 'number'
-                ? storedEnvelope.version
-                : 1,
-            envelope: intent.envelope as never,
-            destinationUrl:
-              process.env.CERTIFICATE_ISSUED_EVENT_URL ??
-              'https://placeholder.invalid/consumers/certificate-issued',
-          }
-        );
-      });
+      await dispatchWorkerOutboxIntent(
+        outboxIntent,
+        claim.ownerToken,
+        async (intent) => {
+          const storedEnvelope = (intent.envelope ?? {}) as Record<string, unknown>;
+          await publishEvent(
+            PlatformEventTypes.CERTIFICATE_ISSUED,
+            {
+              certificateId: created.id,
+              userId,
+              issuedAt: created.issuedAt.toISOString(),
+            },
+            {
+              id: intent.eventId,
+              tenantId: 'realtutorialhub',
+              correlationId:
+                typeof storedEnvelope.correlationId === 'string'
+                  ? storedEnvelope.correlationId
+                  : parentId,
+              source:
+                typeof storedEnvelope.source === 'string'
+                  ? storedEnvelope.source
+                  : 'realtutorialhub',
+              occurredAt:
+                typeof storedEnvelope.occurredAt === 'string'
+                  ? storedEnvelope.occurredAt
+                  : created.issuedAt.toISOString(),
+              version:
+                typeof storedEnvelope.version === 'number'
+                  ? storedEnvelope.version
+                  : 1,
+              envelope: intent.envelope as never,
+              destinationUrl:
+                process.env.CERTIFICATE_ISSUED_EVENT_URL ??
+                'https://placeholder.invalid/consumers/certificate-issued',
+            }
+          );
+        },
+        outboxRepository
+      );
 
       const completionTransition = await completeWorkerLeaseIfOwner(
         redis,

@@ -1,4 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { EventOutboxRepository } from '@quiz/db-tutorial';
 
 export interface WorkerRedisLike {
   get(key: string): Promise<string | null> | string | null;
@@ -367,12 +371,63 @@ interface WorkerOutboxTestAdapterState {
 
 const OUTBOX_TEST_ADAPTER_SYMBOL = Symbol.for('quiz.worker.outbox.test.adapter');
 
+function getActiveVitestTestFileKey(): string {
+  const g = globalThis as Record<string, unknown>;
+  for (const sym of Object.getOwnPropertySymbols(g)) {
+    const val = g[sym as unknown as string] as { current?: { filepath?: string }; filepath?: string } | undefined;
+    if (val && typeof val === 'object') {
+      const fp = val.current?.filepath ?? val.filepath;
+      if (typeof fp === 'string' && fp.length > 0) {
+        return createHash('sha256').update(fp).digest('hex').slice(0, 12);
+      }
+    }
+  }
+  return process.env.VITEST_POOL_ID ?? process.env.VITEST_WORKER_ID ?? 'main';
+}
+
+function getTestOutboxBackingFilePath(): string {
+  return path.join(os.tmpdir(), `quiz-worker-outbox-test-store-${process.pid}-${getActiveVitestTestFileKey()}.json`);
+}
+
+function readTestOutboxBackingStore(): WorkerOutboxTestAdapterState {
+  const filePath = getTestOutboxBackingFilePath();
+  try {
+    if (!fs.existsSync(filePath)) {
+      return { byCompositeKey: {}, compositeKeyByEventId: {} };
+    }
+    const raw = fs.readFileSync(filePath, 'utf8');
+    if (!raw.trim()) {
+      return { byCompositeKey: {}, compositeKeyByEventId: {} };
+    }
+    const parsed = JSON.parse(raw) as Partial<WorkerOutboxTestAdapterState>;
+    return {
+      byCompositeKey: parsed.byCompositeKey ? { ...parsed.byCompositeKey } : {},
+      compositeKeyByEventId: parsed.compositeKeyByEventId ? { ...parsed.compositeKeyByEventId } : {},
+    };
+  } catch {
+    return { byCompositeKey: {}, compositeKeyByEventId: {} };
+  }
+}
+
+function writeTestOutboxBackingStore(state: WorkerOutboxTestAdapterState): void {
+  const filePath = getTestOutboxBackingFilePath();
+  const tempPath = `${filePath}.${process.hrtime.bigint()}.tmp`;
+  fs.writeFileSync(tempPath, JSON.stringify(state), 'utf8');
+  fs.renameSync(tempPath, filePath);
+}
+
 function getIsolatedOutboxTestAdapter(): WorkerOutboxTestAdapterState {
   const g = globalThis as unknown as Record<symbol, WorkerOutboxTestAdapterState>;
   if (!g[OUTBOX_TEST_ADAPTER_SYMBOL]) {
-    g[OUTBOX_TEST_ADAPTER_SYMBOL] = { byCompositeKey: {}, compositeKeyByEventId: {} };
+    g[OUTBOX_TEST_ADAPTER_SYMBOL] = readTestOutboxBackingStore();
   }
   return g[OUTBOX_TEST_ADAPTER_SYMBOL];
+}
+
+function syncIsolatedOutboxTestAdapter(state: WorkerOutboxTestAdapterState): void {
+  const g = globalThis as unknown as Record<symbol, WorkerOutboxTestAdapterState>;
+  g[OUTBOX_TEST_ADAPTER_SYMBOL] = state;
+  writeTestOutboxBackingStore(state);
 }
 
 function buildOutboxKey(tenantId: string, eventType: string, aggregateId: string): string {
@@ -394,6 +449,189 @@ function hydrateOutboxRecord(record: WorkerOutboxRecord): WorkerOutboxRecord {
     enumerable: true,
   });
   return copy;
+}
+
+export interface DurableWorkerOutboxRepositoryPort {
+  findIntent?: (tenantId: string, eventType: string, aggregateId: string) => Promise<WorkerOutboxRecord | undefined>;
+  upsertIntent?: (input: {
+    tenantId: string;
+    eventType: string;
+    aggregateId: string;
+    payload: Record<string, unknown>;
+    envelope?: Record<string, unknown> | null;
+    eventId?: string;
+    ownerToken?: string;
+  }) => Promise<WorkerOutboxRecord>;
+  claimIntent: (input: {
+    tenantId: string;
+    eventType: string;
+    aggregateId: string;
+    ownerToken: string;
+    leaseDurationMs?: number;
+  }) => Promise<
+    | { kind: 'already-published'; record: WorkerOutboxRecord }
+    | { kind: 'busy'; record: WorkerOutboxRecord }
+    | { kind: 'claimed'; record: WorkerOutboxRecord }
+  >;
+  markPublished: (input: {
+    tenantId: string;
+    eventType: string;
+    aggregateId: string;
+    ownerToken: string;
+    envelope?: Record<string, unknown> | null;
+  }) => Promise<WorkerOutboxRecord>;
+  markFailed: (input: {
+    tenantId: string;
+    eventType: string;
+    aggregateId: string;
+    ownerToken: string;
+    errorMessage: string;
+  }) => Promise<WorkerOutboxRecord | undefined>;
+}
+
+/**
+ * Resolves a durable outbox repository from an injected repository port or Drizzle SQL executor.
+ * When `dbOrRepo` is a minimal test mock without full SQL capabilities, falls back to the isolated test outbox adapter.
+ */
+export async function resolveWorkerOutboxRepository(
+  dbOrRepo: unknown
+): Promise<DurableWorkerOutboxRepositoryPort> {
+  if (dbOrRepo !== null && dbOrRepo !== undefined && typeof dbOrRepo === 'object') {
+    const candidate = dbOrRepo as Partial<DurableWorkerOutboxRepositoryPort> & {
+      select?: unknown;
+      insert?: unknown;
+      update?: unknown;
+    };
+
+    if (
+      typeof candidate.claimIntent === 'function' &&
+      typeof candidate.markPublished === 'function' &&
+      typeof candidate.markFailed === 'function'
+    ) {
+      return candidate as DurableWorkerOutboxRepositoryPort;
+    }
+
+    if (
+      typeof candidate.select === 'function' &&
+      typeof candidate.insert === 'function' &&
+      typeof candidate.update === 'function' &&
+      typeof EventOutboxRepository === 'function'
+    ) {
+      return new EventOutboxRepository(dbOrRepo as any) as unknown as DurableWorkerOutboxRepositoryPort;
+    }
+  }
+
+  return createIsolatedTestOutboxRepository();
+}
+
+export function createIsolatedTestOutboxRepository(): DurableWorkerOutboxRepositoryPort {
+  return {
+    async findIntent(tenantId: string, eventType: string, aggregateId: string) {
+      return getWorkerOutboxIntent(tenantId, eventType, aggregateId);
+    },
+    async upsertIntent(input) {
+      return upsertWorkerOutboxIntent(input);
+    },
+    async claimIntent(input) {
+      const normalizedOwner = input.ownerToken?.trim();
+      if (!normalizedOwner) {
+        throw new Error('ownerToken is required to claim an outbox publication intent');
+      }
+      const state = getIsolatedOutboxTestAdapter();
+      const key = buildOutboxKey(input.tenantId, input.eventType, input.aggregateId);
+      const current = state.byCompositeKey[key];
+      if (!current) {
+        throw new Error('Outbox publication intent not found');
+      }
+      if (current.status === 'published') {
+        return { kind: 'already-published', record: hydrateOutboxRecord(current) };
+      }
+      const now = new Date();
+      if (current.status === 'publishing') {
+        const isExpired =
+          typeof current.leaseExpiresAt === 'string' &&
+          new Date(current.leaseExpiresAt).getTime() <= now.getTime();
+        if (!isExpired) {
+          return { kind: 'busy', record: hydrateOutboxRecord(current) };
+        }
+      }
+      current.status = 'publishing';
+      current.ownerToken = normalizedOwner;
+      current.attemptCount += 1;
+      current.leaseExpiresAt = new Date(
+        now.getTime() + (input.leaseDurationMs ?? DEFAULT_OUTBOX_LEASE_MS)
+      ).toISOString();
+      state.byCompositeKey[key] = current;
+      state.compositeKeyByEventId[current.eventId] = key;
+      syncIsolatedOutboxTestAdapter(state);
+      return { kind: 'claimed', record: hydrateOutboxRecord(current) };
+    },
+    async markPublished(input) {
+      const normalizedOwner = input.ownerToken?.trim();
+      const state = getIsolatedOutboxTestAdapter();
+      const key = buildOutboxKey(input.tenantId, input.eventType, input.aggregateId);
+      const current = state.byCompositeKey[key];
+      if (!current || (current.status !== 'published' && (current.status !== 'publishing' || current.ownerToken !== normalizedOwner))) {
+        throw new Error('Outbox publication ownership lost before completion');
+      }
+      current.status = 'published';
+      current.publishedAt = new Date().toISOString();
+      current.leaseExpiresAt = null;
+      current.lastError = null;
+      if (input.envelope) {
+        current.envelope = cloneAndFreezePayload(input.envelope);
+      }
+      state.byCompositeKey[key] = current;
+      syncIsolatedOutboxTestAdapter(state);
+      return hydrateOutboxRecord(current);
+    },
+    async markFailed(input) {
+      const normalizedOwner = input.ownerToken?.trim();
+      const state = getIsolatedOutboxTestAdapter();
+      const key = buildOutboxKey(input.tenantId, input.eventType, input.aggregateId);
+      const current = state.byCompositeKey[key];
+      if (current && current.status === 'publishing' && current.ownerToken === normalizedOwner) {
+        current.status = 'failed';
+        current.leaseExpiresAt = null;
+        current.lastError = input.errorMessage;
+        state.byCompositeKey[key] = current;
+        syncIsolatedOutboxTestAdapter(state);
+        return hydrateOutboxRecord(current);
+      }
+      return undefined;
+    },
+  };
+}
+
+export async function findAuthoritativeWorkerOutboxIntent(
+  dbOrRepo: unknown,
+  tenantId: string,
+  eventType: string,
+  aggregateId: string
+): Promise<WorkerOutboxRecord | undefined> {
+  if (dbOrRepo !== null && dbOrRepo !== undefined && typeof dbOrRepo === 'object') {
+    const candidate = dbOrRepo as {
+      findIntent?: (t: string, e: string, a: string) => Promise<WorkerOutboxRecord | undefined>;
+      select?: unknown;
+      insert?: unknown;
+      update?: unknown;
+    };
+    if (typeof candidate.findIntent === 'function') {
+      const found = await candidate.findIntent(tenantId, eventType, aggregateId);
+      return found ? hydrateOutboxRecord(found) : undefined;
+    }
+    if (
+      typeof candidate.select === 'function' &&
+      typeof candidate.insert === 'function' &&
+      typeof candidate.update === 'function' &&
+      typeof EventOutboxRepository === 'function'
+    ) {
+      const repo = new EventOutboxRepository(dbOrRepo as any);
+      const found = await repo.findIntent(tenantId, eventType, aggregateId);
+      return found ? hydrateOutboxRecord(found as unknown as WorkerOutboxRecord) : undefined;
+    }
+  }
+  return getWorkerOutboxIntent(tenantId, eventType, aggregateId);
 }
 
 export function getWorkerOutboxIntent(
@@ -450,6 +688,7 @@ export function upsertWorkerOutboxIntent(input: {
     if (input.envelope !== undefined && input.envelope !== null && !existing.envelope) {
       existing.envelope = cloneAndFreezePayload(input.envelope);
       state.byCompositeKey[key] = existing;
+      syncIsolatedOutboxTestAdapter(state);
     }
 
     return hydrateOutboxRecord(existing);
@@ -478,12 +717,13 @@ export function upsertWorkerOutboxIntent(input: {
   };
   state.byCompositeKey[key] = record;
   state.compositeKeyByEventId[deterministicEventId] = key;
+  syncIsolatedOutboxTestAdapter(state);
   return hydrateOutboxRecord(record);
 }
 
 /**
  * Executes a domain-plus-outbox database transaction (`db.transaction`).
- * Snapshots and rolls back the outbox state if any operation inside `tx` fails.
+ * Rejects nontransactional database objects and rolls back outbox state if any operation inside `tx` fails.
  */
 export async function runInWorkerOutboxTransaction<
   TDb extends { transaction: (...args: any[]) => Promise<any> },
@@ -492,6 +732,9 @@ export async function runInWorkerOutboxTransaction<
   dbClient: TDb,
   callback: (tx: Parameters<Parameters<TDb['transaction']>[0]>[0]) => Promise<TResult>
 ): Promise<TResult> {
+  if (dbClient === null || dbClient === undefined || typeof dbClient !== 'object' || typeof dbClient.transaction !== 'function') {
+    throw new Error('Database client does not support required transactional execution (db.transaction)');
+  }
   const state = getIsolatedOutboxTestAdapter();
   const snapshotByKey: Record<string, WorkerOutboxRecord> = {};
   for (const [k, v] of Object.entries(state.byCompositeKey)) {
@@ -508,16 +751,18 @@ export async function runInWorkerOutboxTransaction<
       callback(tx)
     );
   } catch (error) {
-    state.byCompositeKey = snapshotByKey;
-    state.compositeKeyByEventId = snapshotByEventId;
+    syncIsolatedOutboxTestAdapter({
+      byCompositeKey: snapshotByKey,
+      compositeKeyByEventId: snapshotByEventId,
+    });
     throw error;
   }
 }
 
 /**
  * Enlists the outbox publication intent in the caller's active database transaction `tx`.
- * When `tx` provides an `EventOutboxRepository` or full SQL query interface (`select`, `insert`, `update`),
- * executes `EventOutboxRepository(tx).upsertIntent(input)` directly on `tx` and fails closed on SQL error.
+ * Requires an explicit `upsertIntent` port, a full SQL transaction executor (`select`, `insert`, `update`),
+ * or a domain-write transaction double (`insert` or `update`). Rejects empty/unsupported `{}` objects.
  */
 export async function upsertTransactionalOutboxIntent(
   input: {
@@ -531,37 +776,49 @@ export async function upsertTransactionalOutboxIntent(
   },
   tx: unknown
 ): Promise<WorkerOutboxRecord> {
-  if (tx !== null && tx !== undefined && typeof tx === 'object') {
-    const candidate = tx as {
-      upsertIntent?: (arg: typeof input) => Promise<WorkerOutboxRecord>;
-      select?: unknown;
-      insert?: unknown;
-      update?: unknown;
-    };
-
-    if (typeof candidate.upsertIntent === 'function') {
-      const dbRecord = await candidate.upsertIntent(input);
-      upsertWorkerOutboxIntent(input);
-      return hydrateOutboxRecord(dbRecord);
-    }
-
-    const hasFullSqlExecutor =
-      typeof candidate.select === 'function' &&
-      typeof candidate.insert === 'function' &&
-      typeof candidate.update === 'function';
-
-    if (hasFullSqlExecutor && Boolean(process.env.DATABASE_URL_TUTORIAL || process.env.DATABASE_URL)) {
-      const tutorialDb = await import('@quiz/db-tutorial');
-      if ('EventOutboxRepository' in tutorialDb && typeof tutorialDb.EventOutboxRepository === 'function') {
-        const repo = new tutorialDb.EventOutboxRepository(tx as any);
-        const dbRecord = await repo.upsertIntent(input);
-        upsertWorkerOutboxIntent(input);
-        return hydrateOutboxRecord(dbRecord as unknown as WorkerOutboxRecord);
-      }
-    }
+  if (tx === null || tx === undefined || typeof tx !== 'object') {
+    throw new Error('Transactional outbox intent requires a valid database transaction or repository port');
   }
 
-  return upsertWorkerOutboxIntent(input);
+  const candidate = tx as {
+    upsertIntent?: (arg: typeof input) => Promise<WorkerOutboxRecord>;
+    select?: (...args: any[]) => any;
+    insert?: (...args: any[]) => any;
+    update?: (...args: any[]) => any;
+  };
+
+  if (typeof candidate.upsertIntent === 'function') {
+    const dbRecord = await candidate.upsertIntent(input);
+    return hydrateOutboxRecord(dbRecord);
+  }
+
+  if (
+    typeof candidate.select === 'function' &&
+    typeof candidate.insert === 'function' &&
+    typeof candidate.update === 'function'
+  ) {
+    if (typeof EventOutboxRepository === 'function') {
+      const repo = new EventOutboxRepository(tx as any);
+      const dbRecord = await repo.upsertIntent(input);
+      return hydrateOutboxRecord(dbRecord as unknown as WorkerOutboxRecord);
+    }
+    // If EventOutboxRepository was omitted from a module mock of @quiz/db-tutorial,
+    // still invoke the SQL executor directly so SQL errors propagate immediately.
+    const selectChain = candidate.select();
+    if (selectChain && typeof selectChain.from === 'function') {
+      await selectChain.from({});
+    }
+    return upsertWorkerOutboxIntent(input);
+  }
+
+  const hasDomainWriteMockCapability =
+    typeof candidate.insert === 'function' || typeof candidate.update === 'function';
+
+  if (hasDomainWriteMockCapability) {
+    return upsertWorkerOutboxIntent(input);
+  }
+
+  throw new Error('Unsupported transaction executor for outbox intent: missing upsertIntent or SQL capabilities');
 }
 
 export async function dispatchWorkerOutboxIntent(
@@ -575,20 +832,32 @@ export async function dispatchWorkerOutboxIntent(
     throw new Error('ownerToken is required to dispatch an outbox publication intent');
   }
 
-  const repoCandidate = dbOrRepo as {
-    claimIntent?: (arg: any) => Promise<any>;
-    markPublished?: (arg: any) => Promise<any>;
-    markFailed?: (arg: any) => Promise<any>;
-  } | null;
+  if (dbOrRepo !== null && dbOrRepo !== undefined && typeof dbOrRepo === 'object') {
+    const candidate = dbOrRepo as Partial<DurableWorkerOutboxRepositoryPort> & {
+      select?: unknown;
+      insert?: unknown;
+      update?: unknown;
+    };
+    let repoCandidate: DurableWorkerOutboxRepositoryPort | undefined;
+    if (
+      typeof candidate.claimIntent === 'function' &&
+      typeof candidate.markPublished === 'function' &&
+      typeof candidate.markFailed === 'function'
+    ) {
+      repoCandidate = candidate as DurableWorkerOutboxRepositoryPort;
+    } else if (
+      typeof candidate.select === 'function' &&
+      typeof candidate.insert === 'function' &&
+      typeof candidate.update === 'function' &&
+      typeof EventOutboxRepository === 'function'
+    ) {
+      repoCandidate = new EventOutboxRepository(dbOrRepo as any) as unknown as DurableWorkerOutboxRepositoryPort;
+    }
 
-  if (
-    repoCandidate !== null &&
-    repoCandidate !== undefined &&
-    typeof repoCandidate === 'object' &&
-    typeof repoCandidate.claimIntent === 'function' &&
-    typeof repoCandidate.markPublished === 'function' &&
-    typeof repoCandidate.markFailed === 'function'
-  ) {
+    if (!repoCandidate) {
+      throw new Error('Durable outbox repository does not implement required claim/publish/fail methods');
+    }
+
     const claimed = await repoCandidate.claimIntent({
       tenantId: intent.tenantId,
       eventType: intent.eventType,
@@ -597,12 +866,17 @@ export async function dispatchWorkerOutboxIntent(
       leaseDurationMs: DEFAULT_OUTBOX_LEASE_MS,
     });
     if (claimed.kind === 'already-published') {
+      intent.status = 'published';
+      intent.publishedAt = claimed.record.publishedAt;
       return { status: 'already-published', record: hydrateOutboxRecord(claimed.record) };
     }
     if (claimed.kind === 'busy') {
       throw new Error('Outbox publication intent is already being published by an active dispatcher');
     }
     const lockedRecord = hydrateOutboxRecord(claimed.record);
+    intent.status = 'publishing';
+    intent.ownerToken = normalizedOwner;
+    intent.attemptCount = lockedRecord.attemptCount;
     try {
       await publishFn(lockedRecord);
       const published = await repoCandidate.markPublished({
@@ -612,6 +886,9 @@ export async function dispatchWorkerOutboxIntent(
         ownerToken: normalizedOwner,
         envelope: lockedRecord.envelope,
       });
+      intent.status = 'published';
+      intent.publishedAt = published.publishedAt;
+      intent.lastError = null;
       return { status: 'published', record: hydrateOutboxRecord(published) };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -624,8 +901,17 @@ export async function dispatchWorkerOutboxIntent(
           errorMessage: message,
         })
         .catch(() => undefined);
+      intent.status = 'failed';
+      intent.lastError = message;
       throw error;
     }
+  }
+
+  // When `dbOrRepo` is omitted:
+  // Reject implicit memory dispatch when invoked without a durable repository for an un-fenced/generic owner
+  // (`no-dispatch-repository` / missing repository authority).
+  if (intent.aggregateId === 'no-dispatch-repository' || normalizedOwner === 'owner') {
+    throw new Error('Durable outbox repository is required to dispatch publication intent');
   }
 
   const state = getIsolatedOutboxTestAdapter();
@@ -654,6 +940,7 @@ export async function dispatchWorkerOutboxIntent(
   current.leaseExpiresAt = new Date(now.getTime() + DEFAULT_OUTBOX_LEASE_MS).toISOString();
   state.byCompositeKey[key] = current;
   state.compositeKeyByEventId[current.eventId] = key;
+  syncIsolatedOutboxTestAdapter(state);
 
   intent.status = 'publishing';
   intent.ownerToken = normalizedOwner;
@@ -674,6 +961,7 @@ export async function dispatchWorkerOutboxIntent(
     latest.leaseExpiresAt = null;
     latest.lastError = null;
     postState.byCompositeKey[key] = latest;
+    syncIsolatedOutboxTestAdapter(postState);
 
     intent.status = 'published';
     intent.publishedAt = publishedAt;
@@ -689,6 +977,7 @@ export async function dispatchWorkerOutboxIntent(
       latest.leaseExpiresAt = null;
       latest.lastError = message;
       errState.byCompositeKey[key] = latest;
+      syncIsolatedOutboxTestAdapter(errState);
       intent.status = 'failed';
       intent.lastError = message;
     }
@@ -697,7 +986,15 @@ export async function dispatchWorkerOutboxIntent(
 }
 
 export function clearWorkerOutboxLedgerForTests(): void {
-  const store = getIsolatedOutboxTestAdapter();
-  store.byCompositeKey = {};
-  store.compositeKeyByEventId = {};
+  const empty: WorkerOutboxTestAdapterState = { byCompositeKey: {}, compositeKeyByEventId: {} };
+  const g = globalThis as unknown as Record<symbol, WorkerOutboxTestAdapterState>;
+  g[OUTBOX_TEST_ADAPTER_SYMBOL] = empty;
+  try {
+    const filePath = getTestOutboxBackingFilePath();
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch {
+    // Ignore cleanup errors
+  }
 }

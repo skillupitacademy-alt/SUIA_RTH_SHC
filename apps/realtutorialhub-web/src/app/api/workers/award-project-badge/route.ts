@@ -14,11 +14,12 @@ import {
   completeWorkerLeaseIfOwner,
   deriveDeterministicEventUuid,
   dispatchWorkerOutboxIntent,
-  getWorkerOutboxIntent,
+  findAuthoritativeWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  resolveWorkerOutboxRepository,
   runInWorkerOutboxTransaction,
   upsertTransactionalOutboxIntent,
-  upsertWorkerOutboxIntent,
+  type WorkerOutboxRecord,
   type WorkerRedisLike,
 } from '../worker-lease';
 
@@ -87,9 +88,12 @@ const badgeHandler = createQStashHandler(
         throw new Error('Project submission not found');
       }
 
+      const outboxRepository = await resolveWorkerOutboxRepository(db);
+
       const alreadyAwarded = (submission as { badgeAwarded?: boolean }).badgeAwarded === true;
       if (alreadyAwarded) {
-        const existingOutbox = getWorkerOutboxIntent(
+        const existingOutbox = await findAuthoritativeWorkerOutboxIntent(
+          outboxRepository,
           'realtutorialhub',
           'project.certificate_requested',
           submissionId
@@ -123,7 +127,8 @@ const badgeHandler = createQStashHandler(
             ? rawUpdatedAt
             : payload.occurredAt;
 
-      let outboxIntent: ReturnType<typeof getWorkerOutboxIntent> = getWorkerOutboxIntent(
+      let outboxIntent: WorkerOutboxRecord | undefined = await findAuthoritativeWorkerOutboxIntent(
+        outboxRepository,
         'realtutorialhub',
         'project.certificate_requested',
         submissionId
@@ -193,67 +198,75 @@ const badgeHandler = createQStashHandler(
         const deterministicEventId = deriveDeterministicEventUuid(
           `realtutorialhub:project.certificate_requested:${submissionId}`
         );
-        outboxIntent = upsertWorkerOutboxIntent({
-          tenantId: 'realtutorialhub',
-          eventType: 'project.certificate_requested',
-          aggregateId: submissionId,
-          eventId: deterministicEventId,
-          ownerToken: claim.ownerToken,
-          payload: {
-            userId,
-            scope: project.scope,
-            parentId: project.parentId,
-            parentName: project.title,
-          },
-          envelope: {
-            id: deterministicEventId,
-            type: 'project.certificate_requested',
-            correlationId: submission.id,
-            source: 'quiz-platform',
-            occurredAt: canonicalOccurredAt,
-            version: 1,
-            data: {
+        outboxIntent = await upsertTransactionalOutboxIntent(
+          {
+            tenantId: 'realtutorialhub',
+            eventType: 'project.certificate_requested',
+            aggregateId: submissionId,
+            eventId: deterministicEventId,
+            ownerToken: claim.ownerToken,
+            payload: {
               userId,
               scope: project.scope,
               parentId: project.parentId,
               parentName: project.title,
             },
+            envelope: {
+              id: deterministicEventId,
+              type: 'project.certificate_requested',
+              correlationId: submission.id,
+              source: 'quiz-platform',
+              occurredAt: canonicalOccurredAt,
+              version: 1,
+              data: {
+                userId,
+                scope: project.scope,
+                parentId: project.parentId,
+                parentName: project.title,
+              },
+            },
           },
-        });
+          outboxRepository
+        );
       }
 
       if (outboxIntent !== undefined) {
         const token = process.env.QSTASH_TOKEN;
         if (typeof token === 'string' && token.trim().length > 0) {
-          await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
-            const client = new Client({ token });
-            const storedEnvelope = intent.envelope ?? {};
-            await client.publishJSON({
-              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-              retries: 3,
-              body: {
-                id: intent.eventId,
-                type: 'project.certificate_requested',
-                correlationId:
-                  typeof storedEnvelope.correlationId === 'string'
-                    ? storedEnvelope.correlationId
-                    : submission.id,
-                source:
-                  typeof storedEnvelope.source === 'string'
-                    ? storedEnvelope.source
-                    : 'quiz-platform',
-                occurredAt:
-                  typeof storedEnvelope.occurredAt === 'string'
-                    ? storedEnvelope.occurredAt
-                    : canonicalOccurredAt,
-                version:
-                  typeof storedEnvelope.version === 'number'
-                    ? storedEnvelope.version
-                    : 1,
-                data: intent.payload,
-              },
-            });
-          });
+          await dispatchWorkerOutboxIntent(
+            outboxIntent,
+            claim.ownerToken,
+            async (intent) => {
+              const client = new Client({ token });
+              const storedEnvelope = intent.envelope ?? {};
+              await client.publishJSON({
+                url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+                retries: 3,
+                body: {
+                  id: intent.eventId,
+                  type: 'project.certificate_requested',
+                  correlationId:
+                    typeof storedEnvelope.correlationId === 'string'
+                      ? storedEnvelope.correlationId
+                      : submission.id,
+                  source:
+                    typeof storedEnvelope.source === 'string'
+                      ? storedEnvelope.source
+                      : 'quiz-platform',
+                  occurredAt:
+                    typeof storedEnvelope.occurredAt === 'string'
+                      ? storedEnvelope.occurredAt
+                      : canonicalOccurredAt,
+                  version:
+                    typeof storedEnvelope.version === 'number'
+                      ? storedEnvelope.version
+                      : 1,
+                  data: intent.payload,
+                },
+              });
+            },
+            outboxRepository
+          );
         }
       }
 
