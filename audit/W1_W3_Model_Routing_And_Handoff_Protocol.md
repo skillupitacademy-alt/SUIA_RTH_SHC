@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Next required role: Gemini, Slice 20 repository verification
+
+[Approved testing packet](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07):
+source e70868e3, inventory 5a700d4f; offline actual-repository SQL/predicate tests approved.
+Physical database availability is not execution authorization. Gemini tests only; source
+defects return to Argon; Sonnet documentation is optional; Sol accepts. Tera has no new
+write assignment. Whole W1-W3 remains PARTIAL_ACCEPTANCE and W4 implementation unapproved.
+
 ## Slice 19 scoped acceptance
 
 [Sol scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md): source/adapter

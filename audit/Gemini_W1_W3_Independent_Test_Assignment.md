@@ -1,5 +1,107 @@
 # Gemini independent foundation testing packet
 
+## APPROVED: Slice 20 independent SQL repository verification (2026-11-07)
+
+Sol authorizes Gemini to implement and execute the offline testing/evidence assignment
+below under the existing standing completion authorization. This is NOT production-code
+acceptance and NOT authorization for physical database/queue/browser/storage operations.
+The owner's detailed Slice 20 assignment is approved with these boundaries. Argon remains
+the production owner; the historical Tera role is not reactivated. Sonnet documentation
+support is optional, disjoint and not a prerequisite to testing or Sol review.
+
+### Pinned revisions and authority
+
+- SOURCE_SHA: `e70868e3886f178fb4d2cfc47514a83edd925f1d`.
+- INVENTORY_SHA: `5a700d4f61eb6b8574cd226d616d98415d403452`.
+- At authorization, actual HEAD is INVENTORY_SHA on
+  `remediation/w1-2-batch-05-targeted`, clean; SOURCE_SHA is an ancestor and the intervening
+  diff changes only `audit/Argon_W1_W3_Critical_Handoff.md`. Rediscover actual state at execution.
+- Slice 19 remains accepted ONLY within [Sol's scoped boundary](Sol_Slice19_Scoped_Acceptance_f6627115.md).
+  Slice 20 is IMPLEMENTED_UNVERIFIED. W1-W3 remains PARTIAL_ACCEPTANCE; no W4 GO.
+- Actual production targets: `packages/db-people/src/repositories/student-invitation.repository.ts`
+  and `packages/db-tutorial/src/repositories/event-outbox.repository.ts`, plus retained
+  actual caller composition for regression evidence. Do not edit production.
+
+### A. Actual StudentInvitationRepository tests
+
+Instantiate the real repository with a controlled, predicate-discriminating SQL executor.
+Validate actual generated UPDATE SQL and bound parameters, affected rows and RETURNING;
+do not mock the repository class itself or return success regardless of the predicate.
+
+Cover every item: expiry before/equal/after now; permitted pending/claiming expiry;
+redeemed/revoked/terminal rows preserved; invalid claim TTL (zero, negative, NaN, both
+infinities) rejected; valid TTL calculation; competing claims with a single winner;
+expiration-versus-redemption in both orders; wrong owner; expired owner lease; expired
+invitation despite a valid owner; valid unexpired owner success. Exercise zero matched
+rows. Check ID/status/owner predicates plus expiresAt <= now for expiry and BOTH
+claimExpiresAt > now and expiresAt > now for redemption at the mutation boundary.
+
+Specifically reproduce a stale SELECT followed by another actor's completed redemption
+before the expiry UPDATE. Check both preserved terminal storage AND the returned outcome.
+A possible expired response after a zero-row conditional expiry is a hypothesis to test,
+not a confirmed defect or permission to alter expectations to match the implementation.
+
+### B. Actual EventOutboxRepository tests
+
+Cover new durable identity; first envelope installation only when NULL; immutable installed
+envelope; exact replay and JSON property-order equivalence; competing different/identical
+installations; missing/wrong/correct publication owner; equal/different supplied envelope;
+no-envelope completion under existing semantics without envelope mutation; already-published
+matching/conflicting replay; final stored envelope; transaction rollback without partial
+status/envelope writes. Assert actual UPDATE predicates: row/event identity, envelope
+IS NULL on first installation, publishing status, owner equality and JSONB equality when
+an envelope is supplied; inspect zero-row RETURNING and the subsequent conflict/replay path.
+Distinguish outbox row primary key `id` from immutable `eventId`; illustrative SQL naming
+must not conflate them. JavaScript freezing is not storage-atomic immutability evidence.
+
+### C. Physical PostgreSQL qualification: separately gated
+
+Prepare independent-connection/barrier tests for dual invitation claims, redemption/expiry,
+expiry/terminal state, dual envelope installation, publication/owner loss and abort/rollback.
+Record initial state, A/B operations, final committed state, expected/observed invariant
+and SQLSTATE where applicable. A safe database being available does NOT itself authorize
+connecting, creating schema, applying migrations or mutating it. Execute only if a specific
+existing authorization covers the exact disposable environment and operations, or after
+the owner grants that gate for a concrete prepared recipe. Never use live environment files
+to discover a convenient target. Without authorization/environment, mark EACH physical case
+NOT_EXECUTED with its prerequisite and continue all independent offline work. Controlled SQL
+executors and generated-SQL checks supplement, not replace, required physical evidence.
+
+### D. Retained regression and quality gates
+
+Run the existing guarded SQL-authority, Gemini generalized-invariant and lease-adapter
+runners unchanged in negative intent. Retain missing/partial repository/transaction denial,
+unconfirmed RETURNING denial, account activation commit safety, missing queue credentials,
+worker release on failure and certificate/badge positives. Run new repository tests, both
+affected package typechecks, applicable lint/package tests, workspace typecheck and whitespace
+check. Disclose broader red/interrupted/skipped/collection outcomes separately from scoped
+passes. Never call all tests or the workspace green from a selected passing subset.
+
+Install the offline network/socket/DNS guard before app imports and strip service bindings.
+Physical execution, if later authorized, needs a separate narrowly constrained runner and
+target allowlist; do not disable the guard for the general offline campaign.
+
+### E. Full-scope evidence and output
+
+The full original GM01-GM20/FND01-FND30/G1-G9 checklist remains active. Preserve canonical
+TC/FND mappings, RC-ID-01 and BROWSER-01. Audit the inventory assertions (109 substantiated
+caller rows, 72 additional unsubstantiated callers, 91 unsubstantiated distinct finding IDs)
+against enumerated rows; do not treat the claimed totals as new facts or invent rows to
+match them. Keep each unresolved/unverifiable requirement OPEN with evidence needed.
+
+Update the REPOSITORY `audit/Gemini_W1_W3_Independent_Verification_Report.md`, not only
+an external host artifact. Record actual SOURCE/INVENTORY/TEST/REPORT SHAs and tested HEAD,
+exact commands/configuration, per-file counts, SQL evidence and PASS/FAIL/BLOCKED/
+NOT_EXECUTED by requirement. If REPORT_SHA would self-reference, record its final actual
+value in the handoff after commit; do not fabricate a hash inside its own commit.
+
+Commit only Gemini-owned tests/audit evidence locally with explicit paths. No push or
+production edits. Return source defects to Argon with location, minimal reproducer,
+positive/negative invariant, actual effects, source/test SHAs, failing command/exit and
+bounded correction. Gemini retests Argon's next frozen source and integrated regressions.
+Sol alone decides acceptance/closure/W4 readiness. Approval does not launch an external
+Gemini session; the owner selects Gemini Flash and hands off this repository packet.
+
 ## Slice 19 source boundary accepted; complete whole-scope evidence
 
 [Sol scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) records 8/8 SQL caller,

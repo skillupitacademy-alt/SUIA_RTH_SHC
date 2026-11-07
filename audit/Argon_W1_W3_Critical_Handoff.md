@@ -1,5 +1,14 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Slice 20 testing handoff approved (2026-11-07)
+
+Sol approves [Gemini's independent SQL repository assignment](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07)
+for source e70868e3886f178fb4d2cfc47514a83edd925f1d and inventory revision
+5a700d4f61eb6b8574cd226d616d98415d403452. Source remains IMPLEMENTED_UNVERIFIED.
+Gemini owns tests/evidence only; Argon owns any returned source corrections and all
+remaining foundation implementation. Physical PostgreSQL requires separate authorization.
+Slice 19 scoped acceptance is preserved; no W1-W3 closure or W4 implementation approval.
+
 ## Current Sol disposition: Slice 19 accepted within source/adapter scope
 
 [Scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md): strict outbox dependency,
