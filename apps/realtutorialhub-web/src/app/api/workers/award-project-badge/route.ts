@@ -127,6 +127,14 @@ const badgeHandler = createQStashHandler(
       if (project !== undefined) {
         const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
         if (eligibility.eligible) {
+          const rawUpdatedAt: unknown = (submission as { updatedAt?: unknown }).updatedAt;
+          const canonicalOccurredAt =
+            rawUpdatedAt instanceof Date
+              ? rawUpdatedAt.toISOString()
+              : typeof rawUpdatedAt === 'string' && rawUpdatedAt.trim().length > 0
+                ? rawUpdatedAt
+                : payload.occurredAt;
+
           const outboxIntent = upsertWorkerOutboxIntent({
             tenantId: 'realtutorialhub',
             eventType: 'project.certificate_requested',
@@ -138,28 +146,49 @@ const badgeHandler = createQStashHandler(
               parentId: project.parentId,
               parentName: project.title,
             },
+            envelope: {
+              type: 'project.certificate_requested',
+              correlationId: submission.id,
+              source: 'quiz-platform',
+              occurredAt: canonicalOccurredAt,
+              version: 1,
+              data: {
+                userId,
+                scope: project.scope,
+                parentId: project.parentId,
+                parentName: project.title,
+              },
+            },
           });
 
           const token = process.env.QSTASH_TOKEN;
           if (typeof token === 'string' && token.trim().length > 0) {
             await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
               const client = new Client({ token });
+              const storedEnvelope = intent.envelope ?? {};
               await client.publishJSON({
                 url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
                 retries: 3,
                 body: {
                   id: intent.eventId,
                   type: 'project.certificate_requested',
-                  correlationId: submission.id,
-                  source: 'quiz-platform',
-                  occurredAt: new Date().toISOString(),
-                  version: 1,
-                  data: {
-                    userId,
-                    scope: project.scope,
-                    parentId: project.parentId,
-                    parentName: project.title,
-                  },
+                  correlationId:
+                    typeof storedEnvelope.correlationId === 'string'
+                      ? storedEnvelope.correlationId
+                      : submission.id,
+                  source:
+                    typeof storedEnvelope.source === 'string'
+                      ? storedEnvelope.source
+                      : 'quiz-platform',
+                  occurredAt:
+                    typeof storedEnvelope.occurredAt === 'string'
+                      ? storedEnvelope.occurredAt
+                      : canonicalOccurredAt,
+                  version:
+                    typeof storedEnvelope.version === 'number'
+                      ? storedEnvelope.version
+                      : 1,
+                  data: intent.payload,
                 },
               });
             });
