@@ -19,6 +19,9 @@ interface MockUser {
   deletedAt: Date | null;
 }
 
+let nextUserUpdateShouldThrow = false;
+let nextUserUpdateZeroRows = false;
+
 const mockUsers: MockUser[] = [];
 const mockAdmissions: any[] = [];
 const mockProfiles: any[] = [];
@@ -104,18 +107,28 @@ vi.mock('@quiz/db-people', () => ({
       set: vi.fn((updateVals: any) => ({
         where: vi.fn(async () => {
           if (updateVals.passwordHash) {
+            if (nextUserUpdateShouldThrow) {
+              nextUserUpdateShouldThrow = false;
+              throw new Error('Simulated DB password update failure');
+            }
+            if (nextUserUpdateZeroRows) {
+              nextUserUpdateZeroRows = false;
+              return { rowCount: 0 };
+            }
             for (const user of mockUsers) {
               user.passwordHash = updateVals.passwordHash;
               if (updateVals.isActive !== undefined) {
                 user.isActive = updateVals.isActive;
               }
             }
+            return { rowCount: Math.max(1, mockUsers.length) };
           }
           if (updateVals.documents) {
             for (const adm of mockAdmissions) {
               adm.documents = updateVals.documents;
             }
           }
+          return { rowCount: 1 };
         }),
       })),
     })),
@@ -147,6 +160,8 @@ const makePublicRequest = (url: string, body: unknown) =>
 describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use Redemption Probes', () => {
   beforeEach(() => {
     clearStudentInvitationsForTests();
+    nextUserUpdateShouldThrow = false;
+    nextUserUpdateZeroRows = false;
     mockUsers.length = 0;
     mockAdmissions.length = 0;
     mockProfiles.length = 0;
@@ -367,5 +382,60 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.error).toContain('Cross-tenant');
+  });
+
+  it('S3: survives fresh module instances (vi.resetModules), releases claim when password update throws so retry succeeds (200), and rejects 0 affected rows with 404', async () => {
+    mockUsers.push({
+      id: 'usr-s3-atomic',
+      email: 'atomic.student@skillup.org',
+      passwordHash: 'old-hash',
+      role: 'student',
+      platform: 'skillup',
+      isActive: false,
+      deletedAt: null,
+    });
+
+    const issued = issueStudentInvitation({
+      userId: 'usr-s3-atomic',
+      email: 'atomic.student@skillup.org',
+    });
+
+    // 1. Verify issued invitation survives fresh module instance (vi.resetModules)
+    vi.resetModules();
+    const freshInvitationLib = await import('@/lib/student-invitation');
+    const persistedRecord = freshInvitationLib.getStudentInvitationById(issued.record.invitationId);
+    expect(persistedRecord).toBeDefined();
+    expect(persistedRecord?.status).toBe('pending');
+
+    // 2. Zero affected account rows must fail closed (404) and NOT consume the invitation
+    nextUserUpdateZeroRows = true;
+    const zeroRowReq = makePublicRequest('/api/admin/students/invite/redeem', {
+      invitationToken: issued.invitationToken,
+      email: 'atomic.student@skillup.org',
+      newPassword: 'Strong-User-Password-2026!',
+    });
+    const zeroRowRes = await postRedeemInvitation(zeroRowReq as any);
+    expect(zeroRowRes.status).toBe(404);
+    expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('pending');
+
+    // 3. Transient DB throw during password update must release claim so subsequent retry succeeds (200)
+    nextUserUpdateShouldThrow = true;
+    const throwReq = makePublicRequest('/api/admin/students/invite/redeem', {
+      invitationToken: issued.invitationToken,
+      email: 'atomic.student@skillup.org',
+      newPassword: 'Strong-User-Password-2026!',
+    });
+    await expect(postRedeemInvitation(throwReq as any)).rejects.toThrow('Simulated DB password update failure');
+    expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('pending');
+
+    // 4. Subsequent retry succeeds with 200 and commits status = 'redeemed'
+    const retryReq = makePublicRequest('/api/admin/students/invite/redeem', {
+      invitationToken: issued.invitationToken,
+      email: 'atomic.student@skillup.org',
+      newPassword: 'Strong-User-Password-2026!',
+    });
+    const retryRes = await postRedeemInvitation(retryReq as any);
+    expect(retryRes.status).toBe(200);
+    expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('redeemed');
   });
 });

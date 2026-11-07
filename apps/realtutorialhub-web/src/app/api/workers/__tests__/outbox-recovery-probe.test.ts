@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearWorkerOutboxLedgerForTests } from '../worker-lease';
+import {
+  clearWorkerOutboxLedgerForTests,
+  dispatchWorkerOutboxIntent,
+  getWorkerOutboxIntent,
+  upsertWorkerOutboxIntent,
+} from '../worker-lease';
 
 const storedCertificates: any[] = [];
 let publishEventShouldFail = false;
@@ -326,5 +331,78 @@ describe('Durable Worker Outbox Crash-Recovery & Idempotency Probes (A2)', () =>
     // Verify invariant holds
     expect(mocks.awardBadge).toHaveBeenCalledTimes(1);
     expect(publishedQStashMessages).toHaveLength(1);
+  });
+
+  it('S1: preserves pending outbox intent across fresh module instances (vi.resetModules) and rejects competing dispatchers or payload mutation', async () => {
+    const aggregateId = crypto.randomUUID();
+    const originalPayload = {
+      certificateId: aggregateId,
+      userId: crypto.randomUUID(),
+      issuedAt: '2026-03-01T10:00:00.000Z',
+    };
+
+    const intent = upsertWorkerOutboxIntent({
+      tenantId: 'realtutorialhub',
+      eventType: 'certificate.issued',
+      aggregateId,
+      payload: originalPayload,
+    });
+
+    // Attempt to overwrite payload under the same event identity must fail closed
+    expect(() =>
+      upsertWorkerOutboxIntent({
+        tenantId: 'realtutorialhub',
+        eventType: 'certificate.issued',
+        aggregateId,
+        payload: { ...originalPayload, userId: crypto.randomUUID() },
+      })
+    ).toThrow(/Conflicting outbox payload/i);
+
+    expect(getWorkerOutboxIntent('realtutorialhub', 'certificate.issued', aggregateId)?.payload).toEqual(
+      originalPayload
+    );
+
+    // Simulate process/module restart
+    vi.resetModules();
+    const freshLeaseModule = await import('../worker-lease');
+    const recovered = freshLeaseModule.getWorkerOutboxIntent(
+      'realtutorialhub',
+      'certificate.issued',
+      aggregateId
+    );
+    expect(recovered).toBeDefined();
+    expect(recovered?.eventId).toBe(intent.eventId);
+    expect(recovered?.payload).toEqual(originalPayload);
+
+    // Competing dispatcher fencing: while dispatcher A is publishing, dispatcher B must be rejected
+    let releaseFirstPublish!: () => void;
+    const firstPublishGate = new Promise<void>((resolve) => {
+      releaseFirstPublish = resolve;
+    });
+    const publishCalls: string[] = [];
+
+    const firstDispatchPromise = freshLeaseModule.dispatchWorkerOutboxIntent(
+      recovered!,
+      'owner-dispatcher-a',
+      async (locked) => {
+        publishCalls.push(`a:${locked.eventId}`);
+        await firstPublishGate;
+      }
+    );
+
+    await expect(
+      freshLeaseModule.dispatchWorkerOutboxIntent(
+        recovered!,
+        'owner-dispatcher-b',
+        async (locked) => {
+          publishCalls.push(`b:${locked.eventId}`);
+        }
+      )
+    ).rejects.toThrow(/already being published/i);
+
+    releaseFirstPublish();
+    const firstOutcome = await firstDispatchPromise;
+    expect(firstOutcome.status).toBe('published');
+    expect(publishCalls).toEqual([`a:${intent.eventId}`]);
   });
 });
