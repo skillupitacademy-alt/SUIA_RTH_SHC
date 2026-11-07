@@ -1,5 +1,14 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Slice 20 independent findings at e70868e3
+
+[Sol review](Sol_Slice20_Repository_Findings_e70868e3.md): CHANGES_REQUESTED for Q1
+zero-row expiry response truth and Q2 actual helper expiry bypass (two cases). New
+campaign: 37 pass / 3 fail, actual repository SQL/predicates plus caller checks. Preserve
+Slice 19 scoped acceptance. Extend the exact source manifest to the application helper
+and delegate canonical tx-bound redemption policy rather than leaving a duplicate UPDATE.
+Continue the full existing assignment. Physical gates and W4 entry remain open.
+
 ## Slice 20 testing handoff approved (2026-11-07)
 
 Sol approves [Gemini's independent SQL repository assignment](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07)

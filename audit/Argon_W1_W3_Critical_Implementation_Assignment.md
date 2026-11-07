@@ -1,5 +1,14 @@
 # Current owner override
 
+## Current Slice 20 correction packet (existing scope)
+
+[Repository verification](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail.
+Fix Q1 authoritative outcome after zero-row expiry; fix Q2 helper's omission of claim and
+invitation expiry by using canonical transaction-bound redemption. Actual repository
+redeemAtomic expiry tests pass; the normal application's duplicate UPDATE bypasses them.
+No new policy approval is needed. Retain accepted Slice 19 boundaries and the full
+TC01-TC20/FND01-FND30 assignment; freeze repairs for independent Gemini testing.
+
 ## Slice 19 scoped acceptance: advance the remaining checklist
 
 [Sol acceptance of f6627115](Sol_Slice19_Scoped_Acceptance_f6627115.md) accepts the strict

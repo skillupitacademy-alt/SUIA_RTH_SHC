@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Slice 20 findings: next production owner Argon
+
+[Sol repository campaign](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail,
+Q1 zero-row expiry outcome and Q2 duplicate application redemption policy. Argon repairs
+within existing authority, Gemini independently verifies, Sol accepts. No production
+changes were made by the review session. Slice 19 accepted boundary retained; full
+foundation checklist and mandatory physical gates remain open. No W4 implementation GO.
+
 ## Next required role: Gemini, Slice 20 repository verification
 
 [Approved testing packet](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07):

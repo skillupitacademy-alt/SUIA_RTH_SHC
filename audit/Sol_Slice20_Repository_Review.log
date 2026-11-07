@@ -1,0 +1,93 @@
+
+ RUN  v4.1.0 E:/onlinewebsites/quiz-platform
+
+···················x·xx·················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  audit/Sol_Slice20_Repository_Contracts.test.ts > Actual invitation repository and generated UPDATE predicates > zero-row expiry after another actor redeems reports actual terminal state
+AssertionError: expected { ok: false, reason: 'expired', …(1) } to match object { ok: false, …(2) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "ok": false,
+-   "reason": "already-redeemed",
++   "reason": "expired",
+    "record": {
+-     "status": "redeemed",
++     "status": "expired",
+    },
+  }
+
+ ❯ audit/Sol_Slice20_Repository_Contracts.test.ts:88:20
+     86|     const result = await claim(f);
+     87|     expect(f.state.rows[0].status).toBe('redeemed');
+     88|     expect(result).toMatchObject({ ok: false, reason: 'already-redeeme…
+       |                    ^
+     89|   });
+     90|   it('controlled invitation transaction abort restores claiming status…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  audit/Sol_Slice20_Repository_Contracts.test.ts > Actual invitation repository and generated UPDATE predicates > actual application commit helper rejects expired-claim
+AssertionError: promise resolved "{ …(11) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "claimExpiresAt": null,
++   "claimOwnerToken": null,
++   "email": "fixture@example.invalid",
++   "expiresAt": "2026-11-07T05:00:01.000Z",
++   "invitationId": "10000000-0000-4000-8000-000000000001",
++   "issuedAt": "2026-11-07T04:59:59.000Z",
++   "platform": "skillup",
++   "redeemedAt": "2026-11-07T05:00:00.000Z",
++   "status": "redeemed",
++   "tokenHash": "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722",
++   "userId": "20000000-0000-4000-8000-000000000002",
+  }
+
+ ❯ audit/Sol_Slice20_Repository_Contracts.test.ts:101:111
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  audit/Sol_Slice20_Repository_Contracts.test.ts > Actual invitation repository and generated UPDATE predicates > actual application commit helper rejects expired-invitation
+AssertionError: promise resolved "{ …(11) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "claimExpiresAt": null,
++   "claimOwnerToken": null,
++   "email": "fixture@example.invalid",
++   "expiresAt": "2026-11-07T05:00:00.000Z",
++   "invitationId": "10000000-0000-4000-8000-000000000001",
++   "issuedAt": "2026-11-07T04:59:59.000Z",
++   "platform": "skillup",
++   "redeemedAt": "2026-11-07T05:00:00.000Z",
++   "status": "redeemed",
++   "tokenHash": "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722",
++   "userId": "20000000-0000-4000-8000-000000000002",
+  }
+
+ ❯ audit/Sol_Slice20_Repository_Contracts.test.ts:101:111
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 37 passed (40)
+   Start at  19:11:37
+   Duration  1.86s (transform 319ms, setup 35ms, import 1.50s, tests 134ms, environment 0ms)

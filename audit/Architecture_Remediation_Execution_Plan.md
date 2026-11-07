@@ -1,5 +1,11 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Slice 20 independent repository result: CHANGES_REQUESTED.**
+[Sol campaign at e70868e3](Sol_Slice20_Repository_Findings_e70868e3.md): 40 actual
+repository/caller tests, 37 pass / 3 fail. Q1 conditional expiry outcome and Q2 actual
+helper's missing expiry predicates require bounded correction. Prior Slice 19 source/
+adapter acceptance retained; no whole-foundation closure or W4 implementation approval.
+
 **Slice 20 verification authorized (2026-11-07):**
 [Gemini repository SQL testing packet](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07)
 targets e70868e3 with inventory revision 5a700d4f. This approves offline tests/evidence,

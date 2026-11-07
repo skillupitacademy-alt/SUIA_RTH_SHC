@@ -1,5 +1,15 @@
 # Gemini independent foundation testing packet
 
+## Current Slice 20 result: actual repository and caller checks (2026-11-07)
+
+[Sol's independent results](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail
+in 40 actual-repository/caller tests with generated SQL evidence. Q1: zero-row expiry
+returns a fabricated expired record after concurrent redemption. Q2: the actual application
+commit helper omits both expiry predicates present in redeemAtomic; expired claim and
+expired invitation succeed. Argon repairs production under standing authority; Gemini
+independently retests both actual repository and caller paths. Prior 8/6/7 controls remain
+green. Six physical PostgreSQL cases are NOT_EXECUTED, not passed. Full scope unchanged.
+
 ## APPROVED: Slice 20 independent SQL repository verification (2026-11-07)
 
 Sol authorizes Gemini to implement and execute the offline testing/evidence assignment

@@ -1,5 +1,15 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Sol independent Slice 20 addendum (not a Gemini runtime claim)
+
+[Sol's actual repository/caller campaign](Sol_Slice20_Repository_Findings_e70868e3.md)
+at source e70868e3 records 37 passing / 3 failing tests, generated SQL/parameters and
+simulated affected rows. Conditional expiry reports a stale fabricated expired outcome;
+actual application commit helper accepts expired claim/invitation despite stricter
+repository predicates. Retained 8/6/7 checks and both package typechecks pass. Physical
+PostgreSQL cases remain NOT_EXECUTED. Gemini independently tests Argon's returned repair;
+historical results below do not constitute Slice 20 or foundation acceptance.
+
 ## Sol disposition of Slice 19 (2026-11-07)
 
 [Scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) accepts the enumerated
