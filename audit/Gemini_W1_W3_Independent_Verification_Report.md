@@ -1,5 +1,17 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Current Sol Q1/Q2 acceptance and attribution correction
+
+[Sol's acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md) records production
+dc75ace5286d2b0f0da97a8d3e9406f809dec46a and adapted test
+5614579187bfd28b36e770d2739e61037eb3da74. Gemini implemented Q1/Q2 in two production
+files; its own battery is implementer evidence for that correction. Sol independently
+reproduced 40/40 actual repository/caller tests, retained 8/6/7, checkpoint 114 and
+integrated 99, with both affected typechecks passing. Q1/Q2 source findings below are
+historical and superseded within scoped simulation acceptance, not physical qualification.
+The new pasted table's 3 and 28 counts are only final selections; full commands total
+114 and 99 respectively. Whole foundation remains PARTIAL_ACCEPTANCE, W4 unapproved.
+
 ## Sol independent Slice 20 addendum (not a Gemini runtime claim)
 
 [Sol's actual repository/caller campaign](Sol_Slice20_Repository_Findings_e70868e3.md)

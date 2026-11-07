@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current Q1/Q2 disposition
+
+[Sol scoped acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md) accepts the two source
+corrections after independent reruns. Attribute implementation to Gemini for this slice;
+do not silently treat self-testing as independent review or grant future production edits
+to testers. Argon owns remaining implementation, Gemini tests, Sol accepts foundation/
+readiness. Full checklist and physical gates remain open; no W4 GO.
+
 ## Slice 20 findings: next production owner Argon
 
 [Sol repository campaign](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail,

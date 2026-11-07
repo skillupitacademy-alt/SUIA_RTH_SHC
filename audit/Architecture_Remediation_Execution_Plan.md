@@ -1,5 +1,11 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Current Slice 20 Q1/Q2 source acceptance:**
+[Sol acceptance at dc75ace5 / tests 56145791](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md)
+supersedes the three Q1/Q2 failures within source/generated-SQL/caller simulation: 40/40
+now pass. Prior strict-boundary acceptance retained. Whole W1-W3 PARTIAL_ACCEPTANCE;
+continue the remaining canonical checklist, physical and group gates. W4 not approved.
+
 **Slice 20 independent repository result: CHANGES_REQUESTED.**
 [Sol campaign at e70868e3](Sol_Slice20_Repository_Findings_e70868e3.md): 40 actual
 repository/caller tests, 37 pass / 3 fail. Q1 conditional expiry outcome and Q2 actual

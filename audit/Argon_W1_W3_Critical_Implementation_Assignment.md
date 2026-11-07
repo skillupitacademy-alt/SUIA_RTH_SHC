@@ -1,5 +1,13 @@
 # Current owner override
 
+## Current acceptance: Slice 20 Q1/Q2 source corrections
+
+[Sol acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md) accepts Q1 truthful zero-row
+expiry outcome and Q2 canonical tx-bound redemption delegation at dc75ace5, independently
+rerun on 56145791. Preserve Gemini's implementer attribution for these two source changes;
+future testing remains production-read-only. Do not repeat accepted Q1/Q2 repairs.
+Advance ALL remaining checklist items and gate evidence; no whole-foundation or W4 GO.
+
 ## Current Slice 20 correction packet (existing scope)
 
 [Repository verification](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail.

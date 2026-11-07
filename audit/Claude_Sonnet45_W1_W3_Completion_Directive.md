@@ -11,6 +11,13 @@ below remain binding; none is removed by the ownership change.
 
 ## Consolidated remaining-work checklist for W4 readiness
 
+**Latest scoped decision:** [Q1/Q2 acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md)
+accepts the truthful expiry outcome and canonical tx-bound redemption corrections at
+dc75ace5, independently rerun on 56145791 (actual repository/caller 40/40). Preserve
+prior Slice 19 acceptance; do not repeat those source repairs. Full original checklist,
+physical/group acceptance and W4-entry requirements below remain unchanged and open
+where unproved. Overall W1-W3 is PARTIAL_ACCEPTANCE, not complete.
+
 **Current status:** [Slice 19 scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md)
 accepts the strict source/adapter corrections at f6627115. The earlier S1/S3 caller-fallback
 findings are superseded for the enumerated accepted boundary. Keep all original FND/group

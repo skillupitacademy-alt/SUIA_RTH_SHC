@@ -1,5 +1,15 @@
 # Gemini independent foundation testing packet
 
+## Q1/Q2 independently accepted by Sol; resume remaining evidence work
+
+[Current acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md): source dc75ace5, adapted
+test 56145791, actual repository campaign 40/40 and retained 8/6/7 controls pass.
+Gemini's two production changes are implementation contributions, not independently
+tested code by their own author; Sol's fresh review supplies the separate acceptance.
+Future production defects return to Argon. Complete full original GM/FND/group evidence
+and separately authorized physical gates. Correct checkpoint/integrated totals to 114/99
+for the full commands, not only last selections 3/28. No W4 entry is approved.
+
 ## Current Slice 20 result: actual repository and caller checks (2026-11-07)
 
 [Sol's independent results](Sol_Slice20_Repository_Findings_e70868e3.md): 37 pass / 3 fail

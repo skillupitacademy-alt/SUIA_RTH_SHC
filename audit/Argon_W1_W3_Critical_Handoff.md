@@ -1,5 +1,13 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Sol scoped acceptance of Q1/Q2 at dc75ace5
+
+[Q1/Q2 acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md): actual repository/caller
+40/40, authority 8/8, generalized 6/6, lease 7/7 pass. Source corrections accepted within
+simulation; physical PostgreSQL unexecuted. Gemini made the two source fixes and the
+mock adaptation; Sol separately verified. Whole W1-W3 remains PARTIAL_ACCEPTANCE.
+Continue the existing complete checklist instead of another Q1/Q2 rewrite.
+
 ## Slice 20 independent findings at e70868e3
 
 [Sol review](Sol_Slice20_Repository_Findings_e70868e3.md): CHANGES_REQUESTED for Q1
