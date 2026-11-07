@@ -1,5 +1,12 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Slice 19 scoped acceptance
+
+[Sol scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md): source/adapter
+strictness corrections accepted, whole-foundation PARTIAL_ACCEPTANCE. Argon advances the
+remaining full checklist, Gemini verifies actual repositories and all original requirements,
+Sol accepts groups/readiness. No repeated rewrite of accepted boundaries; no W4 GO yet.
+
 ## Current Slice 17 disposition
 
 [Sol SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.

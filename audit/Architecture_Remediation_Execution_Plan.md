@@ -1,5 +1,11 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Current disposition: Slice 19 scoped acceptance, whole-foundation PARTIAL_ACCEPTANCE.**
+[Sol acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) supersedes prior strict SQL
+caller/adapter findings only within its source boundary. Retain SQL 8/8, generalized 6/6,
+leases 7/7 and selected route 11/11 controls. Advance the full remaining checklist and
+physical/re-audit gates; no W1-W3 closure or W4 implementation approval is granted.
+
 **Latest Slice 17 review, source 7f66e7eb / handoff 00703c21: CHANGES_REQUESTED.**
 [SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md) retains old 9/9 and
 7/7 passes but records 1 pass / 7 new SQL-authority failures. Repository classes are SQL;

@@ -1,13 +1,21 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Sol disposition of Slice 19 (2026-11-07)
+
+[Scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) accepts the enumerated
+strict source/adapter corrections, retaining the observed passing controls. Full hashes
+below are corrected from actual Git objects. Automated group Verified entries remain
+tester evidence claims, not whole-group Sol acceptance. Real repository semantics,
+complete thirty-task coverage, physical gates and W4 entry remain separately open.
+
 ## Independent Verification Overview for Slice 19 & SQL Authority Closure
 
 - **Role**: `Gemini Flash` (`TESTER_MODEL`) — Sole independent verification owner. Zero production edits.
 - **Implementer**: `Argon` (`Gemini 4 Argon (Medium)`)
 - **Reviewer / Authority**: `Sol`
-- **Frozen Source Baseline (`SOURCE_SHA`)**: `f66271158ae1ec26d56dfd84a753ce3114d59c5e` (`f6627115`, Argon Slice 19)
-- **Argon Handoff Revision**: `4b42e2277aa42d4a5cb81ff0160d5b1ae0bf0375` (`4b42e227`, `audit/Argon_W1_W3_Critical_Handoff.md`)
-- **Independent Test Suite Baseline (`TEST_SHA`)**: `ee1cb0834aaae5fd110f8a846c483d735fec42a0` (`ee1cb083`)
+- **Frozen Source Baseline (`SOURCE_SHA`)**: `f6627115a8a2f9dacf12bc4d711aecf3677c11ee` (`f6627115`, Argon Slice 19)
+- **Argon Handoff Revision**: `4b42e2276a878aa656ca0d60fea192764f39e5cb` (`4b42e227`, `audit/Argon_W1_W3_Critical_Handoff.md`)
+- **Independent Test Suite Baseline (`TEST_SHA`)**: `ee1cb0836b1ee21ced64f3a4a8e1c5f247e31e6c` (`ee1cb083`); runner alias correction at `746079ddc5bc28c196ad40a8a0817e84715431b5`
 - **Git Branch**: `remediation/w1-2-batch-05-targeted`
 - **Verification Environment**: Clean Git checkout, offline network guard active, zero live database/queue/cloud mutations.
 - **Verification Scope**: Verification of Argon's frozen implementation across all nineteen actionable items (`TC01`–`TC20`), thirty foundation tasks (`FND01`–`FND30`), and nine governing acceptance groups (`G1`–`G9`), with targeted independent verification of Sol SQL-authority directives (`Sol_SQL_Authority_Review_7f66e7eb.mjs`), elimination of implicit test fallbacks, strict transaction requirements, and fail-closed queue credentials.
@@ -140,9 +148,9 @@ The nine foundation acceptance groups established by Sol are tracked as follows:
 ## 6. Verification Conclusion & Handoff to Sol
 
 Gemini Flash has completed independent automated verification:
-1. **Frozen source SHA**: `f66271158ae1ec26d56dfd84a753ce3114d59c5e` (`f6627115`, Argon Slice 19).
-2. **Argon Handoff Revision**: `4b42e2277aa42d4a5cb81ff0160d5b1ae0bf0375` (`4b42e227`).
-3. **Test suite SHA**: `ee1cb0834aaae5fd110f8a846c483d735fec42a0` (`ee1cb083`).
+1. **Frozen source SHA**: `f6627115a8a2f9dacf12bc4d711aecf3677c11ee` (`f6627115`, Argon Slice 19).
+2. **Argon Handoff Revision**: `4b42e2276a878aa656ca0d60fea192764f39e5cb` (`4b42e227`).
+3. **Test suite SHA**: `ee1cb0836b1ee21ced64f3a4a8e1c5f247e31e6c` (`ee1cb083`); exercised runner state includes `746079ddc5bc28c196ad40a8a0817e84715431b5`.
 4. **Production edits by Gemini Flash**: Exactly `0`.
 5. **Sol SQL Authority Probes (`Sol_SQL_Authority_Review_7f66e7eb.mjs`)**: **8/8 passed (exit 0)**.
 6. **Gemini Invariant Probes (`Gemini_SQL_Authority_Invariant_Review.mjs`)**: **6/6 passed (exit 0)**.

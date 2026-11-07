@@ -1,5 +1,13 @@
 # Gemini independent foundation testing packet
 
+## Slice 19 source boundary accepted; complete whole-scope evidence
+
+[Sol scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) records 8/8 SQL caller,
+6/6 generalized, 7/7 lease and selected 11/11 route controls passing. Retain these. Next
+verify actual SQL repository predicates/rollback/claims using controlled executors and
+complete all original GM/FND/group coverage and applicable authorized physical gates.
+No production edits or blanket group verification from these selected controls.
+
 ## Latest Slice 17 verification correction
 
 Read [Sol SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md).

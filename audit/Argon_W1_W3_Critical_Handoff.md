@@ -1,5 +1,14 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Current Sol disposition: Slice 19 accepted within source/adapter scope
+
+[Scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md): strict outbox dependency,
+mandatory invitation tx/returned row, real route wiring and queue credential denials are
+accepted within source/adapter controls. Sol reproduces SQL 8/8, Gemini invariants 6/6,
+leases 7/7 and selected route composition 11/11. This does not close whole FND/TC/groups.
+Advance remaining source/caller coverage, actual-repository semantics, quality and physical
+gates under the existing full checklist. Do not rewrite accepted strict-boundary behavior.
+
 ## Sol disposition of Slice 17 (7f66e7eb / handoff 00703c21)
 
 [SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.

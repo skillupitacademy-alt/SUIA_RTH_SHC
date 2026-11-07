@@ -1,5 +1,14 @@
 # Current owner override
 
+## Slice 19 scoped acceptance: advance the remaining checklist
+
+[Sol acceptance of f6627115](Sol_Slice19_Scoped_Acceptance_f6627115.md) accepts the strict
+source/adapter corrections within their stated boundary. Old SQL-composition failures
+are superseded for that boundary. Do not keep reimplementing/retesting only this slice.
+Continue ALL remaining TC01-TC20/FND01-FND30 requirements, full caller/coverage evidence,
+quality gates and prepared physical execution packets. Gemini verifies; Sol accepts groups.
+Whole W1-W3 closure and W4 implementation remain unapproved.
+
 ## Latest Slice 17 SQL composition review
 
 [Sol review of 7f66e7eb](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.

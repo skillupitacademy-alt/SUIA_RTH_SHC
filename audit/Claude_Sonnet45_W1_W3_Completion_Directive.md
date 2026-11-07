@@ -11,22 +11,30 @@ below remain binding; none is removed by the ownership change.
 
 ## Consolidated remaining-work checklist for W4 readiness
 
-**Latest evidence update:** [Slice 17 SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md)
+**Current status:** [Slice 19 scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md)
+accepts the strict source/adapter corrections at f6627115. The earlier S1/S3 caller-fallback
+findings are superseded for the enumerated accepted boundary. Keep all original FND/group
+requirements below: actual SQL semantics, complete caller/finding coverage, quality and
+required physical/re-audit/entry gates remain open. Do not reimplement accepted controls
+or count these selected tests as whole-foundation completion. W4 entry is not approved.
+
+**Historical evidence update:** [Slice 17 SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md)
 remains CHANGES_REQUESTED. Source 7f66e7eb adds pure SQL classes but actual application
 helpers still retain global/env/transaction fallbacks (new controls: 1 pass / 7 fail;
 old durable 9/9 and adapter 7/7 pass). S1/S3 remain the same pending source requirements.
 The complete thirty-row scope and stop conditions below are unchanged; no new project
 scope is introduced by these reproductions. W4 entry remains unapproved.
 
-Updated by Sol: 2026-11-07. Reviewed baseline: `7767e27ec2a68560469fd6bfe1140cff2a69c217`.
-Governing latest review: [durability review](Sol_W1_W3_Durability_Review_5abcd87a.md),
-CHANGES_REQUESTED. This section consolidates the EXISTING thirty requirements below;
+Updated by Sol: 2026-11-07. Current reviewed source: `f6627115a8a2f9dacf12bc4d711aecf3677c11ee`;
+reviewed test/handoff HEAD: `746079ddc5bc28c196ad40a8a0817e84715431b5`.
+Current governing disposition: [Slice 19 scoped acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md),
+whole-foundation PARTIAL_ACCEPTANCE. This section consolidates the EXISTING thirty requirements below;
 it is the current acceptance checklist, not another completion ledger or a new assignment.
 Preserve the existing consolidated handoff for source/test history and current work status.
 
-At preparation, Argon has uncommitted outbox/invitation/publisher/schema repairs and an
-edited handoff in the shared workspace. Those changes are IN PROGRESS, not reviewed here.
-Sol's checklist update does not modify, reset, stage or accept those production changes.
+Historical context: at the first checklist preparation (7767e27e), Argon had uncommitted
+outbox/invitation/publisher/schema repairs and an edited handoff. Those were preserved.
+They have since progressed through the frozen revisions and scoped acceptance above.
 Each agent must rediscover actual HEAD, dirty paths and worktree before execution.
 
 ### What is already demonstrated
@@ -36,10 +44,17 @@ adapters are rejected and the unsafe two-read fallback is removed. Retain existi
 ownership/export, scoring, nested-schema, placement, analytics and Gate 1 progress; their
 passing selected tests are historical evidence within their documented boundaries.
 Do not reimplement accepted behavior simply because its parent task still needs closure.
-The last new durability checks had 2 passes / 7 failures. Active repairs need a new frozen
-source and independent results before that failure disposition can change.
+Historical new durability checks had 2 passes / 7 failures. The later strict caller-boundary
+repair now has scoped source acceptance: Sol SQL 8/8, Gemini generalized 6/6, lease 7/7,
+and selected worker composition 11/11 passing. Actual SQL/physical and full-scope evidence
+outside that boundary remains open; those earlier counts are not current failure claims.
 
-### Immediate source blockers, already within the standing assignment
+### S1-S3 target contracts and remaining qualification
+
+The source/adapter corrections enumerated in the current scoped acceptance are accepted.
+The target descriptions below remain the contract, not instructions to repeat accepted
+implementation. Complete outstanding real-repository, full-caller and physical evidence
+identified in the current review; fix a further source defect only when demonstrated.
 
 1. **S1 / TC20 / FND23-FND25:** replace the runtime Map outbox with the real persistent
    repository; commit domain record plus immutable intent in the same SQL transaction;
@@ -53,8 +68,8 @@ source and independent results before that failure disposition can change.
    roll back failed changes, handle concurrent redemption and instance/restart separation.
    Preserve expiry, token hashing, tenant binding and valid single-use activation.
 
-These are source/transaction-composition requirements, not merely deferred physical tests.
-The runtime migration/repository wiring must exist even when physical application is gated.
+These are source/transaction-composition requirements as well as qualification boundaries.
+Runtime wiring must exist even when physical application is gated; retain accepted wiring.
 
 ### Complete thirty-task remaining acceptance checklist
 
@@ -124,7 +139,7 @@ violating those requirements remains corrective work within that scope. A genuin
 product/architecture requirement requires a separate explicit scope decision. A checklist
 cannot guarantee that independent tests will find no further within-scope defects.
 
-1. Argon completes current S1-S3 and remaining source/caller gaps; keep exact manifests
+1. Argon retains accepted S1-S3 boundaries and completes remaining source/caller gaps; keep exact manifests
    and incremental commits in the existing handoff. No routine within-contract approval wait.
 2. Argon freezes integrated SOURCE_SHA; Gemini verifies all original GM01-GM20/FND/group
    requirements, not merely the latest changes, and supplies separate TEST_SHA plus exact
