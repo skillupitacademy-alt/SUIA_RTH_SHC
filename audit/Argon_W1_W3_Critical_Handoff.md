@@ -10,6 +10,24 @@ is approved offline only; registration, targets, backup/restore and corrected ha
 precede execution approval. No blanket migrations or W4 GO. Re-anchor stale CPA references
 and finish actual taxonomy CRUD/caller evidence; no broad rewrite of sound source.
 
+## Argon Slice 22-A Completion Handoff (Migration Readiness, Schema/Journal Registration & Source-Evidence Completion)
+
+- **Branch**: `remediation/w1-2-batch-05-targeted`
+- **Starting Baseline (Sol Slice 21 Review Checkpoint)**: `05f407488600c09593062f27402bb63ebcfbe8eb` (`05f40748`)
+- **Preserved Baselines**: Slice 19 (`f6627115`), Slice 20 (`dc75ace5` / `56145791`), and Slice 21 (`d5f58b18`).
+- **Dedicated Slice 22-A Report**: [Argon_Slice22A_Migration_Readiness_And_Source_Handoff.md](Argon_Slice22A_Migration_Readiness_And_Source_Handoff.md)
+- **What Argon Completed in Slice 22-A**:
+  1. **Priority 1 — PostgreSQL Migration Readiness (`S22-A`)**:
+     - Executed read-only database preflight (`BEGIN READ ONLY ... ROLLBACK`) against `people_prod` (`target-fp: 1afab5e2e8e6`), `tutorial_prod` (`target-fp: d69fe9af7c33`), and `quiz_platform_prod` (`target-fp: 9d14dee0e309`) with zero secrets exposed.
+     - Fixed a critical DDL type bug in `packages/db-people/migrations/0009_student_invitations.sql` (`"platform" "people_platform" DEFAULT 'skillup' NOT NULL` instead of `"platform" "platform"`, matching live `people_prod` enum `people_platform` and `packages/db-people/src/schema/enums.ts`), added `--> statement-breakpoint` delimiters, registered `idx: 9` (`when: 1791600000000`) in `packages/db-people/migrations/meta/_journal.json`, and created `packages/db-people/migrations/meta/0009_snapshot.json`.
+     - Resolved the `0015_` numbering collision in `@quiz/db-tutorial` by moving `packages/db-tutorial/migrations/0015_event_outbox.sql` -> `packages/db-tutorial/migrations/0030_event_outbox.sql` (`git mv`), adding `--> statement-breakpoint` delimiters, and registering `idx: 29` (`when: 1791600001000 > 1791510064024`) in `packages/db-tutorial/migrations/meta/_journal.json` while keeping `0029_fnd03_add_tenant_to_progress.sql` untouched and unregistered.
+     - Documented exact SHA-256 checksums (`dc8452f27c575868d4957172697b6c032a11b35b545bdf60ad144288f608d4f0` and `987cee980101b7515b846d56c99f5e244f84a634d6316b6c1196ed8b9fbe5d29`), Neon branch/snapshot backup procedure, transactional dry-run/apply recipes, post-commit rollback guards, verification queries, and synthetic test fixtures in `audit/Argon_Slice22A_Migration_Readiness_And_Source_Handoff.md`.
+  2. **Priority 2 — Remaining Source Evidence (`FND19`/`TC16`, `FND01`, `FND12`, `FND17`)**:
+     - Created canonical `packages/validation/src/hierarchy.ts` (with alias-conflict refinements for `complexity` vs `complexityLevel`, `depth` vs `depthLevel`, and `order` vs `orderIndex` + `.partial()` support) and re-exported from `apps/api-server/src/schemas/hierarchy.schemas.ts` and `apps/skillhubcore-admin/src/schemas/hierarchy.schemas.ts`.
+     - Wired all 10 SHC taxonomy CRUD route files (`apps/skillhubcore-admin/src/app/api/admin/{domains,subjects,topics,subtopics,skills}/{route,[id]/route}.ts`) to validate request depth/size and Zod schemas **before** calling `getDb()`, enforce `requireAdminRequest`, reject conflicting alias fields with `400`, return `404` on missing records, and serialize `depth`/`depthLevel`, `order`/`orderIndex`, and `complexity`/`complexityLevel`.
+     - Expanded `hierarchy-contract.test.ts` (31 tests) and `foundation-validation.test.ts` (14 multi-method CRUD route tests across all 5 entities) -> **2 files / 45 passed (45)**.
+     - Re-anchored Table 1.2 in `audit/Argon_W1_W3_Remaining_Work_And_Inventory_Reconciliation.md` to the exact `CompleteProjectAudit.md` line numbers (`2796..3933, 6232, 6294`) and verbatim headings from `audit/Audit_Finding_Root_Cause_Crosswalk.csv`, and enriched all 72 `MA-01`..`MA-29` and `TI-01`..`TI-43` rows in `audit/FND12_Complete_Truth_Inventory.md` and `audit/Argon_W1_W3_Remaining_Work_And_Inventory_Reconciliation.md` with function/field/owner/finding/test/disposition columns.
+
 ## Argon Slice 21 Completion Handoff at `d5f58b18` (2026-11-07)
 
 - **Branch**: `remediation/w1-2-batch-05-targeted`

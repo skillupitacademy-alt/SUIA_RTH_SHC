@@ -68,6 +68,17 @@ describe('Topic schema contract', () => {
     expect(result.complexityLevel).toBe(3);
   });
 
+  it('accepts matching complexity and complexityLevel', () => {
+    const result = topicSchema.parse({ ...base, complexity: 'advanced', complexityLevel: 3 });
+    expect(result.complexity).toBe('advanced');
+    expect(result.complexityLevel).toBe(3);
+  });
+
+  it('rejects conflicting complexity and complexityLevel', () => {
+    const result = topicSchema.safeParse({ ...base, complexity: 'beginner', complexityLevel: 3 });
+    expect(result.success).toBe(false);
+  });
+
   it('rejects invalid named complexity', () => {
     const result = topicSchema.safeParse({ ...base, complexity: 'invalid' });
     expect(result.success).toBe(false);
@@ -128,6 +139,26 @@ describe('Subtopic schema contract', () => {
     expect(result.order).toBe(3);
     expect(result.orderIndex).toBe(3);
     expect(result.status).toBe('active');
+  });
+
+  it('rejects conflicting depth and depthLevel', () => {
+    const result = subtopicSchema.safeParse({
+      topicId: validUuid,
+      name: 'Subtopic',
+      depth: 1,
+      depthLevel: 3,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects conflicting order and orderIndex', () => {
+    const result = subtopicSchema.safeParse({
+      topicId: validUuid,
+      name: 'Subtopic',
+      order: 1,
+      orderIndex: 5,
+    });
+    expect(result.success).toBe(false);
   });
 
   it('rejects zero depthLevel', () => {

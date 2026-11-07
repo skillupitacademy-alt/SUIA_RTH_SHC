@@ -23,14 +23,14 @@ async function getHandler(_req: NextRequest) {
   const start = Date.now();
   try {
     await requireAdminRouteAccess(_req);
-    
+
     const searchParams = _req.nextUrl.searchParams;
     const cursor = searchParams.get('cursor');
     const limit = parseInt(searchParams.get('limit') ?? '20');
     const search = searchParams.get('search') ?? undefined;
 
     bootstrapCQRS();
-    const result = await queryBus.dispatch(new GetDomainsQuery(cursor, limit, { search })) as {
+    const result = (await queryBus.dispatch(new GetDomainsQuery(cursor, limit, { search }))) as {
       domains: DomainInsert[];
       total: number;
       nextCursor: string | null;
@@ -39,12 +39,12 @@ async function getHandler(_req: NextRequest) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.get.duration', durationMs, { outcome: 'success' });
-    
+
     return ApiResponse.success({
       data: result.domains,
       total: result.total,
       nextCursor: result.nextCursor,
-      limit: result.limit
+      limit: result.limit,
     });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;
@@ -61,12 +61,12 @@ async function postHandler(_req: NextRequest) {
 
     const rawBody = await _req.json();
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
-        return ApiResponse.error(badRequest('Payload too deep or large'));
+      return ApiResponse.error(badRequest('Payload too deep or large'));
     }
 
     const sanitizedBody = sanitizeJsonField(rawBody);
     const parsed = domainSchema.safeParse(sanitizedBody);
-    
+
     if (!parsed.success) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
@@ -76,6 +76,7 @@ async function postHandler(_req: NextRequest) {
       name: body.name,
       description: body.description,
       category: body.category,
+      order: body.order,
       status: body.status,
     };
 
@@ -87,7 +88,7 @@ async function postHandler(_req: NextRequest) {
     const durationMs = Date.now() - start;
     recordCounter(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.success', 1);
     recordTimer(METRICS.ADMIN.DASHBOARD_LOAD + '.domains.create.duration', durationMs, { outcome: 'success' });
-    
+
     return ApiResponse.success(result, 201, { 'X-Duration-Ms': durationMs.toString() });
   } catch (_error: unknown) {
     const durationMs = Date.now() - start;

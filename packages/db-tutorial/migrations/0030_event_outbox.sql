@@ -1,4 +1,4 @@
--- Offline migration artifact: 0015_event_outbox.sql
+-- Offline migration artifact: 0030_event_outbox.sql
 -- Purpose: Durable transactional outbox / publication-intent ledger for worker downstream event recovery (Sol A2 / L3 / D7).
 -- Do NOT execute against live database without authorized physical migration gate.
 
@@ -19,12 +19,12 @@ CREATE TABLE IF NOT EXISTS "event_outbox" (
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
-
+--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "event_outbox_tenant_event_aggregate_unq"
   ON "event_outbox" ("tenant_id", "event_type", "aggregate_id");
-
+--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "event_outbox_event_id_unq"
   ON "event_outbox" ("event_id");
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "event_outbox_status_idx"
   ON "event_outbox" ("tenant_id", "status", "created_at");

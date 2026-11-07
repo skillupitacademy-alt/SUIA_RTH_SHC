@@ -81,6 +81,7 @@ async function postHandler(_req: NextRequest) {
       subjectId: body.subjectId,
       name: body.name,
       description: body.description,
+      order: body.order,
       status: body.status,
       complexity: body.complexity ?? (body.complexityLevel !== undefined ? String(body.complexityLevel) : undefined),
       weight: typeof body.weight === 'number' ? body.weight : undefined,

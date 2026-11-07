@@ -1,8 +1,7 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { domains, getDb } from '@quiz/db';
-import { domainSchema } from '@/schemas/hierarchy.schemas';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
+import { domains, getDb } from '@quiz/db';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
     const cursor = searchParams.get('cursor');
 
     const conditions = [];
-    
+
     if (search) {
       conditions.push(ilike(domains.name, `%${search}%`));
     }
@@ -28,7 +27,6 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(domains.id, cursor));
     }
 
-    // Fetch domains
     const results = await db
       .select()
       .from(domains)
@@ -60,7 +58,6 @@ export async function POST(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
     const rawBody = await request.json();
 
     if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
@@ -81,6 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = parsed.data;
+    const db = getDb();
 
     const [newDomain] = await db
       .insert(domains)
@@ -109,9 +107,17 @@ export async function PUT(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
-    const body = await request.json();
-    const { id, name, description, category, status, order } = body;
+    const rawBody = await request.json();
+
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json(
+        { error: 'Payload too deep or large' },
+        { status: 400 }
+      );
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    const id = typeof sanitizedBody?.id === 'string' ? sanitizedBody.id : '';
 
     if (!id) {
       return NextResponse.json(
@@ -120,13 +126,23 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updateData: any = { updatedAt: new Date() };
+    const parsed = domainSchema.partial().safeParse(sanitizedBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid payload', issues: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { name, description, category, status, order } = parsed.data;
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (category !== undefined) updateData.category = category;
     if (status !== undefined) updateData.status = status;
     if (order !== undefined) updateData.order = order;
 
+    const db = getDb();
     const [updatedDomain] = await db
       .update(domains)
       .set(updateData)
@@ -150,13 +166,12 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/admin/domains - Delete a domain (soft delete)
+// DELETE /api/admin/domains - Delete a domain
 export async function DELETE(request: NextRequest) {
   const accessDenied = await requireAdminRequest(request);
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
     const ids = searchParams.get('ids');
@@ -168,14 +183,16 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const db = getDb();
+
     if (ids) {
       const idArray = ids.split(',');
       await db
         .delete(domains)
         .where(inArray(domains.id, idArray));
 
-      return NextResponse.json({ 
-        message: `${idArray.length} domains deleted successfully` 
+      return NextResponse.json({
+        message: `${idArray.length} domains deleted successfully`,
       });
     } else {
       const [deletedDomain] = await db
@@ -190,8 +207,8 @@ export async function DELETE(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ 
-        message: 'Domain deleted successfully' 
+      return NextResponse.json({
+        message: 'Domain deleted successfully',
       });
     }
   } catch (error) {

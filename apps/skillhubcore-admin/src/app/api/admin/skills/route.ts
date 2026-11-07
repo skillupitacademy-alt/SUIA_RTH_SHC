@@ -1,5 +1,6 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+import { skillSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, skills } from '@quiz/db';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,14 +13,19 @@ export async function GET(request: NextRequest) {
     const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
-    const category = searchParams.get('category');
+    const category = searchParams.get('category') as 'technical' | 'cognitive' | 'process' | null;
     const limit = parseInt(searchParams.get('limit') || '20');
 
     const conditions = [];
     if (search) conditions.push(ilike(skills.name, `%${search}%`));
-    if (category) conditions.push(eq(skills.category, category as any));
+    if (category) conditions.push(eq(skills.category, category));
 
-    const results = await db.select().from(skills).where(conditions.length > 0 ? and(...conditions) : undefined).orderBy(desc(skills.createdAt)).limit(limit + 1);
+    const results = await db
+      .select()
+      .from(skills)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(skills.createdAt))
+      .limit(limit + 1);
     const hasMore = results.length > limit;
     const data = hasMore ? results.slice(0, limit) : results;
 
@@ -35,21 +41,32 @@ export async function POST(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
-    const body = await request.json();
-    const { name, description, category, weight = 1, status = 'active' } = body;
+    const rawBody = await request.json();
 
-    if (!name || !category) {
-      return NextResponse.json({ error: 'Name and category required' }, { status: 400 });
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json({ error: 'Payload too deep or large' }, { status: 400 });
     }
 
-    const [newSkill] = await db.insert(skills).values({
-      name,
-      description,
-      category,
-      weight: Number.isFinite(Number(weight)) ? Number(weight) : 1,
-      status,
-    }).returning();
+    const sanitizedBody = sanitizeJsonField(rawBody);
+    const parsed = skillSchema.safeParse(sanitizedBody);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const body = parsed.data;
+    const db = getDb();
+
+    const [newSkill] = await db
+      .insert(skills)
+      .values({
+        name: body.name,
+        description: body.description,
+        category: body.category,
+        weight: body.weight ?? 1,
+        status: body.status ?? 'active',
+      })
+      .returning();
     return NextResponse.json(newSkill, { status: 201 });
   } catch (error) {
     console.error('Error creating skill:', error);
@@ -62,20 +79,32 @@ export async function PUT(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
-    const body = await request.json();
-    const { id, name, description, category, mappingType, weight, status } = body;
+    const rawBody = await request.json();
+
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json({ error: 'Payload too deep or large' }, { status: 400 });
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    const id = typeof sanitizedBody?.id === 'string' ? sanitizedBody.id : '';
 
     if (!id) return NextResponse.json({ error: 'Skill ID required' }, { status: 400 });
 
-    const updateData: any = { updatedAt: new Date() };
-    if (name) updateData.name = name;
+    const parsed = skillSchema.partial().safeParse(sanitizedBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const { name, description, category, mappingType, weight, status } = parsed.data;
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (category) updateData.category = category;
+    if (category !== undefined) updateData.category = category;
     void mappingType;
-    if (weight) updateData.weight = Number.isFinite(Number(weight)) ? Number(weight) : 1;
+    if (weight !== undefined) updateData.weight = weight;
     if (status !== undefined) updateData.status = status;
 
+    const db = getDb();
     const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
 
@@ -91,19 +120,22 @@ export async function DELETE(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
     const { searchParams } = request.nextUrl;
     const id = searchParams.get('id');
     const ids = searchParams.get('ids');
 
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
+    const db = getDb();
+
     if (ids) {
       await db.delete(skills).where(inArray(skills.id, ids.split(',')));
       return NextResponse.json({ message: 'Skills deleted' });
     }
 
-    await db.delete(skills).where(eq(skills.id, id!));
+    const [deleted] = await db.delete(skills).where(eq(skills.id, id!)).returning();
+    if (!deleted) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
+
     return NextResponse.json({ message: 'Skill deleted' });
   } catch (error) {
     console.error('Error deleting skill:', error);

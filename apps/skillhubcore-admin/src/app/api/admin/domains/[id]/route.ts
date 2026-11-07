@@ -1,4 +1,6 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+import { domainSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
@@ -9,17 +11,42 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   try {
     const { id } = await params;
-    const body = await request.json();
-    const db = getDb();
+    const rawBody = await request.json();
 
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json({ error: 'Payload too deep or large' }, { status: 400 });
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    if (
+      sanitizedBody?.order !== undefined &&
+      sanitizedBody?.orderIndex !== undefined &&
+      sanitizedBody.order !== sanitizedBody.orderIndex
+    ) {
+      return NextResponse.json({ error: 'Conflicting order and orderIndex values' }, { status: 400 });
+    }
+
+    const normalizedInput = {
+      ...sanitizedBody,
+      ...(sanitizedBody?.order === undefined && sanitizedBody?.orderIndex !== undefined
+        ? { order: sanitizedBody.orderIndex }
+        : {}),
+    };
+
+    const parsed = domainSchema.partial().safeParse(normalizedInput);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const body = parsed.data;
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.order !== undefined) updateData.order = body.order;
-    if (body.orderIndex !== undefined) updateData.order = body.orderIndex;
 
+    const db = getDb();
     const [updated] = await db.update(domains).set(updateData).where(eq(domains.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
 
