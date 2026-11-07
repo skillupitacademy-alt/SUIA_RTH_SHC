@@ -6,8 +6,9 @@ import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } fro
 import { listAdminStudents } from '@/lib/skillup-admin-data';
 import {
   generateRandomBootstrapPasswordHash,
-  issueStudentInvitation,
+  issueStudentInvitationInDb,
   normalizeStudentEmail,
+  runInInvitationTransaction,
 } from '@/lib/student-invitation';
 import { admissions, db, enquiries, userProfiles, users } from '@quiz/db-people';
 
@@ -54,8 +55,8 @@ export async function POST(request: NextRequest) {
 
   const bootstrapPasswordHash = await generateRandomBootstrapPasswordHash();
 
-  const createStudentWrites = async (executor: typeof db) => {
-    const [user] = await executor
+  const { user, invitation } = await runInInvitationTransaction(db, async (tx) => {
+    const [createdUser] = await tx
       .insert(users)
       .values({
         email: normalizedEmail,
@@ -67,13 +68,20 @@ export async function POST(request: NextRequest) {
       })
       .returning({ id: users.id });
 
-    const invitation = issueStudentInvitation({
-      userId: user.id,
-      email: normalizedEmail,
-      platform: 'skillup',
-    });
+    if (!createdUser?.id) {
+      throw new Error('Failed to create student user record');
+    }
 
-    const [enquiry] = await executor
+    const issuedInvitation = await issueStudentInvitationInDb(
+      {
+        userId: createdUser.id,
+        email: normalizedEmail,
+        platform: 'skillup',
+      },
+      tx
+    );
+
+    const [enquiry] = await tx
       .insert(enquiries)
       .values({
         fullName: parsed.data.name,
@@ -86,32 +94,25 @@ export async function POST(request: NextRequest) {
       })
       .returning({ id: enquiries.id });
 
-    await executor.insert(userProfiles).values({ userId: user.id, name: parsed.data.name });
-    await executor.insert(admissions).values({
+    await tx.insert(userProfiles).values({ userId: createdUser.id, name: parsed.data.name });
+    await tx.insert(admissions).values({
       enquiryId: enquiry.id,
-      studentUserId: user.id,
+      studentUserId: createdUser.id,
       admissionType: 'training',
       status: 'approved',
       documents: {
         invitation: {
-          invitationId: invitation.record.invitationId,
-          tokenHash: invitation.record.tokenHash,
-          status: invitation.record.status,
-          issuedAt: invitation.record.issuedAt,
-          expiresAt: invitation.record.expiresAt,
+          invitationId: issuedInvitation.record.invitationId,
+          tokenHash: issuedInvitation.record.tokenHash,
+          status: issuedInvitation.record.status,
+          issuedAt: issuedInvitation.record.issuedAt,
+          expiresAt: issuedInvitation.record.expiresAt,
         },
       },
     });
 
-    return { user, invitation };
-  };
-
-  const transactionFn = (db as unknown as { transaction?: (cb: (tx: typeof db) => Promise<unknown>) => Promise<unknown> }).transaction;
-  const createdResult = typeof transactionFn === 'function'
-    ? ((await transactionFn.call(db, createStudentWrites as any)) as { user: { id: string }; invitation: ReturnType<typeof issueStudentInvitation> })
-    : await createStudentWrites(db);
-
-  const { user, invitation } = createdResult;
+    return { user: createdUser, invitation: issuedInvitation };
+  });
 
   return jsonData(
     {

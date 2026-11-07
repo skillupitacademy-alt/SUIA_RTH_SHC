@@ -20,6 +20,7 @@ import {
   dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  runInWorkerOutboxTransaction,
   upsertTransactionalOutboxIntent,
   upsertWorkerOutboxIntent,
   type WorkerRedisLike,
@@ -110,19 +111,58 @@ const handler = createQStashHandler(
               ? rawIssuedAt
               : new Date().toISOString();
 
+        const deterministicEventId = deriveDeterministicEventUuid(
+          `realtutorialhub:${PlatformEventTypes.CERTIFICATE_ISSUED}:${existingRow.id}`
+        );
+
+        const canonicalRecoveryEnvelope =
+          existingOutbox?.envelope ??
+          (typeof createEventEnvelope === 'function'
+            ? createEventEnvelope(
+                PlatformEventTypes.CERTIFICATE_ISSUED,
+                {
+                  certificateId: existingRow.id,
+                  userId,
+                  issuedAt: issuedAtIso,
+                },
+                {
+                  id: deterministicEventId,
+                  correlationId: parentId,
+                  source: 'realtutorialhub',
+                  occurredAt: issuedAtIso,
+                  version: 1,
+                }
+              )
+            : {
+                id: deterministicEventId,
+                type: PlatformEventTypes.CERTIFICATE_ISSUED,
+                correlationId: parentId,
+                source: 'realtutorialhub',
+                occurredAt: issuedAtIso,
+                version: 1,
+                data: {
+                  certificateId: existingRow.id,
+                  userId,
+                  issuedAt: issuedAtIso,
+                },
+              });
+
         const recoveryIntent = upsertWorkerOutboxIntent({
           tenantId: 'realtutorialhub',
           eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
           aggregateId: existingRow.id,
+          eventId: deterministicEventId,
           ownerToken: claim.ownerToken,
           payload: {
             certificateId: existingRow.id,
             userId,
             issuedAt: issuedAtIso,
           },
+          envelope: canonicalRecoveryEnvelope as Record<string, unknown>,
         });
 
         await dispatchWorkerOutboxIntent(recoveryIntent, claim.ownerToken, async (intent) => {
+          const storedEnvelope = (intent.envelope ?? canonicalRecoveryEnvelope) as Record<string, unknown>;
           await publishEvent(
             PlatformEventTypes.CERTIFICATE_ISSUED,
             {
@@ -133,6 +173,23 @@ const handler = createQStashHandler(
             {
               id: intent.eventId,
               tenantId: 'realtutorialhub',
+              correlationId:
+                typeof storedEnvelope.correlationId === 'string'
+                  ? storedEnvelope.correlationId
+                  : parentId,
+              source:
+                typeof storedEnvelope.source === 'string'
+                  ? storedEnvelope.source
+                  : 'realtutorialhub',
+              occurredAt:
+                typeof storedEnvelope.occurredAt === 'string'
+                  ? storedEnvelope.occurredAt
+                  : issuedAtIso,
+              version:
+                typeof storedEnvelope.version === 'number'
+                  ? storedEnvelope.version
+                  : 1,
+              envelope: storedEnvelope as never,
               destinationUrl:
                 process.env.CERTIFICATE_ISSUED_EVENT_URL ??
                 'https://placeholder.invalid/consumers/certificate-issued',
@@ -167,7 +224,7 @@ const handler = createQStashHandler(
         });
       }
 
-      const { created, outboxIntent } = await db.transaction(async (tx) => {
+      const { created, outboxIntent } = await runInWorkerOutboxTransaction(db, async (tx) => {
         const [row] = await withTimeout(
           tx
             .insert(certificates)
@@ -239,7 +296,7 @@ const handler = createQStashHandler(
               userId,
               issuedAt: row.issuedAt.toISOString(),
             },
-            envelope: canonicalEnvelope,
+            envelope: canonicalEnvelope as Record<string, unknown>,
           },
           tx
         );
@@ -248,6 +305,7 @@ const handler = createQStashHandler(
       });
 
       await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
+        const storedEnvelope = (intent.envelope ?? {}) as Record<string, unknown>;
         await publishEvent(
           PlatformEventTypes.CERTIFICATE_ISSUED,
           {
@@ -258,6 +316,23 @@ const handler = createQStashHandler(
           {
             id: intent.eventId,
             tenantId: 'realtutorialhub',
+            correlationId:
+              typeof storedEnvelope.correlationId === 'string'
+                ? storedEnvelope.correlationId
+                : parentId,
+            source:
+              typeof storedEnvelope.source === 'string'
+                ? storedEnvelope.source
+                : 'realtutorialhub',
+            occurredAt:
+              typeof storedEnvelope.occurredAt === 'string'
+                ? storedEnvelope.occurredAt
+                : created.issuedAt.toISOString(),
+            version:
+              typeof storedEnvelope.version === 'number'
+                ? storedEnvelope.version
+                : 1,
+            envelope: intent.envelope as never,
             destinationUrl:
               process.env.CERTIFICATE_ISSUED_EVENT_URL ??
               'https://placeholder.invalid/consumers/certificate-issued',

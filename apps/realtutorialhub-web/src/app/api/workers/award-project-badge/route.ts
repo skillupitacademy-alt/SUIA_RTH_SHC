@@ -16,6 +16,7 @@ import {
   dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  runInWorkerOutboxTransaction,
   upsertTransactionalOutboxIntent,
   upsertWorkerOutboxIntent,
   type WorkerRedisLike,
@@ -129,7 +130,7 @@ const badgeHandler = createQStashHandler(
       );
 
       if (!alreadyAwarded) {
-        const txOutcome = await db.transaction(async (tx) => {
+        const txOutcome = await runInWorkerOutboxTransaction(db, async (tx) => {
           const txRepo = projectRepository.withDb(tx as never);
           await txRepo.awardBadge(userId, badgeId, submissionId);
           await withTimeout(

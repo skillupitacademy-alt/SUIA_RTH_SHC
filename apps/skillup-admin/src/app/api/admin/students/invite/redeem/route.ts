@@ -1,19 +1,19 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { jsonData, jsonError, parseJsonOrFormBody } from '@/lib/admin-bff';
 import {
-  claimStudentInvitationForRedemption,
-  commitStudentInvitationRedemption,
+  claimStudentInvitationInDb,
+  commitStudentInvitationInTransaction,
   normalizeStudentEmail,
-  releaseStudentInvitationClaim,
+  releaseStudentInvitationInDb,
+  runInInvitationTransaction,
 } from '@/lib/student-invitation';
 import * as peopleDb from '@quiz/db-people';
 
 const { admissions, db, users } = peopleDb;
-const studentTable = ('studentInvitations' in peopleDb ? (peopleDb as Record<string, unknown>).studentInvitations : undefined) as any;
 
 const redeemInvitationSchema = z.object({
   invitationToken: z.string().min(16),
@@ -27,7 +27,7 @@ const redeemInvitationSchema = z.object({
   platform: z.string().optional(),
 });
 
-function hasZeroAffectedRows(result: unknown): boolean {
+export function hasZeroAffectedRows(result: unknown): boolean {
   if (result === null || result === undefined) {
     return true;
   }
@@ -70,11 +70,14 @@ export async function POST(request: NextRequest) {
   }
 
   const normalizedEmail = normalizeStudentEmail(parsed.data.email);
-  const claim = claimStudentInvitationForRedemption({
-    invitationToken: parsed.data.invitationToken,
-    email: normalizedEmail,
-    platform,
-  });
+  const claim = await claimStudentInvitationInDb(
+    {
+      invitationToken: parsed.data.invitationToken,
+      email: normalizedEmail,
+      platform,
+    },
+    db
+  );
 
   if (!claim.ok) {
     const statusByReason: Record<typeof claim.reason, number> = {
@@ -90,10 +93,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const newPasswordHash = await bcrypt.hash(parsed.data.newPassword, 10);
-    const redeemedAtIso = new Date().toISOString();
+    const redeemedAtDate = new Date();
+    const redeemedAtIso = redeemedAtDate.toISOString();
 
-    const executeActivationWrites = async (executor: typeof db) => {
-      const userUpdateResult = await executor
+    const committed = await runInInvitationTransaction(db, async (tx) => {
+      const userUpdateBuilder = tx
         .update(users)
         .set({
           passwordHash: newPasswordHash,
@@ -107,28 +111,31 @@ export async function POST(request: NextRequest) {
           )
         );
 
+      const userUpdateResult =
+        typeof (userUpdateBuilder as { returning?: unknown })?.returning === 'function'
+          ? await (userUpdateBuilder as unknown as { returning: () => Promise<unknown> }).returning()
+          : await userUpdateBuilder;
+
       if (hasZeroAffectedRows(userUpdateResult)) {
         throw new ZeroAffectedAccountRowsError();
       }
 
       let existingDocuments: Record<string, unknown> = {};
-      const selectFn = (executor as unknown as { select?: (...args: unknown[]) => unknown }).select;
-      if (typeof selectFn === 'function') {
-        try {
-          const rows = await executor
-            .select({ documents: admissions.documents })
-            .from(admissions)
-            .where(eq(admissions.studentUserId, claim.record.userId))
-            .limit(1);
-          if (Array.isArray(rows) && rows[0]?.documents && typeof rows[0].documents === 'object') {
-            existingDocuments = { ...(rows[0].documents as Record<string, unknown>) };
-          }
-        } catch {
-          // Proceed with invitation metadata update when mock select only stubs users
+      if (typeof tx?.select === 'function') {
+        const selectBuilder = tx
+          .select({ documents: admissions.documents })
+          .from(admissions)
+          .where(eq(admissions.studentUserId, claim.record.userId));
+        const rows =
+          typeof selectBuilder?.limit === 'function'
+            ? await selectBuilder.limit(1)
+            : await selectBuilder;
+        if (Array.isArray(rows) && rows[0]?.documents && typeof rows[0].documents === 'object') {
+          existingDocuments = { ...(rows[0].documents as Record<string, unknown>) };
         }
       }
 
-      await executor
+      await tx
         .update(admissions)
         .set({
           documents: {
@@ -145,45 +152,14 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(admissions.studentUserId, claim.record.userId));
 
-      if (studentTable !== undefined && studentTable !== null) {
-        try {
-          await executor
-            .update(studentTable)
-            .set({
-              status: 'redeemed',
-              redeemedAt: new Date(redeemedAtIso),
-              claimOwnerToken: null,
-              claimExpiresAt: null,
-              updatedAt: new Date(redeemedAtIso),
-            })
-            .where(
-              and(
-                eq(studentTable.id, claim.record.invitationId),
-                or(
-                  eq(studentTable.status, 'claiming'),
-                  eq(studentTable.status, 'pending')
-                )
-              )
-            );
-        } catch {
-          // Proceed when mock executor stubs only users and admissions
-        }
-      }
-    };
-
-    const transactionFn = (db as unknown as { transaction?: (cb: (tx: typeof db) => Promise<unknown>) => Promise<unknown> }).transaction;
-    if (typeof transactionFn === 'function') {
-      await transactionFn.call(db, async (tx: typeof db) => {
-        await executeActivationWrites(tx);
-      });
-    } else {
-      await executeActivationWrites(db);
-    }
-
-    const committed = commitStudentInvitationRedemption({
-      invitationId: claim.record.invitationId,
-      claimToken: claim.claimToken,
-      now: new Date(redeemedAtIso),
+      return commitStudentInvitationInTransaction(
+        {
+          invitationId: claim.record.invitationId,
+          claimToken: claim.claimToken,
+          now: redeemedAtDate,
+        },
+        tx
+      );
     });
 
     return jsonData(
@@ -198,10 +174,13 @@ export async function POST(request: NextRequest) {
       200
     );
   } catch (error) {
-    releaseStudentInvitationClaim({
-      invitationId: claim.record.invitationId,
-      claimToken: claim.claimToken,
-    });
+    await releaseStudentInvitationInDb(
+      {
+        invitationId: claim.record.invitationId,
+        claimToken: claim.claimToken,
+      },
+      db
+    );
     if (error instanceof ZeroAffectedAccountRowsError) {
       return jsonError(error.message, 404);
     }

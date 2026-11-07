@@ -114,20 +114,39 @@ export async function publishEvent<TType extends PlatformEventType>(
   let envelope: EventEnvelope<TType, PlatformEventPayloadMap[TType]>;
 
   if (options.envelope !== undefined && options.envelope !== null) {
-    envelope = options.envelope as EventEnvelope<TType, PlatformEventPayloadMap[TType]>;
-    if (explicitId !== undefined) {
+    const providedEnvelope = options.envelope as EventEnvelope<TType, PlatformEventPayloadMap[TType]>;
+    const incomingPayloadCanonical = canonicalizePayloadJson(payload);
+    const envelopePayloadCanonical = canonicalizePayloadJson(providedEnvelope.data);
+
+    if (
+      providedEnvelope.type !== type ||
+      (explicitId !== undefined && providedEnvelope.id !== explicitId) ||
+      envelopePayloadCanonical !== incomingPayloadCanonical
+    ) {
+      throw new Error(
+        `Conflicting publication envelope or payload for existing event id ${explicitId ?? providedEnvelope.id}`
+      );
+    }
+
+    const ledgerKey = explicitId ?? providedEnvelope.id;
+    if (typeof ledgerKey === 'string' && ledgerKey.trim().length > 0) {
       const ledger = getPublisherLedger();
-      const existing = ledger.get(explicitId);
-      const incomingPayloadCanonical = canonicalizePayloadJson(payload);
-      if (existing !== undefined && existing.payloadCanonical !== incomingPayloadCanonical) {
-        throw new Error(`Conflicting publication envelope or payload for existing event id ${explicitId}`);
+      const existing = ledger.get(ledgerKey);
+      if (
+        existing !== undefined &&
+        (existing.envelope.type !== type ||
+          existing.tenantScope !== tenantScope ||
+          existing.payloadCanonical !== incomingPayloadCanonical)
+      ) {
+        throw new Error(`Conflicting publication envelope or payload for existing event id ${ledgerKey}`);
       }
-      ledger.set(explicitId, {
+      ledger.set(ledgerKey, {
         tenantScope,
         payloadCanonical: incomingPayloadCanonical,
-        envelope,
+        envelope: providedEnvelope,
       });
     }
+    envelope = providedEnvelope;
   } else if (explicitId !== undefined) {
     const ledger = getPublisherLedger();
     const existing = ledger.get(explicitId);
