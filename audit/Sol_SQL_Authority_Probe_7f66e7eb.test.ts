@@ -14,10 +14,16 @@ vi.mock('@quiz/db-people', () => ({
   db: {},
   studentInvitations: { id: 'id', status: 'status', claimOwnerToken: 'claimOwnerToken' },
   StudentInvitationRepository: class {
+    _executor: any;
+    constructor(executor?: any) { this._executor = executor; }
     async claimForRedemption() {
       fixture.claimCalls++;
       if (fixture.failSql) throw new Error('synthetic authoritative SQL unavailable');
       return { ok: true, claimToken: 'sql-owner', record: fixture.record };
+    }
+    async redeemAtomic(arg: { invitationId: string; claimToken: string; now: Date }) {
+      // Canonical repository redemption: returns a redeemed record when predicates pass
+      return { ...fixture.record, id: arg.invitationId, status: 'redeemed', redeemedAt: arg.now.toISOString() };
     }
   },
 }));
