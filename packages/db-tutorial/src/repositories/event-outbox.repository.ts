@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { and, eq, lte, or, sql } from 'drizzle-orm';
+import { and, eq, isNull, lte, or, sql } from 'drizzle-orm';
 import { STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db';
 import type { TutorialDbClientLike } from '@quiz/types';
 
@@ -240,12 +240,14 @@ export class EventOutboxRepository {
               envelope: cloneAndFreezePayload(input.envelope) as any,
               updatedAt: new Date(),
             })
-            .where(eq(eventOutbox.id, existing.id))
+            .where(and(eq(eventOutbox.id, existing.id), isNull(eventOutbox.envelope)))
             .returning(),
           'eventOutbox.updateEnvelope'
         );
         if (!Array.isArray(updatedRows) || updatedRows.length === 0 || updatedRows[0] === undefined) {
-          throw new Error('Failed to update outbox envelope: zero affected rows');
+          const current = await this.findIntent(normalizedTenant, normalizedType, normalizedAggregate);
+          if (current?.envelope && canonicalizeOutboxJson(current.envelope) === canonicalizeOutboxJson(input.envelope)) return current;
+          throw new Error('Conflicting outbox envelope for existing event identity');
         }
         return mapRowToRecord(updatedRows[0]);
       }
@@ -387,7 +389,6 @@ export class EventOutboxRepository {
           publishedAt: now,
           leaseExpiresAt: null,
           lastError: null,
-          ...(input.envelope ? { envelope: cloneAndFreezePayload(input.envelope) as any } : {}),
           updatedAt: now,
         })
         .where(
@@ -396,7 +397,8 @@ export class EventOutboxRepository {
             eq(eventOutbox.eventType, normalizedType),
             eq(eventOutbox.aggregateId, normalizedAggregate),
             eq(eventOutbox.status, 'publishing'),
-            eq(eventOutbox.ownerToken, normalizedOwner)
+            eq(eventOutbox.ownerToken, normalizedOwner),
+            ...(input.envelope ? [sql`${eventOutbox.envelope} = ${JSON.stringify(input.envelope)}::jsonb`] : [])
           )
         )
         .returning(),
@@ -408,7 +410,8 @@ export class EventOutboxRepository {
     }
 
     const existing = await this.findIntent(normalizedTenant, normalizedType, normalizedAggregate);
-    if (existing?.status === 'published' && existing.ownerToken === normalizedOwner) {
+    if (existing?.status === 'published' && existing.ownerToken === normalizedOwner &&
+        (!input.envelope || (existing.envelope && canonicalizeOutboxJson(existing.envelope) === canonicalizeOutboxJson(input.envelope)))) {
       return existing;
     }
     throw new Error('Outbox publication ownership lost before completion');

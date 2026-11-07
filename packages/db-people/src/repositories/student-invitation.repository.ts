@@ -274,7 +274,7 @@ export class StudentInvitationRepository {
     }
 
     const now = input.now ?? new Date();
-    if (now.getTime() > new Date(existing.expiresAt).getTime()) {
+    if (now.getTime() >= new Date(existing.expiresAt).getTime()) {
       await this.dbInstance
         .update(studentInvitations)
         .set({
@@ -283,12 +283,20 @@ export class StudentInvitationRepository {
           claimExpiresAt: null,
           updatedAt: now,
         })
-        .where(eq(studentInvitations.id, existing.invitationId));
+        .where(and(
+          eq(studentInvitations.id, existing.invitationId),
+          lte(studentInvitations.expiresAt, now),
+          or(eq(studentInvitations.status, 'pending'), eq(studentInvitations.status, 'claiming'))
+        ));
       return { ok: false, reason: 'expired', record: { ...existing, status: 'expired' } };
     }
 
+    const claimTtlMs = input.claimTtlMs ?? INVITATION_CLAIM_TTL_MS;
+    if (!Number.isFinite(claimTtlMs) || claimTtlMs <= 0) {
+      throw new Error('Invitation claim TTL must be positive');
+    }
     const claimToken = randomUUID();
-    const claimExpiresAt = new Date(now.getTime() + (input.claimTtlMs ?? INVITATION_CLAIM_TTL_MS));
+    const claimExpiresAt = new Date(now.getTime() + claimTtlMs);
 
     const rows = await this.dbInstance
       .update(studentInvitations)
@@ -349,7 +357,9 @@ export class StudentInvitationRepository {
         and(
           eq(studentInvitations.id, normalizedId),
           eq(studentInvitations.status, 'claiming'),
-          eq(studentInvitations.claimOwnerToken, normalizedClaim)
+          eq(studentInvitations.claimOwnerToken, normalizedClaim),
+          gt(studentInvitations.claimExpiresAt, now),
+          gt(studentInvitations.expiresAt, now)
         )
       )
       .returning();
