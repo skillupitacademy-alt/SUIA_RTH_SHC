@@ -1,5 +1,15 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Current Slice 21 review: PARTIAL_ACCEPTANCE
+
+[Sol review of 4692afaa](Sol_Slice21_Review_4692afaa.md) preserves Slice 19/20 scoped
+acceptance and accepts inventory arithmetic/path existence, not exhaustive source coverage.
+UAT SQL harness uses wrong outbox name/columns/status; browser/R2 flags are insufficient
+for full gates. [Exact migration preparation](Sol_Slice21_UAT_Migration_Preparation_4692afaa.md)
+is approved offline only; registration, targets, backup/restore and corrected harness must
+precede execution approval. No blanket migrations or W4 GO. Re-anchor stale CPA references
+and finish actual taxonomy CRUD/caller evidence; no broad rewrite of sound source.
+
 ## Argon Slice 21 Completion Handoff at `d5f58b18` (2026-11-07)
 
 - **Branch**: `remediation/w1-2-batch-05-targeted`

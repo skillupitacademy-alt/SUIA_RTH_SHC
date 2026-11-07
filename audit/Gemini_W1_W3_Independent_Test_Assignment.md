@@ -1,5 +1,15 @@
 # Gemini independent foundation testing packet
 
+## Current Slice 21 physical evidence corrections
+
+[Sol review](Sol_Slice21_Review_4692afaa.md): PARTIAL_ACCEPTANCE, report/harness changes
+requested. Restore canonical mappings; 301 is the reported count, not whole-scope acceptance.
+Fix SQL harness to actual event_outbox/student_invitations schema and repository predicates;
+browser login/SW/account-switch and R2 ACL/cleanup assertions must be non-vacuous and fail
+nonzero on required false outcomes. Do not rerun physical scripts until exact target/operation
+authorization is pinned. Credential literals removed; use injected UAT bindings, safe logs.
+Return source defects to Argon. No production changes, blanket migrations or W4 approval.
+
 ## Q1/Q2 independently accepted by Sol; resume remaining evidence work
 
 [Current acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md): source dc75ace5, adapted

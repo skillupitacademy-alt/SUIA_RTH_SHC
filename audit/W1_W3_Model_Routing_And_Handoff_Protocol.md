@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current Slice 21 routing and physical boundary
+
+[Sol review](Sol_Slice21_Review_4692afaa.md): PARTIAL_ACCEPTANCE. Argon owns source/
+inventory completeness and concrete migration preparation; Gemini owns report/harness
+repairs and separately authorized independent execution. Sonnet may help disjoint docs.
+Sol accepts architecture/gates. Canonical G1-G9 retained, UAT observations stay scoped,
+no blanket migration or further live operations authorized by review; no W4 GO.
+
 ## Current Q1/Q2 disposition
 
 [Sol scoped acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md) accepts the two source

@@ -1,5 +1,18 @@
 # Argon W1–W3 Remaining Work, Mechanical Inventory Reconciliation, and Physical Gate Readiness Packet
 
+## Current Sol Slice 21 review: PARTIAL_ACCEPTANCE, correction work remains
+
+See `Sol_Slice21_Review_4692afaa.md`. Counts 91=68+23 and 181=109+72 are mechanically
+supported, and the 72 added paths exist; exhaustive caller/finding correctness is NOT
+accepted. Sample CPA source anchors 6298/6302/6366/6414 do not support their descriptions
+at the current audit revision; re-anchor with exact original finding text/hash.
+Canonical groups below have been restored by Sol. Section 2 author COMPLETED/PASS claims
+are implementation submissions, not task/group acceptance. Keep the authoritative
+TC-to-FND mapping in the original assignment and consolidated completion directive.
+The checked-in physical SQL harness has wrong table/columns/status and must not run after
+DDL application until repaired. No physical execution or blanket migration is approved.
+
+
 - **Author Role**: `Argon` (Critical Production Implementer — `Gemini 4 Argon (Medium)`)
 - **Repository**: `E:\onlinewebsites\quiz-platform` (`skillupitacademy-alt/SUIA_RTH_SHC`)
 - **Branch**: `remediation/w1-2-batch-05-targeted`
@@ -155,19 +168,24 @@ In `audit/FND12_Complete_Truth_Inventory.md`:
 
 No gate or root-cause identifier is redefined or repurposed:
 
-| Identifier | Canonical Definition | Current Source Scope | Current Physical Runtime Scope |
-| :--- | :--- | :--- | :--- |
-| `G1` | Canonical identity, JWT verification, refresh rotation, and session revocation across SUIA & RTH | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P3`) |
-| `G2` | Brand/tenant boundary isolation (`skillup` vs `realtutorialhub`) across auth, DB, and analytics | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P1`, `Gate P3`) |
-| `G3` | Strict admin audience (`aud: 'admin'`), token class (`tokenType: 'admin'`), and resource ownership guards | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P3`, `Gate P5`) |
-| `G4` | Export job trigger/status/URL/download ownership authority and schema provenance | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P1`, `Gate P4`) |
-| `G5` | Tenant-mandatory tutorial progress persistence with optimistic CAS concurrency retry | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P1`) |
-| `G6` | Client/service-worker private-state cache exclusion and legacy cache eviction on upgrade | `PASS` (Offline/Simulated) | `NOT_EXECUTED` (`Gate P3` / `BROWSER-01`) |
-| `G7` | Multi-select versioned option-ID scoring truth and nested rich-document cycle-safe schema preservation | `PASS` (Offline/Simulated) | `PASS` (Pure deterministic domain logic) |
-| `G8` | Durable SQL transactional outbox, atomic Redis/SQL worker lease ownership, and tenant-scoped QStash consumer idempotency | `PASS` (Accepted Slice 19 `f6627115` in source/SQL-sim scope) | `NOT_EXECUTED` (`Gate P1`, `Gate P2`) |
-| `G9` | Operational truth across CRM admission/invitation SQL authority, placement HTTP status, analytics ingest, taxonomy CRUD, and Gate 1 human review | `PASS` (Accepted Slice 20 `dc75ace5` + taxonomy/workspace typecheck fixes) | `NOT_EXECUTED` (`Gate P1`, `Gate P5`) |
-| `RC-ID-01` | Identity & session boundary root cause (shared token assumptions, cookie scope, gateway/service propagation) | Remediated in code (`packages/auth`) | Pending live multi-app browser/gateway verification (`Gate P3`) |
-| `BROWSER-01` | Installed browser runtime qualification (Chromium/Playwright cookie jar, service-worker cache lifecycle, account switching) | Offline unit harnesses pass | Pending installed Chromium binary execution (`Gate P3`) |
+| Identifier | Canonical definition | Current acceptance boundary |
+| :--- | :--- | :--- |
+| G1 | W1.2 authorization/browser qualification | Scoped source controls accepted; full browser/gateway qualification OPEN |
+| G2 | W1.2-EMAIL | Scoped lookup evidence; full design/consumer/compatibility acceptance OPEN |
+| G3 | W2.1 production truth | Enumeration arithmetic supported; complete finding/caller evidence OPEN |
+| G4 | W3 identity | Selected identity evidence; full canonical caller qualification OPEN |
+| G5 | Taxonomy | Selected schema tests pass; actual five-entity CRUD/serialization coverage required |
+| G6 | Assessment | Selected scoring/report controls retained; full acceptance OPEN |
+| G7 | Tutorial/ILS | Selected recursive/progress controls retained; history/runtime acceptance OPEN |
+| G8 | Project LLM | Selected principal/approval/hash controls retained; full acceptance OPEN |
+| G9 | Events | Accepted source/adapter corrections; physical SQL/queue/recovery gates OPEN |
+| RC-ID-01 | Identity, session, authorization and brand authority root cause | Original complete root-cause acceptance requirements retained |
+| BROWSER-01 | Installed browser qualification including worker upgrade, account transitions and private state isolation | Selected observations only; full qualification OPEN |
+
+P1-P5 describe physical execution packets; they are not replacements for G1-G9. Historical
+P-section G-number references below must be read through these canonical groups, not as
+new definitions or automatic acceptance. Raw object mechanics do not close FND04; a
+fresh empty browser cache does not close FND07.
 
 ---
 

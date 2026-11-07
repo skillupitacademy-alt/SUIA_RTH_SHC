@@ -1,5 +1,14 @@
 # Current owner override
 
+## Current Slice 21 follow-up
+
+[Sol review](Sol_Slice21_Review_4692afaa.md) retains prior scoped acceptances. Complete
+source-backed inventory re-anchoring, actual taxonomy caller coverage and full FND scope;
+do not assume row counts close original findings. Prepare the exact migration registration/
+target/backup/rollback packet in [the UAT preparation record](Sol_Slice21_UAT_Migration_Preparation_4692afaa.md).
+Preparation approved, physical execution not approved. Gemini repairs UAT harness/evidence;
+environment owner confirms targets and authorization; Sol reviews final gates. W4 blocked.
+
 ## Current acceptance: Slice 20 Q1/Q2 source corrections
 
 [Sol acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md) accepts Q1 truthful zero-row

@@ -1,5 +1,12 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Current Slice 21 disposition: PARTIAL_ACCEPTANCE.**
+[Sol source/inventory/UAT review](Sol_Slice21_Review_4692afaa.md) retains accepted
+source boundaries and count reconciliation within scope. Reported browser/R2 observations
+do not complete their gates; SQL harness/schema and migration registration need repair.
+[UAT migration preparation](Sol_Slice21_UAT_Migration_Preparation_4692afaa.md) approved
+offline only, not execution. Canonical groups/root causes preserved; W4 remains unapproved.
+
 **Current Slice 20 Q1/Q2 source acceptance:**
 [Sol acceptance at dc75ace5 / tests 56145791](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md)
 supersedes the three Q1/Q2 failures within source/generated-SQL/caller simulation: 40/40

@@ -1,5 +1,13 @@
 import { chromium } from 'playwright';
 
+// Credentials are injected only at the authorized UAT invocation; never commit values.
+function requireUatCredential(name) {
+  const value = process.env[name];
+  if (typeof value !== 'string' || value.trim().length === 0) throw new Error(`Missing required UAT credential binding: ${name}`);
+  return value;
+}
+
+
 async function runBrowserQualification() {
   console.log('--- STARTING PLAYWRIGHT PHYSICAL BROWSER QUALIFICATION ---');
   const browser = await chromium.launch({ headless: true });
@@ -21,8 +29,8 @@ async function runBrowserQualification() {
     const studentPage = await studentContext.newPage();
 
     await studentPage.goto('http://skillup.localhost:3009/login', { waitUntil: 'networkidle' });
-    await studentPage.fill('input[name="email"]', 'student@skillupitacademy.com');
-    await studentPage.fill('input[name="password"]', 'testing');
+    await studentPage.fill('input[name="email"]', requireUatCredential('UAT_SUIA_STUDENT_EMAIL'));
+    await studentPage.fill('input[name="password"]', requireUatCredential('UAT_SUIA_STUDENT_PASSWORD'));
     
     await studentPage.click('button:has-text("Sign In")');
     await studentPage.waitForURL(url => !url.pathname.includes('/login'), { timeout: 15000 }).catch(() => null);
@@ -64,8 +72,8 @@ async function runBrowserQualification() {
     const rthContext = await browser.newContext();
     const rthPage = await rthContext.newPage();
     await rthPage.goto('http://realtutorialhub.localhost:3003/login', { waitUntil: 'networkidle' });
-    await rthPage.fill('input[name="email"]', 'ajayshah@gmail.com');
-    await rthPage.fill('input[name="password"]', 'testing');
+    await rthPage.fill('input[name="email"]', requireUatCredential('UAT_RTH_STUDENT_EMAIL'));
+    await rthPage.fill('input[name="password"]', requireUatCredential('UAT_RTH_STUDENT_PASSWORD'));
     
     await rthPage.click('button:has-text("Sign In")');
     await rthPage.waitForURL(url => !url.pathname.includes('/login'), { timeout: 15000 }).catch(() => null);
@@ -89,8 +97,8 @@ async function runBrowserQualification() {
     const adminContext = await browser.newContext();
     const adminPage = await adminContext.newPage();
     await adminPage.goto('http://skillup.localhost:3009/login', { waitUntil: 'networkidle' });
-    await adminPage.fill('input[name="email"]', 'admin@skillhubcore.in');
-    await adminPage.fill('input[name="password"]', 'testing');
+    await adminPage.fill('input[name="email"]', requireUatCredential('UAT_ADMIN_EMAIL'));
+    await adminPage.fill('input[name="password"]', requireUatCredential('UAT_ADMIN_PASSWORD'));
 
     await adminPage.click('button:has-text("Sign In")');
     await adminPage.waitForURL(url => !url.pathname.includes('/login'), { timeout: 15000 }).catch(() => null);
