@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 
 import {
   clearStudentInvitationsForTests,
+  createIsolatedTestInvitationRepository,
   issueStudentInvitation,
   normalizeStudentEmail,
   STUDENT_INVITATION_TTL_HOURS,
@@ -19,13 +20,112 @@ interface MockUser {
   deletedAt: Date | null;
 }
 
-let nextUserUpdateShouldThrow = false;
-let nextUserUpdateZeroRows = false;
+const mocks = vi.hoisted(() => {
+  const mockUsers: MockUser[] = [];
+  const mockAdmissions: any[] = [];
+  const mockEnquiries: any[] = [];
+  const mockProfiles: any[] = [];
+  const flags = {
+    nextUserUpdateShouldThrow: false,
+    nextUserUpdateZeroRows: false,
+  };
 
-const mockUsers: MockUser[] = [];
-const mockAdmissions: any[] = [];
-const mockProfiles: any[] = [];
-const mockEnquiries: any[] = [];
+  const mockDb: any = {
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => ({
+          limit: vi.fn(async () => mockUsers.filter((u) => u.platform === 'skillup' && !u.deletedAt)),
+        })),
+      })),
+    })),
+    insert: vi.fn(() => ({
+      values: vi.fn((vals: any) => ({
+        returning: vi.fn(async () => {
+          if (vals.email && vals.passwordHash) {
+            const newUser: MockUser = {
+              id: crypto.randomUUID(),
+              email: vals.email,
+              passwordHash: vals.passwordHash,
+              role: vals.role ?? 'student',
+              platform: vals.platform ?? 'skillup',
+              isActive: vals.isActive ?? true,
+              deletedAt: null,
+            };
+            mockUsers.push(newUser);
+            return [{ id: newUser.id }];
+          }
+          if (vals.fullName) {
+            const enq = { id: crypto.randomUUID(), ...vals };
+            mockEnquiries.push(enq);
+            return [{ id: enq.id }];
+          }
+          if (vals.enquiryId && vals.studentUserId) {
+            const adm = { id: crypto.randomUUID(), ...vals };
+            mockAdmissions.push(adm);
+            return [adm];
+          }
+          if (vals.userId && vals.name) {
+            mockProfiles.push(vals);
+            return [vals];
+          }
+          return [{ id: crypto.randomUUID() }];
+        }),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn((updateVals: any) => ({
+        where: vi.fn(() => ({
+          returning: vi.fn(async () => {
+            if (updateVals.passwordHash) {
+              if (flags.nextUserUpdateShouldThrow) {
+                flags.nextUserUpdateShouldThrow = false;
+                throw new Error('Simulated DB password update failure');
+              }
+              if (flags.nextUserUpdateZeroRows) {
+                flags.nextUserUpdateZeroRows = false;
+                return [];
+              }
+              for (const user of mockUsers) {
+                user.passwordHash = updateVals.passwordHash;
+                if (updateVals.isActive !== undefined) {
+                  user.isActive = updateVals.isActive;
+                }
+              }
+              return mockUsers.length > 0 ? mockUsers.map((u) => ({ id: u.id })) : [{ id: 'user-id' }];
+            }
+            if (updateVals.documents) {
+              for (const adm of mockAdmissions) {
+                adm.documents = updateVals.documents;
+              }
+            }
+            return [{ id: 'updated' }];
+          }),
+        })),
+      })),
+    })),
+    createInvitation: vi.fn(async (input: any) => {
+      const { issueStudentInvitation } = await import('@/lib/student-invitation');
+      return issueStudentInvitation(input);
+    }),
+    claimForRedemption: vi.fn(async (input: any) => {
+      const { claimStudentInvitationForRedemption } = await import('@/lib/student-invitation');
+      return claimStudentInvitationForRedemption(input);
+    }),
+    redeemAtomic: vi.fn(async (input: any) => {
+      const { commitStudentInvitationRedemption } = await import('@/lib/student-invitation');
+      return commitStudentInvitationRedemption(input);
+    }),
+    releaseClaim: vi.fn(async (input: any) => {
+      const { releaseStudentInvitationClaim } = await import('@/lib/student-invitation');
+      return releaseStudentInvitationClaim(input);
+    }),
+    transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(mockDb)),
+  };
+
+  return { mockUsers, mockAdmissions, mockEnquiries, mockProfiles, flags, mockDb };
+});
+
+const { mockUsers, mockAdmissions, mockEnquiries, mockProfiles, flags, mockDb } = mocks;
 
 vi.mock('@quiz/events', () => ({
   PlatformEventTypes: {
@@ -56,83 +156,8 @@ vi.mock('@quiz/db-people', () => ({
   admissions: {},
   enquiries: {},
   userProfiles: {},
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn((_whereClause: any) => ({
-          limit: vi.fn(async (_n: number) => {
-            // Find existing skillup user by normalized email
-            return mockUsers
-              .filter((u) => u.platform === 'skillup' && u.deletedAt === null)
-              .map((u) => ({ id: u.id, email: u.email }));
-          }),
-        })),
-      })),
-    })),
-    insert: vi.fn((table: any) => ({
-      values: vi.fn((vals: any) => ({
-        returning: vi.fn(async () => {
-          if (vals.email && vals.passwordHash) {
-            const newUser: MockUser = {
-              id: crypto.randomUUID(),
-              email: vals.email,
-              passwordHash: vals.passwordHash,
-              role: vals.role ?? 'student',
-              platform: vals.platform ?? 'skillup',
-              isActive: vals.isActive ?? true,
-              deletedAt: vals.deletedAt ?? null,
-            };
-            mockUsers.push(newUser);
-            return [{ id: newUser.id }];
-          }
-          if (vals.fullName) {
-            const enq = { id: crypto.randomUUID(), ...vals };
-            mockEnquiries.push(enq);
-            return [{ id: enq.id }];
-          }
-          if (vals.enquiryId && vals.studentUserId) {
-            const adm = { id: crypto.randomUUID(), ...vals };
-            mockAdmissions.push(adm);
-            return [adm];
-          }
-          if (vals.userId && vals.name) {
-            mockProfiles.push(vals);
-            return [vals];
-          }
-          return [{ id: crypto.randomUUID() }];
-        }),
-      })),
-    })),
-    update: vi.fn((table: any) => ({
-      set: vi.fn((updateVals: any) => ({
-        where: vi.fn(async () => {
-          if (updateVals.passwordHash) {
-            if (nextUserUpdateShouldThrow) {
-              nextUserUpdateShouldThrow = false;
-              throw new Error('Simulated DB password update failure');
-            }
-            if (nextUserUpdateZeroRows) {
-              nextUserUpdateZeroRows = false;
-              return { rowCount: 0 };
-            }
-            for (const user of mockUsers) {
-              user.passwordHash = updateVals.passwordHash;
-              if (updateVals.isActive !== undefined) {
-                user.isActive = updateVals.isActive;
-              }
-            }
-            return { rowCount: Math.max(1, mockUsers.length) };
-          }
-          if (updateVals.documents) {
-            for (const adm of mockAdmissions) {
-              adm.documents = updateVals.documents;
-            }
-          }
-          return { rowCount: 1 };
-        }),
-      })),
-    })),
-  },
+  studentInvitations: { id: 'id', status: 'status', claimOwnerToken: 'claimOwnerToken' },
+  db: mocks.mockDb,
 }));
 
 import { POST as postCreateStudent } from '../route';
@@ -160,8 +185,8 @@ const makePublicRequest = (url: string, body: unknown) =>
 describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use Redemption Probes', () => {
   beforeEach(() => {
     clearStudentInvitationsForTests();
-    nextUserUpdateShouldThrow = false;
-    nextUserUpdateZeroRows = false;
+    flags.nextUserUpdateShouldThrow = false;
+    flags.nextUserUpdateZeroRows = false;
     mockUsers.length = 0;
     mockAdmissions.length = 0;
     mockProfiles.length = 0;
@@ -408,7 +433,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
     expect(persistedRecord?.status).toBe('pending');
 
     // 2. Zero affected account rows must fail closed (404) and NOT consume the invitation
-    nextUserUpdateZeroRows = true;
+    flags.nextUserUpdateZeroRows = true;
     const zeroRowReq = makePublicRequest('/api/admin/students/invite/redeem', {
       invitationToken: issued.invitationToken,
       email: 'atomic.student@skillup.org',
@@ -419,7 +444,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
     expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('pending');
 
     // 3. Transient DB throw during password update must release claim so subsequent retry succeeds (200)
-    nextUserUpdateShouldThrow = true;
+    flags.nextUserUpdateShouldThrow = true;
     const throwReq = makePublicRequest('/api/admin/students/invite/redeem', {
       invitationToken: issued.invitationToken,
       email: 'atomic.student@skillup.org',

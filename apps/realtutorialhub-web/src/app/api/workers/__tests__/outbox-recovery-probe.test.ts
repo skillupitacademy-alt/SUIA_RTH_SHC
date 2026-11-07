@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearWorkerOutboxLedgerForTests,
+  createIsolatedTestOutboxRepository,
   dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   upsertWorkerOutboxIntent,
@@ -12,7 +13,14 @@ let publishJSONShouldFail = false;
 const publishedEvents: any[] = [];
 const publishedQStashMessages: any[] = [];
 
+const testOutboxRepo = createIsolatedTestOutboxRepository();
+
 const fakeTx = {
+  select: vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(async () => []),
+    })),
+  })),
   insert: vi.fn(() => ({
     values: vi.fn((vals: any) => ({
       returning: vi.fn(async () => {
@@ -39,6 +47,7 @@ const fakeTx = {
       }),
     })),
   })),
+  upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
 };
 
 const fakeSubmission: {
@@ -147,6 +156,21 @@ vi.mock('@quiz/db-tutorial', () => ({
         where: vi.fn(async () => [...storedCertificates]),
       })),
     })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        returning: vi.fn(async () => []),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(async () => undefined),
+      })),
+    })),
+    claimIntent: (input: any) => testOutboxRepo.claimIntent(input),
+    markPublished: (input: any) => testOutboxRepo.markPublished(input),
+    markFailed: (input: any) => testOutboxRepo.markFailed(input),
+    findIntent: (t: any, e: any, a: any) => testOutboxRepo.findIntent!(t, e, a),
+    upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
     transaction: mocks.dbTransaction,
   },
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),
@@ -387,7 +411,8 @@ describe('Durable Worker Outbox Crash-Recovery & Idempotency Probes (A2)', () =>
       async (locked) => {
         publishCalls.push(`a:${locked.eventId}`);
         await firstPublishGate;
-      }
+      },
+      freshLeaseModule.createIsolatedTestOutboxRepository()
     );
 
     await expect(
@@ -396,7 +421,8 @@ describe('Durable Worker Outbox Crash-Recovery & Idempotency Probes (A2)', () =>
         'owner-dispatcher-b',
         async (locked) => {
           publishCalls.push(`b:${locked.eventId}`);
-        }
+        },
+        freshLeaseModule.createIsolatedTestOutboxRepository()
       )
     ).rejects.toThrow(/already being published/i);
 
