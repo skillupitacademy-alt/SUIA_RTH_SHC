@@ -1,16 +1,22 @@
 /**
- * Cloudflare R2 Physical Qualification Harness (Slice 22-B / Gate P4)
+ * Cloudflare R2 Physical Qualification Harness (Slice 22-B Final / Gate P4)
  *
- * Verifies R2 storage behavior and application export authorization:
- * 1. Synthetic probe PutObject
- * 2. HeadObject existence check
+ * Verifies R2 storage behavior and actual application export route authorization:
+ * 1. Synthetic probe PutObject to R2
+ * 2. HeadObject metadata existence check
  * 3. Direct unauthenticated URL access denial (distinguishing HTTP 401/403/400 from DNS/transport error)
  * 4. Time-bounded presigned URL generation and successful fetch
- * 5. Presigned URL expiration test (expiresIn: 1, wait 2.5s, assert HTTP 401/403 denial)
- * 6. Application-level export ownership & tenant authorization simulation
- * 7. Object deletion and HeadObject 404 NotFound verification
+ * 5. Presigned URL expiration test (expiresIn: 1, wait 2.5s, assert HTTP 401/403 denial from Cloudflare R2)
+ * 6. Actual Application Export Route Authorization:
+ *    - Anonymous request to /api/export/download -> HTTP 401 Unauthorized
+ *    - Unauthorized / foreign-brand request to /api/export/download -> HTTP 401/403
+ * 7. Object deletion and HeadObject 404 NotFound independent verification
  *
- * Supports --dry-run / DRY_RUN=true for offline validation.
+ * Compliance Rules:
+ * - No locally invented simulation functions. Tests actual API routes and live provider.
+ * - Dry-run reports DRY_RUN_QUALIFIED, physicalExecution: NOT_EXECUTED.
+ * - Missing credentials report BLOCKED and exit 2.
+ * - Any assertion failure exits 1.
  */
 
 import dotenv from 'dotenv';
@@ -21,46 +27,49 @@ dotenv.config({ path: '.env.local' });
 
 const isDryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
 
+const rawApiUrl = process.env.UAT_API_SERVER_URL || 'http://localhost:3000';
+const API_BASE_URL = rawApiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+
 /**
- * Dry-run qualification mode
+ * Dry-run contract validation mode.
+ * Explicitly reports DRY_RUN_QUALIFIED, NOT a physical PASS.
  */
 function runDryRunR2Qualification() {
-  console.log('--- STARTING CLOUDFLARE R2 QUALIFICATION [DRY-RUN MODE] ---');
-  console.log('[DRY-RUN] Verifying Cloudflare R2 storage qualification contracts...');
+  console.log('--- RUNNING CLOUDFLARE R2 QUALIFICATION [DRY-RUN / SPECIFICATION CHECK] ---');
+  console.log('[DRY-RUN] Verifying Cloudflare R2 and export API route contracts...');
 
-  const dryRunResults = {
-    putObject: true,
-    headObject: true,
-    unauthorizedDirectAccessDenied: true,
-    signedUrlGeneration: true,
-    signedUrlFetch: true,
-    signedUrlExpirationDenial: true,
-    applicationExportAuthorization: true,
-    deleteObject: true,
-    cleanupConfirmed: true,
-    dryRun: true,
-    details: [
-      { step: 'PutObject Synthetic Probe', verified: true },
-      { step: 'HeadObject Metadata Existence Check', verified: true },
-      { step: 'Direct Unauthenticated Access Denied (HTTP 401/403)', verified: true },
-      { step: 'Presigned URL Generation (GetObject)', verified: true },
-      { step: 'Presigned URL Content Fetch', verified: true },
-      { step: 'Presigned URL Expiry Rejection (401/403)', verified: true },
-      { step: 'Application Export Ownership & Tenant Boundary Gate', verified: true },
-      { step: 'Object Deletion & 404 NotFound Confirmation', verified: true },
-    ]
+  const specs = {
+    r2Provider: {
+      endpointPattern: 'https://<account-id>.r2.cloudflarestorage.com',
+      requiredOps: ['PutObjectCommand', 'HeadObjectCommand', 'GetObjectCommand', 'DeleteObjectCommand', 'getSignedUrl'],
+      expirationTest: 'expiresIn: 1 -> wait 2.5s -> assert HTTP 401/403'
+    },
+    exportApiRoutes: {
+      downloadRoute: '/api/export/download',
+      anonymousRequirement: 'HTTP 401 Unauthorized',
+      foreignTenantRequirement: 'HTTP 401/403 Forbidden',
+      ownerRequirement: 'HTTP 200 with presigned storage stream'
+    }
   };
 
-  console.log('--- CLOUDFLARE R2 QUALIFICATION DRY-RUN COMPLETE ---');
-  console.log(JSON.stringify(dryRunResults, null, 2));
-  return dryRunResults;
+  console.log(JSON.stringify(specs, null, 2));
+  console.log('\n[NOTICE] Dry-run check completed. Physical R2 storage execution NOT_EXECUTED.');
+
+  const report = {
+    mode: 'DRY_RUN',
+    status: 'DRY_RUN_QUALIFIED',
+    physicalExecution: 'NOT_EXECUTED',
+    timestamp: new Date().toISOString()
+  };
+  console.log(JSON.stringify(report, null, 2));
+  return report;
 }
 
 /**
- * Live R2 qualification
+ * Live physical Cloudflare R2 and Export API qualification
  */
 async function runLiveR2Qualification() {
-  console.log('--- STARTING CLOUDFLARE R2 PHYSICAL QUALIFICATION (Gate P4) [LIVE MODE] ---');
+  console.log('--- STARTING CLOUDFLARE R2 & EXPORT ROUTE PHYSICAL QUALIFICATION [LIVE EXECUTION] ---');
 
   const endpoint = process.env.R2_ENDPOINT;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
@@ -68,8 +77,15 @@ async function runLiveR2Qualification() {
   const bucket = process.env.R2_BUCKET;
 
   if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
-    console.warn('[NOTICE] R2 credentials not configured. Running dry-run validation instead.');
-    return runDryRunR2Qualification();
+    console.error('[BLOCKED] Missing Cloudflare R2 credentials (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET).');
+    const report = {
+      mode: 'LIVE',
+      status: 'BLOCKED',
+      reason: 'Missing Cloudflare R2 credentials in environment',
+      timestamp: new Date().toISOString()
+    };
+    console.log(JSON.stringify(report, null, 2));
+    process.exit(2);
   }
 
   const s3 = new S3Client({
@@ -78,8 +94,8 @@ async function runLiveR2Qualification() {
     credentials: { accessKeyId, secretAccessKey },
   });
 
-  const testKey = `test-qualification/synthetic-probe-${Date.now()}.txt`;
-  const testContent = 'Synthetic qualification probe at ' + new Date().toISOString();
+  const testKey = `test-qualification/synthetic-probe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`;
+  const testContent = 'Physical qualification probe payload at ' + new Date().toISOString();
 
   const results = {
     putObject: false,
@@ -88,13 +104,17 @@ async function runLiveR2Qualification() {
     signedUrlGeneration: false,
     signedUrlFetch: false,
     signedUrlExpirationDenial: false,
-    applicationExportAuthorization: false,
+    exportApiAnonymousRejection: false,
+    exportApiUnauthorizedTenantRejection: false,
     deleteObject: false,
     cleanupConfirmed: false,
+    details: [],
   };
 
   try {
-    // 1. PutObject
+    // ------------------------------------------------------------------------
+    // 1. PutObject Synthetic Probe
+    // ------------------------------------------------------------------------
     console.log('[Step 1] Uploading synthetic probe to R2:', testKey);
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
@@ -105,91 +125,113 @@ async function runLiveR2Qualification() {
     results.putObject = true;
     console.log('  PutObject successful');
 
-    // 2. HeadObject (exists)
+    // ------------------------------------------------------------------------
+    // 2. HeadObject Existence Check
+    // ------------------------------------------------------------------------
     console.log('[Step 2] Verifying object existence via HeadObject...');
     const head = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: testKey }));
-    results.headObject = head.$metadata.httpStatusCode === 200;
-    console.log('  HeadObject HTTP status:', head.$metadata.httpStatusCode);
+    const headPass = head.$metadata.httpStatusCode === 200;
+    results.headObject = headPass;
+    results.details.push({ step: 'HeadObject Check', statusCode: head.$metadata.httpStatusCode, pass: headPass });
+    console.log(`  HeadObject status: ${head.$metadata.httpStatusCode} -> ${headPass ? 'PASS' : 'FAIL'}`);
+    if (!headPass) throw new Error('HeadObject failed to locate uploaded probe');
 
-    // 3. Unauthorized direct access must fail (Private bucket)
-    // CRITICAL: Distinguish DNS / transport failure from actual HTTP denial
-    console.log('[Step 3] Checking that unauthenticated raw URL is denied by R2...');
+    // ------------------------------------------------------------------------
+    // 3. Raw Direct Access Denial (Distinguishing HTTP denial from DNS failure)
+    // ------------------------------------------------------------------------
+    console.log('[Step 3] Checking unauthenticated raw URL access denial by R2...');
     const rawUrl = `${endpoint.replace(/\/$/, '')}/${bucket}/${testKey}`;
     try {
       const directRes = await fetch(rawUrl);
-      console.log('  Direct raw access HTTP status:', directRes.status);
-      if (directRes.status === 401 || directRes.status === 403 || directRes.status === 400) {
-        results.unauthorizedDirectAccessDenied = true;
-      } else {
-        console.error('  Unexpected raw access response:', directRes.status);
-        results.unauthorizedDirectAccessDenied = false;
-      }
+      const isDenied = directRes.status === 401 || directRes.status === 403 || directRes.status === 400;
+      results.unauthorizedDirectAccessDenied = isDenied;
+      results.details.push({ step: 'Raw Access Denial', rawUrl, status: directRes.status, pass: isDenied });
+      console.log(`  Raw Access HTTP Status: ${directRes.status} -> ${isDenied ? 'PASS' : 'FAIL'}`);
+      if (!isDenied) throw new Error(`Raw access was not denied by R2; returned status ${directRes.status}`);
     } catch (fetchErr) {
-      // If fetch fails because of DNS/transport error, this is NOT a verified HTTP authorization denial!
-      console.error('  Raw access transport error (DNS or connect error, not an HTTP denial):', fetchErr.code || fetchErr.message);
+      if (fetchErr.message && fetchErr.message.includes('not denied')) {
+        throw fetchErr;
+      }
+      console.error('  Raw access failed due to network/DNS transport error, not verified HTTP denial:', fetchErr.code || fetchErr.message);
       results.unauthorizedDirectAccessDenied = false;
+      throw new Error(`Raw access transport error: ${fetchErr.code || fetchErr.message}`);
     }
 
-    // 4. Generate signed URL (active)
+    // ------------------------------------------------------------------------
+    // 4. Presigned Active URL Generation & Content Fetch
+    // ------------------------------------------------------------------------
     console.log('[Step 4] Generating active presigned URL (300s)...');
     const signedUrl = await getSignedUrl(s3, new GetObjectCommand({ Bucket: bucket, Key: testKey }), { expiresIn: 300 });
-    results.signedUrlGeneration = typeof signedUrl === 'string' && signedUrl.includes('X-Amz-Signature');
-    console.log('  Active signed URL generated:', results.signedUrlGeneration);
+    const hasSignature = typeof signedUrl === 'string' && signedUrl.includes('X-Amz-Signature');
+    results.signedUrlGeneration = hasSignature;
+    console.log(`  Presigned URL generated: ${hasSignature ? 'PASS' : 'FAIL'}`);
+    if (!hasSignature) throw new Error('Failed to generate valid presigned URL');
 
-    // 5. Fetch via active signed URL
-    console.log('[Step 5] Fetching object via active signed URL...');
+    console.log('[Step 5] Fetching object via presigned URL...');
     const fetchRes = await fetch(signedUrl);
     const fetchedText = await fetchRes.text();
-    results.signedUrlFetch = fetchRes.status === 200 && fetchedText === testContent;
-    console.log(`  Signed URL fetch: status=${fetchRes.status}, contentMatched=${fetchedText === testContent}`);
+    const fetchPass = fetchRes.status === 200 && fetchedText === testContent;
+    results.signedUrlFetch = fetchPass;
+    results.details.push({ step: 'Presigned URL Fetch', status: fetchRes.status, contentMatches: fetchedText === testContent, pass: fetchPass });
+    console.log(`  Presigned Fetch: status=${fetchRes.status}, contentMatches=${fetchedText === testContent} -> ${fetchPass ? 'PASS' : 'FAIL'}`);
+    if (!fetchPass) throw new Error('Presigned URL fetch failed or returned incorrect content');
 
-    // 6. Signed URL Expiration Test
-    console.log('[Step 6] Testing presigned URL expiration denial...');
+    // ------------------------------------------------------------------------
+    // 5. Presigned URL Expiration Denial
+    // ------------------------------------------------------------------------
+    console.log('[Step 6] Testing presigned URL expiration denial (expiresIn: 1)...');
     const shortLivedUrl = await getSignedUrl(s3, new GetObjectCommand({ Bucket: bucket, Key: testKey }), { expiresIn: 1 });
     console.log('  Waiting 2.5s for presigned signature to expire...');
     await new Promise(r => setTimeout(r, 2500));
+
+    const expiredRes = await fetch(shortLivedUrl);
+    const expiredDenied = expiredRes.status === 401 || expiredRes.status === 403;
+    results.signedUrlExpirationDenial = expiredDenied;
+    results.details.push({ step: 'Presigned Expiry Denial', status: expiredRes.status, pass: expiredDenied });
+    console.log(`  Expired URL Fetch Status: ${expiredRes.status} -> ${expiredDenied ? 'PASS' : 'FAIL'}`);
+    if (!expiredDenied) throw new Error(`Expired presigned URL was not rejected by R2; returned status ${expiredRes.status}`);
+
+    // ------------------------------------------------------------------------
+    // 6. Actual Application Export Route Authorization Testing
+    // ------------------------------------------------------------------------
+    console.log(`[Step 7] Testing actual application export API route authorization (${API_BASE_URL}/api/export/download)...`);
+
+    // Test 6A: Anonymous request must receive 401 Unauthorized
     try {
-      const expiredFetch = await fetch(shortLivedUrl);
-      console.log('  Expired signed URL fetch status:', expiredFetch.status);
-      results.signedUrlExpirationDenial = expiredFetch.status === 401 || expiredFetch.status === 403;
-    } catch (expErr) {
-      console.warn('  Expired fetch error:', expErr.code || expErr.message);
-      results.signedUrlExpirationDenial = false;
+      const anonRes = await fetch(`${API_BASE_URL}/api/export/download`);
+      const anonPass = anonRes.status === 401;
+      results.exportApiAnonymousRejection = anonPass;
+      results.details.push({ step: 'Export API Anonymous Check', status: anonRes.status, pass: anonPass });
+      console.log(`  Export API Anonymous: status=${anonRes.status} (expected 401) -> ${anonPass ? 'PASS' : 'FAIL'}`);
+      if (!anonPass) throw new Error(`Export API anonymous check failed: expected 401, got ${anonRes.status}`);
+    } catch (apiErr) {
+      console.warn(`  Export API server not reachable at ${API_BASE_URL} (${apiErr.code || apiErr.message}). Recording as offline/unreachable.`);
+      results.exportApiAnonymousRejection = false;
+      throw apiErr;
     }
 
-    // 7. Application-Level Export Authorization Gate Simulation
-    console.log('[Step 7] Testing application-level export authorization logic...');
-    const mockExportRecord = {
-      id: 'export-job-123',
-      ownerUserId: 'usr_owner_456',
-      tenantId: 'skillup',
-      storageKey: testKey,
-    };
-
-    function authorizeExportDownload(req) {
-      if (!req.user || !req.user.id) return { status: 401, error: 'Unauthorized' };
-      if (req.user.tenantId !== mockExportRecord.tenantId) return { status: 403, error: 'Forbidden: Tenant mismatch' };
-      if (req.user.id !== mockExportRecord.ownerUserId) return { status: 403, error: 'Forbidden: Owner mismatch' };
-      return { status: 200, key: mockExportRecord.storageKey };
+    // Test 6B: Foreign tenant / invalid token request must receive 401 or 403
+    try {
+      const foreignRes = await fetch(`${API_BASE_URL}/api/export/download`, {
+        headers: {
+          'Authorization': 'Bearer invalid.test.token',
+          'x-tenant-id': 'foreign-tenant'
+        }
+      });
+      const foreignPass = foreignRes.status === 401 || foreignRes.status === 403;
+      results.exportApiUnauthorizedTenantRejection = foreignPass;
+      results.details.push({ step: 'Export API Foreign Tenant Check', status: foreignRes.status, pass: foreignPass });
+      console.log(`  Export API Foreign Tenant: status=${foreignRes.status} (expected 401/403) -> ${foreignPass ? 'PASS' : 'FAIL'}`);
+      if (!foreignPass) throw new Error(`Export API foreign tenant check failed: expected 401/403, got ${foreignRes.status}`);
+    } catch (apiErr) {
+      results.exportApiUnauthorizedTenantRejection = false;
+      throw apiErr;
     }
 
-    const unauthReq = { user: null };
-    const foreignTenantReq = { user: { id: 'usr_owner_456', tenantId: 'quiz' } };
-    const foreignUserReq = { user: { id: 'usr_other_789', tenantId: 'skillup' } };
-    const legitimateOwnerReq = { user: { id: 'usr_owner_456', tenantId: 'skillup' } };
-
-    const check1 = authorizeExportDownload(unauthReq).status === 401;
-    const check2 = authorizeExportDownload(foreignTenantReq).status === 403;
-    const check3 = authorizeExportDownload(foreignUserReq).status === 403;
-    const check4 = authorizeExportDownload(legitimateOwnerReq).status === 200;
-
-    results.applicationExportAuthorization = check1 && check2 && check3 && check4;
-    console.log(`  App export auth gate: 401=${check1}, foreignTenant403=${check2}, foreignUser403=${check3}, owner200=${check4}`);
-
-  } catch (err) {
-    console.error('R2 Qualification Error:', err.message);
   } finally {
-    // 8. Cleanup and verify 404 NotFound
+    // ------------------------------------------------------------------------
+    // 7. Deterministic Cleanup & Independent 404 NotFound Verification
+    // ------------------------------------------------------------------------
     console.log('[Step 8] Deleting synthetic probe and verifying 404 NotFound...');
     try {
       await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: testKey }));
@@ -198,23 +240,30 @@ async function runLiveR2Qualification() {
       try {
         await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: testKey }));
         results.cleanupConfirmed = false;
-        console.error('  Probe object still exists after DeleteObject');
+        console.error('  CRITICAL: Probe object still exists in R2 bucket after delete!');
+        process.exit(1);
       } catch (headErr) {
         const isNotFound = headErr.name === 'NotFound' || headErr.$metadata?.httpStatusCode === 404;
         results.cleanupConfirmed = isNotFound;
-        console.log(`  Deletion confirmed: HeadObject threw ${headErr.name || headErr.message} (404 NotFound)`);
+        console.log(`  Cleanup Confirmed: HeadObject returned ${headErr.name || headErr.message} (404 NotFound)`);
+        if (!isNotFound) {
+          throw new Error(`Unexpected error checking deletion: ${headErr.message}`);
+        }
       }
     } catch (cleanupErr) {
-      console.warn('  Cleanup error:', cleanupErr.message);
+      console.error('[FATAL CLEANUP FAILURE]', cleanupErr.message);
+      results.cleanupConfirmed = false;
+      process.exit(1);
     }
   }
 
-  console.log('--- CLOUDFLARE R2 QUALIFICATION RESULT ---');
+  console.log('--- CLOUDFLARE R2 QUALIFICATION COMPLETE ---');
   console.log(JSON.stringify(results, null, 2));
 
-  const allPassed = Object.entries(results).every(([k, v]) => v === true);
+  const allPassed = Object.entries(results).every(([k, v]) => k === 'details' || v === true);
   if (!allPassed) {
-    throw new Error('One or more Cloudflare R2 qualification checks failed');
+    console.error('[FAILED] One or more Cloudflare R2 qualification steps failed.');
+    process.exit(1);
   }
   return results;
 }
@@ -223,7 +272,7 @@ if (isDryRun) {
   runDryRunR2Qualification();
 } else {
   runLiveR2Qualification().catch(err => {
-    console.error('Fatal R2 Qualification Failure:', err);
+    console.error('Fatal R2 Qualification Failure:', err.message);
     process.exit(1);
   });
 }
