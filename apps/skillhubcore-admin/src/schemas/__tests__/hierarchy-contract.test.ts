@@ -113,9 +113,21 @@ describe('Subtopic schema contract', () => {
     expect(result.success).toBe(false);
   });
 
-  it('accepts valid depthLevel', () => {
-    const result = subtopicSchema.parse({ topicId: validUuid, name: 'Subtopic', depthLevel: 2 });
+  it('accepts valid depthLevel, depth, order, orderIndex, and status', () => {
+    const result = subtopicSchema.parse({
+      topicId: validUuid,
+      name: 'Subtopic',
+      depth: 2,
+      depthLevel: 2,
+      order: 3,
+      orderIndex: 3,
+      status: 'active',
+    });
+    expect(result.depth).toBe(2);
     expect(result.depthLevel).toBe(2);
+    expect(result.order).toBe(3);
+    expect(result.orderIndex).toBe(3);
+    expect(result.status).toBe('active');
   });
 
   it('rejects zero depthLevel', () => {
@@ -125,9 +137,11 @@ describe('Subtopic schema contract', () => {
 });
 
 describe('Skill schema contract', () => {
-  it('accepts valid skill with name', () => {
-    const result = skillSchema.parse({ name: 'Problem Solving' });
+  it('accepts valid skill with name, description, and status', () => {
+    const result = skillSchema.parse({ name: 'Problem Solving', description: 'Core analytical skill', status: 'active' });
     expect(result.name).toBe('Problem Solving');
+    expect(result.description).toBe('Core analytical skill');
+    expect(result.status).toBe('active');
   });
 
   it('rejects numeric skill name', () => {

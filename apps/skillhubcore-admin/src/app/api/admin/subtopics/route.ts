@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     const rows = hasMore ? results.slice(0, limit) : results;
     const data = rows.map(({ subtopic, topic, subject, domain }) => ({
       ...subtopic,
+      depthLevel: subtopic.depth,
       topic: topic !== null ? {
         id: topic.id,
         name: topic.name,

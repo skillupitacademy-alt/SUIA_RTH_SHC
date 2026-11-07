@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         name: body.name,
         description: body.description,
         category: body.category,
+        order: body.order ?? 0,
         status: body.status ?? 'active',
       })
       .returning();
@@ -124,7 +125,7 @@ export async function PUT(request: NextRequest) {
     if (description !== undefined) updateData.description = description;
     if (category !== undefined) updateData.category = category;
     if (status !== undefined) updateData.status = status;
-    void order;
+    if (order !== undefined) updateData.order = order;
 
     const [updatedDomain] = await db
       .update(domains)

@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.weight !== undefined) updateData.weight = Number.isFinite(Number(body.weight)) ? Number(body.weight) : 1;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.order !== undefined) updateData.order = body.order;
-    void body.orderIndex;
+    if (body.orderIndex !== undefined) updateData.order = body.orderIndex;
 
     const [updated] = await db.update(topics).set(updateData).where(eq(topics.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });

@@ -112,7 +112,7 @@ export function SubtopicTable() {
                     description: (s as { description?: string | null }).description ?? null,
                     status: (s as { status?: string }).status as SubtopicRow['status'] ?? 'active',
                     order: (s as { order?: number }).order ?? (s as { orderIndex?: number }).orderIndex ?? 0,
-                    depthLevel: (s as { depthLevel?: number }).depthLevel ?? 0,
+                    depthLevel: (s as { depthLevel?: number }).depthLevel ?? (s as { depth?: number }).depth ?? 1,
                     topic: (s as { topic?: SubtopicRow['topic'] }).topic
                 }))
                 : [];

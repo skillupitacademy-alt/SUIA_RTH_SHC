@@ -30,8 +30,13 @@ async function patchHandler(
     if (!parsed.success) {
       return ApiResponse.error(badRequest('Invalid payload', 'BAD_REQUEST', parsed.error.issues));
     }
-    const body = parsed.data;
-    const result = await AdminSubtopicEngine.updateSubtopic(id, body, _payload.userId);
+    const { depthLevel, depth, orderIndex, order, ...body } = parsed.data;
+    const updateBody = {
+      ...body,
+      ...(depth !== undefined || depthLevel !== undefined ? { depth: depth ?? depthLevel } : {}),
+      ...(order !== undefined || orderIndex !== undefined ? { order: order ?? orderIndex } : {}),
+    };
+    const result = await AdminSubtopicEngine.updateSubtopic(id, updateBody, _payload.userId);
     if (result?.id !== undefined) {
       void HierarchySyncService.sync('subtopic', result.id);
     }

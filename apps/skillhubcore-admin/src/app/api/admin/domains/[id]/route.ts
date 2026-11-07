@@ -17,8 +17,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.status !== undefined) updateData.status = body.status;
-    void body.order;
-    void body.orderIndex;
+    if (body.order !== undefined) updateData.order = body.order;
+    if (body.orderIndex !== undefined) updateData.order = body.orderIndex;
 
     const [updated] = await db.update(domains).set(updateData).where(eq(domains.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Domain not found' }, { status: 404 });

@@ -7,6 +7,7 @@ export const domainSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   category: z.string().optional(),
+  order: z.number().int().min(0).optional(),
   status,
 });
 export type DomainInput = z.infer<typeof domainSchema>;
@@ -27,6 +28,7 @@ export const topicSchema = z.object({
   complexity: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
   complexityLevel: z.number().int().min(1).optional(),
   weight: z.number().int().min(1).optional(),
+  order: z.number().int().min(0).optional(),
   learningUrl: z.string().url().or(z.string().length(0)).optional().nullable(),
   detailedNotesPath: z.string().optional().nullable(),
   status,
@@ -37,14 +39,20 @@ export const subtopicSchema = z.object({
   topicId: uuid,
   name: z.string().min(1),
   description: z.string().optional(),
+  depth: z.number().int().min(1).optional(),
   depthLevel: z.number().int().min(1).optional(),
+  order: z.number().int().min(0).optional(),
+  orderIndex: z.number().int().min(0).optional(),
+  status,
 });
 export type SubtopicInput = z.infer<typeof subtopicSchema>;
 
 export const skillSchema = z.object({
   name: z.string().min(1),
+  description: z.string().optional(),
   category: z.enum(['technical', 'cognitive', 'process']).optional(),
   mappingType: z.enum(['conceptual', 'technical', 'practical']).optional(),
   weight: z.number().int().min(1).optional(),
+  status,
 });
 export type SkillInput = z.infer<typeof skillSchema>;

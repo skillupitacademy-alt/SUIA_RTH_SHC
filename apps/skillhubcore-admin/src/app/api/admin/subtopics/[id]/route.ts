@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.depthLevel !== undefined) updateData.depth = normalizeDepth(body.depthLevel);
     if (body.status !== undefined) updateData.status = body.status;
     if (body.order !== undefined) updateData.order = body.order;
-    void body.orderIndex;
+    if (body.orderIndex !== undefined) updateData.order = body.orderIndex;
 
     const [updated] = await db.update(subtopics).set(updateData).where(eq(subtopics.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
