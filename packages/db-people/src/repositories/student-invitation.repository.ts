@@ -34,15 +34,15 @@ export type RedeemStudentInvitationFailureReason =
 
 export type ClaimStudentInvitationOutcome =
   | {
-      ok: true;
-      claimToken: string;
-      record: StudentInvitationRecord;
-    }
+    ok: true;
+    claimToken: string;
+    record: StudentInvitationRecord;
+  }
   | {
-      ok: false;
-      reason: RedeemStudentInvitationFailureReason;
-      record?: StudentInvitationRecord;
-    };
+    ok: false;
+    reason: RedeemStudentInvitationFailureReason;
+    record?: StudentInvitationRecord;
+  };
 
 export function normalizeStudentEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -275,7 +275,7 @@ export class StudentInvitationRepository {
 
     const now = input.now ?? new Date();
     if (now.getTime() >= new Date(existing.expiresAt).getTime()) {
-      await this.dbInstance
+      const expiredRows = await this.dbInstance
         .update(studentInvitations)
         .set({
           status: 'expired',
@@ -287,8 +287,36 @@ export class StudentInvitationRepository {
           eq(studentInvitations.id, existing.invitationId),
           lte(studentInvitations.expiresAt, now),
           or(eq(studentInvitations.status, 'pending'), eq(studentInvitations.status, 'claiming'))
-        ));
-      return { ok: false, reason: 'expired', record: { ...existing, status: 'expired' } };
+        ))
+        .returning();
+
+      // The database confirms that this expiry transition actually happened.
+      if (Array.isArray(expiredRows) && expiredRows.length > 0 && expiredRows[0]?.id) {
+        const expiredRecord = mapRowToRecord(expiredRows[0] as StudentInvitationRow);
+        if (expiredRecord.status !== 'expired') {
+          throw new Error('Invitation expiry UPDATE returned an unexpected status');
+        }
+        return { ok: false, reason: 'expired', record: expiredRecord };
+      }
+
+      // Zero rows: another transaction changed the invitation after the initial SELECT.
+      // Report the authoritative current state; never fabricate an expiry transition.
+      const current = await this.findById(existing.invitationId);
+      if (!current) {
+        return { ok: false, reason: 'invalid-token' };
+      }
+      if (current.status === 'redeemed') {
+        return { ok: false, reason: 'already-redeemed', record: current };
+      }
+      if (current.status === 'revoked') {
+        return { ok: false, reason: 'revoked', record: current };
+      }
+      if (current.status === 'expired') {
+        return { ok: false, reason: 'expired', record: current };
+      }
+
+      // An unrecognised concurrent transition is not a successful expiration. Fail closed.
+      throw new Error('Invitation expiry transition lost a concurrent update');
     }
 
     const claimTtlMs = input.claimTtlMs ?? INVITATION_CLAIM_TTL_MS;

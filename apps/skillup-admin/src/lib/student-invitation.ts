@@ -1,6 +1,5 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { and, eq } from 'drizzle-orm';
 import * as peopleDb from '@quiz/db-people';
 
 export const STUDENT_INVITATION_TTL_HOURS = 72;
@@ -65,12 +64,6 @@ function getIsolatedTestAdapterState(): StudentInvitationStoreAdapter {
     host[TEST_ADAPTER_SYMBOL] = { byId: {}, idByTokenHash: {} };
   }
   return host[TEST_ADAPTER_SYMBOL];
-}
-
-function getPeopleInvitationTable(): any {
-  return 'studentInvitations' in peopleDb
-    ? (peopleDb as Record<string, unknown>).studentInvitations
-    : undefined;
 }
 
 function getPeopleRepositoryClass(): any {
@@ -408,66 +401,40 @@ export async function commitStudentInvitationInTransaction(
 
   const now = input.now ?? new Date();
   const executor = tx as {
-    redeemAtomic?: (arg: typeof input) => Promise<StudentInvitationRecord>;
+    redeemAtomic?: (arg: { invitationId: string; claimToken: string; now: Date }) => Promise<unknown>;
     update?: (...args: any[]) => any;
   };
+  const redemption = { invitationId: normalizedId, claimToken: normalizedClaim, now };
 
+  let committed: unknown;
   if (typeof executor.redeemAtomic === 'function') {
-    const committed = await executor.redeemAtomic({
-      invitationId: normalizedId,
-      claimToken: normalizedClaim,
-      now,
-    });
-    const hydrated =
-      committed && typeof committed === 'object'
-        ? hydrateSqlInvitationRow(committed as unknown as Record<string, unknown>, now)
-        : undefined;
-    if (!hydrated || hydrated.status !== 'redeemed') {
-      throw new Error('Failed to confirm redeemed student invitation row from transaction repository');
+    // Existing transaction-bound repository port. Its expiry/ownership contract
+    // must be enforced by the port implementation and is independently tested.
+    committed = await executor.redeemAtomic(redemption);
+  } else {
+    // Delegate to the canonical SQL-backed repository bound to the SAME transaction,
+    // so the mutation enforces: claiming AND owner matches AND claim unexpired AND
+    // invitation unexpired. No duplicate application-side SQL policy; no global DB client.
+    const RepoClass = getPeopleRepositoryClass();
+    if (RepoClass === undefined || typeof executor.update !== 'function') {
+      throw new Error(
+        'Transaction executor does not support required SQL update capability or StudentInvitationRepository redemption capability'
+      );
     }
-    return hydrated;
+    const repository = new RepoClass(executor);
+    if (typeof repository.redeemAtomic !== 'function') {
+      throw new Error('StudentInvitationRepository.redeemAtomic is unavailable');
+    }
+    committed = await repository.redeemAtomic(redemption);
   }
 
-  const studentTable = getPeopleInvitationTable();
-
-  if (studentTable === undefined || studentTable === null || typeof executor.update !== 'function') {
-    throw new Error(
-      'Transaction executor does not support required SQL update capability or studentInvitations schema for invitation redemption'
-    );
+  const hydrated =
+    committed !== null && committed !== undefined && typeof committed === 'object'
+      ? hydrateSqlInvitationRow(committed as Record<string, unknown>, now)
+      : undefined;
+  if (!hydrated || hydrated.status !== 'redeemed') {
+    throw new Error('Failed to confirm redeemed student invitation row from transaction repository');
   }
-
-  const updateBuilder = executor
-    .update(studentTable)
-    .set({
-      status: 'redeemed',
-      redeemedAt: now,
-      claimOwnerToken: null,
-      claimExpiresAt: null,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(studentTable.id, normalizedId),
-        eq(studentTable.status, 'claiming'),
-        eq(studentTable.claimOwnerToken, normalizedClaim)
-      )
-    );
-
-  if (typeof updateBuilder?.returning !== 'function') {
-    throw new Error('SQL update builder for student invitation redemption must support RETURNING');
-  }
-
-  const updateResult = await updateBuilder.returning();
-
-  if (!Array.isArray(updateResult) || updateResult.length === 0 || !updateResult[0]) {
-    throw new Error('Student invitation claim ownership lost or already redeemed in database');
-  }
-
-  const hydrated = hydrateSqlInvitationRow(updateResult[0] as Record<string, unknown>, now);
-  if (hydrated === undefined || hydrated.status !== 'redeemed') {
-    throw new Error('Student invitation SQL UPDATE RETURNING result could not be hydrated as a redeemed record');
-  }
-
   return hydrated;
 }
 
