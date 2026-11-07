@@ -1,5 +1,9 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Owner direction — 2026-11-08 (current scheduling)
+
+Follow [three-app scope reset and parked backlog](Owner_Scope_Reset_And_Parked_Work_2026_11_08.md). Invitation/outbox migration execution and table-specific qualification are PARKED pending demonstrated in-scope need. Preserve all completed source/tests/evidence; do not launch Slice 22-D or physical execution from historical instructions below. Continue required flow-based engineering work in `skillup-web`, `skillhubcore-admin` and `realtutorialhub-web`. Parking is not acceptance or W4 approval.
+
 ## Current Slice 21 review: PARTIAL_ACCEPTANCE
 
 [Sol review of 4692afaa](Sol_Slice21_Review_4692afaa.md) preserves Slice 19/20 scoped

@@ -1,5 +1,9 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Owner scheduling override — 2026-11-08
+
+[Current scope reset](Owner_Scope_Reset_And_Parked_Work_2026_11_08.md) parks invitation/outbox migrations and table-specific physical qualification. Do not automatically route to Slice 22-D from the older handoffs below. Preserve committed Slice 22-C work; resume actual required flows in `skillup-web`, `skillhubcore-admin`, and `realtutorialhub-web`, with shared dependencies justified by those flows. Prior acceptance roles remain; parking grants no physical-operation or W4 authorization.
+
 ## Current Slice 21 routing and physical boundary
 
 [Sol review](Sol_Slice21_Review_4692afaa.md): PARTIAL_ACCEPTANCE. Argon owns source/

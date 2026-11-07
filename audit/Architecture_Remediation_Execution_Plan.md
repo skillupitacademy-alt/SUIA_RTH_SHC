@@ -1,5 +1,7 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Owner scope/scheduling correction — 2026-11-08:** Active work targets `skillup-web`, `skillhubcore-admin` and `realtutorialhub-web`, with shared backend changes tied to actual required flows. Disputed student-invitation/outbox migration execution and table-specific qualification are PARKED, with completed commits preserved. See [owner scope reset and parked backlog](Owner_Scope_Reset_And_Parked_Work_2026_11_08.md). This supersedes prior next-action routing for those items, not recorded test results or safety limits. No migration execution, W1-W3 closure or W4 approval follows from parking.
+
 **Current Slice 21 disposition: PARTIAL_ACCEPTANCE.**
 [Sol source/inventory/UAT review](Sol_Slice21_Review_4692afaa.md) retains accepted
 source boundaries and count reconciliation within scope. Reported browser/R2 observations
