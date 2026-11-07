@@ -1,5 +1,14 @@
 # Standing authorization to complete the remaining W1-W3 assignment
 
+## Consolidated completion checklist (2026-11-07)
+
+The [existing directive's remaining-work checklist](Claude_Sonnet45_W1_W3_Completion_Directive.md#consolidated-remaining-work-checklist-for-w4-readiness)
+consolidates all FND01-FND30 outcomes, immediate S1-S3 fixes, required execution gates
+and final W4 readiness conditions. Use it alongside the full original requirements and
+current Sol review. It is not a competing ledger or a new per-slice approval requirement.
+W4 readiness preparation is authorized work under FND29; W4 implementation needs Sol's
+explicit entry decision. Active source repairs remain unaccepted until frozen and tested.
+
 Issued by Sol following the owner's request. Planning baseline: 55356a0a; record actual
 full HEAD, branch, dirty paths and worktree at execution. Assigned roles do not identify
 the runtime model. Declare the actual host model if exposed; do not impersonate another.

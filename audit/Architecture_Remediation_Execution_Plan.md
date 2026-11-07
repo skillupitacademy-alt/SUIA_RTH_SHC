@@ -1,5 +1,12 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Consolidated remaining-work checklist, 2026-11-07:** use the
+[existing completion directive](Claude_Sonnet45_W1_W3_Completion_Directive.md#consolidated-remaining-work-checklist-for-w4-readiness)
+for all thirty remaining acceptance outcomes, immediate S1-S3 repairs, physical gate
+families, fixed scope and W4 stop conditions. It consolidates existing requirements;
+it does not accept Argon's active uncommitted repairs or authorize live operations.
+Argon implements all remaining work, Gemini independently verifies, Sol accepts.
+
 **Latest review at source e19034dc / report 5abcd87a (2026-11-07): CHANGES_REQUESTED.**
 [Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md). Prior adapter controls
 pass 7/7, but runtime Map-backed outbox/invitations, non-immutable publication retries

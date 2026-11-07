@@ -9,6 +9,140 @@ tests the full integrated result; Sol gives final acceptance/feedback. Sonnet ma
 provide explicitly assigned disjoint noncritical assistance. The complete requirements
 below remain binding; none is removed by the ownership change.
 
+## Consolidated remaining-work checklist for W4 readiness
+
+Updated by Sol: 2026-11-07. Reviewed baseline: `7767e27ec2a68560469fd6bfe1140cff2a69c217`.
+Governing latest review: [durability review](Sol_W1_W3_Durability_Review_5abcd87a.md),
+CHANGES_REQUESTED. This section consolidates the EXISTING thirty requirements below;
+it is the current acceptance checklist, not another completion ledger or a new assignment.
+Preserve the existing consolidated handoff for source/test history and current work status.
+
+At preparation, Argon has uncommitted outbox/invitation/publisher/schema repairs and an
+edited handoff in the shared workspace. Those changes are IN PROGRESS, not reviewed here.
+Sol's checklist update does not modify, reset, stage or accept those production changes.
+Each agent must rediscover actual HEAD, dirty paths and worktree before execution.
+
+### What is already demonstrated
+
+The retained seven adapter controls pass at the last reviewed source: unsupported atomic
+adapters are rejected and the unsafe two-read fallback is removed. Retain existing scoped
+ownership/export, scoring, nested-schema, placement, analytics and Gate 1 progress; their
+passing selected tests are historical evidence within their documented boundaries.
+Do not reimplement accepted behavior simply because its parent task still needs closure.
+The last new durability checks had 2 passes / 7 failures. Active repairs need a new frozen
+source and independent results before that failure disposition can change.
+
+### Immediate source blockers, already within the standing assignment
+
+1. **S1 / TC20 / FND23-FND25:** replace the runtime Map outbox with the real persistent
+   repository; commit domain record plus immutable intent in the same SQL transaction;
+   implement owner-conditional dispatcher claims, completion/release, retries, enumeration
+   and restart recovery; prevent competing publication and identity/payload replacement.
+2. **S2 / TC20 / FND23-FND24:** persist and replay the same immutable event envelope,
+   including the fingerprinted correlation/time/version/source fields. Stable ID alone
+   must not turn a legitimate publication retry into a consumer payload-conflict response.
+3. **S3 / TC08 / FND11/FND16:** persist invitation authority and revocation; atomically
+   redeem with the intended account/password/activation update, check affected rows,
+   roll back failed changes, handle concurrent redemption and instance/restart separation.
+   Preserve expiry, token hashing, tenant binding and valid single-use activation.
+
+These are source/transaction-composition requirements, not merely deferred physical tests.
+The runtime migration/repository wiring must exist even when physical application is gated.
+
+### Complete thirty-task remaining acceptance checklist
+
+Every row below remains pending final acceptance, but does NOT mean all its code is absent.
+Argon first cites existing implementation, then fills genuine source gaps. Gemini supplies
+missing independent evidence. Sol accepts the stated boundary. The detailed original FND
+sections below continue to define the full contract and canonical group membership.
+
+| FND | Remaining outcome required for completion |
+| --- | --- |
+| FND01 | Reconcile original findings/callers, duplicate IDs, current source and evidence in the existing register; mechanically validate totals and every disposition. |
+| FND02 | Freeze reproducible regression selections/configuration; attribute all known failures, skipped/collection/interrupted runs and obsolete positive fixtures; retain legitimate positives and required denials. |
+| FND03 | Complete credential-to-tenant/local-subject-to-store ownership chains, trusted projection mapping and provenance/migration/rollback artifacts for every affected caller. |
+| FND04 | Qualify all export producers, dispatch/recovery/workers and six reader/status/URL/cache/storage/download boundaries; preserve owner positives and foreign/unknown-provenance zero-effects denials. |
+| FND05 | Complete all four classified progress lanes, authoritative owner propagation, membership/replay rules and repository CAS/insert/reset/conflict behavior; qualify actual SQL concurrency separately. |
+| FND06 | Complete real admin management entry points, actor/request/target/store predicates, tenant-owned versus SHC-global classification and valid/invalid credential-class controls. |
+| FND07 | Complete private cache/storage/queue owner lifecycle, continuously mounted account transitions, late responses and callbacks; retain provider/lifecycle controls and qualify installed-browser behavior. |
+| FND08 | Complete verified backend actor propagation through every transition and persisted audit side effect, with forged/missing/wrong-role denial and legitimate positives. |
+| FND09 | Qualify persisted human Gate 1 approve/revoke/rebind/transition/replay, capability and credential class, self-approval prohibition, stale/mismatched evidence and concurrent changes. |
+| FND10 | Deliver executable, attributed runtime-readiness journeys and prerequisites; perform the required authorized observations or retain their precise blocking gates; preserve separately scoped formal qualification. |
+| FND11 | Complete people/email/projection/auth/recovery/admission/seed consumer compatibility, normalized platform uniqueness, partial-write recovery and secure persisted invitation provisioning; retain physical migration/account gates. |
+| FND12 | Reconcile W2 active caller inventory across SkillUp/RTH/SHC/shared/marketing; identify actual field/data owners and resolve 109/181 and other count discrepancies using enumerated rows. |
+| FND13 | Finish inventory-linked student/program/faculty/batch/attendance/payment/date truth and actual placement helper/handler/consumer contracts; keep uncalibrated scores null and no invented profile metrics. |
+| FND14 | Complete report service/response/rendering compatibility, zero versus absent time/data, missing/incomplete questions and pending/failed/late exam transitions; retain the existing keyed-reset correction. |
+| FND15 | Complete real rendered operational/governance/certificate surfaces and action authority; distinguish live, reference and unavailable behavior; qualify issuance/evidence composition beyond lookup mocks. |
+| FND16 | Complete all inventoried signup/login/recovery/newsletter/consent/action contracts; distinguish committed success, queued delivery, draft and unknown outcome; fix transactional invitation redemption. |
+| FND17 | Mechanically map every original W2 finding to implementation, exact evidence and residual disposition; reconcile stale failures/counts and obtain explicit approval for any exception. |
+| FND18 | Complete canonical identity schemas/types and compatibility adapters through gateway/BFF/API/token/store boundaries, including audience/class/purpose and trusted local/projection mapping. |
+| FND19 | Complete create/update/error/serialization and identifier contracts for domain, subject, topic, subtopic and skill through actual SHC/service/repository callers; preserve named/numeric history compatibility. |
+| FND20 | Complete immutable versioned option IDs through editor/bulk/import/review/API/persistence and both scorers, including historical encodings, snapshot stability, commas and duplicate/unknown identities. |
+| FND21 | Complete bounded recursive document validation through import/composer/draft/storage/delivery; qualify legacy/quarantine compatibility and preserve preview-versus-authored-content separation. |
+| FND22 | Complete artifact/evidence schema-to-HTTP-to-service/caller round trips, workflow binding and forged/hash/reference denials; keep digest, signature and human approval semantically distinct. |
+| FND23 | Complete every analytics ingress/identity store and event producer/consumer/worker; fix S1-S2 and qualify tenant/type/identity/payload/lease/outbox/crash/retry/ack compatibility. |
+| FND24 | Integrate all six canonical domains through actual supported producers/callers, handlers, services and repository adapters; test current/historical positives and malformed/foreign contexts. |
+| FND25 | Reconcile all retained and new adverse controls plus legitimate positives; prove sensitivity to partial writes, concurrency, owner changes, duplicates and payload conflicts without hidden skips. |
+| FND26 | Complete applicable typecheck/lint/test/build/whitespace gates; distinguish scoped passes from workspace failures and obtain precise prerequisite/exception dispositions for remaining red gates. |
+| FND27 | Review concrete source for responsibility boundaries, canonical reuse, coupling, least privilege, safe errors/logs, transaction truth and historical compatibility; correct real violations. |
+| FND28 | Submit reproducible full-source/per-finding/per-group independent re-audit evidence; Sol explicitly dispositions each existing G1-G9 gate and every critical/high concern. |
+| FND29 | Build W4.1-W4.6 dependency/readiness matrix against accepted foundation boundaries and remaining gates; obtain Sol's explicit entry decision rather than silently moving unfinished foundations into W4. |
+| FND30 | Update the existing handoff/register/ledger with source/test SHAs, exact outcomes, group acceptance, rollout/rollback, operational prerequisites, exceptions and final Sol closure/W4 recommendation. |
+
+### Required execution/physical evidence and separate authorization
+
+Argon prepares concrete recipes; Gemini owns independent execution/evidence within approved
+environments; Sol assesses the gate; the owner authorizes separately gated operations.
+Preparation is already authorized and must not wait for permission to execute production.
+
+| Gate family | Still required where applicable to the original closure scope |
+| --- | --- |
+| SQL ownership and migration | Actual schema/provenance, historical quarantine/backfill, uniqueness/constraints, mixed-version and rollback qualification; no guessed tenant backfills. |
+| SQL transactions/concurrency | Independent transactions/processes for progress CAS/insert/reset, invitations and transactional outbox; affected-row, conflict and rollback truth. |
+| Queue/Redis/publication | Actual supported client signatures and atomic return semantics; claim/expiry/replacement, provider acknowledgment loss, retry/restart, downstream dedupe and reconciliation. |
+| Browser/gateway | Installed worker upgrade/cache eviction, cookie/session/account transitions and delayed callbacks; required gateway/runtime journeys with source/build attribution. BROWSER-01 remains distinct. |
+| Object storage/export | Actual private object access, signed URL/download/cache permissions, provenance and authorized versus foreign identities. |
+| Root cause and release readiness | Original RC-ID-01 identity/session/authorization/brand findings, relevant remaining root causes/Batch 08, declared build/release/environment prerequisites and operational runbooks. Deployment itself is not newly required or authorized by this checklist. |
+
+Offline simulation is not physical proof. A missing physical result is NOT_EXECUTED or
+BLOCKED, never PASS. Only an exception/deferral explicitly allowed by the governing gate
+and recorded by Sol can permit the relevant next activity; a mandatory W4 prerequisite
+cannot be deferred into a passing result. No live operation is authorized by listing it.
+
+### Fixed scope, execution order and final stop conditions
+
+The scope is the existing thirty FND tasks, twenty TC packages, original findings and
+nine established groups, not an expanding list of new projects. A discovered defect
+violating those requirements remains corrective work within that scope. A genuine new
+product/architecture requirement requires a separate explicit scope decision. A checklist
+cannot guarantee that independent tests will find no further within-scope defects.
+
+1. Argon completes current S1-S3 and remaining source/caller gaps; keep exact manifests
+   and incremental commits in the existing handoff. No routine within-contract approval wait.
+2. Argon freezes integrated SOURCE_SHA; Gemini verifies all original GM01-GM20/FND/group
+   requirements, not merely the latest changes, and supplies separate TEST_SHA plus exact
+   PASS/FAIL/NOT_EXECUTED/BLOCKED evidence. Incremental feedback may run during the campaign.
+3. Argon repairs actual failures; Gemini reruns affected controls and final integrated
+   regression. Preserve previous accepted positives, denials, source attribution and logs.
+4. Prepare and execute separately authorized required runtime/physical gates, or submit
+   an expressly permitted, bounded exception for Sol's disposition. Continue unrelated work.
+5. Sol reviews FND28-FND30 and records G1 W1.2 authorization/browser; G2 W1.2-EMAIL;
+   G3 W2.1 truth; G4 W3 identity; G5 taxonomy; G6 assessment; G7 tutorial/ILS; G8 Project
+   LLM; G9 events. No invented group names or sequential TC-to-FND reassignment.
+
+W4 readiness preparation is FND29 and can start now. W4 implementation remains blocked
+until Sol records an explicit GO for the proposed scope after its mandatory dependencies
+are accepted. The decision must cover W4.1 taxonomy application/repository, W4.2 tutorial
+sidebar, W4.3 question factory, W4.4 composer concurrency, W4.5 Project LLM governance and
+W4.6 observability/errors. A dependency-bounded exception requires explicit scope, owner,
+mitigation and date; it does not close the remaining W1-W3 work.
+
+Completion means: no unresolved mandatory implementation requirement or critical/high
+concern without a permitted recorded disposition; every FND/group has attributable
+independent evidence and Sol acceptance; required gates are observed or handled only by
+permitted exceptions; final integrated source/report revisions are frozen; Sol records
+the actual closure and W4-entry decision. No automatic push, main merge or deployment.
+
 ## Current role allocation selected by the owner
 
 The 2026-11-06 owner routing decision in
