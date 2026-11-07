@@ -1,5 +1,40 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Argon Slice 21 Completion Handoff at `d5f58b18` (2026-11-07)
+
+- **Branch**: `remediation/w1-2-batch-05-targeted`
+- **Starting Baseline (Sol Slice 20 Acceptance)**: `e828ce2a96549f6cfd47934c0c9ae29239125fbb` (`e828ce2a`)
+- **Frozen Slice 21 `SOURCE_SHA`**: `d5f58b18fba226da69af3408db544ef356f75fb9` (`d5f58b18`)
+- **Preserved Accepted Baselines**: Slice 19 (`f6627115a8a2f9dacf12bc4d711aecf3677c11ee`) and Slice 20 Q1/Q2 (`dc75ace5286d2b0f0da97a8d3e9406f809dec46a` / `5614579187bfd28b36e770d2739e61037eb3da74`) untouched and passing all verification suites.
+- **Dedicated Reconciliation & Readiness Packet**: [Argon_W1_W3_Remaining_Work_And_Inventory_Reconciliation.md](Argon_W1_W3_Remaining_Work_And_Inventory_Reconciliation.md)
+- **What Argon Completed in Slice 21 (`d5f58b18`)**:
+  1. **Mechanical Inventory & Register Reconciliation (`FND01`, `FND02`, `FND12`, `FND17`, `TC01`)**:
+     - Reconciled `Audit_Finding_Root_Cause_Crosswalk.csv` (`91` data rows = `68` distinct formal finding IDs + `23` `"No original audit ID"` rows; `69` distinct literal string values in `original_finding_id`), enumerating all `23` numbered findings with exact `CompleteProjectAudit.md` line numbers and unique tracking IDs (`CPA-FND-03`..`CPA-FND-32`, `CPA-PRINC-6294`, `CPA-SKILL-6232`).
+     - Reconciled `FND12_Complete_Truth_Inventory.md` (`109` table rows across `SD-01`..`32`, `AR-01`..`17`, `OP-01`..`26`, `GT-01`..`17`, `FA-01`..`17`) with explicit row-by-row enumeration of the `72` previously unenumerated callers (`MA-01`..`MA-29` = 29 marketing analytics callers + `TI-01`..`TI-43` = 43 tutorial/ILS callers; `109 + 72 = 181` total enumerated rows).
+     - Reconciled `FND17_W2_Coverage_Map.md` (`36` single headings + `6` range headings = `42` headings covering `177` W2 findings) and `W1_W3_Audit_Finding_Candidate_Index.csv` (`696` regex candidate tokens = `63` in crosswalk + `633` outside crosswalk).
+     - Preserved canonical `G1`–`G9`, `RC-ID-01`, and `BROWSER-01` definitions.
+  2. **Taxonomy CRUD Contract & Route Alignment (`FND19`, `TC16`)**:
+     - Aligned all 5 taxonomy entity schemas (`domainSchema`, `subjectSchema`, `topicSchema`, `subtopicSchema`, `skillSchema`) in `apps/api-server/src/schemas/hierarchy.schemas.ts` and `apps/skillhubcore-admin/src/schemas/hierarchy.schemas.ts` (`subtopicSchema` now preserves `depth`, `depthLevel`, `order`, `orderIndex`, `status`; `skillSchema` now preserves `description`, `status`; `domainSchema` and `topicSchema` preserve `order`).
+     - Fixed `apps/api-server/src/app/api/admin/subtopics/route.ts` and `apps/api-server/src/app/api/admin/subtopics/[id]/route.ts` to map `depth ?? depthLevel` -> `depth` and `order ?? orderIndex` -> `order` on both `POST` and `PATCH`.
+     - Fixed `apps/skillhubcore-admin/src/app/api/admin/{domains,topics,subtopics}/**` and `apps/skillhubcore-admin/src/components/questions/SubtopicTable.tsx` to preserve `order`/`orderIndex` and `depthLevel`/`depth`.
+  3. **Workspace Typecheck Syntax Cleanup & Disposition (`FND26`)**:
+     - Fixed all 23 syntax errors from `Sol_Slice20_Workspace_Typecheck.log` in `packages/db-tutorial/migrations/schema.ts`, `packages/marketing-site/src/lib/update_subsubtitle.cjs`, and `packages/marketing-site/src/lib/update_subsubtitle_slug.cjs`.
+     - Verified all 5 affected package typechecks (`@quiz/db-people`, `@quiz/db-tutorial`, `@quiz/events`, `@quiz/skillup-admin`, `@quiz/skillhubcore-admin`) exit `0`.
+     - Documented root flat `pnpm exec tsc --noEmit` semantic-phase disposition (`EXIT:2` due to conflicting root `@/*` path aliases and legacy test/scratch files `tests/temp-*.tsx`).
+  4. **Physical Qualification Gate Packets (`Gate P1`–`Gate P5`, `FND10`) & `W4.1`–`W4.6` Readiness Matrix (`FND28`–`FND30`)**:
+     - Authored self-contained execution recipes and pass/fail predicates for `Gate P1`–`Gate P5` and the `W4.1`–`W4.6` entry dependency matrix in `audit/Argon_W1_W3_Remaining_Work_And_Inventory_Reconciliation.md`.
+- **Verification Results at `d5f58b18`**:
+  - `node audit/Sol_Slice20_Repository_Review.mjs`: **40/40 passed** (exit `0`)
+  - `node audit/Sol_SQL_Authority_Review_7f66e7eb.mjs`: **8/8 passed** (exit `0`)
+  - `node audit/Gemini_SQL_Authority_Invariant_Review.mjs`: **6/6 passed** (exit `0`)
+  - `node audit/Sol_Lease_Adapter_Review_27243c6e.mjs`: **7/7 passed** (exit `0`)
+  - `node audit/Sol_W1_W3_Checkpoint_f88fef44.mjs boundary placement nested analytics`: **12 files / 114 passed** (exit `0`)
+  - `node audit/Sol_W1_W3_Integrated_Review_f574daa5.mjs scoring exports admin analytics`: **15 files / 99 passed** (exit `0`)
+  - `pnpm --filter @quiz/skillhubcore-admin exec vitest run src/schemas/__tests__/hierarchy-contract.test.ts`: **1 file / 27 passed** (exit `0`)
+  - Affected package typechecks (`@quiz/db-people`, `@quiz/db-tutorial`, `@quiz/events`, `@quiz/skillup-admin`, `@quiz/skillhubcore-admin`): **all exit `0`**
+  - Physical runtime gates (`Gate P1`–`Gate P5`): **`NOT_EXECUTED`**
+  - Overall disposition: **`W1–W3 PARTIAL_ACCEPTANCE` | `W4 implementation NOT APPROVED`**
+
 ## Sol scoped acceptance of Q1/Q2 at dc75ace5
 
 [Q1/Q2 acceptance](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md): actual repository/caller

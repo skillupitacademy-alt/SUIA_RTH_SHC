@@ -4,6 +4,7 @@
 - **Repository**: `E:\onlinewebsites\quiz-platform` (`skillupitacademy-alt/SUIA_RTH_SHC`)
 - **Branch**: `remediation/w1-2-batch-05-targeted`
 - **Accepted Baseline Revision (Sol Slice 20 Acceptance)**: `e828ce2a96549f6cfd47934c0c9ae29239125fbb` (`e828ce2a`)
+- **Frozen Slice 21 Production + Inventory SHA (`SOURCE_SHA`)**: `d5f58b18fba226da69af3408db544ef356f75fb9` (`d5f58b18`)
 - **Accepted Slice 20 Production SHA**: `dc75ace5286d2b0f0da97a8d3e9406f809dec46a` (`dc75ace5`)
 - **Accepted Slice 20 Test Adaptation SHA**: `5614579187bfd28b36e770d2739e61037eb3da74` (`56145791`)
 - **Accepted Slice 19 Production SHA**: `f6627115a8a2f9dacf12bc4d711aecf3677c11ee` (`f6627115`)
