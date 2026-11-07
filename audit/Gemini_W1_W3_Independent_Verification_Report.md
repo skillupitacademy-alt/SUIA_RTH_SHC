@@ -12,30 +12,31 @@ fixture failures. All-task/group completion and W4 entry remain unaccepted by So
 - **Role**: `Gemini Flash` (`TESTER_MODEL`) — Sole independent verification owner. Zero production edits.
 - **Implementer**: `Argon` (`Gemini 4 Argon (Medium)`)
 - **Reviewer / Authority**: `Sol`
-- **Frozen Source Baseline (`SOURCE_SHA`)**: `e19034dce9fae23abd7e39d74cdedab84affc9da` (`e19034dc`)
-- **Independent Test Suite Baseline (`TEST_SHA`)**: `cde6ae51c6ae7c73db8cfb04d1efc60ce2163b78` (`cde6ae51`)
+- **Frozen Source Baseline (`SOURCE_SHA`)**: `9e139c49f7694ee9e5eec94346d1e96addb9f47e` (`9e139c49`, implementation at `926c403e`)
+- **Independent Test Suite Baseline (`TEST_SHA`)**: `c5b5ad5954c53af5829fdd8db16c90d5bbb444c7` (`c5b5ad59`)
 - **Git Branch**: `remediation/w1-2-batch-05-targeted`
 - **Verification Environment**: Clean Git checkout, offline network guard active, zero live database/queue/cloud mutations.
-- **Verification Scope**: Verification of Argon's frozen implementation across all nineteen actionable items (`TC01`–`TC20`), thirty foundation tasks (`FND01`–`FND30`), and nine governing acceptance groups (`G1`–`G9`), with dedicated resolution of Sol findings `A1`, `A2`, `A3`, and `TC08`.
+- **Verification Scope**: Verification of Argon's frozen implementation across all nineteen actionable items (`TC01`–`TC20`), thirty foundation tasks (`FND01`–`FND30`), and nine governing acceptance groups (`G1`–`G9`), with dedicated resolution of Sol findings `A1`, `A2`, `A3`, `TC08`, and `S1`–`S3`.
 - **Handoff Target**: **Sol** for principal architecture review and W4-entry disposition. (Gemini Flash does not declare W1–W3 closed or approve W4).
 
 ---
 
 ## 1. Executive Summary & Verification Matrix
 
-Against frozen `SOURCE_SHA` `e19034dc`, Gemini Flash performed comprehensive independent verification. All diagnostics, regression runners, and newly authored contract probes pass with zero errors (exit code 0). Zero production files were altered by Gemini (`0` production edits; all changes strictly confined to test files in `__tests__/` under `TEST_SHA`).
+Against frozen `SOURCE_SHA` `9e139c49` (`926c403e`), Gemini Flash performed comprehensive independent verification. All diagnostics, regression runners, and newly authored contract probes pass with zero errors (exit code 0). Zero production files were altered by Gemini (`0` production edits; all changes strictly confined to test files in `__tests__/` under `TEST_SHA`).
 
 | Verification Category | Runner / Command | Files Executed | Tests Passed | Tests Failed | Exit Code | Invariants Proven |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sol S1–S3 Durable State Review** | `node audit/Sol_Durable_State_Review_5abcd87a.mjs` | 3 files | **9** | 0 | **0** | **9/9 passed** (Transitioned from 2 pass / 7 fail). Proves cross-module durability surviving `vi.resetModules()`, dispatcher fencing, payload conflict prevention, canonical envelope reuse with `createQStashHandler`, failure rollback preserving invitations, and zero-row rejection. |
 | **Sol A1 Contract Review** | `node audit/Sol_Lease_Adapter_Review_27243c6e.mjs` | 1 file | **7** | 0 | **0** | Non-atomic fallbacks eliminated; unsupported adapters rejected before effects; atomic Lua & memory lease stores pass all race & ownership checks. |
 | **Sol Checkpoint Suites** | `node audit/Sol_W1_W3_Checkpoint_f88fef44.mjs boundary placement nested analytics` | 12 files | **114** | 0 | **0** | Boundary (64), placement (24), nested (23), analytics (3). Profile & invitation boundaries; taxonomy entity placement; D6 recursive document limits; analytics view isolation. |
 | **Sol Integrated Review** | `node audit/Sol_W1_W3_Integrated_Review_f574daa5.mjs scoring exports admin analytics` | 15 files | **99** | 0 | **0** | Scoring (2), exports (60), admin (9), analytics (28). 8 foreign-tenant export denials; admin audience/tenant context; server-controlled analytics ingress; immutable scoring. |
 | **Sol Residual Review** | `node audit/Sol_W1_W3_Residual_Review_f18da842.mjs scoring` | 1 file | **2** | 0 | **0** | Immutable option-ID scoring engine integrity (wrong option ID denied even with matching display text). |
 | **Python Gate 1 & Foundation** | `python -c "import asyncio, builtins, sys; builtins._foundation_test_loop = asyncio.new_event_loop(); sys.path.insert(0, 'services/project-ai'); import pytest; sys.exit(pytest.main(['-q','audit/Sol_Gate1_Principal_Probe_f18da842.py','services/project-ai/tests/foundation/test_gate1_boundary.py','services/project-ai/tests/foundation/test_workflow_actor_boundary.py','services/project-ai/tests/foundation/test_artifact_hash_contract.py']))"` | 4 files | **19** | 0 | **0** | User-class tokens with `is_admin=False` denied 403 before service invocation; legitimate admin principal accepted; workflow actor boundary verified offline. |
 | **Events Package Suite** | `pnpm --filter @quiz/events test` | 5 files | **22** | 0 | **0** | Generic event consumer lease store (`createInMemoryEventLeaseStore` / Redis Lua); deduplication; payload validation; retry probe. |
-| **RTH Workers Suite (incl. A2 Probe)** | `pnpm --filter @quiz/realtutorialhub-web test -- src/app/api/workers/` | 10 files | **37** | 0 | **0** | All 9 production worker routes pass with atomic lease adapters; `outbox-recovery-probe.test.ts` proves crash-recovery and idempotency on actual routes. |
-| **SkillUp Admin Suite (incl. TC08 Probe)** | `pnpm --filter @quiz/skillup-admin test` | 3 files | **28** | 0 | **0** | CRM enquiries collision (5), admin routes (14), student invitation provisioning & redemption (9). Prohibits static passwords, enforces platform uniqueness. |
-| **Scoped TypeScript Typecheck** | `pnpm --filter @quiz/events exec tsc --noEmit`<br>`pnpm --filter @quiz/db-tutorial exec tsc --noEmit`<br>`pnpm --filter @quiz/api-server exec tsc --noEmit`<br>`pnpm --filter @quiz/realtutorialhub-web exec tsc --noEmit`<br>`pnpm --filter @quiz/skillup-admin exec tsc --noEmit` | 5 packages | **All checked** | 0 | **0** | Zero type errors across all in-scope W1–W3 packages. |
+| **RTH Workers Suite (incl. A2/S1 Probes)** | `pnpm --filter @quiz/realtutorialhub-web test -- src/app/api/workers/` | 10 files | **38** | 0 | **0** | All 9 production worker routes pass with atomic lease adapters; `outbox-recovery-probe.test.ts` (3 tests) proves crash-recovery, restart durability, and competing dispatcher fencing. |
+| **SkillUp Admin Suite (incl. TC08/S3 Probes)** | `pnpm --filter @quiz/skillup-admin test` | 3 files | **29** | 0 | **0** | CRM enquiries collision (5), admin routes (14), student invitation provisioning & redemption (10). Prohibits static passwords, enforces platform uniqueness, atomic activation rollback on throw, and 404 on 0 affected rows. |
+| **Scoped TypeScript Typecheck** | `pnpm --filter @quiz/events exec tsc --noEmit`<br>`pnpm --filter @quiz/db-tutorial exec tsc --noEmit`<br>`pnpm --filter @quiz/db-people exec tsc --noEmit`<br>`pnpm --filter @quiz/api-server exec tsc --noEmit`<br>`pnpm --filter @quiz/realtutorialhub-web exec tsc --noEmit`<br>`pnpm --filter @quiz/skillup-admin exec tsc --noEmit` | 6 packages | **All checked** | 0 | **0** | Zero type errors across all in-scope W1–W3 packages. |
 | **Workspace TypeScript Typecheck** | `pnpm exec tsc --noEmit` | Workspace | Disclosed | 1 error | 1 | Discloses pre-existing syntax error in legacy `packages/eslint-config/index.js` (unrelated to W1–W3 runtime). |
 
 ---
@@ -52,31 +53,45 @@ Against frozen `SOURCE_SHA` `e19034dc`, Gemini Flash performed comprehensive ind
   3. *Unit Test Fixture Modernization*: Positive test fixtures in `packages/events` and `realtutorialhub-web` that previously passed bare `{ get, set, del }` mocks were updated to provide conforming atomic adapters (`eval` Lua or `createInMemoryEventLeaseStore`) while keeping all negative denial assertions strictly intact.
 - **Evidence**: `node audit/Sol_Lease_Adapter_Review_27243c6e.mjs` -> **1 file / 7 passed (7), exit 0**.
 
-### Immediate A2: Durable Worker Outbox Publication Recovery
+### Immediate A2: Durable Worker Outbox Publication Recovery & S1/S2 Durability
 - **Target Routes**:
   - [`apps/realtutorialhub-web/src/app/api/workers/issue-certificate/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/api/workers/issue-certificate/route.ts)
   - [`apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts)
-- **Dedicated Independent Probe**: [`apps/realtutorialhub-web/src/app/api/workers/__tests__/outbox-recovery-probe.test.ts`](file:///e:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/api/workers/__tests__/outbox-recovery-probe.test.ts)
+  - [`packages/events/src/publisher.ts`](file:///e:/onlinewebsites/quiz-platform/packages/events/src/publisher.ts)
+  - [`packages/db-tutorial/src/schema/event-outbox.ts`](file:///e:/onlinewebsites/quiz-platform/packages/db-tutorial/src/schema/event-outbox.ts) & [`EventOutboxRepository`](file:///e:/onlinewebsites/quiz-platform/packages/db-tutorial/src/repositories/event-outbox.repository.ts)
+- **Dedicated Independent Probes**:
+  - [`apps/realtutorialhub-web/src/app/api/workers/__tests__/outbox-recovery-probe.test.ts`](file:///e:/onlinewebsites/quiz-platform/apps/realtutorialhub-web/src/app/api/workers/__tests__/outbox-recovery-probe.test.ts)
+  - [`audit/Sol_Durable_State_Probe_5abcd87a.test.ts`](file:///e:/onlinewebsites/quiz-platform/audit/Sol_Durable_State_Probe_5abcd87a.test.ts)
+  - [`audit/Sol_Publication_Identity_Probe_5abcd87a.test.ts`](file:///e:/onlinewebsites/quiz-platform/audit/Sol_Publication_Identity_Probe_5abcd87a.test.ts)
 - **Confirmed Invariants**:
   1. *Crash Recovery Without Duplication*:
      - **Delivery 1**: DB transaction inserts certificate / awards badge, but downstream event publication fails (simulated network fault). Route releases lease and exits with 500. Outbox intent remains unpublished.
      - **Delivery 2 (Retry)**: Worker acquires lease, discovers the existing DB record and pending outbox intent, republishes the event with stable `eventId`, marks outbox `published`, updates lease to `processed`, and returns 200 without inserting duplicate certificates or badges.
      - **Delivery 3 (Subsequent Duplicate)**: Worker detects lease is already completed (`already-completed`), returning 200 "Duplicate event ignored" with zero extra DB writes and zero duplicate publications.
-- **Evidence**: `pnpm --filter @quiz/realtutorialhub-web test -- src/app/api/workers/__tests__/outbox-recovery-probe.test.ts` -> **1 file / 2 passed (2), exit 0**. Full worker suite: **10 files / 37 passed (37), exit 0**.
+  2. *Restart Durability & Competing Dispatcher Fencing (S1)*:
+     - Worker outbox intents survive fresh application module instances (`vi.resetModules()`).
+     - Fenced `publishing` state prevents competing dispatchers from concurrently publishing the same intent.
+     - Attempting to overwrite an outbox record's payload throws an explicit conflict error and preserves the original payload.
+  3. *Immutable Canonical Envelope Reuse (S2)*:
+     - Republishing with a stable `options.id` preserves canonical `correlationId` and `occurredAt`, ensuring `createQStashHandler` returns `200` duplicate (`already-completed`) on redelivery rather than `409` payload conflict.
+- **Evidence**: `pnpm --filter @quiz/realtutorialhub-web test -- src/app/api/workers/__tests__/outbox-recovery-probe.test.ts` -> **1 file / 3 passed (3), exit 0**. Full worker suite: **10 files / 38 passed (38), exit 0**. `Sol_Durable_State_Review_5abcd87a.mjs` -> **9/9 passed, exit 0**.
 
 ### Immediate A3: Evidence Reconciliation & Mappings
 - **Restored Canonical Foundations & Acceptance Groups**:
   - Reconciled authoritative `TC01`–`TC20` ↔ `FND01`–`FND30` mappings from `Claude_Sonnet45_W1_W3_Completion_Directive.md` and `Tera_W1_W3_Critical_Implementation_Assignment.md`.
   - Reconciled verbatim foundation acceptance group names `G1`–`G9`.
   - Reconciled exact definitions for `RC-ID-01` and `BROWSER-01`.
-  - Scoped typecheck (0 errors) and workspace typecheck (disclosed legacy error) reported separately.
+  - Scoped typecheck (0 errors across all 6 packages) and workspace typecheck (disclosed legacy error) reported separately.
 
-### Task TC08: Invitation Provisioning & Account Activation Flow
+### Task TC08 / S3: Invitation Provisioning & Atomic Account Activation Flow
 - **Target Files**:
   - [`apps/skillup-admin/src/lib/student-invitation.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillup-admin/src/lib/student-invitation.ts)
   - [`apps/skillup-admin/src/app/api/admin/students/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillup-admin/src/app/api/admin/students/route.ts)
   - [`apps/skillup-admin/src/app/api/admin/students/invite/redeem/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillup-admin/src/app/api/admin/students/invite/redeem/route.ts)
-- **Dedicated Independent Probe**: [`apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts)
+  - [`packages/db-people/src/schema/student-invitations.ts`](file:///e:/onlinewebsites/quiz-platform/packages/db-people/src/schema/student-invitations.ts)
+- **Dedicated Independent Probes**:
+  - [`apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts)
+  - [`audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts`](file:///e:/onlinewebsites/quiz-platform/audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts)
 - **Confirmed Invariants**:
   1. *Static Default Password Prohibited*: Attempting to set password to `'SkillUp@2025'` is rejected with `400` ("Static default passwords are prohibited"). Weak passwords (< 10 chars) are rejected with `400`.
   2. *Unguessable Bootstrap Hashes*: Student provisioning invokes `generateRandomBootstrapPasswordHash()` (cryptographic random bytes + bcrypt), eliminating static defaults entirely.
@@ -88,7 +103,11 @@ Against frozen `SOURCE_SHA` `e19034dc`, Gemini Flash performed comprehensive ind
      - Expired token returns `410` (`expired`).
      - Tampered token returns `401` (`invalid-token`).
      - Cross-tenant attempt (`platform: 'realtutorialhub'`) returns `403`.
-- **Evidence**: `pnpm --filter @quiz/skillup-admin test -- src/app/api/admin/students/__tests__/invitation-redemption.test.ts` -> **1 file / 9 passed (9), exit 0**. Full skillup-admin suite: **3 files / 28 passed (28), exit 0**.
+  6. *Two-Phase Atomic Redemption & Rollback on Error (S3)*:
+     - Invitations survive fresh module instances (`vi.resetModules()`).
+     - If the password update throws or database update fails, the claim is released back to `pending`, allowing a subsequent retry to succeed (`200`).
+     - Zero affected account rows (`rowCount: 0`) fails closed (`404`) and does NOT consume the invitation.
+- **Evidence**: `pnpm --filter @quiz/skillup-admin test -- src/app/api/admin/students/__tests__/invitation-redemption.test.ts` -> **1 file / 10 passed (10), exit 0**. Full skillup-admin suite: **3 files / 29 passed (29), exit 0**. `Sol_Invitation_Commit_Probe_5abcd87a.test.ts` -> **2/2 passed, exit 0**.
 
 ---
 
