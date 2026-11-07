@@ -1,5 +1,14 @@
 # Gemini W1–W3 Comprehensive Independent Verification Report
 
+## Sol Slice 17 addendum: CHANGES_REQUESTED
+
+[Review of 7f66e7eb](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md) reproduces old durable
+9/9 and adapter 7/7 passes, but new SQL-authority controls yield 1 pass / 7 failures.
+Global-symbol application fallbacks still bypass the SQL classes and real tx guarantee.
+The report below names older source 9e139c49; commit source-specific independent evidence
+for the next frozen candidate. Do not label resetModules with surviving globalThis as
+process-restart/database durability or infer whole-foundation acceptance from these tests.
+
 ## Sol addendum at 5abcd87a: scoped progress, CHANGES_REQUESTED
 
 [Durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): old adapter 7/7 passes

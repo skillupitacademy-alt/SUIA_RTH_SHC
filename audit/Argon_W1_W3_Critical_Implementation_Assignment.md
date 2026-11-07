@@ -1,5 +1,14 @@
 # Current owner override
 
+## Latest Slice 17 SQL composition review
+
+[Sol review of 7f66e7eb](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.
+Pure SQL classes and old 9/9 + 7/7 controls are progress, but runtime helpers retain
+global-symbol fallbacks, environment-selected authority and missing-transaction paths.
+New SQL-authority checks: 1 pass / 7 fail. Correct actual outbox recovery/dispatch and
+SQL-only invitation claim/commit composition under existing S1/S3; no new policy needed.
+Keep ALL thirty FND/twenty TC requirements and the consolidated checklist active.
+
 ## Latest durability review at source e19034dc / report 5abcd87a
 
 [Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED.

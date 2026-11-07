@@ -1,0 +1,175 @@
+
+ RUN  v4.1.0 E:/onlinewebsites/quiz-platform
+
+·xxxxxxx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > a valid injected SQL executor is used without inspecting connection-string environment variables
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:43:18
+     41|   const tx = { select, insert: vi.fn(), update: vi.fn() };
+     42|   try { await worker.upsertTransactionalOutboxIntent(outboxInput('sql-…
+     43|   expect(select).toHaveBeenCalled();
+       |                  ^
+     44| });
+     45|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > incomplete transaction capabilities cannot report a persisted outbox intent
+AssertionError: promise resolved "{ …(13) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "aggregateId": "unsupported-transaction",
++   "attemptCount": 0,
++   "envelope": null,
++   "eventId": "97910f2a-d12d-40ac-8322-c0aa7ad8f736",
++   "eventType": "certificate.issued",
++   "id": "ee6e5258-ced8-4593-af20-1549cbcbd0a6",
++   "lastError": null,
++   "leaseExpiresAt": null,
++   "ownerToken": null,
++   "payload": {
++     "certificateId": "unsupported-transaction",
++   },
++   "publishedAt": null,
++   "status": "pending",
++   "tenantId": "realtutorialhub",
+  }
+
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:48:99
+     46| it('incomplete transaction capabilities cannot report a persisted outb…
+     47|   const worker = await import(workerModule);
+     48|   await expect(worker.upsertTransactionalOutboxIntent(outboxInput('uns…
+       |                                                                                                   ^
+     49| });
+     50|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > outbox dispatch without a durable repository rejects before publication
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "aggregateId": "no-dispatch-repository",
+        "attemptCount": 1,
+        "envelope": null,
+        "eventId": "b1dc78a2-4170-432c-accd-4aa5f108ae58",
+        "eventType": "certificate.issued",
+        "id": "86412433-7c40-4602-ad2c-394730620df1",
+        "lastError": null,
+        "leaseExpiresAt": "2026-11-07T03:54:55.164Z",
+        "ownerToken": "owner",
+        "payload": Object {
+          "certificateId": "no-dispatch-repository",
+        },
+        "publishedAt": null,
+        "status": "publishing",
+        "tenantId": "realtutorialhub",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:56:23
+     54|   const publish = vi.fn(async () => undefined);
+     55|   try { await worker.dispatchWorkerOutboxIntent(intent, 'owner', publi…
+     56|   expect(publish).not.toHaveBeenCalled();
+       |                       ^
+     57| });
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > fresh application memory cannot substitute for an authoritative outbox read
+AssertionError: expected undefined to match object { Object (eventId) }
+
+- Expected:
+{
+  "eventId": "21d207f3-1fd5-42d9-97d5-c1b1d4ea3292",
+}
+
++ Received:
+undefined
+
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:66:107
+     64|   vi.resetModules();
+     65|   const freshWorker = await import(workerModule);
+     66|   expect(await freshWorker.getWorkerOutboxIntent('realtutorialhub', 'c…
+       |                                                                                                           ^
+     67| });
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > invitation DB claim always uses the injected repository rather than falling back to a memory token
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:76:30
+     74|   try { await invitation.claimStudentInvitationInDb({ invitationToken:…
+     75|   catch { sqlError = true; }
+     76|   expect(fixture.claimCalls).toBe(1);
+       |                              ^
+     77|   expect(sqlError).toBe(true);
+     78| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > a SQL-claimed invitation can commit without a matching process-global record
+AssertionError: promise rejected "Error: Student invitation not found for c…" instead of resolving
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:86:140
+
+
+Caused by: Error: Student invitation not found for commit
+ ❯ commitStudentInvitationRedemption apps/skillup-admin/src/lib/student-invitation.ts:329:11
+ ❯ Module.commitStudentInvitationInTransaction apps/skillup-admin/src/lib/student-invitation.ts:396:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts > invitation transaction wrapper rejects a nontransactional executor before account effects
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {},
+    ]
+
+
+Number of calls: 1
+
+ ❯ audit/Sol_SQL_Authority_Probe_7f66e7eb.test.ts:93:29
+     91|   const accountEffect = vi.fn(async () => 'activated');
+     92|   try { await invitation.runInInvitationTransaction({}, accountEffect)…
+     93|   expect(accountEffect).not.toHaveBeenCalled();
+       |                             ^
+     94| });
+     95|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  09:19:54
+   Duration  422ms (transform 67ms, setup 34ms, import 41ms, tests 158ms, environment 0ms)

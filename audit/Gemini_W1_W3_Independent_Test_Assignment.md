@@ -1,5 +1,14 @@
 # Gemini independent foundation testing packet
 
+## Latest Slice 17 verification correction
+
+Read [Sol SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md).
+Old 9/9 durable tests survive resetModules via globalThis; they do not qualify SQL paths.
+New SQL-authority probes give 1 pass / 7 failures. Verify real repository predicates and
+actual caller wiring with shared controlled durable state across separate application
+globals; reject missing tx/repository support. Publish source-specific TEST/report SHAs.
+No production edits; preserve full original GM/FND/group scope and all legitimate controls.
+
 ## Latest durability review at 5abcd87a
 
 [Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md) records 7/7 retained

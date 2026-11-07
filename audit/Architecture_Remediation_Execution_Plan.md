@@ -1,5 +1,11 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Latest Slice 17 review, source 7f66e7eb / handoff 00703c21: CHANGES_REQUESTED.**
+[SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md) retains old 9/9 and
+7/7 passes but records 1 pass / 7 new SQL-authority failures. Repository classes are SQL;
+application helpers still bypass them via global state/env gates and nontransactional
+fallback. Existing S1/S3 and the complete thirty-task checklist remain open within scope.
+
 **Consolidated remaining-work checklist, 2026-11-07:** use the
 [existing completion directive](Claude_Sonnet45_W1_W3_Completion_Directive.md#consolidated-remaining-work-checklist-for-w4-readiness)
 for all thirty remaining acceptance outcomes, immediate S1-S3 repairs, physical gate

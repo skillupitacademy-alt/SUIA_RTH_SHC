@@ -11,6 +11,13 @@ below remain binding; none is removed by the ownership change.
 
 ## Consolidated remaining-work checklist for W4 readiness
 
+**Latest evidence update:** [Slice 17 SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md)
+remains CHANGES_REQUESTED. Source 7f66e7eb adds pure SQL classes but actual application
+helpers still retain global/env/transaction fallbacks (new controls: 1 pass / 7 fail;
+old durable 9/9 and adapter 7/7 pass). S1/S3 remain the same pending source requirements.
+The complete thirty-row scope and stop conditions below are unchanged; no new project
+scope is introduced by these reproductions. W4 entry remains unapproved.
+
 Updated by Sol: 2026-11-07. Reviewed baseline: `7767e27ec2a68560469fd6bfe1140cff2a69c217`.
 Governing latest review: [durability review](Sol_W1_W3_Durability_Review_5abcd87a.md),
 CHANGES_REQUESTED. This section consolidates the EXISTING thirty requirements below;

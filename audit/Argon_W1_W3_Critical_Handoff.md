@@ -1,5 +1,14 @@
 # Argon W1–W3 Critical Implementation Handoff
 
+## Sol disposition of Slice 17 (7f66e7eb / handoff 00703c21)
+
+[SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.
+Repository classes use SQL, but worker/invitation application helpers still select global
+symbol state. New probes: 1 pass / 7 fail; old durable and adapter probes pass 9/9 and 7/7.
+Bind real repositories through all initial/recovery/dispatch and invitation tx paths,
+remove fallback authority and require transactions before effects. Keep the full existing
+completion checklist active; S1/S3 are not yet resolved and W4 remains unapproved.
+
 ## Latest Sol review of e19034dc and independent report 5abcd87a
 
 [Durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED. The

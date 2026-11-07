@@ -1,5 +1,13 @@
 # Owner-directed model routing for the remaining foundation work
 
+## Current Slice 17 disposition
+
+[Sol SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md): CHANGES_REQUESTED.
+Argon fixes application-to-SQL/tx wiring and all remaining full-scope requirements;
+Gemini independently tests actual repository/caller composition with no production edits;
+Sol accepts. Previous passing controls remain scoped progress. No new assignment or
+routine policy approval is required. W1-W3 closure and W4 entry remain unapproved.
+
 ## Current review at 5abcd87a
 
 [Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md): CHANGES_REQUESTED.
