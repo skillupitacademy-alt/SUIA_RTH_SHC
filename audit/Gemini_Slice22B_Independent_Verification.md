@@ -1,5 +1,7 @@
 # Independent Verification and Physical Test Harness Qualification Report (Slice 22-B Final)
 
+> Sol review at `8ad89b16`: **PARTIAL_ACCEPTANCE / CHANGES_REQUESTED**. See [Sol_Slice22_Review_8ad89b16.md](Sol_Slice22_Review_8ad89b16.md). Historical PASS claims below are limited by that review: Redis primitives are not queue delivery, invalid-token denial is not export tenant authorization, and browser/SQL harnesses still need correction. Physical migration execution and W4 are NOT APPROVED. The claimed tutorial `0030_snapshot.json` is absent; inspected alias conflicts return 400, not 409. Preserve original observations with this overriding scope correction.
+
 **Reviewer:** Gemini 3 Flash (`Gemini 3.8 Flash (Medium)`), Independent Verification Owner  
 **Repository:** `skillupitacademy-alt/SUIA_RTH_SHC` (`quiz-platform`)  
 **Branch:** `remediation/w1-2-batch-05-targeted`  
