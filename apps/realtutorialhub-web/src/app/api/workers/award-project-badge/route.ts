@@ -232,42 +232,43 @@ const badgeHandler = createQStashHandler(
 
       if (outboxIntent !== undefined) {
         const token = process.env.QSTASH_TOKEN;
-        if (typeof token === 'string' && token.trim().length > 0) {
-          await dispatchWorkerOutboxIntent(
-            outboxIntent,
-            claim.ownerToken,
-            async (intent) => {
-              const client = new Client({ token });
-              const storedEnvelope = intent.envelope ?? {};
-              await client.publishJSON({
-                url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-                retries: 3,
-                body: {
-                  id: intent.eventId,
-                  type: 'project.certificate_requested',
-                  correlationId:
-                    typeof storedEnvelope.correlationId === 'string'
-                      ? storedEnvelope.correlationId
-                      : submission.id,
-                  source:
-                    typeof storedEnvelope.source === 'string'
-                      ? storedEnvelope.source
-                      : 'quiz-platform',
-                  occurredAt:
-                    typeof storedEnvelope.occurredAt === 'string'
-                      ? storedEnvelope.occurredAt
-                      : canonicalOccurredAt,
-                  version:
-                    typeof storedEnvelope.version === 'number'
-                      ? storedEnvelope.version
-                      : 1,
-                  data: intent.payload,
-                },
-              });
-            },
-            outboxRepository
-          );
+        if (typeof token !== 'string' || token.trim().length === 0) {
+          throw new Error('QSTASH_TOKEN is required to publish pending certificate request');
         }
+        await dispatchWorkerOutboxIntent(
+          outboxIntent,
+          claim.ownerToken,
+          async (intent) => {
+            const client = new Client({ token: token.trim() });
+            const storedEnvelope = intent.envelope ?? {};
+            await client.publishJSON({
+              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+              retries: 3,
+              body: {
+                id: intent.eventId,
+                type: 'project.certificate_requested',
+                correlationId:
+                  typeof storedEnvelope.correlationId === 'string'
+                    ? storedEnvelope.correlationId
+                    : submission.id,
+                source:
+                  typeof storedEnvelope.source === 'string'
+                    ? storedEnvelope.source
+                    : 'quiz-platform',
+                occurredAt:
+                  typeof storedEnvelope.occurredAt === 'string'
+                    ? storedEnvelope.occurredAt
+                    : canonicalOccurredAt,
+                version:
+                  typeof storedEnvelope.version === 'number'
+                    ? storedEnvelope.version
+                    : 1,
+                data: intent.payload,
+              },
+            });
+          },
+          outboxRepository
+        );
       }
 
       const completionTransition = await completeWorkerLeaseIfOwner(

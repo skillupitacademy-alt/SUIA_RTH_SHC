@@ -94,7 +94,7 @@ export async function generateRandomBootstrapPasswordHash(): Promise<string> {
 
 /**
  * Authoritative database-backed invitation issuance using `StudentInvitationRepository` (`student_invitations`).
- * Participates in the caller's SQL transaction `tx` when provided.
+ * Participates in the caller's SQL transaction `tx` when provided and fails closed when repository/SQL capabilities are absent.
  */
 export async function issueStudentInvitationInDb(
   input: {
@@ -109,38 +109,35 @@ export async function issueStudentInvitationInDb(
   invitationToken: string;
   record: StudentInvitationRecord;
 }> {
-  const synced = issueStudentInvitation(input);
+  const RepoClass = getPeopleRepositoryClass();
   const executor = (dbOrTx ?? peopleDb.db) as any;
-  const studentTable = getPeopleInvitationTable();
 
-  if (studentTable !== undefined && typeof executor?.insert === 'function') {
-    const now = new Date(synced.record.issuedAt);
-    const expiresAt = new Date(synced.record.expiresAt);
-    const inserted = await executor
-      .insert(studentTable)
-      .values({
-        id: synced.record.invitationId,
-        userId: synced.record.userId,
-        email: synced.record.email,
-        platform: synced.record.platform,
-        tokenHash: synced.record.tokenHash,
-        status: 'pending',
-        claimOwnerToken: null,
-        claimExpiresAt: null,
-        issuedAt: now,
-        expiresAt,
-        redeemedAt: null,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning?.();
+  if (executor !== null && executor !== undefined && typeof executor === 'object') {
+    if (typeof executor.createInvitation === 'function') {
+      const created = await executor.createInvitation(input);
+      return {
+        invitationToken: created.invitationToken,
+        record: created.record,
+      };
+    }
 
-    if (Array.isArray(inserted) && inserted.length === 0 && process.env.DATABASE_URL_PEOPLE) {
-      throw new Error('Failed to insert student invitation into student_invitations');
+    if (
+      RepoClass !== undefined &&
+      typeof executor.insert === 'function' &&
+      typeof executor.update === 'function'
+    ) {
+      const repo = new RepoClass(executor);
+      const created = await repo.createInvitation(input);
+      return {
+        invitationToken: created.invitationToken,
+        record: created.record,
+      };
     }
   }
 
-  return synced;
+  throw new Error(
+    'Unsupported database dependency for student invitation issuance: requires createInvitation or full SQL executor (insert, update) with StudentInvitationRepository'
+  );
 }
 
 export function issueStudentInvitation(input: {
@@ -317,25 +314,15 @@ export async function claimStudentInvitationInDb(
       return executor.claimForRedemption(input);
     }
 
-    const hasSqlSelectAndUpdate =
-      typeof executor.select === 'function' && typeof executor.update === 'function';
-
     if (RepoClass !== undefined) {
-      // If a custom repository class or full SQL executor is provided, execute it directly.
-      // Only fall back to the isolated test store if `executor` is a partial route mock
-      // that has `.update` (or `.insert`) but lacks `.select` for `student_invitations`.
-      const isPartialRouteDbMock =
-        !hasSqlSelectAndUpdate &&
-        (typeof executor.update === 'function' || typeof executor.insert === 'function');
-
-      if (!isPartialRouteDbMock) {
-        const repo = new RepoClass(executor);
-        return repo.claimForRedemption(input);
-      }
+      const repo = new RepoClass(executor);
+      return repo.claimForRedemption(input);
     }
   }
 
-  return claimStudentInvitationForRedemption(input);
+  throw new Error(
+    'Unsupported database dependency for student invitation claim: requires claimForRedemption or StudentInvitationRepository'
+  );
 }
 
 export function commitStudentInvitationRedemption(input: {
@@ -413,6 +400,12 @@ export async function commitStudentInvitationInTransaction(
     throw new Error('Valid transaction handle is required to commit student invitation redemption');
   }
 
+  const normalizedId = input.invitationId?.trim();
+  const normalizedClaim = input.claimToken?.trim();
+  if (!normalizedId || !normalizedClaim) {
+    throw new Error('invitationId and claimToken are required for atomic invitation redemption');
+  }
+
   const now = input.now ?? new Date();
   const executor = tx as {
     redeemAtomic?: (arg: typeof input) => Promise<StudentInvitationRecord>;
@@ -420,73 +413,62 @@ export async function commitStudentInvitationInTransaction(
   };
 
   if (typeof executor.redeemAtomic === 'function') {
-    return executor.redeemAtomic({
-      invitationId: input.invitationId,
-      claimToken: input.claimToken,
+    const committed = await executor.redeemAtomic({
+      invitationId: normalizedId,
+      claimToken: normalizedClaim,
       now,
     });
+    const hydrated =
+      committed && typeof committed === 'object'
+        ? hydrateSqlInvitationRow(committed as unknown as Record<string, unknown>, now)
+        : undefined;
+    if (!hydrated || hydrated.status !== 'redeemed') {
+      throw new Error('Failed to confirm redeemed student invitation row from transaction repository');
+    }
+    return hydrated;
   }
 
   const studentTable = getPeopleInvitationTable();
 
-  if (studentTable !== undefined && studentTable !== null && typeof executor.update === 'function') {
-    const updateBuilder = executor
-      .update(studentTable)
-      .set({
-        status: 'redeemed',
-        redeemedAt: now,
-        claimOwnerToken: null,
-        claimExpiresAt: null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(studentTable.id, input.invitationId),
-          eq(studentTable.status, 'claiming'),
-          eq(studentTable.claimOwnerToken, input.claimToken)
-        )
-      );
-
-    const hasReturningMethod = typeof updateBuilder?.returning === 'function';
-    const updateResult = hasReturningMethod
-      ? await updateBuilder.returning()
-      : await updateBuilder;
-
-    if (Array.isArray(updateResult)) {
-      if (updateResult.length === 0) {
-        throw new Error('Student invitation claim ownership lost or already redeemed in database');
-      }
-      const hydrated = hydrateSqlInvitationRow(updateResult[0] as Record<string, unknown>, now);
-      if (hydrated !== undefined) {
-        // Also sync test adapter state if present in the same process
-        const state = getIsolatedTestAdapterState();
-        if (state.byId[input.invitationId]) {
-          state.byId[input.invitationId] = { ...hydrated };
-        }
-        return hydrated;
-      }
-    }
-
-    if (
-      updateResult &&
-      typeof updateResult === 'object' &&
-      'rowCount' in updateResult &&
-      typeof (updateResult as { rowCount?: unknown }).rowCount === 'number' &&
-      ((updateResult as { rowCount: number }).rowCount <= 0)
-    ) {
-      throw new Error('Student invitation claim ownership lost or already redeemed in database');
-    }
+  if (studentTable === undefined || studentTable === null || typeof executor.update !== 'function') {
+    throw new Error(
+      'Transaction executor does not support required SQL update capability or studentInvitations schema for invitation redemption'
+    );
   }
 
-  if (typeof executor.update !== 'function') {
-    throw new Error('Transaction executor does not support required update capability for invitation redemption');
+  const updateBuilder = executor
+    .update(studentTable)
+    .set({
+      status: 'redeemed',
+      redeemedAt: now,
+      claimOwnerToken: null,
+      claimExpiresAt: null,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(studentTable.id, normalizedId),
+        eq(studentTable.status, 'claiming'),
+        eq(studentTable.claimOwnerToken, normalizedClaim)
+      )
+    );
+
+  if (typeof updateBuilder?.returning !== 'function') {
+    throw new Error('SQL update builder for student invitation redemption must support RETURNING');
   }
 
-  return commitStudentInvitationRedemption({
-    invitationId: input.invitationId,
-    claimToken: input.claimToken,
-    now,
-  });
+  const updateResult = await updateBuilder.returning();
+
+  if (!Array.isArray(updateResult) || updateResult.length === 0 || !updateResult[0]) {
+    throw new Error('Student invitation claim ownership lost or already redeemed in database');
+  }
+
+  const hydrated = hydrateSqlInvitationRow(updateResult[0] as Record<string, unknown>, now);
+  if (hydrated === undefined || hydrated.status !== 'redeemed') {
+    throw new Error('Student invitation SQL UPDATE RETURNING result could not be hydrated as a redeemed record');
+  }
+
+  return hydrated;
 }
 
 export function releaseStudentInvitationClaim(input: {
@@ -515,7 +497,6 @@ export async function releaseStudentInvitationInDb(
   },
   dbClient?: unknown
 ): Promise<void> {
-  releaseStudentInvitationClaim(input);
   const RepoClass = getPeopleRepositoryClass();
   const executor = (dbClient ?? peopleDb.db) as any;
   if (
@@ -532,18 +513,20 @@ export async function releaseStudentInvitationInDb(
     executor !== null &&
     executor !== undefined &&
     typeof executor === 'object' &&
-    typeof executor.select === 'function' &&
-    typeof executor.update === 'function' &&
-    Boolean(process.env.DATABASE_URL_PEOPLE)
+    typeof executor.update === 'function'
   ) {
     const repo = new RepoClass(executor);
     await repo.releaseClaim(input);
+    return;
   }
+  throw new Error(
+    'Unsupported database dependency for releasing student invitation claim: requires releaseClaim or StudentInvitationRepository'
+  );
 }
 
 /**
- * Executes a callback inside a database transaction (`db.transaction`).
- * Rejects nontransactional or empty `{}` executors that lack both `.transaction()` and SQL write methods.
+ * Executes a callback inside a mandatory database transaction (`db.transaction`).
+ * Rejects any executor that does not provide a real `.transaction()` function (never accepts bare `insert()` or `update()`).
  */
 export async function runInInvitationTransaction<T>(
   dbClient: unknown,
@@ -555,35 +538,18 @@ export async function runInInvitationTransaction<T>(
 
   const candidate = dbClient as {
     transaction?: <R>(cb: (tx: any) => Promise<R>) => Promise<R>;
-    update?: unknown;
-    insert?: unknown;
   };
 
-  const hasTransactionFn = typeof candidate.transaction === 'function';
-  const hasMockWriteCapability =
-    typeof candidate.update === 'function' || typeof candidate.insert === 'function';
-
-  if (!hasTransactionFn && !hasMockWriteCapability) {
-    throw new Error('Database executor does not support required transactional capabilities');
+  if (typeof candidate.transaction !== 'function') {
+    throw new Error('Database executor does not support required transactional execution (db.transaction)');
   }
 
-  const state = getIsolatedTestAdapterState();
-  const snapshotById: Record<string, StudentInvitationRecord> = {};
-  for (const [k, v] of Object.entries(state.byId)) {
-    snapshotById[k] = { ...v };
-  }
-  const snapshotByHash = { ...state.idByTokenHash };
-
-  try {
-    if (hasTransactionFn) {
-      return await candidate.transaction!(async (tx) => callback(tx));
+  return candidate.transaction(async (tx) => {
+    if (tx === null || tx === undefined || typeof tx !== 'object') {
+      throw new Error('Transaction callback received an invalid transaction handle');
     }
-    return await callback(dbClient);
-  } catch (error) {
-    state.byId = snapshotById;
-    state.idByTokenHash = snapshotByHash;
-    throw error;
-  }
+    return callback(tx);
+  });
 }
 
 export function redeemStudentInvitationToken(input: {
@@ -611,6 +577,55 @@ export function getStudentInvitationById(invitationId: string): StudentInvitatio
   const state = getIsolatedTestAdapterState();
   const found = state.byId[invitationId];
   return found !== undefined ? { ...found } : undefined;
+}
+
+export interface IsolatedTestInvitationRepositoryPort {
+  createInvitation(input: {
+    userId: string;
+    email: string;
+    platform?: 'skillup';
+    now?: Date;
+    ttlMs?: number;
+  }): Promise<{
+    invitationToken: string;
+    record: StudentInvitationRecord;
+  }>;
+  claimForRedemption(input: {
+    invitationToken: string;
+    email?: string;
+    platform?: string;
+    now?: Date;
+  }): Promise<ClaimStudentInvitationOutcome>;
+  redeemAtomic(input: {
+    invitationId: string;
+    claimToken: string;
+    now?: Date;
+  }): Promise<StudentInvitationRecord>;
+  releaseClaim(input: {
+    invitationId: string;
+    claimToken: string;
+  }): Promise<void>;
+}
+
+/**
+ * Explicitly injected test adapter for student invitations.
+ * Must only be passed explicitly by tests into `dbClient` / `tx` — never selected implicitly by production code.
+ */
+export function createIsolatedTestInvitationRepository(): IsolatedTestInvitationRepositoryPort {
+  return {
+    async createInvitation(input) {
+      return issueStudentInvitation(input);
+    },
+    async claimForRedemption(input) {
+      return claimStudentInvitationForRedemption(input);
+    },
+    async redeemAtomic(input) {
+      return commitStudentInvitationRedemption(input);
+    },
+    async releaseClaim(input) {
+      releaseStudentInvitationClaim(input);
+    },
+  };
 }
 
 export function clearStudentInvitationsForTests(): void {

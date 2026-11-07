@@ -169,6 +169,11 @@ const handler = createQStashHandler(
             outboxRepository
           ));
 
+        const qstashToken = process.env.QSTASH_TOKEN;
+        if (typeof qstashToken !== 'string' || qstashToken.trim().length === 0) {
+          throw new Error('QSTASH_TOKEN is required to publish pending certificate.issued event');
+        }
+
         await dispatchWorkerOutboxIntent(
           recoveryIntent,
           claim.ownerToken,
@@ -316,6 +321,11 @@ const handler = createQStashHandler(
 
         return { created: row, outboxIntent: intent };
       });
+
+      const qstashToken = process.env.QSTASH_TOKEN;
+      if (typeof qstashToken !== 'string' || qstashToken.trim().length === 0) {
+        throw new Error('QSTASH_TOKEN is required to publish certificate.issued event');
+      }
 
       await dispatchWorkerOutboxIntent(
         outboxIntent,

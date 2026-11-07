@@ -1,10 +1,9 @@
 import { createHash } from 'node:crypto';
 import { and, eq, lte, or, sql } from 'drizzle-orm';
+import { STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db';
 import type { TutorialDbClientLike } from '@quiz/types';
 
-import { db } from '../db';
 import { eventOutbox, type EventOutboxRow } from '../schema/event-outbox';
-import { TutorialRepositoryBase } from './base.repository';
 
 export type OutboxRecordStatus = 'pending' | 'publishing' | 'published' | 'failed';
 
@@ -108,9 +107,22 @@ function mapRowToRecord(row: EventOutboxRow): OutboxIntentRecord {
  * All runtime reads and writes execute against `this.dbInstance` (database or transaction handle `tx`)
  * and fail closed on any SQL error or zero-row mutation.
  */
-export class EventOutboxRepository extends TutorialRepositoryBase {
+export class EventOutboxRepository {
+  protected readonly dbInstance: any;
+
+  constructor(dbInstance: any) {
+    if (dbInstance === null || dbInstance === undefined || typeof dbInstance !== 'object') {
+      throw new Error('EventOutboxRepository requires a valid SQL database or transaction executor');
+    }
+    this.dbInstance = dbInstance;
+  }
+
+  protected runRead<T>(queryPromise: Promise<T>, description: string): Promise<T> {
+    return withTimeout(queryPromise, STANDARD_QUERY_TIMEOUT, description);
+  }
+
   withDb(dbClient: TutorialDbClientLike): this {
-    return new EventOutboxRepository(dbClient as unknown as typeof db) as this;
+    return new EventOutboxRepository(dbClient) as this;
   }
 
   async findIntent(
