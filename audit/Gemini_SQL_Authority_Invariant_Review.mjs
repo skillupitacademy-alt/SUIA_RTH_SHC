@@ -25,3 +25,4 @@ if (!context) throw new Error('Gemini SQL authority invariant review runner did 
 const failed = context.state.getFiles().some((file) => file.result?.state === 'fail');
 await context.close();
 process.exitCode = failed ? 1 : 0;
+
