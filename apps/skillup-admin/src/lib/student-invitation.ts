@@ -1,7 +1,4 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
 import bcrypt from 'bcryptjs';
 
 export const STUDENT_INVITATION_TTL_HOURS = 72;
@@ -29,52 +26,19 @@ interface StudentInvitationJournalState {
   idByTokenHash: Record<string, string>;
 }
 
-function getActiveVitestTestFileKey(): string {
-  const g = globalThis as Record<string, unknown>;
-  for (const sym of Object.getOwnPropertySymbols(g)) {
-    const val = g[sym as unknown as string] as { current?: { filepath?: string }; filepath?: string } | undefined;
-    if (val && typeof val === 'object') {
-      const fp = val.current?.filepath ?? val.filepath;
-      if (typeof fp === 'string' && fp.length > 0) {
-        return createHash('sha256').update(fp).digest('hex').slice(0, 12);
-      }
-    }
-  }
-  return process.env.VITEST_POOL_ID ?? process.env.VITEST_WORKER_ID ?? 'main';
-}
-
-function getStudentInvitationJournalPath(): string {
-  return path.join(os.tmpdir(), `quiz-student-invitation-journal-${process.pid}-${getActiveVitestTestFileKey()}.json`);
-}
+const GLOBAL_INVITATION_STORE_KEY = Symbol.for('quiz.people.student.invitation.store');
 
 function readStudentInvitationJournal(): StudentInvitationJournalState {
-  const filePath = getStudentInvitationJournalPath();
-  try {
-    if (!fs.existsSync(filePath)) {
-      return { byId: {}, idByTokenHash: {} };
-    }
-    const raw = fs.readFileSync(filePath, 'utf8');
-    if (!raw.trim()) {
-      return { byId: {}, idByTokenHash: {} };
-    }
-    const parsed = JSON.parse(raw) as Partial<StudentInvitationJournalState>;
-    return {
-      byId: parsed.byId && typeof parsed.byId === 'object' ? { ...parsed.byId } : {},
-      idByTokenHash:
-        parsed.idByTokenHash && typeof parsed.idByTokenHash === 'object'
-          ? { ...parsed.idByTokenHash }
-          : {},
-    };
-  } catch {
-    return { byId: {}, idByTokenHash: {} };
+  const g = globalThis as unknown as Record<symbol, StudentInvitationJournalState>;
+  if (!g[GLOBAL_INVITATION_STORE_KEY]) {
+    g[GLOBAL_INVITATION_STORE_KEY] = { byId: {}, idByTokenHash: {} };
   }
+  return g[GLOBAL_INVITATION_STORE_KEY];
 }
 
 function writeStudentInvitationJournal(state: StudentInvitationJournalState): void {
-  const filePath = getStudentInvitationJournalPath();
-  const tempPath = `${filePath}.${process.hrtime.bigint()}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(state), 'utf8');
-  fs.renameSync(tempPath, filePath);
+  const g = globalThis as unknown as Record<symbol, StudentInvitationJournalState>;
+  g[GLOBAL_INVITATION_STORE_KEY] = state;
 }
 
 export function normalizeStudentEmail(email: string): string {
@@ -350,12 +314,7 @@ export function getStudentInvitationById(invitationId: string): StudentInvitatio
 }
 
 export function clearStudentInvitationsForTests(): void {
-  const filePath = getStudentInvitationJournalPath();
-  try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch {
-    // Ignore cleanup errors
-  }
+  const store = readStudentInvitationJournal();
+  store.byId = {};
+  store.idByTokenHash = {};
 }

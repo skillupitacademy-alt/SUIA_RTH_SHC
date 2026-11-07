@@ -3,7 +3,12 @@ import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 import { z, ZodError } from 'zod';
 
-import { createQStashHandler, PlatformEventTypes, publishEvent } from '@quiz/events';
+import * as eventsModule from '@quiz/events';
+const { createQStashHandler, PlatformEventTypes, publishEvent } = eventsModule;
+const createEventEnvelope =
+  'createEventEnvelope' in eventsModule
+    ? (eventsModule as Record<string, unknown>).createEventEnvelope
+    : undefined;
 import { certificates, db, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db-tutorial';
 
 import { logger } from '@/lib/logger';
@@ -11,9 +16,11 @@ import { eq, and, isNull } from 'drizzle-orm';
 import {
   acquireWorkerLease,
   completeWorkerLeaseIfOwner,
+  deriveDeterministicEventUuid,
   dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  upsertTransactionalOutboxIntent,
   upsertWorkerOutboxIntent,
   type WorkerRedisLike,
 } from '../worker-lease';
@@ -160,7 +167,7 @@ const handler = createQStashHandler(
         });
       }
 
-      const created = await db.transaction(async (tx) => {
+      const { created, outboxIntent } = await db.transaction(async (tx) => {
         const [row] = await withTimeout(
           tx
             .insert(certificates)
@@ -181,37 +188,63 @@ const handler = createQStashHandler(
           'issue-certificate.insert'
         );
 
-        if (row !== undefined) {
-          upsertWorkerOutboxIntent({
+        if (row === undefined) {
+          throw new Error('Failed to issue certificate');
+        }
+
+        const deterministicEventId = deriveDeterministicEventUuid(
+          `realtutorialhub:${PlatformEventTypes.CERTIFICATE_ISSUED}:${row.id}`
+        );
+
+        const canonicalEnvelope =
+          typeof createEventEnvelope === 'function'
+            ? createEventEnvelope(
+                PlatformEventTypes.CERTIFICATE_ISSUED,
+                {
+                  certificateId: row.id,
+                  userId,
+                  issuedAt: row.issuedAt.toISOString(),
+                },
+                {
+                  id: deterministicEventId,
+                  correlationId: parentId,
+                  source: 'realtutorialhub',
+                  occurredAt: row.issuedAt.toISOString(),
+                  version: 1,
+                }
+              )
+            : {
+                id: deterministicEventId,
+                type: PlatformEventTypes.CERTIFICATE_ISSUED,
+                correlationId: parentId,
+                source: 'realtutorialhub',
+                occurredAt: row.issuedAt.toISOString(),
+                version: 1,
+                data: {
+                  certificateId: row.id,
+                  userId,
+                  issuedAt: row.issuedAt.toISOString(),
+                },
+              };
+
+        const intent = await upsertTransactionalOutboxIntent(
+          {
             tenantId: 'realtutorialhub',
             eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
             aggregateId: row.id,
+            eventId: deterministicEventId,
             ownerToken: claim.ownerToken,
             payload: {
               certificateId: row.id,
               userId,
               issuedAt: row.issuedAt.toISOString(),
             },
-          });
-        }
+            envelope: canonicalEnvelope,
+          },
+          tx
+        );
 
-        return row;
-      });
-
-      if (created === undefined) {
-        throw new Error('Failed to issue certificate');
-      }
-
-      const outboxIntent = upsertWorkerOutboxIntent({
-        tenantId: 'realtutorialhub',
-        eventType: PlatformEventTypes.CERTIFICATE_ISSUED,
-        aggregateId: created.id,
-        ownerToken: claim.ownerToken,
-        payload: {
-          certificateId: created.id,
-          userId,
-          issuedAt: created.issuedAt.toISOString(),
-        },
+        return { created: row, outboxIntent: intent };
       });
 
       await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {

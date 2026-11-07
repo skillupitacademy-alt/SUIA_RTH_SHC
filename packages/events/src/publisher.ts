@@ -1,7 +1,4 @@
 import { createHash, randomUUID } from 'node:crypto';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
 import { Client } from '@upstash/qstash';
 
 import { createEventEnvelope, type EventEnvelope, type PlatformEventPayloadMap, type PlatformEventType } from './types';
@@ -16,6 +13,7 @@ export interface PublishEventOptions {
   version?: number;
   headers?: Record<string, string>;
   retries?: number;
+  envelope?: EventEnvelope<any, any>;
 }
 
 const DOMAIN_TIMESTAMP_KEYS = [
@@ -79,57 +77,19 @@ interface StoredPublishedEnvelopeEntry {
   envelope: EventEnvelope<PlatformEventType, unknown>;
 }
 
-function getActiveVitestTestFileKey(): string {
-  const g = globalThis as Record<string, unknown>;
-  for (const sym of Object.getOwnPropertySymbols(g)) {
-    const val = g[sym as unknown as string] as { current?: { filepath?: string }; filepath?: string } | undefined;
-    if (val && typeof val === 'object') {
-      const fp = val.current?.filepath ?? val.filepath;
-      if (typeof fp === 'string' && fp.length > 0) {
-        return createHash('sha256').update(fp).digest('hex').slice(0, 12);
-      }
-    }
+const GLOBAL_PUBLISHER_LEDGER_KEY = Symbol.for('quiz.events.publisher.ledger');
+type PublisherLedgerMap = Map<string, StoredPublishedEnvelopeEntry>;
+
+function getPublisherLedger(): PublisherLedgerMap {
+  const g = globalThis as unknown as Record<symbol, PublisherLedgerMap>;
+  if (!g[GLOBAL_PUBLISHER_LEDGER_KEY]) {
+    g[GLOBAL_PUBLISHER_LEDGER_KEY] = new Map();
   }
-  return process.env.VITEST_POOL_ID ?? process.env.VITEST_WORKER_ID ?? 'main';
-}
-
-function getPublisherEnvelopeLedgerPath(): string {
-  return path.join(os.tmpdir(), `quiz-publisher-envelope-ledger-${process.pid}-${getActiveVitestTestFileKey()}.json`);
-}
-
-function readPublisherEnvelopeLedger(): Record<string, StoredPublishedEnvelopeEntry> {
-  const filePath = getPublisherEnvelopeLedgerPath();
-  try {
-    if (!fs.existsSync(filePath)) {
-      return {};
-    }
-    const raw = fs.readFileSync(filePath, 'utf8');
-    if (!raw.trim()) {
-      return {};
-    }
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, StoredPublishedEnvelopeEntry>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writePublisherEnvelopeLedger(ledger: Record<string, StoredPublishedEnvelopeEntry>): void {
-  const filePath = getPublisherEnvelopeLedgerPath();
-  const tempPath = `${filePath}.${process.hrtime.bigint()}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(ledger), 'utf8');
-  fs.renameSync(tempPath, filePath);
+  return g[GLOBAL_PUBLISHER_LEDGER_KEY];
 }
 
 export function clearPublisherEnvelopeLedgerForTests(): void {
-  const filePath = getPublisherEnvelopeLedgerPath();
-  try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch {
-    // Ignore cleanup errors
-  }
+  getPublisherLedger().clear();
 }
 
 const getQStashClient = () => {
@@ -153,9 +113,24 @@ export async function publishEvent<TType extends PlatformEventType>(
 
   let envelope: EventEnvelope<TType, PlatformEventPayloadMap[TType]>;
 
-  if (explicitId !== undefined) {
-    const ledger = readPublisherEnvelopeLedger();
-    const existing = ledger[explicitId];
+  if (options.envelope !== undefined && options.envelope !== null) {
+    envelope = options.envelope as EventEnvelope<TType, PlatformEventPayloadMap[TType]>;
+    if (explicitId !== undefined) {
+      const ledger = getPublisherLedger();
+      const existing = ledger.get(explicitId);
+      const incomingPayloadCanonical = canonicalizePayloadJson(payload);
+      if (existing !== undefined && existing.payloadCanonical !== incomingPayloadCanonical) {
+        throw new Error(`Conflicting publication envelope or payload for existing event id ${explicitId}`);
+      }
+      ledger.set(explicitId, {
+        tenantScope,
+        payloadCanonical: incomingPayloadCanonical,
+        envelope,
+      });
+    }
+  } else if (explicitId !== undefined) {
+    const ledger = getPublisherLedger();
+    const existing = ledger.get(explicitId);
     const incomingPayloadCanonical = canonicalizePayloadJson(payload);
 
     if (existing !== undefined) {
@@ -188,12 +163,11 @@ export async function publishEvent<TType extends PlatformEventType>(
         version,
       });
 
-      ledger[explicitId] = {
+      ledger.set(explicitId, {
         tenantScope,
         payloadCanonical: incomingPayloadCanonical,
         envelope,
-      };
-      writePublisherEnvelopeLedger(ledger);
+      });
     }
   } else {
     envelope = createEventEnvelope(type, payload, {

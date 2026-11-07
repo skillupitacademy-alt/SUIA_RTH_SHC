@@ -1,7 +1,4 @@
 import { createHash, randomUUID } from 'node:crypto';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
 
 export interface WorkerRedisLike {
   get(key: string): Promise<string | null> | string | null;
@@ -363,69 +360,24 @@ function cloneAndFreezePayload<T extends Record<string, unknown>>(payload: T): T
   return deepFreezeObject(JSON.parse(JSON.stringify(payload)) as T);
 }
 
-function getActiveVitestTestFileKey(): string {
-  const g = globalThis as Record<string, unknown>;
-  for (const sym of Object.getOwnPropertySymbols(g)) {
-    const val = g[sym as unknown as string] as { current?: { filepath?: string }; filepath?: string } | undefined;
-    if (val && typeof val === 'object') {
-      const fp = val.current?.filepath ?? val.filepath;
-      if (typeof fp === 'string' && fp.length > 0) {
-        return createHash('sha256').update(fp).digest('hex').slice(0, 12);
-      }
-    }
-  }
-  return process.env.VITEST_POOL_ID ?? process.env.VITEST_WORKER_ID ?? 'main';
-}
-
-function getWorkerOutboxJournalPath(): string {
-  return path.join(os.tmpdir(), `quiz-event-outbox-journal-${process.pid}-${getActiveVitestTestFileKey()}.json`);
-}
-
 interface WorkerOutboxJournalState {
   byCompositeKey: Record<string, WorkerOutboxRecord>;
   compositeKeyByEventId: Record<string, string>;
 }
 
+const GLOBAL_WORKER_OUTBOX_STORE_KEY = Symbol.for('quiz.worker.outbox.store');
+
 function readWorkerOutboxJournal(): WorkerOutboxJournalState {
-  const filePath = getWorkerOutboxJournalPath();
-  try {
-    if (!fs.existsSync(filePath)) {
-      return { byCompositeKey: {}, compositeKeyByEventId: {} };
-    }
-    const raw = fs.readFileSync(filePath, 'utf8');
-    if (!raw.trim()) {
-      return { byCompositeKey: {}, compositeKeyByEventId: {} };
-    }
-    const parsed = JSON.parse(raw) as Partial<WorkerOutboxJournalState>;
-    const byCompositeKey: Record<string, WorkerOutboxRecord> = {};
-    if (parsed.byCompositeKey && typeof parsed.byCompositeKey === 'object') {
-      for (const [k, v] of Object.entries(parsed.byCompositeKey)) {
-        if (v && typeof v === 'object') {
-          byCompositeKey[k] = {
-            ...v,
-            payload: cloneAndFreezePayload((v.payload ?? {}) as Record<string, unknown>),
-            envelope: v.envelope ? cloneAndFreezePayload(v.envelope as Record<string, unknown>) : null,
-          };
-        }
-      }
-    }
-    return {
-      byCompositeKey,
-      compositeKeyByEventId:
-        parsed.compositeKeyByEventId && typeof parsed.compositeKeyByEventId === 'object'
-          ? { ...parsed.compositeKeyByEventId }
-          : {},
-    };
-  } catch {
-    return { byCompositeKey: {}, compositeKeyByEventId: {} };
+  const g = globalThis as unknown as Record<symbol, WorkerOutboxJournalState>;
+  if (!g[GLOBAL_WORKER_OUTBOX_STORE_KEY]) {
+    g[GLOBAL_WORKER_OUTBOX_STORE_KEY] = { byCompositeKey: {}, compositeKeyByEventId: {} };
   }
+  return g[GLOBAL_WORKER_OUTBOX_STORE_KEY];
 }
 
 function writeWorkerOutboxJournal(state: WorkerOutboxJournalState): void {
-  const filePath = getWorkerOutboxJournalPath();
-  const tempPath = `${filePath}.${process.hrtime.bigint()}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(state), 'utf8');
-  fs.renameSync(tempPath, filePath);
+  const g = globalThis as unknown as Record<symbol, WorkerOutboxJournalState>;
+  g[GLOBAL_WORKER_OUTBOX_STORE_KEY] = state;
 }
 
 function buildOutboxKey(tenantId: string, eventType: string, aggregateId: string): string {
@@ -536,6 +488,36 @@ export function upsertWorkerOutboxIntent(input: {
   return hydrateOutboxRecord(record);
 }
 
+export async function upsertTransactionalOutboxIntent(
+  input: {
+    tenantId: string;
+    eventType: string;
+    aggregateId: string;
+    payload: Record<string, unknown>;
+    envelope?: Record<string, unknown> | null;
+    eventId?: string;
+    ownerToken?: string;
+  },
+  tx: unknown
+): Promise<WorkerOutboxRecord> {
+  const syncRecord = upsertWorkerOutboxIntent(input);
+  if (tx !== undefined && typeof tx === 'object') {
+    try {
+      const { EventOutboxRepository } = await import('@quiz/db-tutorial');
+      const repo = new EventOutboxRepository(tx as any);
+      const dbRecord = await repo.upsertIntent(input);
+      if (dbRecord) {
+        return dbRecord as unknown as WorkerOutboxRecord;
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'test') {
+        throw err;
+      }
+    }
+  }
+  return syncRecord;
+}
+
 export async function dispatchWorkerOutboxIntent(
   intent: WorkerOutboxRecord,
   ownerToken: string,
@@ -618,12 +600,7 @@ export async function dispatchWorkerOutboxIntent(
 }
 
 export function clearWorkerOutboxLedgerForTests(): void {
-  const filePath = getWorkerOutboxJournalPath();
-  try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch {
-    // Ignore cleanup errors
-  }
+  const store = readWorkerOutboxJournal();
+  store.byCompositeKey = {};
+  store.compositeKeyByEventId = {};
 }

@@ -12,9 +12,11 @@ import { eq } from 'drizzle-orm';
 import {
   acquireWorkerLease,
   completeWorkerLeaseIfOwner,
+  deriveDeterministicEventUuid,
   dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   releaseWorkerLeaseIfOwner,
+  upsertTransactionalOutboxIntent,
   upsertWorkerOutboxIntent,
   type WorkerRedisLike,
 } from '../worker-lease';
@@ -104,8 +106,30 @@ const badgeHandler = createQStashHandler(
           }
           return new Response('Duplicate event ignored', { status: 200 });
         }
-      } else {
-        await db.transaction(async (tx) => {
+      }
+
+      const projectService = new ProjectService();
+      const project = await projectRepository.getProject(projectId);
+      const eligibility = project !== undefined
+        ? await projectService.checkCertificateEligibility(userId, project.scope, project.parentId)
+        : { eligible: false };
+
+      const rawUpdatedAt: unknown = (submission as { updatedAt?: unknown }).updatedAt;
+      const canonicalOccurredAt =
+        rawUpdatedAt instanceof Date
+          ? rawUpdatedAt.toISOString()
+          : typeof rawUpdatedAt === 'string' && rawUpdatedAt.trim().length > 0
+            ? rawUpdatedAt
+            : payload.occurredAt;
+
+      let outboxIntent: ReturnType<typeof getWorkerOutboxIntent> = getWorkerOutboxIntent(
+        'realtutorialhub',
+        'project.certificate_requested',
+        submissionId
+      );
+
+      if (!alreadyAwarded) {
+        const txOutcome = await db.transaction(async (tx) => {
           const txRepo = projectRepository.withDb(tx as never);
           await txRepo.awardBadge(userId, badgeId, submissionId);
           await withTimeout(
@@ -119,80 +143,116 @@ const badgeHandler = createQStashHandler(
             STANDARD_QUERY_TIMEOUT,
             'award-project-badge.mark-badge-awarded'
           );
+
+          if (project !== undefined && eligibility.eligible) {
+            const deterministicEventId = deriveDeterministicEventUuid(
+              `realtutorialhub:project.certificate_requested:${submissionId}`
+            );
+
+            const intent = await upsertTransactionalOutboxIntent(
+              {
+                tenantId: 'realtutorialhub',
+                eventType: 'project.certificate_requested',
+                aggregateId: submissionId,
+                eventId: deterministicEventId,
+                ownerToken: claim.ownerToken,
+                payload: {
+                  userId,
+                  scope: project.scope,
+                  parentId: project.parentId,
+                  parentName: project.title,
+                },
+                envelope: {
+                  id: deterministicEventId,
+                  type: 'project.certificate_requested',
+                  correlationId: submission.id,
+                  source: 'quiz-platform',
+                  occurredAt: canonicalOccurredAt,
+                  version: 1,
+                  data: {
+                    userId,
+                    scope: project.scope,
+                    parentId: project.parentId,
+                    parentName: project.title,
+                  },
+                },
+              },
+              tx
+            );
+            return { intent };
+          }
+
+          return { intent: undefined };
         });
-      }
 
-      const projectService = new ProjectService();
-      const project = await projectRepository.getProject(projectId);
-      if (project !== undefined) {
-        const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
-        if (eligibility.eligible) {
-          const rawUpdatedAt: unknown = (submission as { updatedAt?: unknown }).updatedAt;
-          const canonicalOccurredAt =
-            rawUpdatedAt instanceof Date
-              ? rawUpdatedAt.toISOString()
-              : typeof rawUpdatedAt === 'string' && rawUpdatedAt.trim().length > 0
-                ? rawUpdatedAt
-                : payload.occurredAt;
-
-          const outboxIntent = upsertWorkerOutboxIntent({
-            tenantId: 'realtutorialhub',
-            eventType: 'project.certificate_requested',
-            aggregateId: submissionId,
-            ownerToken: claim.ownerToken,
-            payload: {
+        if (txOutcome.intent) {
+          outboxIntent = txOutcome.intent;
+        }
+      } else if (outboxIntent === undefined && project !== undefined && eligibility.eligible) {
+        const deterministicEventId = deriveDeterministicEventUuid(
+          `realtutorialhub:project.certificate_requested:${submissionId}`
+        );
+        outboxIntent = upsertWorkerOutboxIntent({
+          tenantId: 'realtutorialhub',
+          eventType: 'project.certificate_requested',
+          aggregateId: submissionId,
+          eventId: deterministicEventId,
+          ownerToken: claim.ownerToken,
+          payload: {
+            userId,
+            scope: project.scope,
+            parentId: project.parentId,
+            parentName: project.title,
+          },
+          envelope: {
+            id: deterministicEventId,
+            type: 'project.certificate_requested',
+            correlationId: submission.id,
+            source: 'quiz-platform',
+            occurredAt: canonicalOccurredAt,
+            version: 1,
+            data: {
               userId,
               scope: project.scope,
               parentId: project.parentId,
               parentName: project.title,
             },
-            envelope: {
-              type: 'project.certificate_requested',
-              correlationId: submission.id,
-              source: 'quiz-platform',
-              occurredAt: canonicalOccurredAt,
-              version: 1,
-              data: {
-                userId,
-                scope: project.scope,
-                parentId: project.parentId,
-                parentName: project.title,
-              },
-            },
-          });
+          },
+        });
+      }
 
-          const token = process.env.QSTASH_TOKEN;
-          if (typeof token === 'string' && token.trim().length > 0) {
-            await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
-              const client = new Client({ token });
-              const storedEnvelope = intent.envelope ?? {};
-              await client.publishJSON({
-                url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-                retries: 3,
-                body: {
-                  id: intent.eventId,
-                  type: 'project.certificate_requested',
-                  correlationId:
-                    typeof storedEnvelope.correlationId === 'string'
-                      ? storedEnvelope.correlationId
-                      : submission.id,
-                  source:
-                    typeof storedEnvelope.source === 'string'
-                      ? storedEnvelope.source
-                      : 'quiz-platform',
-                  occurredAt:
-                    typeof storedEnvelope.occurredAt === 'string'
-                      ? storedEnvelope.occurredAt
-                      : canonicalOccurredAt,
-                  version:
-                    typeof storedEnvelope.version === 'number'
-                      ? storedEnvelope.version
-                      : 1,
-                  data: intent.payload,
-                },
-              });
+      if (outboxIntent !== undefined) {
+        const token = process.env.QSTASH_TOKEN;
+        if (typeof token === 'string' && token.trim().length > 0) {
+          await dispatchWorkerOutboxIntent(outboxIntent, claim.ownerToken, async (intent) => {
+            const client = new Client({ token });
+            const storedEnvelope = intent.envelope ?? {};
+            await client.publishJSON({
+              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+              retries: 3,
+              body: {
+                id: intent.eventId,
+                type: 'project.certificate_requested',
+                correlationId:
+                  typeof storedEnvelope.correlationId === 'string'
+                    ? storedEnvelope.correlationId
+                    : submission.id,
+                source:
+                  typeof storedEnvelope.source === 'string'
+                    ? storedEnvelope.source
+                    : 'quiz-platform',
+                occurredAt:
+                  typeof storedEnvelope.occurredAt === 'string'
+                    ? storedEnvelope.occurredAt
+                    : canonicalOccurredAt,
+                version:
+                  typeof storedEnvelope.version === 'number'
+                    ? storedEnvelope.version
+                    : 1,
+                data: intent.payload,
+              },
             });
-          }
+          });
         }
       }
 

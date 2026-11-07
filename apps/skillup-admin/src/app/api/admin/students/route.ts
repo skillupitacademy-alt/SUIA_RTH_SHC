@@ -53,53 +53,65 @@ export async function POST(request: NextRequest) {
   }
 
   const bootstrapPasswordHash = await generateRandomBootstrapPasswordHash();
-  const [user] = await db
-    .insert(users)
-    .values({
+
+  const createStudentWrites = async (executor: typeof db) => {
+    const [user] = await executor
+      .insert(users)
+      .values({
+        email: normalizedEmail,
+        passwordHash: bootstrapPasswordHash,
+        role: 'student',
+        platform: 'skillup',
+        isActive: true,
+        deletedAt: null,
+      })
+      .returning({ id: users.id });
+
+    const invitation = issueStudentInvitation({
+      userId: user.id,
       email: normalizedEmail,
-      passwordHash: bootstrapPasswordHash,
-      role: 'student',
       platform: 'skillup',
-      isActive: true,
-      deletedAt: null,
-    })
-    .returning({ id: users.id });
+    });
 
-  const invitation = issueStudentInvitation({
-    userId: user.id,
-    email: normalizedEmail,
-    platform: 'skillup',
-  });
+    const [enquiry] = await executor
+      .insert(enquiries)
+      .values({
+        fullName: parsed.data.name,
+        email: normalizedEmail,
+        phone: normalizedEmail,
+        source: 'walkin',
+        status: 'qualified',
+        notes: `Admitted from admin create flow for batch ${parsed.data.batchName}`,
+        deletedAt: null,
+      })
+      .returning({ id: enquiries.id });
 
-  const [enquiry] = await db
-    .insert(enquiries)
-    .values({
-      fullName: parsed.data.name,
-      email: normalizedEmail,
-      phone: normalizedEmail,
-      source: 'walkin',
-      status: 'qualified',
-      notes: `Admitted from admin create flow for batch ${parsed.data.batchName}`,
-      deletedAt: null,
-    })
-    .returning({ id: enquiries.id });
-
-  await db.insert(userProfiles).values({ userId: user.id, name: parsed.data.name });
-  await db.insert(admissions).values({
-    enquiryId: enquiry.id,
-    studentUserId: user.id,
-    admissionType: 'training',
-    status: 'approved',
-    documents: {
-      invitation: {
-        invitationId: invitation.record.invitationId,
-        tokenHash: invitation.record.tokenHash,
-        status: invitation.record.status,
-        issuedAt: invitation.record.issuedAt,
-        expiresAt: invitation.record.expiresAt,
+    await executor.insert(userProfiles).values({ userId: user.id, name: parsed.data.name });
+    await executor.insert(admissions).values({
+      enquiryId: enquiry.id,
+      studentUserId: user.id,
+      admissionType: 'training',
+      status: 'approved',
+      documents: {
+        invitation: {
+          invitationId: invitation.record.invitationId,
+          tokenHash: invitation.record.tokenHash,
+          status: invitation.record.status,
+          issuedAt: invitation.record.issuedAt,
+          expiresAt: invitation.record.expiresAt,
+        },
       },
-    },
-  });
+    });
+
+    return { user, invitation };
+  };
+
+  const transactionFn = (db as unknown as { transaction?: (cb: (tx: typeof db) => Promise<unknown>) => Promise<unknown> }).transaction;
+  const createdResult = typeof transactionFn === 'function'
+    ? ((await transactionFn.call(db, createStudentWrites as any)) as { user: { id: string }; invitation: ReturnType<typeof issueStudentInvitation> })
+    : await createStudentWrites(db);
+
+  const { user, invitation } = createdResult;
 
   return jsonData(
     {

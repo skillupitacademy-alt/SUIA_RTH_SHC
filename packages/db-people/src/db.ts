@@ -7,8 +7,8 @@ import { schema } from './schema';
 
 neonConfig.webSocketConstructor = WebSocket;
 
-type Schema = typeof schema;
-type DbClient = ReturnType<typeof drizzle<Schema>>;
+export type Schema = typeof schema;
+export type DbClient = ReturnType<typeof drizzle<Schema>>;
 type QueryChain = {
   where: () => QueryChain;
   limit: () => Promise<unknown[]>;
