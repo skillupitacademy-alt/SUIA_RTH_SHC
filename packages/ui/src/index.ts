@@ -25,3 +25,6 @@ export * from './lib/portal-auth';
 export * from './theme-store';
 export * from './PortalLoginPage';
 export * from './tutorial';
+export * from './components/auth/SharedAdminLockScreen';
+export * from './components/auth/lock-screen-types';
+export * from './components/auth/lock-screen-themes';

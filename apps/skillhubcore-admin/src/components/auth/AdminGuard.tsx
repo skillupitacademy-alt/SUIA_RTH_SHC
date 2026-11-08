@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { useAuthStore } from '@/store/auth-store';
 import { clientLogger } from '@/utils/clientLogger';
+import { AdminLockScreen } from './AdminLockScreen';
 
 const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
 const isAdminEquivalentRole = (value: string | null | undefined) => {
@@ -273,7 +274,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   // Confirmed authenticated admin session only
   if (isAuthenticated === true && hasAdminRole === true) {
-    return <>{children}</>;
+    return (
+      <>
+        {isLocked && <AdminLockScreen />}
+        {children}
+      </>
+    );
   }
 
   // If not authenticated or forbidden, render null while revalidation or redirect takes effect
