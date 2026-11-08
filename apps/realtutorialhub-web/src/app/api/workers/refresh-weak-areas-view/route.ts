@@ -8,6 +8,12 @@ import { db, STANDARD_QUERY_TIMEOUT, withTimeout } from '@quiz/db-tutorial'
 
 import { logger } from '@/lib/logger'
 import { verifyQStashRequest } from '../qstash'
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  releaseWorkerLeaseIfOwner,
+  type WorkerRedisLike,
+} from '../worker-lease'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,11 +21,7 @@ const RefreshPayloadSchema = z.object({
   userId: z.string().uuid(),
 })
 
-type RedisLike = {
-  get(key: string): Promise<string | null> | string | null
-  set(key: string, value: string, options?: { ex?: number; nx?: boolean }): Promise<unknown> | unknown
-  del(key: string): Promise<unknown> | unknown
-}
+type RedisLike = WorkerRedisLike
 
 const createRedisClient = (): RedisLike => {
   const url = process.env.UPSTASH_REDIS_REST_URL
@@ -32,7 +34,7 @@ const createRedisClient = (): RedisLike => {
     throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required')
   }
 
-  return new Redis({ url, token })
+  return new Redis({ url, token }) as unknown as RedisLike
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -42,13 +44,11 @@ export async function POST(req: Request): Promise<Response> {
     const payload = RefreshPayloadSchema.parse(JSON.parse(body))
     const redisKey = `view-refresh:${payload.userId}`
 
-    const existing = await redis.get(redisKey)
-    if (existing !== null && String(existing).trim().length > 0) {
-      return new Response('ok', { status: 200 })
-    }
-
-    const claimed = await redis.set(redisKey, 'processing', { ex: 60, nx: true })
-    if (claimed == null || claimed === false) {
+    const claim = await acquireWorkerLease(redis, redisKey, {
+      leaseSeconds: 60,
+      pendingPrefix: 'processing',
+    })
+    if (claim.kind !== 'acquired') {
       return new Response('ok', { status: 200 })
     }
 
@@ -59,7 +59,16 @@ export async function POST(req: Request): Promise<Response> {
         'refresh-weak-areas-view.refresh'
       )
 
-      await redis.set(redisKey, 'processed', { ex: 60 })
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        redisKey,
+        claim.pendingValue,
+        'processed',
+        60
+      )
+      if (completionTransition !== 'applied') {
+        return new Response('Event lease ownership lost before completion', { status: 409 })
+      }
 
       logger.info({
         event: 'mv.refreshed',
@@ -68,7 +77,7 @@ export async function POST(req: Request): Promise<Response> {
 
       return new Response('ok', { status: 200 })
     } catch (error) {
-      await Promise.resolve(redis.del(redisKey)).catch(() => undefined)
+      await releaseWorkerLeaseIfOwner(redis, redisKey, claim.pendingValue).catch(() => undefined)
       throw error
     }
   } catch (error) {
@@ -88,4 +97,3 @@ export async function POST(req: Request): Promise<Response> {
     return new Response('error', { status: 500 })
   }
 }
-

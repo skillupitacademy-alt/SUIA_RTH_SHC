@@ -12,6 +12,12 @@ import {
 } from '@quiz/db-tutorial';
 
 import { logger } from '@/lib/logger';
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  releaseWorkerLeaseIfOwner,
+  type WorkerRedisLike,
+} from '@/app/api/workers/worker-lease';
 
 const DifficultySchema = z.enum(['simple', 'mixed', 'intermediate', 'expert']);
 const HIERARCHY_SYNC_EVENT_TYPE = 'hierarchy.subtopic_added';
@@ -253,16 +259,14 @@ export class HierarchySyncService {
   }
 
   async sync(payload: HierarchySyncPayload): Promise<HierarchySyncResult> {
-    const redis = this.getRedis();
+    const redis = this.getRedis() as WorkerRedisLike;
     const idempotencyKey = `sync-hierarchy:${payload.subtopicId}`;
 
-    const existing = await redis.get(idempotencyKey);
-    if (existing !== null && String(existing).trim().length > 0) {
-      return { duplicate: true, synced: false };
-    }
-
-    const claimed = await redis.set(idempotencyKey, 'processing', { ex: 86_400, nx: true });
-    if (claimed == null || claimed === false) {
+    const claim = await acquireWorkerLease(redis, idempotencyKey, {
+      leaseSeconds: 86_400,
+      pendingPrefix: 'processing',
+    });
+    if (claim.kind !== 'acquired') {
       return { duplicate: true, synced: false };
     }
 
@@ -278,10 +282,10 @@ export class HierarchySyncService {
       });
 
       await Promise.all([
-        Promise.resolve(redis.del('hierarchy:domains')),
-        Promise.resolve(redis.del(`hierarchy:subjects:${payload.domainId}`)),
-        Promise.resolve(redis.del(`hierarchy:topics:${payload.subjectId}`)),
-        Promise.resolve(redis.del(`hierarchy:subtopics:${payload.topicId}`)),
+        Promise.resolve(redis.del?.('hierarchy:domains')),
+        Promise.resolve(redis.del?.(`hierarchy:subjects:${payload.domainId}`)),
+        Promise.resolve(redis.del?.(`hierarchy:topics:${payload.subjectId}`)),
+        Promise.resolve(redis.del?.(`hierarchy:subtopics:${payload.topicId}`)),
       ]).catch((error) => {
         this.log.warn({
           event: 'hierarchy.cache_invalidation_failed',
@@ -290,7 +294,16 @@ export class HierarchySyncService {
         });
       });
 
-      await Promise.resolve(redis.set(idempotencyKey, 'processed', { ex: 86_400 }));
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        idempotencyKey,
+        claim.pendingValue,
+        'processed',
+        86_400
+      );
+      if (completionTransition !== 'applied') {
+        throw new Error('Hierarchy sync lease ownership lost before completion');
+      }
 
       this.log.info({
         event: 'hierarchy.synced',
@@ -300,7 +313,7 @@ export class HierarchySyncService {
 
       return { duplicate: false, synced: true };
     } catch (error) {
-      await Promise.resolve(redis.del(idempotencyKey)).catch(() => undefined);
+      await releaseWorkerLeaseIfOwner(redis, idempotencyKey, claim.pendingValue).catch(() => undefined);
       throw error;
     }
   }

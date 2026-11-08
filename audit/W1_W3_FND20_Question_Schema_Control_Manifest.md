@@ -1,0 +1,5 @@
+# FND20 question schema isolated controls manifest
+
+Baseline 9e42f394, SHC-QUESTION-CONTRACT-001 / RC-CONTRACT-01. Actual API create and bulk routes parse `apps/api-server/src/schemas/admin.schemas.ts` question schema, and PATCH uses its partial form. Allowed edits: test-only in existing API question test directory; no production schema change. Exercise valid current payload and rejection of malformed question type/empty options at the real schema, preserving historical type normalization separately. The schema directory is outside authorized production roots, so no direct production edit. This is a schema-unit control, not HTTP, repository, historical compatibility or full caller round trip. Fail-closed fetch, no live service; Sol review required.
+
+Verification: root with DB/cache/queue environment keys removed, programmatic Vitest `config: false` and explicit API `@` alias selecting `fnd20-schema-control.test.ts`: exit 0, 2 passed. Fetch is blocked and this pure schema selection performs no database or HTTP work. No route/transport/storage round-trip or browser execution. `git diff --check` passed. IMPLEMENTED_UNVERIFIED; complete FND20 remains open.

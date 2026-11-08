@@ -24,19 +24,19 @@ const courseToDesc = {
 
 for (const [slug, desc] of Object.entries(courseToDesc)) {
   // Find the index of the slug
-  const slugIndex = content.indexOf(\`slug: "\${slug}"\`) !== -1 ? content.indexOf(\`slug: "\${slug}"\`) : content.indexOf(\`slug: '\${slug}'\`);
+  const slugIndex = content.indexOf(`slug: "${slug}"`) !== -1 ? content.indexOf(`slug: "${slug}"`) : content.indexOf(`slug: '${slug}'`);
   
   if (slugIndex !== -1) {
     // Find the next occurrence of subSubtitle: after this slug
     const subSubtitleIndex = content.indexOf('subSubtitle:', slugIndex);
     if (subSubtitleIndex !== -1) {
       // Find the end of the line
-      const endOfLine = content.indexOf('\\n', subSubtitleIndex);
+      const endOfLine = content.indexOf('\n', subSubtitleIndex);
       
       const before = content.substring(0, subSubtitleIndex);
       const after = content.substring(endOfLine);
       
-      content = before + \`subSubtitle: "\${desc}",\` + after;
+      content = before + `subSubtitle: "${desc}",` + after;
     }
   }
 }

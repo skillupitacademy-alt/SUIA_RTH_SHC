@@ -1,0 +1,3 @@
+# FND20 bulk caller compatibility control manifest
+
+Baseline 1c907369; SHC-QUESTION-CONTRACT-001 / RC-CONTRACT-01. Actual `BulkUploadPanel.tsx` parses a local JSON file, accepts `text` or `questionText`, creates an API payload and invokes `apiClient.admin.bulkCreateQuestions`. Central create/bulk schemas are separately tested. Allowed changes: adjacent test only. Mount the real panel with isolated FileReader/API, verify both supported aliases reach `questionText` and malformed input prevents API calls; preserve current multi-select rejection pending contract decision. Pre-import network guard, no physical browser/backend/DB. This is a UI-to-mocked-client seam, not full HTTP/engine/storage round-trip. Sol review required.

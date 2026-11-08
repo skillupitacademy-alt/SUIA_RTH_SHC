@@ -3,9 +3,16 @@ import { JobStatus } from '@quiz/types';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ApiError, unauthorized } from '@/lib/api-error';
+import { ApiError, forbidden, unauthorized } from '@/lib/api-error';
+import {
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+  resolveStoredJobBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -97,17 +104,70 @@ export async function GET(
     const isInternal = internalKey !== null && internalSecret !== '' && internalKey === internalSecret;
 
     let userId: string | undefined;
+    let requesterBrand: LearnerExportBrand | undefined;
     if (!isInternal) {
-      const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
+      const tokenService = container.get(TokenService);
+      const token = tokenService.getAccessToken(req, { scope: 'user' });
       if (token === undefined || token === null || token === '') {
         throw unauthorized('Unauthorized');
       }
 
-      const payload = await container.get(TokenService).verifyUserAccessToken(token);
+      let payload;
+      try {
+        payload = await tokenService.verifyUserAccessToken(token);
+      } catch {
+        throw unauthorized('Unauthorized');
+      }
+      if (!isNonEmptyString(payload.userId)) throw unauthorized('Unauthorized');
+      if (
+        !isLearnerExportBrand(payload.brand) ||
+        hasConflictingRequestTenantContext(
+          payload.brand,
+          payload.tokenType,
+          req.headers,
+          new URL(req.url).hostname
+        )
+      ) {
+        throw forbidden('Forbidden');
+      }
       userId = payload.userId;
+      requesterBrand = payload.brand;
     }
 
     const job = await JobsService.getJobStatus(jobId);
+    if (job && !isInternal) {
+      const jobBrand = resolveStoredJobBrand(job);
+      if (job.userId !== userId || jobBrand !== requesterBrand) {
+        throw forbidden('Forbidden');
+      }
+    }
+    if (!job) {
+      if (examId === '') return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, examId), columns: { userId: true, exportUrls: true },
+      });
+      if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
+      if (!isInternal) {
+        const examBrand = resolveStoredExamBrand(exam);
+        if (exam.userId !== userId || examBrand !== requesterBrand) {
+          throw forbidden('Forbidden');
+        }
+      }
+      const artifact = await resolveExamFallbackArtifact({
+        examId,
+        format: requestedFormat,
+        userId,
+        brand: requesterBrand,
+        exam,
+      });
+      if (artifact && await storage.exists(artifact.fileRef).catch(() => false)) {
+        return NextResponse.json({
+          jobId, status: 'completed', stage: 'ready',
+          downloadUrl: buildProxyDownloadUrl({ examId, format: requestedFormat }), error: null, progress: 100,
+        });
+      }
+      return NextResponse.json({ jobId, status: 'failed', error: 'Export job not found' });
+    }
     const jobFormat = normalizeFormat(
       (job?.payload as Record<string, unknown> | null | undefined)?.format as string | null | undefined
       ?? (job?.result as { format?: string } | null | undefined)?.format
@@ -115,7 +175,7 @@ export async function GET(
     );
 
     const staleThresholdMs = 2 * 60 * 1000;
-    if (job && (job.status === 'processing' || job.status === 'pending') && job.updatedAt !== null && job.updatedAt !== undefined) {
+    if ((job.status === 'processing' || job.status === 'pending') && job.updatedAt !== null && job.updatedAt !== undefined) {
       const updatedAt = new Date(job.updatedAt).getTime();
       const elapsed = Date.now() - updatedAt;
       if (elapsed > staleThresholdMs) {
@@ -169,36 +229,6 @@ export async function GET(
       inferredProgress = mapped.progress;
     } catch (error: unknown) {
       log.warn({ err: error, jobId }, 'Failed to read export workflow state');
-    }
-
-    if (!job) {
-      if (examId !== '') {
-        const recovered = await resolveReadyExportArtifact({
-          jobId,
-          examId,
-          format: requestedFormat,
-          job: undefined,
-          requestUserId: userId,
-        });
-        if (recovered !== null) {
-          return NextResponse.json({
-            jobId,
-            status: 'completed',
-            stage: 'ready',
-            downloadUrl: recovered.proxyDownloadUrl,
-            error: null,
-            progress: 100,
-          });
-        }
-
-        return NextResponse.json({
-          jobId,
-          status: 'failed',
-          error: 'Export job not found',
-        });
-      }
-
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
     const readyArtifact = await resolveReadyExportArtifact({
@@ -306,14 +336,18 @@ async function resolveExamFallbackArtifact({
   examId,
   format,
   userId,
+  brand,
+  exam: authorizedExam,
 }: {
   examId: string;
   format: ExportFormat;
   userId?: string;
+  brand?: LearnerExportBrand;
+  exam?: { userId: string; exportUrls: unknown };
 }): Promise<{ fileRef: string } | null> {
   if (examId === '') return null;
 
-  const exam = await db.query.exams.findFirst({
+  const exam = authorizedExam ?? await db.query.exams.findFirst({
     where: eq(exams.id, examId),
     columns: { userId: true, exportUrls: true },
   });
@@ -323,6 +357,10 @@ async function resolveExamFallbackArtifact({
   }
 
   if (typeof userId === 'string' && userId !== '' && exam.userId !== userId) {
+    return null;
+  }
+
+  if (brand !== undefined && resolveStoredExamBrand(exam) !== brand) {
     return null;
   }
 

@@ -15,6 +15,12 @@ import type {
 } from '@quiz/types'
 
 import { logger } from '@/lib/logger'
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  releaseWorkerLeaseIfOwner,
+  type WorkerRedisLike,
+} from '@/app/api/workers/worker-lease'
 
 type DbClient = typeof db
 type RemediationTriggerRow = typeof remediationTriggers.$inferSelect
@@ -174,19 +180,17 @@ export class RemediationService {
     examResultId: string,
     weakSubtopics: RemediationWeakSubtopicInput[]
   ): Promise<RemediationPlanResponse> {
-    const redis = this.getRedis()
+    const redis = this.getRedis() as WorkerRedisLike
     const redisKey = `remediation:${examResultId}`
 
-    const existingMarker = await redis.get(redisKey)
-    if (existingMarker !== null && String(existingMarker).trim().length > 0) {
+    const claim = await acquireWorkerLease(redis, redisKey, {
+      leaseSeconds: 86_400,
+      pendingPrefix: 'processing',
+    })
+    if (claim.kind !== 'acquired') {
       const existingPlan = await this.getPlan(userId, examResultId)
       if (existingPlan !== undefined) return existingPlan
-    }
-
-    const claimed = await redis.set(redisKey, 'processing', { ex: 86_400, nx: true })
-    if (claimed == null || claimed === false) {
-      const existingPlan = await this.getPlan(userId, examResultId)
-      if (existingPlan !== undefined) return existingPlan
+      throw new Error('Remediation plan claim not acquired')
     }
 
     try {
@@ -290,7 +294,16 @@ export class RemediationService {
         }
       })
 
-      await redis.set(redisKey, 'processed', { ex: 86_400 })
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        redisKey,
+        claim.pendingValue,
+        'processed',
+        86_400
+      )
+      if (completionTransition !== 'applied') {
+        throw new Error('Remediation plan lease ownership lost before completion')
+      }
 
       const recommendedContentTypes = buildRecommendations(weakSubtopics)
       return {
@@ -307,7 +320,7 @@ export class RemediationService {
         status: 'pending' as const,
       }
     } catch (error) {
-      await Promise.resolve(redis.del(redisKey)).catch(() => undefined)
+      await releaseWorkerLeaseIfOwner(redis, redisKey, claim.pendingValue).catch(() => undefined)
       this.log.error({
         event: 'remediation.plan_failed',
         userId,

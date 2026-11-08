@@ -1,12 +1,14 @@
+import { requireAdminProfileManagementAuthority, type Role } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
 import { forbidden, unauthorized } from '@/lib/api-error';
 import { recordCounter, recordTimer } from '@/lib/metrics';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 
-import { _verifyAdmin } from './rbac.service';
-import { TokenService } from './token.service';
+import { _verifyActiveAccount, _verifyAdmin } from './rbac.service';
+import { type TokenPayload, TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra' | 'shc-admin';
 
@@ -28,7 +30,8 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
   const startedAt = Date.now();
   const expectedAud = getAdminAudience(_req);
   const route = _req.nextUrl.pathname;
-  const scopedToken = token ?? container.get(TokenService).getAccessToken(_req, { scope: 'admin' });
+  const tokenService = container.get(TokenService);
+  const scopedToken = token ?? tokenService.getAccessToken(_req, { scope: 'admin' });
 
   if (scopedToken === undefined || scopedToken === null || scopedToken.trim() === '') {
     recordCounter(METRICS.AUTH.FAILURE, 1, { scope: expectedAud, route, reason: 'missing_token' });
@@ -36,11 +39,9 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
     throw unauthorized('Unauthorized');
   }
 
+  let payload: Awaited<ReturnType<TokenService['verifyAdminAccessToken']>>;
   try {
-    const payload = await container.get(TokenService).verifyAdminAccessToken(scopedToken, { audience: expectedAud });
-    recordCounter(METRICS.AUTH.LOGIN + '.verify', 1, { scope: expectedAud, route, outcome: 'success' });
-    recordTimer(METRICS.AUTH.LOGIN + '.verify.duration', Date.now() - startedAt, { scope: expectedAud, route, outcome: 'success' });
-    return { payload, audience: expectedAud };
+    payload = await tokenService.verifyAdminAccessToken(scopedToken, { audience: expectedAud });
   } catch (error) {
     recordCounter(METRICS.AUTH.FAILURE, 1, {
       scope: expectedAud,
@@ -52,8 +53,11 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
       route,
       reason: error instanceof Error ? error.message : 'token_invalid',
     });
-    throw error;
+    throw unauthorized('Unauthorized');
   }
+  recordCounter(METRICS.AUTH.LOGIN + '.verify', 1, { scope: expectedAud, route, outcome: 'success' });
+  recordTimer(METRICS.AUTH.LOGIN + '.verify.duration', Date.now() - startedAt, { scope: expectedAud, route, outcome: 'success' });
+  return { payload, audience: expectedAud };
 }
 
 export async function requireAdminRouteAccess(_req: NextRequest) {
@@ -62,6 +66,11 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
   const { payload, audience } = await verifyAdminOrInfraToken(_req);
 
   if (audience === 'shc-admin') {
+    if (route.startsWith('/api/analytics/admin')) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'shc_analytics_denied' });
+      recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'shc_analytics_denied' });
+      throw forbidden('SkillHubCore admin access not permitted for tenant analytics');
+    }
     const roles = Array.isArray(payload.roles) ? payload.roles.map((role) => role.toLowerCase()) : [];
     const hasSkillHubCoreAdminAccess =
       payload.brand === 'skillhubcore' &&
@@ -73,7 +82,29 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
       recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'rbac_denied' });
       throw forbidden('SkillHubCore admin access only');
     }
-  } else if (audience !== 'infra') {
+  } else if (audience === 'infra') {
+    if (route.startsWith('/api/factory') || route.startsWith('/api/analytics/admin')) {
+      const isAccountActive = await _verifyActiveAccount(payload.userId, payload.brand ?? '');
+      if (!isAccountActive) {
+        recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'tenant_account_inactive' });
+        recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'tenant_account_inactive' });
+        throw forbidden('Forbidden: Tenant account is inactive or missing');
+      }
+    }
+  } else {
+    if (
+      hasConflictingRequestTenantContext(
+        payload.brand,
+        payload.tokenType,
+        _req.headers,
+        _req.nextUrl?.hostname
+      )
+    ) {
+      recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'conflicting_tenant_context' });
+      recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'conflicting_tenant_context' });
+      throw forbidden('Forbidden: Conflicting request tenant context');
+    }
+
     const hasAdminAccess = await _verifyAdmin(payload);
     if (!hasAdminAccess) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { scope: audience, route, reason: 'rbac_denied' });
@@ -84,5 +115,21 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
 
   recordCounter(METRICS.AUTH.LOGIN + '.route_access', 1, { scope: audience, route, outcome: 'success' });
   recordTimer(METRICS.AUTH.LOGIN + '.route_access.duration', Date.now() - startedAt, { scope: audience, route, outcome: 'success' });
+  return payload;
+}
+
+export async function requireAdminTargetUserAccess(
+  req: NextRequest,
+  targetUserId: string,
+  targetTenantId: string
+): Promise<TokenPayload> {
+  const payload = await requireAdminRouteAccess(req);
+  requireAdminProfileManagementAuthority({
+    requestingUserId: payload.userId,
+    requestingTenant: payload.brand ?? '',
+    userRoles: (payload.roles ?? ['admin']) as Role[],
+    resourceOwnerId: targetUserId,
+    resourceTenant: targetTenantId,
+  });
   return payload;
 }

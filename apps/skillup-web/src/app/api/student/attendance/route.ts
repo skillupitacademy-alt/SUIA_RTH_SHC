@@ -9,5 +9,5 @@ export async function GET(request: NextRequest) {
     return auth.response;
   }
 
-  return NextResponse.json(await getSkillupAttendance(auth.userId));
+  return NextResponse.json(await getSkillupAttendance(auth.userId), { headers: { 'Cache-Control': 'private, no-store' } });
 }

@@ -10,3 +10,4 @@ export * from './block-telemetry-event.repository'; // Phase D-2
 export * from './live-session.repository';
 export * from './project-submission.repository';
 export * from './tutorial-section.repository';
+export * from './event-outbox.repository';

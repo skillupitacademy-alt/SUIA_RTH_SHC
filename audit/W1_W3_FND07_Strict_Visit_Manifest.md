@@ -1,0 +1,3 @@
+# FND07 StrictMode initial visit lifecycle manifest
+
+Baseline 1106ab50. Sol checkpoint authorizes provider/delivery files and requires initial visit exactly once during StrictMode effect replay, while actual teardown cancels deferred visit. Scope provider and existing lifecycle tests only. Preserve pending flush ordering by retaining current transition promise for same-state effect replay, invalidate obsolete callbacks on teardown, preserve time/session/visibility and queue semantics. Run Sol lifecycle plus relevant provider/delivery regressions under guarded isolated runner; no browser/real service or owner-policy change.

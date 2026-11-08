@@ -84,6 +84,7 @@ describe('ai-tutor query route', () => {
     mocks.tokenGetAccess.mockReturnValue(token);
     mocks.tokenVerifyAccess.mockResolvedValue({
       userId,
+      brand: 'realtutorialhub',
       email: 'student@example.com',
       roles: ['student'],
     });
@@ -179,24 +180,12 @@ describe('ai-tutor query route', () => {
     expect(mocks.vectorQuery).not.toHaveBeenCalled();
   });
 
-  it('returns qa_pairs answer without vector search when a fast-path match exists', async () => {
-    mocks.defaultTutorialContent.ai_tutor.qa_pairs.push({
-      question: 'What problem do promises solve?',
-      answer: 'Promises let JavaScript handle future results without blocking the rest of the app.',
-    });
-
-    const response = await POST(createRequest({
-      subtopicId,
-      question: 'What problem do promises solve?',
-      difficulty: 'simple',
-    }));
-
+  it('queries the requested subtopic instead of global demo answers', async () => {
+    mocks.defaultTutorialContent.ai_tutor.qa_pairs.push({ question: 'What problem do promises solve?', answer: 'Demo answer' });
+    const response = await POST(createRequest({ subtopicId, question: 'What problem do promises solve?', difficulty: 'simple' }));
     expect(response.status).toBe(200);
-    const json = await response.json();
-    expect(json.source).toBe('qa_pairs');
-    expect(json.answer).toContain('future results');
-    expect(json.chunks).toBeNull();
-    expect(mocks.vectorQuery).not.toHaveBeenCalled();
+    expect((await response.json()).source).toBe('vector_search');
+    expect(mocks.vectorQuery).toHaveBeenCalledOnce();
     expect(mocks.markComplete).toHaveBeenCalledWith(userId, subtopicId);
   });
 });

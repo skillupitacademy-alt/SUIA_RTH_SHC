@@ -17,7 +17,7 @@ interface QuestionData {
     type: string;
     difficulty: string;
     status: string;
-    createdAt: string;
+    createdAt?: string;
     mappingType?: string;
     explanation?: string;
     correctAnswer?: string;
@@ -191,13 +191,22 @@ export function QuestionTable() {
                     ? data.questions
                     : (Array.isArray(data.data) ? data.data : []);
 
+                if (responseQuestions.some((q: RawQuestion) => typeof q.id !== 'string' || q.id.trim().length === 0)) {
+                    throw new Error('Question response is missing a valid identifier');
+                }
+
+                const questionIds = responseQuestions.map((q: RawQuestion) => q.id);
+                if (new Set(questionIds).size !== questionIds.length) {
+                    throw new Error('Question response contains duplicate identifiers');
+                }
+
                 const mappedQuestions: QuestionData[] = responseQuestions.map((q: RawQuestion, idx: number) => ({
-                    id: q.id ?? `q-${idx}`,
+                    id: q.id!,
                     questionText: (q.questionText != null && q.questionText !== '') ? q.questionText : (q.text ?? ''),
                     type: q.type ?? 'single',
                     difficulty: q.difficulty ?? 'intermediate',
                     status: q.status ?? 'draft',
-                    createdAt: (q as { createdAt?: string }).createdAt ?? new Date().toISOString(),
+                    createdAt: q.createdAt,
                     mappingType: (q as { mappingType?: string }).mappingType,
                     explanation: q.explanation,
                     correctAnswer: q.correctAnswer,

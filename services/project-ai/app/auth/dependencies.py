@@ -129,6 +129,7 @@ def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal
         "portal_identity": portal_identity,
         "token_type": payload.get("tokenType"),
         "is_admin": is_admin,
+        "aud": payload.get("aud"),
         "email": email,
         "platforms": platforms,
         "subscriptions": subscriptions
@@ -137,7 +138,7 @@ def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal
 
 def require_contract_admin(user: AuthenticatedPrincipal = Depends(get_current_user)) -> AuthenticatedPrincipal:
     """
-    Require contract_admin role.
+    Require verified SHC admin credential class and contract_admin or super_admin role.
     
     This is a FastAPI dependency that automatically extracts and validates the user.
     
@@ -148,9 +149,32 @@ def require_contract_admin(user: AuthenticatedPrincipal = Depends(get_current_us
         User identity if authorized
     
     Raises:
-        HTTPException: 403 if user doesn't have contract_admin role
+        HTTPException: 403 if user lacks SHC admin credential class or contract_admin/super_admin role
     """
-    # Super admin bypass
+    brand = str(user.get("brand") or "").strip().lower()
+    token_type = str(user.get("token_type") or "").strip().lower()
+    is_admin_flag = user.get("is_admin") is True
+    raw_aud = user.get("aud")
+    if isinstance(raw_aud, list):
+        aud_values = {str(a).strip().lower() for a in raw_aud}
+    elif isinstance(raw_aud, str) and raw_aud.strip():
+        aud_values = {raw_aud.strip().lower()}
+    else:
+        aud_values = set()
+
+    if (
+        brand != "skillhubcore"
+        or token_type != "admin"
+        or not is_admin_flag
+        or "user" in aud_values
+        or not (aud_values & {"shc-admin", "admin"})
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Requires verified skillhubcore admin credential class (token_type='admin', is_admin=True, aud in {'shc-admin', 'admin'})"
+        )
+
+    # Super admin bypass (only after admin credential class verified)
     if is_super_admin(user):
         return user
     

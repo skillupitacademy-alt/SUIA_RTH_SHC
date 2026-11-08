@@ -204,6 +204,13 @@
       "when": 1791510064024,
       "tag": "0028_public_multiple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791600001000,
+      "tag": "0030_event_outbox",
+      "breakpoints": true
     }
   ]
 }

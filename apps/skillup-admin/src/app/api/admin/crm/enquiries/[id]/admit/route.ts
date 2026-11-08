@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 
 import { PlatformEventTypes, publishEvent } from '@quiz/events';
-import bcrypt from 'bcryptjs';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 
 import { jsonData, jsonError, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { admissions, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
 import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
+import { normalizeEmail } from '@quiz/db-people';
 
 async function admit(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const forbidden = await requireAdminOrForbidden(request);
@@ -29,22 +29,24 @@ async function admit(request: NextRequest, context: { params: Promise<{ id: stri
     return jsonError('No active batch available', 409);
   }
 
-  const passwordHash = await bcrypt.hash('SkillUp@2025', 10);
-  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, enquiry.email)).limit(1);
-  const userId =
-    existingUser?.id ??
-    (await db
-      .insert(users)
-      .values({
-        email: enquiry.email,
-        passwordHash,
-        role: 'student',
-        platform: 'skillup',
-        isActive: true,
-        deletedAt: null,
-      })
-      .returning({ id: users.id })
-      .then((rows) => rows[0]?.id ?? null));
+  const normalizedEmail = normalizeEmail(enquiry.email);
+  const targetPlatform = 'skillup';
+
+  const localUsers = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(
+      sql`lower(trim(${users.email})) = ${normalizedEmail}`,
+      eq(users.platform, targetPlatform),
+      eq(users.isActive, true),
+      isNull(users.deletedAt),
+    ))
+    .limit(2);
+
+  if (localUsers.length !== 1) {
+    return jsonError('A unique local account is required for admission', 409);
+  }
+  const userId = localUsers[0].id;
 
   if (userId === null) {
     return jsonError('Could not create student user', 500);

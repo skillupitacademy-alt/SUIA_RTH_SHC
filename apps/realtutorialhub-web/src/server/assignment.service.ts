@@ -39,8 +39,8 @@ export class AssignmentService {
     return DIFFICULTY_ORDER[index - 1] ?? null;
   }
 
-  private async isContentFlowComplete(userId: string, subtopicId: string): Promise<boolean> {
-    return this.progressRepository.isSubtopicComplete(userId, subtopicId);
+  private async isContentFlowComplete(userId: string, subtopicId: string, tenantId = 'realtutorialhub'): Promise<boolean> {
+    return this.progressRepository.isSubtopicComplete(userId, subtopicId, tenantId);
   }
 
   async getTierStatus(userId: string, subtopicId: string): Promise<AssignmentTierStatusMap> {

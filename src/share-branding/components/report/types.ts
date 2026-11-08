@@ -56,7 +56,7 @@ export interface ExamSummaryData {
 export interface SkillItem {
   name: string;
   icon: React.ReactNode;
-  accuracy: number;
-  score: number;
-  total: number;
+  accuracy: number | null;
+  score: number | null;
+  total: number | null;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { TutorialContentJSON } from '@quiz/types';
@@ -41,7 +41,7 @@ function createMessageId(prefix: string) {
 export function AITutorBlock({
   data,
   theme,
-  subtopicId = '11111111-1111-1111-1111-111111111111',
+  subtopicId,
   subtopicName = 'this subtopic',
   difficulty = 'simple',
 }: AITutorBlockProps) {
@@ -77,8 +77,17 @@ export function AITutorBlock({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRateLimited, setIsRateLimited] = useState(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const canSubmit = question.trim().length >= 3 && !isLoading && !isRateLimited;
+  useEffect(() => {
+    setIsRateLimited(false);
+    return () => {
+      if (retryTimer.current !== null) clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    };
+  }, [subtopicId]);
+
+  const canSubmit = Boolean(subtopicId?.trim()) && question.trim().length >= 3 && !isLoading && !isRateLimited;
 
   const handleSubmit = async () => {
     const trimmedQuestion = question.trim();
@@ -112,7 +121,16 @@ export function AITutorBlock({
       });
 
       if (response.status === 429) {
+        const retryAfter = response.headers.get('retry-after');
+        const seconds = retryAfter !== null && /^\d+$/.test(retryAfter) ? Number(retryAfter) : NaN;
+        if (retryTimer.current !== null) clearTimeout(retryTimer.current);
         setIsRateLimited(true);
+        if (Number.isFinite(seconds) && seconds > 0 && seconds <= 2147483) {
+          retryTimer.current = setTimeout(() => {
+            retryTimer.current = null;
+            setIsRateLimited(false);
+          }, seconds * 1000);
+        }
         setMessages((current) => [
           ...current,
           {

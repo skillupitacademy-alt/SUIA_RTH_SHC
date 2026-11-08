@@ -1,0 +1,3 @@
+# FND23 marketing internal provider adverse control manifest
+
+Baseline 572b03e1; MKT-018 / RC-EVENT-01. `InternalAnalyticsProvider.track` awaits fetch but does not inspect HTTP status; `AnalyticsTracker.flush` treats a resolved provider promise as healthy. Add only an isolated provider test that intercepts fetch and exercises accepted HTTP, rejected transport and HTTP 503. Expected invariant: an HTTP failure must not resolve as successful dispatch. Preserve the failing assertion until an authorized owner selects acknowledgment/retry semantics; this test alone does not exercise tracker persistence, actual delivery or external provider. Use the pre-import offline guard and config-free Vitest; no live traffic or credentials. Sol review required.

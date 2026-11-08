@@ -37,6 +37,7 @@ export function BlockRenderer({
   activeBlockType, 
   content, 
   theme,
+  subtopicId,
   subtopicName,
 }: BlockRendererProps) {
   // Use activeBlockType if type is not provided
@@ -83,11 +84,11 @@ export function BlockRenderer({
       case 'interview':
         return <InterviewBlock data={content.interview} theme={theme} subtopicName={subtopicName} />;
       case 'ai_tutor':
-        return <AITutorBlock data={content.ai_tutor} theme={theme} />;
+        return <AITutorBlock data={content.ai_tutor} theme={theme} subtopicId={subtopicId} subtopicName={subtopicName} />;
       default:
         return null;
     }
-  }, [targetType, sectionData, content, theme, subtopicName]);
+  }, [targetType, sectionData, content, theme, subtopicId, subtopicName]);
 
   if (!renderedBlock) return null;
 

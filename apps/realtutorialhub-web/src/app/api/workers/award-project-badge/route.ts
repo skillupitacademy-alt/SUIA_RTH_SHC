@@ -9,6 +9,19 @@ import { ProjectRepository, db, tutorialProjectSubmissions, withTimeout, STANDAR
 import { logger } from '@/lib/logger';
 import { ProjectService } from '@/server/project.service';
 import { eq } from 'drizzle-orm';
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  deriveDeterministicEventUuid,
+  dispatchWorkerOutboxIntent,
+  findAuthoritativeWorkerOutboxIntent,
+  releaseWorkerLeaseIfOwner,
+  resolveWorkerOutboxRepository,
+  runInWorkerOutboxTransaction,
+  upsertTransactionalOutboxIntent,
+  type WorkerOutboxRecord,
+  type WorkerRedisLike,
+} from '../worker-lease';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,13 +40,13 @@ const AwardBadgeSchema = z.object({
   }),
 });
 
-const createRedisClient = () => {
+const createRedisClient = (): WorkerRedisLike => {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (typeof url !== 'string' || url.trim().length === 0 || typeof token !== 'string' || token.trim().length === 0) {
     throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required');
   }
-  return new Redis({ url, token });
+  return new Redis({ url, token }) as unknown as WorkerRedisLike;
 };
 
 const getAppUrl = () => {
@@ -52,59 +65,158 @@ const badgeHandler = createQStashHandler(
     const redis = createRedisClient();
     const redisKey = `badge-award:${submissionId}`;
 
-    const existing = await redis.get(redisKey);
-    if (existing !== null && String(existing).trim().length > 0) {
-      return new Response('Duplicate event ignored', { status: 200 });
-    }
-
-    const claimed = await redis.set(redisKey, 'processing', { ex: 86_400, nx: true });
-    if (claimed == null || String(claimed).trim().length === 0) {
-      return new Response('Duplicate event ignored', { status: 200 });
-    }
-
-    const projectRepository = new ProjectRepository();
-    const submission = await withTimeout(
-      projectRepository.getSubmission(submissionId),
-      STANDARD_QUERY_TIMEOUT,
-      'award-project-badge.getSubmission'
-    );
-    if (submission === undefined) {
-      throw new Error('Project submission not found');
-    }
-
-    await db.transaction(async (tx) => {
-      const txRepo = projectRepository.withDb(tx as never);
-      await txRepo.awardBadge(userId, badgeId, submissionId);
-      await withTimeout(
-        tx
-          .update(tutorialProjectSubmissions)
-          .set({
-            badgeAwarded: true,
-            updatedAt: new Date(),
-          })
-          .where(eq(tutorialProjectSubmissions.id, submissionId)),
-        STANDARD_QUERY_TIMEOUT,
-        'award-project-badge.mark-badge-awarded'
-      );
+    const claim = await acquireWorkerLease(redis, redisKey, {
+      leaseSeconds: 300,
+      pendingPrefix: 'processing',
     });
 
-    const projectService = new ProjectService();
-    const project = await projectRepository.getProject(projectId);
-    if (project !== undefined) {
-      const eligibility = await projectService.checkCertificateEligibility(userId, project.scope, project.parentId);
-      if (eligibility.eligible) {
-        const token = process.env.QSTASH_TOKEN;
-        if (typeof token === 'string' && token.trim().length > 0) {
-          const client = new Client({ token });
-          await client.publishJSON({
-            url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
-            retries: 3,
-            body: {
-              id: crypto.randomUUID(),
+    if (claim.kind === 'already-completed') {
+      return new Response('Duplicate event ignored', { status: 200 });
+    }
+    if (claim.kind === 'busy') {
+      return new Response('Event claim not acquired', { status: 409 });
+    }
+
+    try {
+      const projectRepository = new ProjectRepository();
+      const submission = await withTimeout(
+        projectRepository.getSubmission(submissionId),
+        STANDARD_QUERY_TIMEOUT,
+        'award-project-badge.getSubmission'
+      );
+      if (submission === undefined) {
+        throw new Error('Project submission not found');
+      }
+
+      const outboxRepository = await resolveWorkerOutboxRepository(db);
+
+      const alreadyAwarded = (submission as { badgeAwarded?: boolean }).badgeAwarded === true;
+      if (alreadyAwarded) {
+        const existingOutbox = await findAuthoritativeWorkerOutboxIntent(
+          outboxRepository,
+          'realtutorialhub',
+          'project.certificate_requested',
+          submissionId
+        );
+        if (existingOutbox?.status === 'published') {
+          const reconciled = await completeWorkerLeaseIfOwner(
+            redis,
+            redisKey,
+            claim.pendingValue,
+            'processed',
+            86_400
+          );
+          if (reconciled !== 'applied') {
+            return new Response('Event lease ownership lost before completion', { status: 409 });
+          }
+          return new Response('Duplicate event ignored', { status: 200 });
+        }
+      }
+
+      const projectService = new ProjectService();
+      const project = await projectRepository.getProject(projectId);
+      const eligibility = project !== undefined
+        ? await projectService.checkCertificateEligibility(userId, project.scope, project.parentId)
+        : { eligible: false };
+
+      const rawUpdatedAt: unknown = (submission as { updatedAt?: unknown }).updatedAt;
+      const canonicalOccurredAt =
+        rawUpdatedAt instanceof Date
+          ? rawUpdatedAt.toISOString()
+          : typeof rawUpdatedAt === 'string' && rawUpdatedAt.trim().length > 0
+            ? rawUpdatedAt
+            : payload.occurredAt;
+
+      let outboxIntent: WorkerOutboxRecord | undefined = await findAuthoritativeWorkerOutboxIntent(
+        outboxRepository,
+        'realtutorialhub',
+        'project.certificate_requested',
+        submissionId
+      );
+
+      if (!alreadyAwarded) {
+        const txOutcome = await runInWorkerOutboxTransaction(db, async (tx) => {
+          const txRepo = projectRepository.withDb(tx as never);
+          await txRepo.awardBadge(userId, badgeId, submissionId);
+          await withTimeout(
+            tx
+              .update(tutorialProjectSubmissions)
+              .set({
+                badgeAwarded: true,
+                updatedAt: new Date(),
+              })
+              .where(eq(tutorialProjectSubmissions.id, submissionId)),
+            STANDARD_QUERY_TIMEOUT,
+            'award-project-badge.mark-badge-awarded'
+          );
+
+          if (project !== undefined && eligibility.eligible) {
+            const deterministicEventId = deriveDeterministicEventUuid(
+              `realtutorialhub:project.certificate_requested:${submissionId}`
+            );
+
+            const intent = await upsertTransactionalOutboxIntent(
+              {
+                tenantId: 'realtutorialhub',
+                eventType: 'project.certificate_requested',
+                aggregateId: submissionId,
+                eventId: deterministicEventId,
+                ownerToken: claim.ownerToken,
+                payload: {
+                  userId,
+                  scope: project.scope,
+                  parentId: project.parentId,
+                  parentName: project.title,
+                },
+                envelope: {
+                  id: deterministicEventId,
+                  type: 'project.certificate_requested',
+                  correlationId: submission.id,
+                  source: 'quiz-platform',
+                  occurredAt: canonicalOccurredAt,
+                  version: 1,
+                  data: {
+                    userId,
+                    scope: project.scope,
+                    parentId: project.parentId,
+                    parentName: project.title,
+                  },
+                },
+              },
+              tx
+            );
+            return { intent };
+          }
+
+          return { intent: undefined };
+        });
+
+        if (txOutcome.intent) {
+          outboxIntent = txOutcome.intent;
+        }
+      } else if (outboxIntent === undefined && project !== undefined && eligibility.eligible) {
+        const deterministicEventId = deriveDeterministicEventUuid(
+          `realtutorialhub:project.certificate_requested:${submissionId}`
+        );
+        outboxIntent = await upsertTransactionalOutboxIntent(
+          {
+            tenantId: 'realtutorialhub',
+            eventType: 'project.certificate_requested',
+            aggregateId: submissionId,
+            eventId: deterministicEventId,
+            ownerToken: claim.ownerToken,
+            payload: {
+              userId,
+              scope: project.scope,
+              parentId: project.parentId,
+              parentName: project.title,
+            },
+            envelope: {
+              id: deterministicEventId,
               type: 'project.certificate_requested',
               correlationId: submission.id,
               source: 'quiz-platform',
-              occurredAt: new Date().toISOString(),
+              occurredAt: canonicalOccurredAt,
               version: 1,
               data: {
                 userId,
@@ -113,23 +225,81 @@ const badgeHandler = createQStashHandler(
                 parentName: project.title,
               },
             },
-          });
-        }
+          },
+          outboxRepository
+        );
       }
+
+      if (outboxIntent !== undefined) {
+        const token = process.env.QSTASH_TOKEN;
+        if (typeof token !== 'string' || token.trim().length === 0) {
+          throw new Error('QSTASH_TOKEN is required to publish pending certificate request');
+        }
+        await dispatchWorkerOutboxIntent(
+          outboxIntent,
+          claim.ownerToken,
+          async (intent) => {
+            const client = new Client({ token: token.trim() });
+            const storedEnvelope = intent.envelope ?? {};
+            await client.publishJSON({
+              url: new URL('/api/workers/issue-certificate', getAppUrl()).toString(),
+              retries: 3,
+              body: {
+                id: intent.eventId,
+                type: 'project.certificate_requested',
+                correlationId:
+                  typeof storedEnvelope.correlationId === 'string'
+                    ? storedEnvelope.correlationId
+                    : submission.id,
+                source:
+                  typeof storedEnvelope.source === 'string'
+                    ? storedEnvelope.source
+                    : 'quiz-platform',
+                occurredAt:
+                  typeof storedEnvelope.occurredAt === 'string'
+                    ? storedEnvelope.occurredAt
+                    : canonicalOccurredAt,
+                version:
+                  typeof storedEnvelope.version === 'number'
+                    ? storedEnvelope.version
+                    : 1,
+                data: intent.payload,
+              },
+            });
+          },
+          outboxRepository
+        );
+      }
+
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        redisKey,
+        claim.pendingValue,
+        'processed',
+        86_400
+      );
+      if (completionTransition !== 'applied') {
+        return new Response('Event lease ownership lost before completion', { status: 409 });
+      }
+
+      logger.info({
+        event: 'project.badge_awarded',
+        submissionId,
+        userId,
+        projectId,
+        badgeId,
+      });
+
+      return new Response('ok', { status: 200 });
+    } catch (error) {
+      await releaseWorkerLeaseIfOwner(redis, redisKey, claim.pendingValue).catch(() => undefined);
+      throw error;
     }
-
-    logger.info({
-      event: 'project.badge_awarded',
-      submissionId,
-      userId,
-      projectId,
-      badgeId,
-    });
-
-    return new Response('ok', { status: 200 });
   },
   {
     schema: AwardBadgeSchema,
+    allowedTypes: ['project.approved'],
+    tenantScope: 'realtutorialhub',
   }
 );
 

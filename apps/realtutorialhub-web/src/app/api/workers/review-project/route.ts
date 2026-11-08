@@ -7,6 +7,12 @@ import { createQStashHandler, PlatformEventTypes } from '@quiz/events';
 import { ProjectRepository, db, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db-tutorial';
 
 import { logger } from '@/lib/logger';
+import {
+  acquireWorkerLease,
+  completeWorkerLeaseIfOwner,
+  releaseWorkerLeaseIfOwner,
+  type WorkerRedisLike,
+} from '../worker-lease';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +30,13 @@ const ReviewWorkerSchema = z.object({
   }),
 });
 
-const createRedisClient = () => {
+const createRedisClient = (): WorkerRedisLike => {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (typeof url !== 'string' || url.trim().length === 0 || typeof token !== 'string' || token.trim().length === 0) {
     throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required');
   }
-  return new Redis({ url, token });
+  return new Redis({ url, token }) as unknown as WorkerRedisLike;
 };
 
 const buildReviewText = (checklist: Array<{ item: string; passed: boolean }>) => {
@@ -51,78 +57,97 @@ const handler = createQStashHandler(
     const redis = createRedisClient();
     const redisKey = `project-review:${submissionId}`;
 
-    const existing = await redis.get(redisKey);
-    if (existing !== null && String(existing).trim().length > 0) {
+    const claim = await acquireWorkerLease(redis, redisKey, {
+      leaseSeconds: 300,
+      pendingPrefix: 'processing',
+    });
+
+    if (claim.kind === 'already-completed') {
       return new Response('Duplicate event ignored', { status: 200 });
     }
-
-    const claimed = await redis.set(redisKey, 'processing', { ex: 86_400, nx: true });
-    if (claimed == null || String(claimed).trim().length === 0) {
-      return new Response('Duplicate event ignored', { status: 200 });
+    if (claim.kind === 'busy') {
+      return new Response('Event claim not acquired', { status: 409 });
     }
 
-    const projectRepository = new ProjectRepository();
-    const [submission, project] = await Promise.all([
-      withTimeout(
-        projectRepository.getSubmission(submissionId),
-        STANDARD_QUERY_TIMEOUT,
-        'review-project.getSubmission'
-      ),
-      withTimeout(
-        projectRepository.getProject(projectId),
-        STANDARD_QUERY_TIMEOUT,
-        'review-project.getProject'
-      ),
-    ]);
+    try {
+      const projectRepository = new ProjectRepository();
+      const [submission, project] = await Promise.all([
+        withTimeout(
+          projectRepository.getSubmission(submissionId),
+          STANDARD_QUERY_TIMEOUT,
+          'review-project.getSubmission'
+        ),
+        withTimeout(
+          projectRepository.getProject(projectId),
+          STANDARD_QUERY_TIMEOUT,
+          'review-project.getProject'
+        ),
+      ]);
 
-    if (submission === undefined || project === undefined) {
-      throw new Error('Submission or project not found');
-    }
+      if (submission === undefined || project === undefined) {
+        throw new Error('Submission or project not found');
+      }
 
-    const deliverable = submission.submissionContent as Record<string, unknown>;
-    const checklist = [
-      {
-        item: 'Deliverable URL present',
-        passed: Boolean(deliverable.deliverableUrl ?? deliverable.url ?? deliverable.repoUrl ?? deliverable.liveDemoUrl),
-      },
-      {
-        item: 'README included',
-        passed: typeof deliverable.readme === 'string' && deliverable.readme.trim().length > 0,
-      },
-      {
-        item: 'Requirements referenced',
-        passed: JSON.stringify(deliverable).toLowerCase().includes('require'),
-      },
-    ];
+      const deliverable = submission.submissionContent as Record<string, unknown>;
+      const checklist = [
+        {
+          item: 'Deliverable URL present',
+          passed: Boolean(deliverable.deliverableUrl ?? deliverable.url ?? deliverable.repoUrl ?? deliverable.liveDemoUrl),
+        },
+        {
+          item: 'README included',
+          passed: typeof deliverable.readme === 'string' && deliverable.readme.trim().length > 0,
+        },
+        {
+          item: 'Requirements referenced',
+          passed: JSON.stringify(deliverable).toLowerCase().includes('require'),
+        },
+      ];
 
-    const feedback = buildReviewText(checklist);
+      const feedback = buildReviewText(checklist);
 
-    await db.transaction(async (tx) => {
-      const txRepo = projectRepository.withDb(tx as never);
-      await txRepo.updateSubmissionStatus(submissionId, 'ai_reviewing');
-      await txRepo.updateSubmissionStatus(submissionId, 'needs_review', {
-        feedback,
-        checklist,
-        suggestedStatus: 'needs_review',
+      await db.transaction(async (tx) => {
+        const txRepo = projectRepository.withDb(tx as never);
+        await txRepo.updateSubmissionStatus(submissionId, 'ai_reviewing');
+        await txRepo.updateSubmissionStatus(submissionId, 'needs_review', {
+          feedback,
+          checklist,
+          suggestedStatus: 'needs_review',
+        });
       });
-    });
 
-    logger.info({
-      event: 'project.ai_review_complete',
-      submissionId,
-      userId,
-      projectId,
-    });
+      const completionTransition = await completeWorkerLeaseIfOwner(
+        redis,
+        redisKey,
+        claim.pendingValue,
+        'processed',
+        86_400
+      );
+      if (completionTransition !== 'applied') {
+        return new Response('Event lease ownership lost before completion', { status: 409 });
+      }
 
-    return NextResponse.json({
-      data: {
+      logger.info({
+        event: 'project.ai_review_complete',
         submissionId,
-        suggestedStatus: 'needs_review',
-      },
-    });
+        userId,
+        projectId,
+      });
+
+      return NextResponse.json({
+        data: {
+          submissionId,
+          suggestedStatus: 'needs_review',
+        },
+      });
+    } catch (error) {
+      await releaseWorkerLeaseIfOwner(redis, redisKey, claim.pendingValue).catch(() => undefined);
+      throw error;
+    }
   },
   {
     schema: ReviewWorkerSchema,
+    tenantScope: 'realtutorialhub',
   }
 );
 

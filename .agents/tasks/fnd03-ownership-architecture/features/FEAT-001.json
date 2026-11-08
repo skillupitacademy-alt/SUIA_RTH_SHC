@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-001",
+  "type": "docs",
+  "description": "Investigate and classify 181 active callers from FND12 inventory into ownership domains (progress, exports, admin) with exact credential-to-store mappings, distinguishing selected tenant+subject policy from observed multi-database deployment facts",
+  "status": "completed",
+  "steps": [
+    "Read audit/FND12_Complete_Truth_Inventory.md (181 callers across 5 domains) and .agents/tasks/fnd12-fnd17-ownership-matrix.md (file ownership conflicts)",
+    "Read audit/Claude_Sonnet45_W1_W3_Completion_Directive.md for selected ownership policy: verified tenant + tenant-local subject; equal IDs/emails in separate tenants do NOT join accounts; unknown provenance denies access",
+    "Trace progress ownership: packages/db-tutorial/src/repositories/tutorial-progress.repository.ts uses userId+subtopicId keys without tenant qualification. Identify all callers (SD-31 learn workspace, SU-ILS-*, RTH-ILS-*, SU-PROGRESS-*, RTH-PROGRESS-* from FND12)",
+    "Trace export ownership: apps/api-server/src/app/api/export/download/route.ts checks job.userId === payload.userId (no tenant). Identify export trigger, workflow dispatch, job status, download routes (RTH-EXP-001 to RTH-EXP-006, FND04 from ownership matrix)",
+    "Trace admin ownership: Search for admin API routes using graphify query or grep for apps/skillhubcore-admin/src/app/api/admin/*/route.ts and apps/skillup-admin/src/app/api/admin/*/route.ts. Classify by target resource (users, questions, taxonomy, CRM) and current authorization (GT-01 to GT-17 from FND12)",
+    "Map credential flow: packages/auth/src/token.service.ts uses brand claim in JWT. Trace how brand/platform propagates through session.service.ts and ownership.service.ts (currently userId-only, no tenant context)",
+    "Identify multi-database boundaries: packages/db-skillup/src/schema/users.ts (brand-local), packages/db-people/src/schema/users.ts (canonical identity), packages/db-tutorial (shared ILS). Note: no tenantId columns exist in any schema inspected",
+    "Build caller-to-credential-to-tenant/subject-to-store map table with columns: Caller ID (from FND12), Function/Component, Current Credential (userId/brand/platform), Target Store (db-skillup/db-people/db-tutorial/export-jobs), Current Ownership Check, Tenant-Qualified Path, Gap/Risk",
+    "Distinguish selected policy (tenant+subject isolation, deny unknown provenance) from observed facts (userId-only checks, shared progress table, brand-local user tables)",
+    "Write comprehensive investigation report at .agents/tasks/fnd03-ownership-architecture/ownership-classification.md with: Executive Summary, Selected Policy vs Current State, 181-Caller Ownership Map (by domain), Multi-Database Architecture Analysis, Credential Propagation Gaps, Identified Risks (cross-tenant access, equal-ID collision, unknown provenance)"
+  ],
+  "acceptance_criteria": [
+    "ownership-classification.md exists with complete 181-caller ownership map",
+    "Report distinguishes selected tenant+subject policy from current userId-only implementation",
+    "Every FND12 caller (SD-*, AR-*, OP-*, GT-*, FA-*) is classified by credential path and store",
+    "Multi-database boundaries (db-skillup, db-people, db-tutorial) are mapped to ownership domains",
+    "Gaps identified: no tenantId in schemas, no tenant context in OwnershipRBACService, shared progress table without tenant qualification"
+  ],
+  "verification": [
+    "grep -c 'SD-\\|AR-\\|OP-\\|GT-\\|FA-' .agents/tasks/fnd03-ownership-architecture/ownership-classification.md (expect 181+ matches)",
+    "File contains sections: Selected Policy, Current State, Multi-Database Architecture, Credential Propagation, Identified Risks"
+  ],
+  "blocked_reason": null,
+  "findings": "Investigation complete. 181 callers classified across 5 domains (progress, exports, admin, taxonomy, forms). Key findings: (1) Current implementation uses userId-only ownership checks without tenant qualification, (2) JWT brand claim present but not enforced in OwnershipRBACService, (3) No tenantId columns in db-skillup users, db-people users, db-tutorial tutorialProgress, (4) 63 critical gaps identified where cross-tenant access is possible, (5) Export download route lacks tenant verification (job.userId only), (6) Admin routes (taxonomy CRUD, CRM admission) have no tenant boundary enforcement, (7) Shared tutorialProgress table keys on (userId, subtopicId) without tenant - collision risk across equal IDs from different tenants. Verification: 122 caller ID matches, 9 sections present, 63 gap markers. Report written to ownership-classification.md with complete credential-to-store mappings and recommended mitigation path for FND04-FND06."
+}

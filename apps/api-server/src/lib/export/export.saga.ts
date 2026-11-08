@@ -7,7 +7,11 @@ import { logger } from '@/lib/logger';
 import { JobsService } from '@/modules/system/jobs.service';
 
 import { ExportEngine } from './exportEngine';
-import type { ExportFormat } from './exportTypes';
+import {
+  type ExportFormat,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+} from './exportTypes';
 
 const qstashUrl = typeof process.env.QSTASH_URL === 'string' && process.env.QSTASH_URL.trim() !== ''
   ? process.env.QSTASH_URL
@@ -29,10 +33,19 @@ export interface ExportSagaData {
     examId: string;
     userId: string;
     format: ExportFormat;
+    brand: LearnerExportBrand;
 }
 
 export class ExportSaga {
-    static async start(examId: string, userId: string, format: ExportFormat) {
+    static async start(
+        examId: string,
+        userId: string,
+        format: ExportFormat,
+        brand: LearnerExportBrand
+    ) {
+        if (!isLearnerExportBrand(brand)) {
+            throw new Error('ExportSaga requires verified learner tenant brand');
+        }
         const queuesEnabled = process.env.QUEUE_ENABLED === 'true';
         
         const job = await JobsService.createJob({
@@ -41,6 +54,8 @@ export class ExportSaga {
             payload: { 
                 examId,
                 format,
+                brand,
+                tenantId: brand,
                 metadata: { processedSteps: [] }
             }
         });
@@ -69,6 +84,7 @@ export class ExportSaga {
                         examId,
                         userId,
                         format,
+                        brand,
                         jobId: job.id
                     },
                     retries: 3
@@ -76,11 +92,11 @@ export class ExportSaga {
                 logger.info({ examId, jobId: job.id }, '[ExportSaga] Workflow triggered successfully');
             } catch (err) {
                 logger.error({ err, examId, jobId: job.id }, '[ExportSaga] Failed to trigger workflow, falling back to local execution');
-                void this.execute(job.id, { examId, userId, format });
+                void this.execute(job.id, { examId, userId, format, brand });
             }
         } else {
             logger.info({ examId, jobId: job.id }, '[ExportSaga] Running export saga locally');
-            void this.execute(job.id, { examId, userId, format });
+            void this.execute(job.id, { examId, userId, format, brand });
         }
         
         return job.id;
@@ -90,19 +106,24 @@ export class ExportSaga {
         jobId: string,
         data: ExportSagaData
     ) {
-        const { examId, userId, format } = data;
-        logger.info({ examId, jobId, format }, '[ExportSaga] Starting execution');
+        const { examId, userId, format, brand } = data;
+        if (!isLearnerExportBrand(brand)) {
+            throw new Error('ExportSaga execution requires verified learner tenant brand');
+        }
+        logger.info({ examId, jobId, format, brand }, '[ExportSaga] Starting execution');
 
         try {
             await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
             
             const exportEngine = ExportEngine.getInstance();
-            const downloadUrl = await exportEngine.processExport(examId, userId, format);
+            const downloadUrl = await exportEngine.processExport(examId, userId, format, brand);
 
             await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
                 result: {
                     examId,
                     format,
+                    brand,
+                    tenantId: brand,
                     downloadUrl,
                     completedAt: new Date().toISOString()
                 }

@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 
 import { badRequest } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
-import { resolveRequestBrandFromHeaders } from '@/lib/request-brand';
+import { type RequestBrand, resolveRequestBrandFromHeaders, resolveStrictRefreshBrandFromHeaders } from '@/lib/request-brand';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withObservability } from '@/middleware/observability.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -24,7 +24,22 @@ async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
   try {
     const portalIdentity = _req.headers.get('x-portal-identity') ?? 'user';
     const audience = portalIdentity === 'infrastructure' ? 'infra' : portalIdentity === 'admin' ? 'admin' : 'user';
-    const requestBrand = resolveRequestBrandFromHeaders(_req.headers);
+    let requestBrand: RequestBrand | undefined;
+    if (audience === 'infra') {
+      requestBrand = resolveRequestBrandFromHeaders(_req.headers);
+    } else {
+      const brandResult = resolveStrictRefreshBrandFromHeaders(_req.headers);
+      if (brandResult.error) {
+        if (brandResult.error === 'missing_brand') {
+          return ApiResponse.error(badRequest('Missing required tenant brand header (x-brand or x-platform)'), 400);
+        }
+        if (brandResult.error === 'conflicting_brand') {
+          return ApiResponse.error(badRequest('Conflicting brand headers (x-brand != x-platform)'), 400);
+        }
+        return ApiResponse.error(badRequest('Invalid tenant brand context'), 400);
+      }
+      requestBrand = brandResult.brand;
+    }
 
     console.log('[AUTH_FLOW][REFRESH][START]', JSON.stringify({
       requestId,

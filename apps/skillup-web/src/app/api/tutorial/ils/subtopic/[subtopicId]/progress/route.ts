@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStudentAuth } from '@/lib/student-auth';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,10 @@ export async function GET(
       return authResult.response;
     }
     
+    if (!z.string().uuid().safeParse(params.subtopicId).success) {
+      return NextResponse.json({ error: 'Invalid subtopic ID' }, { status: 400 });
+    }
+
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
     const url = `${apiUrl}/api/tutorial/ils/subtopic/${params.subtopicId}/progress`;
     
@@ -33,15 +38,14 @@ export async function GET(
     });
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch subtopic progress' }));
-      return NextResponse.json(error, { status: response.status });
+      return NextResponse.json({ error: 'Failed to fetch subtopic progress' }, { status: response.status });
     }
     
     return NextResponse.json(await response.json());
   } catch (error) {
     console.error('[SkillUp ILS] getSubtopicProgress error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

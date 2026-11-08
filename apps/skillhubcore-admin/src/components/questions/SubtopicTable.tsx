@@ -98,15 +98,21 @@ export function SubtopicTable() {
     const fetchSubtopics = useCallback(async () => {
         try {
             const response = await apiClient.admin.getSubtopics(currentCursor, pageSize, undefined, debouncedSearch || undefined);
+            if (Array.isArray(response.data)) {
+                const ids = response.data.map((item) => (item as { id?: unknown } | null)?.id);
+                if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0) || new Set(ids).size !== ids.length) {
+                    throw new Error('Subtopic response contains invalid identifiers');
+                }
+            }
             const mapped: SubtopicRow[] = Array.isArray(response.data)
                 ? response.data.map((s) => ({
-                    id: String((s as { id?: string }).id ?? crypto.randomUUID()),
+                    id: (s as { id: string }).id,
                     name: (s as { name?: string }).name ?? '',
                     topicId: (s as { topicId?: string }).topicId ?? '',
                     description: (s as { description?: string | null }).description ?? null,
                     status: (s as { status?: string }).status as SubtopicRow['status'] ?? 'active',
                     order: (s as { order?: number }).order ?? (s as { orderIndex?: number }).orderIndex ?? 0,
-                    depthLevel: (s as { depthLevel?: number }).depthLevel ?? 0,
+                    depthLevel: (s as { depthLevel?: number }).depthLevel ?? (s as { depth?: number }).depth ?? 1,
                     topic: (s as { topic?: SubtopicRow['topic'] }).topic
                 }))
                 : [];
@@ -118,6 +124,8 @@ export function SubtopicTable() {
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch subtopics', { error: error instanceof Error ? error.message : 'unknown' });
+            setData([]);
+            setSelectedIds(new Set());
             setErrorMessage('Connection Error: Unable to load subtopics at this time.');
         }
     }, [currentCursor, debouncedSearch, pageSize]);
@@ -247,7 +255,7 @@ export function SubtopicTable() {
             void fetchSubtopics();
         } catch (error) {
             clientLogger.error('Failed to delete subtopic', { error: error instanceof Error ? error.message : 'unknown' });
-            setErrorMessage('Deletion Blocked: This subtopic is currently in use and cannot be removed.');
+            setErrorMessage('Unable to delete the subtopic. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

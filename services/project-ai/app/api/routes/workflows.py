@@ -291,11 +291,49 @@ async def transition_workflow(
         )
     
     # Attempt transition
+    actor_id = (
+        user.get("user_id")
+        or user.get("email")
+        or user.get("sub")
+        or user.get("id")
+        or ""
+    )
+    if to_state in (CanonicalWorkflowState.GUI_APPROVED, CanonicalWorkflowState.CANDIDATE_REQUESTED):
+        if not actor_id or str(actor_id).strip().lower() in {"system", "auto", "ensurecandidaterequested", "ui-auto"}:
+            raise HTTPException(
+                status_code=403,
+                detail="Gate 1 transitions require an authenticated human principal"
+            )
+    if to_state == CanonicalWorkflowState.GUI_APPROVED:
+        actor_brand = str(user.get("brand") or "").strip().lower()
+        actor_roles = [str(r) for r in (user.get("roles") or [])]
+        token_type = str(user.get("token_type") or "").strip().lower()
+        is_admin_flag = user.get("is_admin") is True
+        raw_aud = user.get("aud")
+        if isinstance(raw_aud, list):
+            aud_values = {str(a).strip().lower() for a in raw_aud}
+        elif isinstance(raw_aud, str) and raw_aud.strip():
+            aud_values = {raw_aud.strip().lower()}
+        else:
+            aud_values = set()
+        if (
+            actor_brand != "skillhubcore"
+            or token_type != "admin"
+            or not is_admin_flag
+            or "user" in aud_values
+            or not (aud_values & {"shc-admin", "admin"})
+            or not any(r in {"super_admin", "contract_admin"} for r in actor_roles)
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Gate 1 (GUI_APPROVED) requires verified skillhubcore admin credential class and contract_admin or super_admin authority"
+            )
+
     try:
         workflow = await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=to_state,
-            triggered_by=request.triggered_by,
+            triggered_by=str(actor_id),
             evidence_id=request.evidence_id,
             reason=request.reason
         )
@@ -304,6 +342,80 @@ async def transition_workflow(
         await session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     
+    return _workflow_to_response(workflow)
+
+
+class Gate1ApprovalRequest(BaseModel):
+    contract_id: str
+    contract_sha256: str
+    reason: str = "Explicit human Gate 1 contract approval"
+    decision_id: str | None = None
+
+
+@router.post("/{workflow_id}/approve-gate-1", response_model=WorkflowResponse)
+async def approve_gate_1_workflow(
+    workflow_id: str,
+    request: Gate1ApprovalRequest,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    session: AsyncSession = Depends(get_db_session),
+) -> WorkflowResponse:
+    """
+    Record an explicit human Gate 1 approval decision and transition AWAITING_GATE_1 -> GUI_APPROVED atomically (Sol D4).
+    """
+    actor_id = (
+        user.get("user_id")
+        or user.get("email")
+        or user.get("sub")
+        or user.get("id")
+        or ""
+    )
+    actor_brand = str(user.get("brand") or "").strip().lower()
+    actor_roles = [str(r) for r in (user.get("roles") or [])]
+    token_type = str(user.get("token_type") or "").strip().lower()
+    is_admin_flag = user.get("is_admin") is True
+    raw_aud = user.get("aud")
+    if isinstance(raw_aud, list):
+        aud_values = {str(a).strip().lower() for a in raw_aud}
+    elif isinstance(raw_aud, str) and raw_aud.strip():
+        aud_values = {raw_aud.strip().lower()}
+    else:
+        aud_values = set()
+
+    if (
+        not actor_id
+        or actor_brand != "skillhubcore"
+        or token_type != "admin"
+        or not is_admin_flag
+        or "user" in aud_values
+        or not (aud_values & {"shc-admin", "admin"})
+        or not any(r in {"super_admin", "contract_admin"} for r in actor_roles)
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Gate 1 approval requires verified skillhubcore admin credential class and contract_admin or super_admin authority",
+        )
+
+    try:
+        workflow = await governance_service.approve_gate_1(
+            workflow_id=workflow_id,
+            approved_by=str(actor_id),
+            actor_brand=actor_brand,
+            actor_roles=actor_roles,
+            actor_capabilities=["project_llm:contract:approve"],
+            actor_token_type=token_type,
+            actor_is_admin=is_admin_flag,
+            actor_aud=next(iter(aud_values & {"shc-admin", "admin"}), ""),
+            contract_id=request.contract_id,
+            contract_sha256=request.contract_sha256,
+            reason=request.reason,
+            decision_id=request.decision_id,
+        )
+        await session.commit()
+    except ValueError as e:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
     return _workflow_to_response(workflow)
 
 

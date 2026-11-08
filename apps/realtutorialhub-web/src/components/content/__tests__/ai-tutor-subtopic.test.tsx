@@ -1,0 +1,24 @@
+import React from 'react';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
+vi.mock('@quiz/types', () => ({ isTutorialDocument: () => false }));
+vi.mock('@quiz/ui', () => ({ TutorialRenderer: () => null }));
+vi.mock('../AITutorBlock', () => ({ AITutorBlock: ({ subtopicId }: { subtopicId?: string }) => <div data-testid="identity">{subtopicId ?? 'missing'}</div> }));
+vi.mock('../AssignmentBlock', () => ({ AssignmentBlock: () => null }));
+vi.mock('../CodeBlock', () => ({ CodeBlock: () => null }));
+vi.mock('../InterviewBlock', () => ({ InterviewBlock: () => null }));
+vi.mock('../LaymanBlock', () => ({ LaymanBlock: () => null }));
+vi.mock('../NotesBlock', () => ({ NotesBlock: () => null }));
+vi.mock('../PracticeBlock', () => ({ PracticeBlock: () => null }));
+vi.mock('../ProjectBlock', () => ({ ProjectBlock: () => null }));
+vi.mock('../QuizBlock', () => ({ QuizBlock: () => null }));
+vi.mock('../RealLifeBlock', () => ({ RealLifeBlock: () => null }));
+vi.mock('../SummaryBlock', () => ({ SummaryBlock: () => null }));
+vi.mock('../TechnicalBlock', () => ({ TechnicalBlock: () => null }));
+vi.mock('../VisualBlock', () => ({ VisualBlock: () => null }));
+import { BlockRenderer } from '../BlockRenderer';
+afterEach(cleanup);
+it('passes the actual parent subtopic identity to the AI tutor child', () => {
+  render(<BlockRenderer type="ai_tutor" content={{ ai_tutor: { greeting: '', qa_pairs: [] } } as never} theme={{} as never} subtopicId="11111111-1111-4111-8111-111111111111" />);
+  expect(screen.getByTestId('identity').textContent).toBe('11111111-1111-4111-8111-111111111111');
+});

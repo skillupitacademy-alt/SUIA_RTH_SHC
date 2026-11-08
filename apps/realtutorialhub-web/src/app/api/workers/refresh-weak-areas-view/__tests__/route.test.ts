@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   redisGet: vi.fn(),
   redisSet: vi.fn(),
   redisDel: vi.fn(),
+  redisEval: vi.fn(),
   dbExecute: vi.fn(),
   loggerInfo: vi.fn(),
   loggerError: vi.fn(),
@@ -20,6 +21,7 @@ vi.mock('@upstash/redis', () => ({
     get = mocks.redisGet
     set = mocks.redisSet
     del = mocks.redisDel
+    eval = mocks.redisEval
     constructor() {}
   },
 }))
@@ -52,6 +54,7 @@ describe('refresh-weak-areas-view worker', () => {
     mocks.redisGet.mockResolvedValue(null)
     mocks.redisSet.mockResolvedValue('OK')
     mocks.redisDel.mockResolvedValue(1)
+    mocks.redisEval.mockResolvedValue(1)
     mocks.dbExecute.mockResolvedValue(undefined)
 
     vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com')
@@ -64,9 +67,17 @@ describe('refresh-weak-areas-view worker', () => {
     }))
 
     expect(response.status).toBe(200)
-    expect(mocks.redisSet).toHaveBeenNthCalledWith(1, `view-refresh:${payload.userId}`, 'processing', { ex: 60, nx: true })
+    expect(mocks.redisSet).toHaveBeenCalledWith(
+      `view-refresh:${payload.userId}`,
+      expect.stringMatching(/^processing:/),
+      { ex: 60, nx: true }
+    )
     expect(mocks.dbExecute).toHaveBeenCalledTimes(1)
-    expect(mocks.redisSet).toHaveBeenNthCalledWith(2, `view-refresh:${payload.userId}`, 'processed', { ex: 60 })
+    expect(mocks.redisEval).toHaveBeenCalledWith(
+      expect.any(String),
+      [`view-refresh:${payload.userId}`],
+      [expect.stringMatching(/^processing:/), 'processed', 60]
+    )
     expect(mocks.loggerInfo).toHaveBeenCalledWith(
       expect.objectContaining({
         event: 'mv.refreshed',

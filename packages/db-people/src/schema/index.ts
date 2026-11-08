@@ -22,6 +22,7 @@ export * from './demo-sessions';
 export * from './payment-installments';
 export * from './student-placement-profiles';
 export * from './placement-jobs';
+export * from './student-invitations';
 
 import * as enums from './enums';
 import * as usersModule from './users';
@@ -46,6 +47,7 @@ import * as demoSessionsModule from './demo-sessions';
 import * as paymentInstallmentsModule from './payment-installments';
 import * as studentPlacementProfilesModule from './student-placement-profiles';
 import * as placementJobsModule from './placement-jobs';
+import * as studentInvitationsModule from './student-invitations';
 
 export const schema = {
   ...enums,
@@ -71,4 +73,5 @@ export const schema = {
   ...paymentInstallmentsModule,
   ...studentPlacementProfilesModule,
   ...placementJobsModule,
+  ...studentInvitationsModule,
 };

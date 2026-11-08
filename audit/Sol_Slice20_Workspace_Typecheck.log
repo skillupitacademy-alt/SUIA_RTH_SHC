@@ -1,0 +1,23 @@
+packages/db-tutorial/migrations/schema.ts(694,40): error TS1002: Unterminated string literal.
+packages/db-tutorial/migrations/schema.ts(695,2): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(695,7): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(696,17): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(696,65): error TS1002: Unterminated string literal.
+packages/db-tutorial/migrations/schema.ts(697,2): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(697,7): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(697,37): error TS1002: Unterminated string literal.
+packages/db-tutorial/migrations/schema.ts(698,2): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(698,9): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(699,12): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(700,8): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(701,14): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(702,13): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(703,9): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(704,11): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(705,11): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(706,11): error TS1005: ',' expected.
+packages/db-tutorial/migrations/schema.ts(707,1): error TS1135: Argument expression expected.
+packages/marketing-site/src/lib/update_subsubtitle.cjs(60,76): error TS1127: Invalid character.
+packages/marketing-site/src/lib/update_subsubtitle.cjs(77,1): error TS1160: Unterminated template literal.
+packages/marketing-site/src/lib/update_subsubtitle_slug.cjs(27,37): error TS1127: Invalid character.
+packages/marketing-site/src/lib/update_subsubtitle_slug.cjs(46,1): error TS1160: Unterminated template literal.

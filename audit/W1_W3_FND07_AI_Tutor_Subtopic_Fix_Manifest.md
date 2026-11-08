@@ -1,0 +1,3 @@
+# FND07 tutor subtopic propagation manifest
+
+Baseline a37f544e, clean tree. `TutorialExperience` supplies `subtopicId` and name to `BlockRenderer`, which drops both when creating `AITutorBlock`; child defaults missing ID to a fixed UUID. API requires UUID. Correct only this parent/child path to forward provided identity and deny submission if missing, rather than inventing identity. Preserve existing valid ID, static content, query transport, retry and auth behavior. Add actual renderer child and mounted missing-ID/valid outgoing controls; keep guarded execution. This is client provenance only, not verification of ownership or correction of the separately failing cross-brand/content route. No browser/DB/server.

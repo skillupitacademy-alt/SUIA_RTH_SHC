@@ -1,0 +1,5 @@
+# FND19 domain identity slice manifest
+
+Baseline e026a475; RC-CONTRACT-01 / SHC-IDENTITY-001 related resource identity principle. Actual DomainTable maps API `id` through `String(d.id)` and uses it for edit/delete; a missing ID becomes the apparent identifier `undefined`. Allowed production file `apps/skillhubcore-admin/src/components/questions/DomainTable.tsx` and adjacent tests. Reject absent, blank or duplicate IDs before mapping and clear stale list/selection on failure; retain valid IDs and avoid backend/schema/auth changes. Actual mounted component uses mocked API and blocked fetch; no live browser/service. Sol review required, asynchronous request race remains separate.
+
+Verification: root, DB/cache/queue keys removed; programmatic Vitest `config: false`, jsdom, React plugin and explicit SHC `@` alias selecting `domain-error-truth.test.tsx`: exit 0, 4 passed (valid delete-failure path plus absent/blank/duplicate IDs). Actual table uses mocked API/children and blocked fetch. SHC `pnpm exec tsc --noEmit` exit 0; whitespace check passed. No real service/browser; request races are unqualified. IMPLEMENTED_UNVERIFIED.

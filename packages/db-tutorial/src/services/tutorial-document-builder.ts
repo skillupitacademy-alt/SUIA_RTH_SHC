@@ -15,12 +15,12 @@
  */
 
 import type { TutorialDocument, TutorialBlock } from '@quiz/types';
-import { CURRENT_SCHEMA_VERSION } from '@quiz/types';
+import { CURRENT_SCHEMA_VERSION, TutorialDocumentSchema } from '@quiz/types';
 
 /**
  * Build Tutorial Document
  * 
- * Composes canonical blocks into a TutorialDocument structure
+ * Composes canonical blocks into a validated TutorialDocument structure
  * 
  * @param blocks - Array of canonical blocks (DefinitionD1Block, etc.)
  * @param metadata - Optional document-level metadata
@@ -30,9 +30,11 @@ export function buildTutorialDocument(
   blocks: TutorialBlock[],
   metadata?: TutorialDocument['metadata']
 ): TutorialDocument {
-  return {
+  const candidate: TutorialDocument = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     blocks,
     ...(metadata && { metadata }),
   };
+
+  return TutorialDocumentSchema.parse(candidate) as TutorialDocument;
 }

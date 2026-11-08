@@ -1,0 +1,9 @@
+# FND08 workflow transition actor isolated control manifest
+
+Baseline 1e2c794f. Current Sol checkpoint permits tests under services/project-ai. Actual transition handler obtains verified principal dependency but forwards request.triggered_by to governance service. Add direct async handler control with fixture principal/service/session, expected verified actor despite forged input. No HTTP JWT, physical DB/server or workflow action. Runner disables dotenv loading before app imports and prohibits socket/DNS before pytest; plugin autoload disabled. No backend production change without actor/approval decision. Sol review required.
+
+Runner note: on Windows the event loop creates a local loopback socketpair before guard installation; no application module or credential is loaded before guarding. The test accesses this pre-created loop explicitly; all subsequent socket connect/create_connection/DNS and dotenv loads are blocked. This is in-process interception, not an OS firewall; socketpair creation itself is local-only and not a live service connection.
+
+## Bounded actor correction pre-edit manifest
+
+Baseline b2734bde, clean working tree. The current Sol checkpoint authorizes deriving the transition audit actor solely from the existing verified principal after tracing permission. `get_current_user` derives required `user_id` from validated `userId`; `transition_workflow` invokes it and passes actor to `WorkflowGovernanceService.transition_state`, which validates state and retains the existing IMPLEMENTING authorization gate before writing history. Gate 1's separate permission defect remains unresolved. Edit only `services/project-ai/app/api/routes/workflows.py` at the generic transition actor assignment and its isolated foundation test; keep request shape and all permission checks unchanged. Re-run guarded actor and Gate 1 controls; no real JWT, DB, server or browser.

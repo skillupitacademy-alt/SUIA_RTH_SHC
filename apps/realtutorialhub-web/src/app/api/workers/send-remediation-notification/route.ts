@@ -13,18 +13,38 @@ const WeakSubtopicSchema = z.object({
   threshold: z.number().default(60),
 });
 
-const RemediationNotificationSchema = z.object({
+const RemediationNotificationPayloadSchema = z.object({
   userId: z.string().uuid(),
   examResultId: z.string().uuid(),
   weakSubtopics: z.array(WeakSubtopicSchema),
 });
 
-type RemediationNotification = z.infer<typeof RemediationNotificationSchema>;
+const RemediationNotificationEnvelopeSchema = z.object({
+  id: z.string().uuid(),
+  type: z.enum([PlatformEventTypes.EXAM_COMPLETED, 'remediation.notification_requested']),
+  correlationId: z.string().uuid(),
+  source: z.string().min(1),
+  occurredAt: z.string().datetime({ offset: true }),
+  version: z.number().int().positive(),
+  data: RemediationNotificationPayloadSchema,
+});
+
+const RemediationNotificationSchema = z.union([
+  RemediationNotificationPayloadSchema,
+  RemediationNotificationEnvelopeSchema,
+]);
+
+type RemediationNotificationPayload = z.infer<typeof RemediationNotificationPayloadSchema>;
 
 const notificationHandler = createQStashHandler(
   PlatformEventTypes.EXAM_COMPLETED,
   async (payload: unknown) => {
-    const { userId, examResultId, weakSubtopics } = payload as RemediationNotification;
+    const raw = payload as Record<string, unknown>;
+    const resolved: RemediationNotificationPayload =
+      raw !== null && typeof raw === 'object' && 'data' in raw && raw.data !== null && typeof raw.data === 'object'
+        ? (raw.data as RemediationNotificationPayload)
+        : (raw as RemediationNotificationPayload);
+    const { userId, examResultId, weakSubtopics } = resolved;
 
     logger.info({
       event: 'remediation.notification.received',
@@ -37,6 +57,8 @@ const notificationHandler = createQStashHandler(
   },
   {
     schema: RemediationNotificationSchema,
+    allowedTypes: ['remediation.notification_requested'],
+    tenantScope: 'realtutorialhub',
   }
 );
 

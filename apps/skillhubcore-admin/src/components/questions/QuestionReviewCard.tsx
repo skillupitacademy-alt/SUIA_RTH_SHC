@@ -6,6 +6,7 @@ import {
     Info, Tag, Target, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
+import { isValid, parseISO } from 'date-fns';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -50,6 +51,8 @@ export const QuestionReviewCard = React.memo(({
     onDeleteRequest
 }: QuestionReviewCardProps) => {
     const [isRationaleOpen, setIsRationaleOpen] = useState(false);
+
+    const createdAtValid = typeof question.createdAt === 'string' && isValid(parseISO(question.createdAt));
 
     // Color mapping for Difficulty
     const difficultyColors: Record<string, string> = {
@@ -194,7 +197,7 @@ export const QuestionReviewCard = React.memo(({
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 text-[10px] font-bold text-slate-500">
                         <div className="flex items-center gap-2">
                             <Clock size={12} />
-                            <span>Created {formatTimeAgo(question.createdAt)}</span>
+                            <span>Created {createdAtValid ? formatTimeAgo(question.createdAt) : 'unknown'}</span>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,17 @@ import { eventBus } from '@/lib/event-bus';
 import { AppEvents, type ExamStartedPayload } from '@/lib/events';
 import { logger } from '@/lib/logger';
 import { container } from '@/modules/core/container';
-import { getDisplayType, normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
+import {
+  encodeVersionedOptionIds,
+  getDisplayType,
+  isVersionedOptionIds,
+  normalizeQuestionOptions,
+  normalizeQuestionType,
+  parseAnswer,
+  resolveQuestionAnswerForScoring,
+  resolveQuestionCorrectAnswerForScoring,
+  serializeAnswerTokens,
+} from '@/modules/question/question-contract';
 import { SelectionService } from '@/modules/selection-engine/selection.service';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
@@ -98,37 +108,11 @@ export class ExamEngine {
   }
 
   private resolveAnswerForScoring(question: ScorableQuestion, answer: string): string {
-    const normalizedType = normalizeQuestionType(question.type);
-    const normalizedOptions = normalizeQuestionOptions(question.options);
-
-    if (normalizedOptions.length === 0) {
-      return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
-    }
-
-    const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
-    const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
-    const optionByLabel = new Map(
-      normalizedOptions
-        .filter((option) => typeof option.label === 'string' && option.label.trim() !== '')
-        .map((option) => [option.label!.toLowerCase(), option])
-    );
-
-    const resolvedAnswers = answerIds.map((answerId) => {
-      const key = answerId.toLowerCase();
-      const option = optionById.get(key) ?? optionByLabel.get(key);
-      return option?.text ?? option?.code ?? option?.label ?? answerId;
-    });
-
-    return resolvedAnswers.join(',');
+    return resolveQuestionAnswerForScoring(question, answer);
   }
 
   private resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
-    const normalizedOptions = normalizeQuestionOptions(question.options);
-    const flaggedCorrect = normalizedOptions
-      .filter((option) => option.isCorrect === true)
-      .map((option) => option.text ?? option.code ?? option.label ?? option.id);
-
-    return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer;
+    return resolveQuestionCorrectAnswerForScoring(question);
   }
 
   /**
@@ -286,7 +270,9 @@ export class ExamEngine {
     if (exam.userId !== userId) throw new Error('Unauthorized');
 
     this.checkExamTimeLimit(exam);
-    const normalizedAnswer = parseAnswer(answer).join(',');
+    const normalizedAnswer = isVersionedOptionIds(answer)
+      ? encodeVersionedOptionIds(parseAnswer(answer))
+      : serializeAnswerTokens(parseAnswer(answer));
 
     const liveStateKey = `exam-state:${examId}`;
     const answerPayload = {
@@ -362,7 +348,12 @@ export class ExamEngine {
     const timeSpentSeconds = typeof existingMetadata.timeSpentSeconds === 'number' ? existingMetadata.timeSpentSeconds : Math.max(0, Math.floor((now.getTime() - lastAnsweredAt) / 1000));
     const firstAnsweredAt = existingMetadata.firstAnsweredAt ?? now.toISOString();
     const normalizedType = normalizeQuestionType(eqRecord.question.type);
-    const normalizedAnswer = normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
+    const normalizedAnswer =
+      normalizedType === 'multi_select'
+        ? (isVersionedOptionIds(answer)
+            ? encodeVersionedOptionIds(parseAnswer(answer))
+            : serializeAnswerTokens(parseAnswer(answer)))
+        : answer.trim();
     const scoringAnswer = this.resolveAnswerForScoring(eqRecord.question, normalizedAnswer);
     const scoringCorrectAnswer = this.resolveCorrectAnswerForScoring(eqRecord.question);
     const isCorrect = this.answerEvaluation.evaluate(normalizedType, scoringCorrectAnswer, scoringAnswer);

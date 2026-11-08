@@ -54,7 +54,7 @@ export function ProjectLlmContextBanner({
                 {familyName}
               </h3>
               <p className="text-[11px] text-slate-400 font-medium">
-                {existingVersions.length} existing versions
+                {existingVersions.length} versions supplied
               </p>
             </div>
           </div>
@@ -75,7 +75,7 @@ export function ProjectLlmContextBanner({
                   {targetVersion}
                 </span>
                 <span className="text-[9px] font-mono font-bold uppercase bg-purple-50 text-purple-700 px-1.5 py-0.2 rounded border border-purple-200">
-                  New version
+                  Proposed
                 </span>
               </div>
             </div>
@@ -90,7 +90,7 @@ export function ProjectLlmContextBanner({
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                Purpose (as specified)
+                Draft purpose
               </p>
               <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
                 {purpose}
@@ -102,7 +102,7 @@ export function ProjectLlmContextBanner({
         {/* Existing Versions Pills */}
         <div className="pt-2 lg:pt-0 lg:border-l lg:border-slate-200/80 lg:pl-6 shrink-0">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1.5">
-            Based on Existing Versions
+            Supplied Reference Versions
           </p>
           <div className="flex flex-wrap gap-1.5">
             {existingVersions.length > 0 ? (
@@ -115,7 +115,7 @@ export function ProjectLlmContextBanner({
                 </span>
               ))
             ) : (
-              <span className="text-xs font-mono text-slate-400 italic">None (initial version)</span>
+              <span className="text-xs font-mono text-slate-400 italic">No versions supplied</span>
             )}
           </div>
         </div>

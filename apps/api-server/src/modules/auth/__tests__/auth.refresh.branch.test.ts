@@ -12,7 +12,7 @@ const mockTokenService = {
     generateRefreshToken: vi.fn(),
     hashToken: vi.fn().mockResolvedValue('hash')
 };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn() };
+const mockUserRepo = { findByIdWithDetails: vi.fn(), findActiveUserWithRoles: vi.fn(), updateLastActive: vi.fn() };
 const mockTokenRepo = {
     findByHash: vi.fn(),
     createRefreshToken: vi.fn(),
@@ -47,6 +47,7 @@ describe('AuthService.refresh generic branches', () => {
         mockTokenRepo.findByHash.mockResolvedValue({ id: 's1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: false, userRoles: [] } as any);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'u1@test.com', isBlocked: false, deletedAt: null, roles: [] });
         mockTokenService.generateAccessToken.mockResolvedValue('access');
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
 
@@ -60,6 +61,6 @@ describe('AuthService.refresh generic branches', () => {
         expect(mockTokenRepo.consumeToken).toHaveBeenCalledTimes(1);
         expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
         expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledTimes(1);
-        expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
+        expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     });
 });

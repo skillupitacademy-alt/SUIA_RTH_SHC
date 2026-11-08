@@ -1,9 +1,126 @@
 # Elearning Project - Architecture Remediation Execution Plan
 
+**Owner scope/scheduling correction — 2026-11-08:** Active work targets `skillup-web`, `skillhubcore-admin` and `realtutorialhub-web`, with shared backend changes tied to actual required flows. Disputed student-invitation/outbox migration execution and table-specific qualification are PARKED, with completed commits preserved. See [owner scope reset and parked backlog](Owner_Scope_Reset_And_Parked_Work_2026_11_08.md). This supersedes prior next-action routing for those items, not recorded test results or safety limits. No migration execution, W1-W3 closure or W4 approval follows from parking.
+
+**Current Slice 21 disposition: PARTIAL_ACCEPTANCE.**
+[Sol source/inventory/UAT review](Sol_Slice21_Review_4692afaa.md) retains accepted
+source boundaries and count reconciliation within scope. Reported browser/R2 observations
+do not complete their gates; SQL harness/schema and migration registration need repair.
+[UAT migration preparation](Sol_Slice21_UAT_Migration_Preparation_4692afaa.md) approved
+offline only, not execution. Canonical groups/root causes preserved; W4 remains unapproved.
+
+**Current Slice 20 Q1/Q2 source acceptance:**
+[Sol acceptance at dc75ace5 / tests 56145791](Sol_Slice20_Q1Q2_Acceptance_dc75ace5.md)
+supersedes the three Q1/Q2 failures within source/generated-SQL/caller simulation: 40/40
+now pass. Prior strict-boundary acceptance retained. Whole W1-W3 PARTIAL_ACCEPTANCE;
+continue the remaining canonical checklist, physical and group gates. W4 not approved.
+
+**Slice 20 independent repository result: CHANGES_REQUESTED.**
+[Sol campaign at e70868e3](Sol_Slice20_Repository_Findings_e70868e3.md): 40 actual
+repository/caller tests, 37 pass / 3 fail. Q1 conditional expiry outcome and Q2 actual
+helper's missing expiry predicates require bounded correction. Prior Slice 19 source/
+adapter acceptance retained; no whole-foundation closure or W4 implementation approval.
+
+**Slice 20 verification authorized (2026-11-07):**
+[Gemini repository SQL testing packet](Gemini_W1_W3_Independent_Test_Assignment.md#approved-slice-20-independent-sql-repository-verification-2026-11-07)
+targets e70868e3 with inventory revision 5a700d4f. This approves offline tests/evidence,
+not the implementation or physical execution. Retain Slice 19 scoped acceptance and
+the complete foundation checklist. No W1-W3 closure or W4 GO is granted.
+
+**Current disposition: Slice 19 scoped acceptance, whole-foundation PARTIAL_ACCEPTANCE.**
+[Sol acceptance](Sol_Slice19_Scoped_Acceptance_f6627115.md) supersedes prior strict SQL
+caller/adapter findings only within its source boundary. Retain SQL 8/8, generalized 6/6,
+leases 7/7 and selected route 11/11 controls. Advance the full remaining checklist and
+physical/re-audit gates; no W1-W3 closure or W4 implementation approval is granted.
+
+**Latest Slice 17 review, source 7f66e7eb / handoff 00703c21: CHANGES_REQUESTED.**
+[SQL composition review](Sol_W1_W3_SQL_Composition_Review_7f66e7eb.md) retains old 9/9 and
+7/7 passes but records 1 pass / 7 new SQL-authority failures. Repository classes are SQL;
+application helpers still bypass them via global state/env gates and nontransactional
+fallback. Existing S1/S3 and the complete thirty-task checklist remain open within scope.
+
+**Consolidated remaining-work checklist, 2026-11-07:** use the
+[existing completion directive](Claude_Sonnet45_W1_W3_Completion_Directive.md#consolidated-remaining-work-checklist-for-w4-readiness)
+for all thirty remaining acceptance outcomes, immediate S1-S3 repairs, physical gate
+families, fixed scope and W4 stop conditions. It consolidates existing requirements;
+it does not accept Argon's active uncommitted repairs or authorize live operations.
+Argon implements all remaining work, Gemini independently verifies, Sol accepts.
+
+**Latest review at source e19034dc / report 5abcd87a (2026-11-07): CHANGES_REQUESTED.**
+[Sol durability review](Sol_W1_W3_Durability_Review_5abcd87a.md). Prior adapter controls
+pass 7/7, but runtime Map-backed outbox/invitations, non-immutable publication retries
+and invitation commit outcomes remain defective (2 pass / 7 fail in new probes).
+Actual persistence/transaction composition is source work, distinct from physical gates.
+Argon retains full TC01-TC20/FND01-FND30 scope; Gemini tests, Sol accepts. No W4 approval.
+
+**Latest adapter review at 27243c6e, 2026-11-07: CHANGES_REQUESTED.**
+[Sol review and full continuation](Sol_W1_W3_Adapter_Review_27243c6e.md): prior four lease
+examples pass, but six new adapter checks fail. Both compatibility fallbacks remain
+non-atomic. Worker recovery and accurate canonical requirement mappings remain open.
+RC-ID-01 retains the root-cause definition below. Argon implements, Gemini tests, Sol
+accepts; all TC01-TC20/FND01-FND30 remain in standing scope. No W4 entry approved.
+
+**Current Sol closure review, 6292b22c (2026-11-07): CHANGES_REQUESTED.**
+[Review and full twenty-item continuation](Sol_W1_W3_Closure_Review_6292b22c.md).
+Retained residual/scoring/Python probes pass; three new lease/claim tests fail. Argon
+continues all remaining implementation, Gemini tests only, Sol accepts. Blanket all-FND
+verification does not close W1-W3, physical gates or W4 entry requirements.
+
 **Governing architecture:** `FinalAechitecture.md`
 **Primary evidence sources:** `CompleteProjectAudit.md`, `CompleteProjectMatrix.md`
 **Purpose:** One authoritative implementation sequence for all AI models and human review.
 **Rule:** No model may independently redefine architecture, broaden scope, or mark a root cause `CLOSED` without the required verification evidence.
+
+**Correction packet e4c9c9f0/e68a7f5d, fixtures edfa470a/report f18da842 (2026-11-07):**
+Sol independently reproduces the previously failing selected probes as passing, but
+[the residual review](Sol_W1_W3_Correction_Review_f18da842.md) remains CHANGES_REQUESTED.
+New event lease ownership, CAS conflict outcome, export provenance, Gate 1 credential
+class and canonical scoring identity cases fail. All-tasks VERIFIED is rejected.
+Argon continues the full twenty-item/thirty-FND assignment; Gemini independently
+tests and corrects evidence attribution. No foundation/physical/W4 readiness gate closes.
+
+**Integrated submission e4247a6e / Gemini f574daa5:** Sol disposition is
+CHANGES_REQUESTED in [the integrated review](Sol_W1_W3_Integrated_Review_f574daa5.md).
+Eight retained export cases and the conflicting-admin/Gate 1 controls still fail;
+new event/progress/scoring probes expose missing selected-contract enforcement.
+Passing boundary/placement/nested/event/analytics selections remain bounded evidence,
+not comprehensive GM01-GM20 or FND01-FND30 acceptance. Argon continues the full
+twenty-item corrective packet, Gemini independently verifies, Sol retains approval.
+All nine foundation groups, W4 entry and physical verification gates remain open.
+
+**Standing completion authorization:** the owner assigns ALL pending W1-W3 implementation
+to Argon, complete integrated independent verification to Gemini, and final architecture/
+acceptance to Sol. [The standing packet](Argon_Gemini_W1_W3_Standing_Completion_Authorization.md)
+retains every FND01-FND30/TC01-TC20 requirement and nine-group gate, allows routine
+within-contract corrections without repeated assignment requests, and preserves all
+new-policy/physical/runtime approval gates. No task or wave is closed by this assignment.
+
+**TC20-A review at 7f6f788d:** Sol reproduced eight files / 26 analytics passes and
+the package typecheck, accepting the narrow tracker caller repair within that
+boundary. A new direct merge control has one pass / one failure: cross-brand node
+and graph-edge mutation remains possible through mergeIdentityNodes. TC20-A stays
+CHANGES_REQUESTED. [The current review](Sol_TC20A_Review_And_Next_Manifest_7f6f788d.md)
+authorizes Argon's one-file guard correction and subsequent isolated four-file A2
+server-binding manifest, with Gemini independent verification. No foundation or
+physical gate closes, and the full Argon TC01-TC20 assignment remains active.
+
+**Current owner routing at source 2ca1889b:** Argon replaces Tera for ALL critical
+TC01-TC20/FND implementation, Gemini independently tests, Sonnet owns noncritical
+documentation/presentation, Sol owns architecture and final acceptance. See
+[the consolidated Sol resume checkpoint](Sol_W1_W3_Resume_Checkpoint_2ca1889b.md)
+for twenty-item and thirty-FND dispositions, exact exclusive files and the approved
+narrow TC20-A tracker amendment. Published TC20-A remains IMPLEMENTED_UNVERIFIED,
+with three independently reproduced integration failures. Tooling is PARTIAL_ACCEPTANCE
+for optional advisory use; C1/C2 remain unresolved. No W1-W3/W4 readiness closure,
+physical execution, main merge or further push is authorized by this checkpoint.
+
+**2026-11-06 Sol checkpoint:** source 6d0217df and Gemini tests f88fef44 received
+partial acceptance for explicitly bounded offline containment, not FND/group closure.
+[The independent review and D1-D7 decisions](W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md)
+select the next private-profile, store-provenance, cache, Gate 1, scoring, document
+and event contracts. Tera retains TC01-TC20, Gemini GM01-GM20, and Sonnet the existing
+noncritical packet. API typecheck still fails with two profile tenant-context errors.
+All remaining physical/runtime gates, Batch 08, BROWSER-01 and RC-ID-01 remain open.
 
 ---
 
@@ -22,6 +139,50 @@ The program covers:
 7. Operational/scalability qualification
 
 The target architecture remains a **modular multi-application platform with selectively distributed services**, explicit ownership, separate brand authorization/data boundaries, strict API/data contracts, secure-by-default behavior, observable/reliable operations, and enforceable CI architecture gates.
+
+### Current owner-directed consolidated foundation assignment
+
+Latest ownership/people checkpoint 041e5fe9 is CHANGES_REQUESTED in
+audit/FND03_FND11_Sol_Review_041e5fe9.md. FND03/FND11 completion and Sol-approval claims
+in workflow artifacts are rejected pending actual correction and verification. The
+tenant helper, supported profile callers, admission package/fixture and migration
+provenance retain confirmed blockers. No blanket RTH attribution or physical migration
+is accepted. Dependent FND18 integration remains gated, while independent thirty-task
+work proceeds. All nine groups remain open.
+
+The owner subsequently directed Claude Sonnet 4.5 to finish the complete remaining
+foundation assignment. audit/Claude_Sonnet45_W1_W3_Completion_Directive.md supplies the
+current detailed FND01-FND30 implementation and closure guidance. It preserves the
+original nine-group structure, exact task IDs and independent Sol acceptance. The
+placement clarification at f4a9bac5 remains authoritative for every raw vector score.
+Full W1-W3 completion and W4 entry depend on the recorded group gates, including any
+required physical/runtime evidence. They are not granted by issuing this directive.
+
+On 2026-11-05 the owner requested one assignment for the nine remaining W1-W3 planning
+groups before W4. `audit/W1_W3_Terra_Consolidated_Implementation_Task.md` assigns thirty
+tasks FND01-FND30 to Terra, with independent Sol acceptance. This becomes the active
+foundation work list and incorporates unfinished Batch 08/J work while preserving its
+historical scope and evidence. The nine-group count aggregates W1.2 and W1.2-EMAIL,
+W2.1 and W3.1-W3.6. It is not a fixed implementation-batch count.
+
+Compatible, source-manifested corrections and contract consolidation may proceed within
+that assignment's boundaries. Unknown tenant/resource authority, policy-changing identity
+or session choices, migrations and other named gates require their exact Sol decision.
+Independent W2 and contract-analysis work may advance while a W1 dependency awaits review.
+Each group receives its own disposition, followed by dependency-based W4 entry review.
+Terra's J submission through 95bba4c3 received PARTIAL independent disposition in
+`audit/W1.2_Terra_J01_J20_Sol_Review_95bba4c3.md`. Captured metadata passes, with hidden
+cutover credit and post-teardown visit controls failed. FND07 prioritizes those bounded
+lifecycle corrections. Existing accepted scopes retain their recorded meanings.
+
+The subsequent consolidated submission f6f698a7 has PARTIAL checkpoint disposition in
+`audit/W1_W3_Sol_Review_f6f698a7.md`. The original two lifecycle controls now pass, while
+an added StrictMode initial-visit control fails. A new report control also retains old
+exam data during a new selection's pending request. Selected truth and contract tests
+pass at isolated seams. Four event/schema/analytics failures and seven export/admin
+failures reproduce. All nine groups remain incomplete. The thirty-task assignment now
+records bounded correction priorities, schema/backend inspection scope and tenant-local
+ownership policy, with migration/runtime dependencies explicit.
 
 ---
 
@@ -58,6 +219,23 @@ accepted. Passing functional tests or builds alone is insufficient.
 
 # 3. AI Model Responsibility Matrix
 
+## Current owner-directed W1-W3 routing
+
+Effective 2026-11-06, the owner assigns critical production implementation to Tera/Terra,
+noncritical presentation/documentation to Claude Sonnet 4.5 and independent testing to
+Gemini. Sol retains architecture, integration review and final acceptance. This routing
+overrides historical default roles and the single-Sonnet foundation ownership below.
+The exact FND01-FND30 matrix and user notification/identity protocol are in
+audit/W1_W3_Model_Routing_And_Handoff_Protocol.md. Use its role-specific packets for
+twenty critical implementation items, twelve noncritical items and twenty testing items.
+
+No model may infer actual runtime identity, dispatch or acceptance from a nickname in
+a prompt. Each declares assigned role, host identity if exposed, baseline and scope.
+At handoff it tells the user the next required model, exact revision, packet and action.
+Parallel writers need isolated worktrees/branches and exclusive file ownership. Otherwise
+serialize writes. Gemini tests frozen revisions, returns failures to the assigned
+implementer and submits evidence to Sol. All thirty tasks and nine groups remain active.
+
 The model names below follow the available models stated by the project owner. Their use is governed primarily by **role separation**, not by assuming any one model is infallible.
 
 | AI Model | Primary Role | Use For | Do NOT Use For | Expected Output |
@@ -71,6 +249,10 @@ The model names below follow the available models stated by the project owner. T
 | **Argon** | Secondary specialist/reviewer | Static analysis, code-quality review, alternative decomposition, bug hunting, targeted implementation where assigned | Architecture authority; parallel rewrite of same subsystem | Focused findings or assigned patch |
 | **Tera** | Secondary analysis / verification worker | Repository search, checklist validation, documentation reconciliation, routine verification where available | Final architectural approval; unbounded refactor | Evidence checklist, comparison, verification notes |
 | **Luna** | Fast routine worker | Documentation updates; ticket bookkeeping; dead-code removal; small tests; simple cleanup; low-risk typing/lint fixes | Security architecture, identity changes, major data-model decisions | Small patch or register update with concise evidence |
+
+### Batch 08 owner-directed model assignment
+
+For the twenty-package continuation in `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md`, Terra (Tera in the matrix) is the single implementation/evidence worker, with batch-specific authorization for the narrow proxy correction and listed tests. Sol retains independent architectural review and final acceptance. This owner-requested assignment overrides the historical default implementation worker for this batch. No concurrent implementation of the same files is assigned.
 
 ## Model Hierarchy
 
@@ -606,7 +788,7 @@ No token-policy migration, live database execution, or code edits authorized.
 **Acceptance and final source qualifications:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`. Task A closure remains independently gated.
 
 ### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
-**Status:** `PLANNED`
+**Status:** `CLOSED` (Sol accepts source/design investigation at reviewed da6c0742 with final editorial qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; proposed runtime changes remain separate)
 **Wave / root causes:** 1 / RC-ID-01, RC-EVENT-01
 **Application / priority:** refresh lifecycle / P1 design
 **Implementer:** Gemini when separately assigned
@@ -617,31 +799,244 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `PLANNED`
+**Status:** `CLOSED` (CLOSED by Sol at reviewed d512beb8: scoped authority/context guards accepted with independent regressions, mutation evidence, typechecks, lint and completed API/SHC builds; deployment and six-host browser qualification outstanding)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
-**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates.
+**Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
+**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `PLANNED`
+**Status:** `CLOSED` (CLOSED by Sol at reviewed d512beb8: strict tenant eligibility/current roles and pre-rotation denial ordering accepted; 95 selected regressions and sensitive tenant fixtures verified; broader lifecycle triggers/guard work remain separate)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
-**Scope:** Inject `UserRepository` into `TokenRefreshService`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); fetch fresh user roles and email from database on refresh rather than propagating stale JWT claims; resolves baseline `auth.refresh.blocked.branch.test.ts`.
+**Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
+**Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
+**Runtime acceptance:** `audit/W1.2_Batch_03_Sol_Acceptance.md` closes both scoped implementation tickets. Prior review failures and author submissions remain historical evidence; their pending states are superseded by this acceptance. RC-ID-01 stays IN_PROGRESS.
+
+**Design provenance:** `audit/W1.2_Batch_02_Sol_Acceptance.md` and the verified contracts remain governing. Actual deployed isolation, immediate access revocation and every learner/admin journey are not claimed fixed.
+
+**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_04_Task.md` assigns GUARD-01 and REFRESH-04 source/design qualification only, with separate commits and independent review. No runtime policy change, live DB or deployment is authorized in that batch.
+
+**Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
+
+**Owner browser requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+is mandatory for relevant authentication implementation/acceptance tasks and browser
+handoffs. Run an early separately scoped controlled-environment Chromium/Playwright
+smoke gate when accepted code is available; retain the formal Wave 8 matrix and
+separate authorization for production deployment/testing.
+
+### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
+**Status:** `IN_PROGRESS` (Preparation, SHC API control, SUIA/RTH normal logout and the corrected local SUIA/RTH/SHC dashboard-cookie checks independently VERIFIED within their recorded scopes. PROXY-01 same-origin login-default correction CLOSED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` and prior logout acceptances. Unsupported lifecycle/tenant/cache/SHC-refresh fixtures, broader resource qualification and formal Wave 8 remain open.)
+**Learner-purpose smoke:** `VERIFIED` within reviewed assertions at f4643656. Sol independently passed captured SUIA and RTH GUI purpose journeys plus 8 offline sentinels. Exact aud:user and boolean isAdmin:false are required in decoded access/refresh payloads. See `audit/W1.2_Browser_Learner_Purpose_Sol_Acceptance.md` for repeated-attempt disclosure, live authentication writes and qualified dev/HMR provenance. Unsupported negative fixtures, deployment attribution and formal Wave 8 retain their gates.
+**Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
+**Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+**Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
+permits the bounded listed-account smoke pass via local applications against existing
+Neon bindings. Record explicit live mode; do not falsify isolation flags. Browser
+installation authorized using installed Playwright CLI; no bulk/account/data mutations,
+all-device session revocation or production-domain tests in this pass.
+**Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
+**Next runtime assignment:** `audit/W1.2_Browser_Runtime_Readiness_And_Execution_Task.md`:
+establish actual isolated local build/fixture/account readiness, then conditionally execute
+supported headless Chromium journeys. No provisioning, live/remote DB use, production
+testing or server repointing is authorized. Missing prerequisites remain NOT EXECUTED.
+**Scope:** Playwright Chromium SUIA/RTH learner and SHC admin login, protected dashboard,
+approved refresh/logout, invalid credentials, blocked-account refresh, same-email tenant
+independence, account switching, cookies/redirects and cross-tenant denial. Pin tested
+source/build and environment; require executable results, secret-free failure evidence,
+independent verification and Sol acceptance. Record known SHC gaps rather than inventing
+supported refresh. No broad refactor, production deployment or production test authorization.
+This early gate supplements, and does not close or replace, formal Wave 8 qualification.
+
+### W1.2-LOGOUT-01 - SUIA Normal Logout Cookie Clearance
+**Status:** `CLOSED` (Sol independently accepted reviewed 6ab018b5: 4 actual-route regressions, 8 offline sentinels, SUIA typecheck/lint and 1 normal UI logout journey passed, including cookie absence and post-logout profile denial. See `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md` for exact commands, runner limitations and scoped acceptance. BROWSER-01 remains IN_PROGRESS.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Review:** `audit/W1.2_Browser_SUIA_Logout_Sol_Review_8cf421c5.md`
+**Assignment:** `audit/W1.2_Gemini_SUIA_Logout_Cookie_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** bounded SUIA BFF cookie-expiry correction, actual-route regression and the
+existing normal-session headless Chromium journey. Preserve upstream token revocation,
+canonical login cookie scope and safe evidence controls. No all-device logout, broad
+authentication refactor, RTH runtime change, deployment or main merge. RTH's matching
+source pattern is noted for separate qualification, not a reproduced runtime result.
+
+### W1.2-LOGOUT-02 - RTH Normal Logout Cookie Clearance and Qualification
+**Status:** `CLOSED` (Sol independently accepted reviewed a1cbb005: 4 actual-route regressions, 8 offline sentinels and 1 focused normal UI logout journey passed, including cookie absence and post-logout profile denial. See `audit/W1.2_RTH_Logout_Cookie_Sol_Acceptance.md` for exact checks and limitations. BROWSER-01 remains IN_PROGRESS.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Assignment:** `audit/W1.2_Gemini_RTH_Logout_Cookie_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** RTH logout BFF and focused regression, distinct normal UI logout spec and
+one approved local/live-Neon journey. Preserve all-device skips and shared safety
+helpers. No backend auth/schema/account mutation, main merge or deployment.
+
+**Status for Dashboard & Cookie Batch (Tasks A-E):** `VERIFIED` for the bounded submitted dashboard/metadata checks (Sol independently passed SUIA, RTH and SHC dashboard+cookie journeys at reviewed 921f06f9; 13 proxy regressions, 13 cookie/denial tests, 8 sentinels and 6 disposable override-compatibility probes passed. Task E accepted as planning after Sol editorial correction; unsupported fixtures remain NOT EXECUTED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` for scope/history limits. Parent BROWSER-01 remains IN_PROGRESS.)
+**Governing assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
+five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
+control, D source-derived cookie-policy checks within those same sessions, E remaining
+negative-fixture readiness and bounded follow-up assignments. Existing approved accounts;
+test/evidence/planning only, no account/data mutation or application runtime repair.
+Each task requires separate evidence and Sol acceptance. Dashboard appearance does not
+prove resource ownership or tenant isolation; unsupported cases remain NOT EXECUTED.
+
+### W1.2-PROXY-01 - Local Learner Login Redirect Scope
+**Status:** `CLOSED` (Sol accepts a8fb0772 at reviewed 921f06f9: independent local anonymous 307 same-origin login checks, 13 app proxy regressions, 6 explicit/relative/blank override probes and corrected learner browser journeys passed. Source/default correction only; no broader authorization or deployment certification. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md`.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Assignment:** `audit/W1.2_Gemini_Local_Login_Redirect_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** minimal SUIA/RTH proxy login-default correction, compatibility regressions,
+attributable anonymous metadata check and corrected focused dashboard qualification.
+Preserve explicit override compatibility, auth verification, route matchers, brand,
+cookie and DB policies; no account mutation, main merge or deployment.
+
+### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
+**Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** tenant RBAC, generic infra/default DB and SHC auth callers / P1 design
+**Implementer:** Gemini when separately assigned; independent reviewer and acceptance: Sol
+Trace role-based and DB-fallback admin authorization, audience/principal enforcement,
+actual generic infrastructure issuers/cookies/default tables, API shc-admin GUI
+refresh persistence and specialized people/Redis flow. Propose minimal changes
+only from source evidence; do not treat refreshed role capping as universal portal
+isolation or decommission SHC flows. Source/topology uncertainties remain explicit.
+No runtime edit, key/issuer change, DB migration or deployment authorized here.
+
+### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
+**Status:** `CLOSED` (Sol accepts scoped metadata-write removal at reviewed bb8bd1f3 / Task A 60eb5bc0; 55 isolated regressions and API typecheck passed, actual-source sensitivity verified; diagnostics/runtime browser qualification remain separate. See `audit/W1.2_Batch_05_Sol_Review_bb8bd1f3.md`.)
+**Assignment:** Batch 05 Task A authorizes only the redundant pre-CAS timestamp-write removal in token-refresh.service.ts plus focused stateful tests; optional revoked-record diagnostics remains design-only. See `audit/W1.2_Gemini_Controlled_Batch_05_Task.md` for scope and gates.
+**Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
+**Application / priority:** generic tenant refresh / P1 bounded follow-up
+**Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, REFRESH-04 investigation
+Define a separate task for redundant pre-CAS metadata removal and optional known-revoked
+diagnostics without inferring consumption cause from revoked/lastUsedAt. Require stateful
+signing-failure, CAS-loss, rollback and other-session non-mutation tests. Preserve client
+response compatibility and no automatic all-device revocation. No schema, token-family,
+outbox or retry grace is authorized. The separately bounded Batch 05 assignment above
+provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
+
+### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
+**Status:** `CLOSED` (Sol accepts design qualification at reviewed 1c72f58f / contract 9d08f354 with final editorial limits in `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`; no runtime guard/login/SHC policy implemented or authorized.)
+**Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
+**Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, GUARD-01 investigation
+Qualify separate policy choices for tenant helper audience/class preconditions, learner-purpose
+login and SHC GUI refresh/re-login/store/audience routing. Preserve separate people/tenant
+identities, infrastructure and verified caller compatibility. Do not mount specialized helpers,
+persist SHC tokens in a guessed store or change keys/cookies by inference. Runtime work needs
+a bounded task and independent review. Carry exam default-store/conditional-owner questions
+into application/domain assessment; global resource isolation is not certified by GUARD-01.
+
+### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
+**Status:** `CLOSED` (Sol accepts reviewed 8812f552 with architect-authored final decisions in the two scope documents: preserve infra tenant eligibility, actual route permissions, legacy header/signature compatibility, current schema/device-IP precedence and empty-role learner purpose. Scoping only; runtime work is separately PLANNED under ADMIN-01 and LOGIN-01. See `audit/W1.2_Batch_06_Scope_Sol_Acceptance.md`.)
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
+separate tenant-admin helper/caller compatibility and server-fixed learner-login
+implementation scopes. Documentation/scoping only; runtime protections require their
+own explicit bounded implementation assignment and independent acceptance.
+**Wave / root cause:** 1 / RC-ID-01
+**Provenance:** accepted GUARD-02 contract and `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`
+Prepare separately bounded runtime assignments for tenant helper preconditions and server-fixed
+learner-purpose login propagation, with legacy/admin/infra compatibility and negative tests.
+SHC continuity/TTL/store choice remains an explicit policy decision; no generic people-ID
+routing, cookie removal or shared-client behavior change is authorized by this entry.
+Reference mandatory early browser and Wave 8 qualification; source design acceptance is
+not runtime implementation. Do not combine these into an authentication-system rewrite.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
-**Status:** `PLANNED`
+**Status:** `CLOSED` (Sol accepts source qualification at reviewed 9ec71675 with editorial limits and isolated actual-container missing-repository probe; runtime route repair/removal remains separately scoped under SESS-03)
+**Assignment:** Gemini Batch 05 Task C, source qualification only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth legacy POST logout-all and existing DELETE sessions path
 **Priority:** P1
 **Audit context:** SU-AUTH-004; direct W1.1.2 source wiring evidence
 **Implementer:** Gemini 3.8 when separately assigned after refresh discovery
-**Independent verifier:** Sonnet read-only; security review before runtime changes
+**Independent verifier:** distinct read-only reviewer with actual identity/authorship disclosed; Sol acceptance before follow-on runtime work
 **Acceptance:** Sol
 Qualify generic SessionService repository wiring and actual route consumers before
 choosing bounded delegation/decommissioning. Do not create duplicate endpoints or
 assume deployed failure. No runtime change authorized by this planned entry.
+
+### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
+**Status:** `CLOSED` (Sol accepts reviewed 8812f552 with a selected deterministic compatibility contract: preserve legacy response and no new cookie/deprecation metadata; distinguish precheck/no attempt, revocation unknown and confirmed-revocation/presence failure through a safe service-stage error. Decision only; runtime adapter is separately PLANNED under SESS-04. See `audit/W1.2_Batch_06_Scope_Sol_Acceptance.md`.)
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
+existing legacy logout-all scope, qualify compatibility uncertainty and propose a
+bounded implementation. No live all-device call, runtime patch or endpoint removal.
+**Wave / root cause:** 1 / RC-ID-01
+**Provenance:** accepted SESS-02 source qualification and `audit/W1.2_Batch_05_Sol_Review_9ec71675.md`
+Qualify external/dynamic consumers before route removal or preserve a bounded legacy
+contract via existing authoritative logout-all delegation. Define verified tenant-local
+identity, audience/brand policy, count/response compatibility and owner/tenant negative
+tests. Undefined SessionRepository is not an established default DB. No runtime edit,
+deletion or live deployment is authorized by this planned entry. Single-session foreign
+revocation safe no-op and stateless access-token limits remain unchanged.
+
+### W1.2-FIXTURE-01 - Isolated Same-Email and Colliding-ID Backend Qualification
+**Status:** `CLOSED` (Sol accepts isolated actual-service/password/token and repository-adapter scope at reviewed 3f16e084: 7 tests independently passed, disposable keys/guarded fetch/bridge fast-path and wrong-store sensitivity inspected; API typecheck passed. No physical DB/browser AQ-08 qualification. See `audit/W1.2_Batch_06_Fixture_Acceptance_And_Scope_Review.md`.)
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task D.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** executable actual-source login/service/repository tests with independent
+in-memory tenant stores and disposable credentials. No live DB/account provisioning,
+production policy change or browser AQ-08 closure. Explicitly disclose stubbed layers,
+test-environment branches and physical/deployed isolation limitations.
+
+### W1.2-FIXTURE-02 - Isolated Signed-Principal Admin-Guard Qualification
+**Status:** `CLOSED` (Sol accepts isolated signed-principal guard-chain scope at reviewed 3f16e084: 12 tests independently passed; shared-key audience and valid-signature class denials precede query entry; container restored. Separate independent signature-only fault probe detected policy bypass. No full HTTP/browser AQ-10 qualification. See `audit/W1.2_Batch_06_Fixture_Acceptance_And_Scope_Review.md`.)
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task E.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** actual admin-guard verification chain with disposable signed tokens and
+stubbed infrastructure; legitimate admin control and learner/invalid-principal denials,
+including database admin-role changes and query ordering. No live negative probes,
+production policy change, universal API certification or browser AQ-10 closure.
+
+### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
+**Status:** `CLOSED` (Sol accepts helper/proxy/route-guard scope at reviewed bb968161. Submitted proxy/strict-helper controls and additional independent infra analytics active/blocked and unknown-header signed-admin controls passed. See `audit/W1.2_Batch_07_Remaining_Sol_Review_bb968161.md`. Deployed/resource/browser qualification remains separately scoped.)
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Commits:** `a7d59877`, `b14c8059`
+Implemented strict tenant-admin preconditions and shared non-privileged account
+eligibility (`_verifyActiveAccount`), with proxy infra factory/analytics adaptation preserving
+existing blocked/missing-account denial and actual handler permissions. Integrated as
+one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, and verified by
+`rbac.service.test.ts` (16 tests passing) and `admin-01-proxy.test.ts` (10 tests passing).
+
+### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
+**Status:** `CLOSED` (Sol accepts reviewed bcbb094c within implemented source and offline ingress/service/crypto/cookie scope. Public login/signup linked controls, corrected distinct/shared keys, empty-role principal, device/IP and generic skillhubcore compatibility inspected and independently tested. See `audit/W1.2_Batch_07_Final_Sol_Acceptance.md`. Fresh learner-purpose browser smoke remains separately scoped under BROWSER-01.)
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Package 3.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Commits:** `b967e6be`, `1fe36579`, `e34e899e`, `c526d416`
+Implemented server-fixed learner purpose, consistent access/refresh claims (`aud: 'user'`,
+`tokenType: 'user'`, `isAdmin: false`), empty-role principal baseline (`roles: []`) without
+invented roles, existing session schema, and fifth `deviceContext` / third IP precedence.
+Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-purpose.test.ts`
+(10 tests passing).
+
+### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
+**Status:** `CLOSED` (Sol accepts reviewed bcbb094c within offline adapter/service/request-policy scope. Cookie-first selection, exact tested origins, audience/class gate, corrected tenant canary, unknown revocation, presence failure and real absorbed audit failure independently checked. 85 tests plus both four-case probes passed. See `audit/W1.2_Batch_07_Final_Sol_Acceptance.md` for fixture/deployment limits. No live all-device acceptance.)
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Packages 1 and 2.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Commits:** `c1f10081`, `59c464d8`, `cb2f56b4`
+Implemented a verified tenant owner/user-admin adapter over the existing `GlobalLogoutService`
+engine, legacy snapshot-count response, safe service-stage failure attribution
+(`RevocationStageError` vs `PresenceStageError`), canonical cookie-first precedence, exact
+origin CSRF verification, and brand-partitioned tenant store. Preserves canonical consumers
+and no new cookie/deprecation metadata; tested strictly offline via `sess-04-logout-all.test.ts`
+(23 tests passing).
+
+### Controlled Batch 08 - Negative Authorization and Isolation Qualification
+**Status:** `IN_PROGRESS`. The twenty-package assignment remains incomplete with individual verified, failed, partial and NOT EXECUTED scopes.
+**Owner assignment-size requirement:** Every Sol assignment or continuation to Tera must contain at least twenty individually actionable tasks with deliverables and acceptance checks. The active consolidated foundation assignment is `audit/W1_W3_Terra_Consolidated_Implementation_Task.md` with FND01-FND30. Its FND02-FND10 incorporate unfinished J01-J20 and existing package duties. The historical J01-J20 assignment remains in `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md` for traceability.
+**Latest independent disposition:** `audit/W1.2_Terra_J01_J20_Sol_Review_95bba4c3.md` is PARTIAL. Captured provider metadata passes, but independent hidden session-cutover credit and post-teardown visit controls fail. The prior I representation correction remains accepted at its documented layers. Physical tenant, transaction, publication and client-owner gates remain open.
+**Independent evidence:** Submitted UI selection 60 passed. New Sol lifecycle selection 1 passed / 2 failed, included in combined UI 61 passed / 2 failed. Composed central route/service 36 passed, nine-file selected service/repository total 158 passed and config:false BFF composition 2 passed. Original probe retains 2 foreign-export failures, while containment/priority selected cases pass. Overlapping selections remain separate. The captured-header regression now passes.
+**Quality gates:** API, UI and db-tutorial typechecks passed. UI/API exclude tests and db-tutorial includes its TS fixtures. Targeted composed API fixture lint passed with zero errors/warnings. The staged transaction adapter explicitly serializes callbacks. Publication controls establish validation-time membership, with removal after claim still creditable. UI test typing/lint, physical SQL, tenant and browser gates retain their gaps.
+**Canonical interpretation:** Exact ID/version denial precedes completion writes at the tested service seam. Root count follows the existing schema, with depth, cycle and duplicate rejection retained. Child context assertions now include learner, navigation, section, subtopic and descendant identity with test-isolated spy history. Canonical tenant storage and nested event accounting remain separately open.
+**Assignment:** The thirty-task owner-directed consolidated W1-W3 assignment governs active foundation work, incorporating J01-J20 duties. J review is PARTIAL and FND07 prioritizes the hidden-cutover and deferred teardown fixes in the provider/delivery scope. Follow the consolidated per-slice manifests and implementation boundaries. Unselected authority/policy choices, schema migrations, physical storage, publication locks and runtime qualification retain their explicit gates.
+**Remaining boundaries:** Canonical private tenant storage, nested instructional events, full gateway/browser operation, export producer/legacy provenance, conflicting admin context, SHC session design and real client-cache qualification remain failed, partial or unexecuted at their recorded layers. Legacy containment cannot close canonical progress or ILS telemetry gates.
+**Authority:** FinalAechitecture.md and accepted independent tenant identity. BROWSER-01/RC-ID-01 remain IN_PROGRESS, with canonical Waves 5-6 and formal Wave 8/runtime qualification separate. Existing interim SHC issuance/cookie compatibility and prior accepted ticket scopes retain their meanings.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
@@ -1146,6 +1541,11 @@ Required:
 | W8 | Cross-platform qualification | `PLANNED` | Yes |
 | W9 | Operational/scale qualification | `PLANNED` | Final |
 
+Wave 8 authentication browser acceptance must follow
+`audit/Authentication_Browser_Qualification_Requirements.md`, including all six
+owner-required production/local environments. W1.2-BROWSER-01 provides earlier
+controlled smoke evidence only; formal production qualification remains separately gated.
+
 ---
 
 # 11. First Execution Order
@@ -1195,3 +1595,5 @@ CLOSED
 ```
 
 This file is the program execution authority for remediation work unless the project owner explicitly approves an architecture-plan revision.
+
+**J01-J20 continuation:** learning-session transport metadata correction is IMPLEMENTED_UNVERIFIED pending Sol review; authenticated owner/epoch, tenant authority, physical SQL and browser/session qualification remain separate. See `audit/W1.2_Terra_Batch_08_20_Package_Handoff.md` for selected evidence and retained failures. No ticket is closed by the implementation worker.

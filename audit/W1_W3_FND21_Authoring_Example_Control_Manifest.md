@@ -1,0 +1,3 @@
+# FND21 authoring example leakage control manifest
+
+Baseline 627e1f13. Original SHC-BLOCK-DATA-001/002: actual D1/I1 `prepareBlockForStorage` uses example-filled preview normalization; `useTutorialBlockEditor` invokes preparation before adding local block. Add focused actual storage-preparation controls asserting incomplete unrelated titles do not acquire example educational claims, plus complete payload positive. No production change. Config-free guarded Vitest; no physical browser, API, database or publication. Content validation/publishing and historical document compatibility require separate review. Retain failure.

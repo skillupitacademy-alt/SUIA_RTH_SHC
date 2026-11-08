@@ -1,8 +1,23 @@
+import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireStudentAuth } from '@/lib/student-auth';
 
 export const dynamic = 'force-dynamic';
+
+const tokenService = new TokenService();
+
+function credentialHeaders(request: NextRequest): Record<string, string> {
+  const token = tokenService.getAccessToken(request, { scope: 'user' });
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  const csrf = request.cookies.get('csrfToken')?.value;
+  const csrfHeader = request.headers.get('x-csrf-token');
+  const origin = request.headers.get('origin');
+  if (csrf) headers.Cookie = `csrfToken=${csrf}`;
+  if (csrfHeader) headers['x-csrf-token'] = csrfHeader;
+  if (origin) headers.Origin = origin;
+  return headers;
+}
 
 const blockTypeSchema = z.enum(['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor']);
 
@@ -27,7 +42,7 @@ async function getHandler(request: NextRequest) {
     if (!authResult.ok) {
       return authResult.response;
     }
-    const user = { userId: authResult.userId };
+    const user = { userId: authResult.payload.userId };
     const parsed = getQuerySchema.safeParse({
       subtopicId: request.nextUrl.searchParams.get('subtopicId') ?? undefined,
     });
@@ -43,6 +58,7 @@ async function getHandler(request: NextRequest) {
       `${apiUrl}/api/tutorial/progress?subtopicId=${parsed.data.subtopicId}`,
       {
         headers: {
+          ...credentialHeaders(request),
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
@@ -75,7 +91,7 @@ async function postHandler(request: NextRequest) {
     if (!authResult.ok) {
       return authResult.response;
     }
-    const user = { userId: authResult.userId };
+    const user = { userId: authResult.payload.userId };
 
     let body: unknown;
     try {
@@ -98,6 +114,7 @@ async function postHandler(request: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...credentialHeaders(request),
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',

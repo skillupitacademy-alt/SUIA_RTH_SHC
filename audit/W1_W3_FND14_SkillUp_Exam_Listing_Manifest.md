@@ -1,0 +1,3 @@
+# FND14 SkillUp assessment listing truth manifest
+
+Baseline 0227fd81. Active `/student/exams` page declares a literal three-row examTracks list as available, with Open/Scheduled statuses, durations and inert Start practice buttons; no data service is imported. It also claims performance feeds placement guidance without evidence. FND14 authorizes active learner assessment views. Replace fabricated list/status/actions and unsupported outcome with explicit unavailable state; preserve placement link and general study guidance. No assessment algorithm, lifecycle or API changes. Mount actual page with intercepted Link and pre-import network guard, verify unavailable, no fake rows/actions and placement navigation. No browser/API/DB execution. Sol review required.

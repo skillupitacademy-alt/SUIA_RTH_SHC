@@ -9,8 +9,9 @@ interface MetricsSummaryBarProps {
   formattedSlowest: string;
   fastestLabel: string;
   slowestLabel: string;
-  deepestLevel?: number;
+  deepestLevel?: number | null;
   totalQuestions: number;
+  attemptedQuestions: number | null;
 }
 
 export function MetricsSummaryBar({
@@ -20,8 +21,9 @@ export function MetricsSummaryBar({
   formattedSlowest,
   fastestLabel,
   slowestLabel,
-  deepestLevel = 10,
+  deepestLevel = null,
   totalQuestions,
+  attemptedQuestions,
 }: MetricsSummaryBarProps) {
   return (
     <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -78,7 +80,7 @@ export function MetricsSummaryBar({
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Deepest Level Reached</p>
-          <p className="text-sm font-black text-gray-900">{deepestLevel}</p>
+          <p className="text-sm font-black text-gray-900">{deepestLevel ?? 'Unavailable'}</p>
         </div>
       </div>
 
@@ -89,7 +91,7 @@ export function MetricsSummaryBar({
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Questions Attempted</p>
-          <p className="text-sm font-black text-gray-900">{totalQuestions} / {totalQuestions}</p>
+          <p className="text-sm font-black text-gray-900">{attemptedQuestions === null ? 'Unavailable' : `${attemptedQuestions} / ${totalQuestions}`}</p>
         </div>
       </div>
     </div>

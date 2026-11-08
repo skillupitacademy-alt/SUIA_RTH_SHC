@@ -4,12 +4,12 @@ import { DonutGauge } from './DonutGauges';
 
 interface OverallPerformanceCardProps {
   correctCount: number;
-  incorrectCount: number;
-  skippedCount: number;
+  incorrectCount: number | null;
+  skippedCount: number | null;
   totalQuestions: number;
   percentage: number;
-  isPassed: boolean;
-  percentile: number;
+  isPassed: boolean | null;
+  percentile: number | null;
 }
 
 export function OverallPerformanceCard({
@@ -68,7 +68,7 @@ export function OverallPerformanceCard({
                 <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                 <span>Incorrect Answers</span>
               </div>
-              <span className="font-black text-red-500 text-sm">{incorrectCount}</span>
+              <span className="font-black text-red-500 text-sm">{incorrectCount ?? 'Unavailable'}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export function OverallPerformanceCard({
                 <MinusCircle className="w-4 h-4 text-orange-400 flex-shrink-0" />
                 <span>Skipped Answers</span>
               </div>
-              <span className="font-black text-orange-500 text-sm">{skippedCount}</span>
+              <span className="font-black text-orange-500 text-sm">{skippedCount ?? 'Unavailable'}</span>
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-gray-100">
@@ -93,7 +93,7 @@ export function OverallPerformanceCard({
                 <span>Result</span>
               </div>
               <span className="font-black text-emerald-600 text-sm uppercase">
-                {isPassed ? 'PASS' : 'RETRY'}
+                {isPassed === null ? 'Unavailable' : isPassed ? 'PASS' : 'RETRY'}
               </span>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function OverallPerformanceCard({
         <div>
           <p className="font-bold text-gray-900">Great Job!</p>
           <p className="text-gray-600 text-[11px]">
-            You scored higher than <span className="font-bold text-[#ff0055]">{percentile}%</span> of candidates
+            {percentile === null ? 'Percentile unavailable' : <>You scored higher than <span className="font-bold text-[#ff0055]">{percentile}%</span> of candidates</>}
           </p>
         </div>
       </div>

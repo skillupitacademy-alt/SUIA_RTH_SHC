@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "docs",
+  "description": "Design reviewed schema additions (tenantId columns, foreign keys, indexes) with mixed-version consumer compatibility analysis where persistence cannot represent tenant ownership, prepare migration/rollback DDL without executing",
+  "status": "pending",
+  "steps": [
+    "Read FEAT-001 findings: ownership-classification.md for identified schema gaps",
+    "Design tenantId additions to core schemas following Drizzle ORM patterns from existing files. Target schemas: packages/db-skillup/src/schema/users.ts (add tenantId text NOT NULL with index), packages/db-tutorial/src/schema/tutorial-progress.ts (add tenantId, change unique constraint from (userId, subtopicId) to (tenantId, userId, subtopicId)), packages/db-people/src/schema/placement-jobs.ts (add tenantId if placement profiles need tenant qualification per FND12 SD-26 to SD-30)",
+    "For export jobs: Identify current schema location (search for export_jobs or report_jobs table in packages/db/src/schema/). Add tenantId column with foreign key or text reference depending on tenant table location",
+    "Design backward compatibility: new tenantId columns must be nullable initially to support mixed-version deployments. Document transition states: null = pre-migration row, non-null = tenant-qualified row. Define quarantine query: WHERE tenantId IS NULL for unknown provenance",
+    "Design foreign key constraints: if tenant table exists (check packages/db-people or packages/db-skillup for tenants table), add FK references. If tenant is represented by platform enum only, use text column with check constraint matching platformEnum values",
+    "Design indexes: composite indexes on (tenantId, userId) for users table, (tenantId, userId, subtopicId) for tutorial_progress, (tenantId, jobId) for export jobs. Single-column index on tenantId for admin queries",
+    "Analyze consumer compatibility: List all files importing tutorial-progress.repository.ts, export download route, user.repository.ts. For each consumer, determine if it can handle nullable tenantId (read path) and must provide tenantId (write path). Document required service signature changes",
+    "Write migration DDL: Draft SQL ALTER TABLE statements for each schema change following Drizzle migration pattern (see existing migrations in packages/*/migrations/). Include: ADD COLUMN tenantId, CREATE INDEX, ADD CONSTRAINT. Mark as NOT FOR EXECUTION - requires Sol authorization",
+    "Write rollback DDL: Draft SQL to DROP constraints, DROP indexes, DROP columns. Include data preservation check: SELECT COUNT(*) WHERE tenantId IS NOT NULL before rollback",
+    "Document unknown provenance handling: Query to identify rows with NULL tenantId after migration grace period. Recommended action: QUARANTINE (move to shadow table) or DENY (access control rejects NULL tenantId reads)",
+    "Write schema proposal at .agents/tasks/fnd03-ownership-architecture/schema-changes.md with: Executive Summary, Affected Schemas (with before/after DDL), Foreign Key Design, Index Strategy, Backward Compatibility, Consumer Impact Analysis, Migration DDL (review-only), Rollback DDL, Unknown Provenance Strategy"
+  ],
+  "acceptance_criteria": [
+    "schema-changes.md contains reviewed DDL for tenantId additions to users, tutorial_progress, export jobs schemas",
+    "Backward compatibility strategy documented for nullable tenantId columns during mixed-version deployment",
+    "Consumer impact analysis lists all affected repositories and required signature changes",
+    "Migration DDL drafted but marked NOT FOR EXECUTION pending Sol authorization",
+    "Rollback procedure documented with data preservation checks"
+  ],
+  "verification": [
+    "File .agents/tasks/fnd03-ownership-architecture/schema-changes.md exists",
+    "grep 'ALTER TABLE.*ADD COLUMN tenantId' schema-changes.md (expect 3+ matches for users, tutorial_progress, export jobs)",
+    "grep 'NOT FOR EXECUTION\\|requires Sol authorization' schema-changes.md (confirm execution gate documented)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

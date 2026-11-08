@@ -3,7 +3,14 @@ import { JobStatus, JobType } from '@quiz/types';
 import { Client } from '@upstash/workflow';
 import { eq } from 'drizzle-orm';
 
-import type { ExportMeta, ExportPayload, RawAttemptRow } from '@/lib/export/exportTypes';
+import {
+  type ExportMeta,
+  type ExportPayload,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  type RawAttemptRow,
+  resolveStoredExamBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
 import { container } from '@/modules/core/container';
@@ -178,21 +185,30 @@ export class ExamSaga {
             // STEP 4-6: EXPORTS (JSON/CSV) + STORE URLS
             if (!processedSteps.has('exports')) {
                 logger.info({ examId }, '[ExamSaga] Step 4-6: Generating JSON/CSV exports');
+                const examRecord = await db.query.exams.findFirst({
+                    where: eq(exams.id, examId),
+                    columns: { userId: true, exportUrls: true }
+                });
+                const storedBrand = resolveStoredExamBrand(examRecord);
+                if (!isLearnerExportBrand(storedBrand)) {
+                    throw new Error('Verified learner brand provenance is required before generating exam saga exports');
+                }
+                const sagaBrand: LearnerExportBrand = storedBrand;
+
                 const { ExportEngine } = await import('@/lib/export/exportEngine');
                 const exportEngine = ExportEngine.getInstance();
-                const jsonUrl = await exportEngine.processExport(examId, data.userId, 'json');
-                const csvUrl = await exportEngine.processExport(examId, data.userId, 'csv');
+                const jsonUrl = await exportEngine.processExport(examId, data.userId, 'json', sagaBrand);
+                const csvUrl = await exportEngine.processExport(examId, data.userId, 'csv', sagaBrand);
 
-                const examRow = await db.query.exams.findFirst({
-                    where: eq(exams.id, examId),
-                    columns: { exportUrls: true }
-                });
-                const existingUrls = (examRow?.exportUrls as Record<string, string> | null) ?? {};
+                const existingUrls = (examRecord?.exportUrls as Record<string, unknown> | null) ?? {};
 
                 await db.update(exams)
                     .set({ 
                         exportUrls: { 
                             ...existingUrls,
+                            brand: sagaBrand,
+                            tenantId: sagaBrand,
+                            _meta: { brand: sagaBrand, tenantId: sagaBrand, ownerUserId: data.userId },
                             analytics_json: jsonUrl, 
                             analytics_csv: csvUrl 
                         } 
@@ -200,8 +216,8 @@ export class ExamSaga {
                     .where(eq(exams.id, examId));
 
                 await Promise.all([
-                    redis.set(`export:${examId}:${data.userId}:json`, jsonUrl, { ex: 900 }),
-                    redis.set(`export:${examId}:${data.userId}:csv`, csvUrl, { ex: 900 }),
+                    redis.set(`export:${sagaBrand}:${examId}:${data.userId}:json`, jsonUrl, { ex: 900 }),
+                    redis.set(`export:${sagaBrand}:${examId}:${data.userId}:csv`, csvUrl, { ex: 900 }),
                 ]);
 
                 processedSteps.add('exports');

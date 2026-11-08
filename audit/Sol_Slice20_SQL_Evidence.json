@@ -1,0 +1,214 @@
+{
+  "expiry--1": [
+    {
+      "sql": "select \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\" from \"student_invitations\" where \"student_invitations\".\"token_hash\" = $1",
+      "params": [
+        "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722"
+      ],
+      "affected": 1
+    },
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"updated_at\" = $4 where (\"student_invitations\".\"id\" = $5 and \"student_invitations\".\"expires_at\" <= $6 and (\"student_invitations\".\"status\" = $7 or \"student_invitations\".\"status\" = $8)) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "expired",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "2026-11-07T05:00:00.000Z",
+        "pending",
+        "claiming"
+      ],
+      "affected": 1
+    }
+  ],
+  "expiry-0": [
+    {
+      "sql": "select \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\" from \"student_invitations\" where \"student_invitations\".\"token_hash\" = $1",
+      "params": [
+        "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722"
+      ],
+      "affected": 1
+    },
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"updated_at\" = $4 where (\"student_invitations\".\"id\" = $5 and \"student_invitations\".\"expires_at\" <= $6 and (\"student_invitations\".\"status\" = $7 or \"student_invitations\".\"status\" = $8)) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "expired",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "2026-11-07T05:00:00.000Z",
+        "pending",
+        "claiming"
+      ],
+      "affected": 1
+    }
+  ],
+  "claim": [
+    {
+      "sql": "select \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\" from \"student_invitations\" where \"student_invitations\".\"token_hash\" = $1",
+      "params": [
+        "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722"
+      ],
+      "affected": 1
+    },
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"updated_at\" = $4 where (\"student_invitations\".\"id\" = $5 and \"student_invitations\".\"expires_at\" > $6 and (\"student_invitations\".\"status\" = $7 or (\"student_invitations\".\"status\" = $8 and \"student_invitations\".\"claim_expires_at\" <= $9))) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "claiming",
+        "a2e8c416-5e34-4881-88a4-cfa173c4840a",
+        "2026-11-07T05:00:01.234Z",
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "2026-11-07T05:00:00.000Z",
+        "pending",
+        "claiming",
+        "2026-11-07T05:00:00.000Z"
+      ],
+      "affected": 1
+    }
+  ],
+  "redemption": [
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"redeemed_at\" = $4, \"updated_at\" = $5 where (\"student_invitations\".\"id\" = $6 and \"student_invitations\".\"status\" = $7 and \"student_invitations\".\"claim_owner_token\" = $8 and \"student_invitations\".\"claim_expires_at\" > $9 and \"student_invitations\".\"expires_at\" > $10) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "redeemed",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "claiming",
+        "owner",
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z"
+      ],
+      "affected": 1
+    }
+  ],
+  "zeroRowExpiryRace": [
+    {
+      "sql": "select \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\" from \"student_invitations\" where \"student_invitations\".\"token_hash\" = $1",
+      "params": [
+        "f6a8fa9e313877adc80adc6bfdc7c63661247b35db844e55bbed9e1cd5e5f722"
+      ],
+      "affected": 1
+    },
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"updated_at\" = $4 where (\"student_invitations\".\"id\" = $5 and \"student_invitations\".\"expires_at\" <= $6 and (\"student_invitations\".\"status\" = $7 or \"student_invitations\".\"status\" = $8)) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "expired",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "2026-11-07T05:00:00.000Z",
+        "pending",
+        "claiming"
+      ],
+      "affected": 0
+    },
+    {
+      "sql": "select \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\" from \"student_invitations\" where \"student_invitations\".\"id\" = $1",
+      "params": [
+        "10000000-0000-4000-8000-000000000001"
+      ],
+      "affected": 1
+    }
+  ],
+  "application-expired-claim": [
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"redeemed_at\" = $4, \"updated_at\" = $5 where (\"student_invitations\".\"id\" = $6 and \"student_invitations\".\"status\" = $7 and \"student_invitations\".\"claim_owner_token\" = $8 and \"student_invitations\".\"claim_expires_at\" > $9 and \"student_invitations\".\"expires_at\" > $10) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "redeemed",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "claiming",
+        "owner",
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z"
+      ],
+      "affected": 0
+    }
+  ],
+  "application-expired-invitation": [
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"redeemed_at\" = $4, \"updated_at\" = $5 where (\"student_invitations\".\"id\" = $6 and \"student_invitations\".\"status\" = $7 and \"student_invitations\".\"claim_owner_token\" = $8 and \"student_invitations\".\"claim_expires_at\" > $9 and \"student_invitations\".\"expires_at\" > $10) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "redeemed",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "claiming",
+        "owner",
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z"
+      ],
+      "affected": 0
+    }
+  ],
+  "applicationCommit": [
+    {
+      "sql": "update \"student_invitations\" set \"status\" = $1, \"claim_owner_token\" = $2, \"claim_expires_at\" = $3, \"redeemed_at\" = $4, \"updated_at\" = $5 where (\"student_invitations\".\"id\" = $6 and \"student_invitations\".\"status\" = $7 and \"student_invitations\".\"claim_owner_token\" = $8 and \"student_invitations\".\"claim_expires_at\" > $9 and \"student_invitations\".\"expires_at\" > $10) returning \"id\", \"user_id\", \"email\", \"platform\", \"token_hash\", \"status\", \"claim_owner_token\", \"claim_expires_at\", \"issued_at\", \"expires_at\", \"redeemed_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "redeemed",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z",
+        "10000000-0000-4000-8000-000000000001",
+        "claiming",
+        "owner",
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z"
+      ],
+      "affected": 1
+    }
+  ],
+  "envelopeInstall": [
+    {
+      "sql": "select \"id\", \"tenant_id\", \"event_type\", \"event_id\", \"aggregate_id\", \"payload\", \"envelope\", \"status\", \"attempt_count\", \"owner_token\", \"lease_expires_at\", \"last_error\", \"published_at\", \"created_at\", \"updated_at\" from \"event_outbox\" where ((\"event_outbox\".\"tenant_id\" = $1 and \"event_outbox\".\"event_type\" = $2 and \"event_outbox\".\"aggregate_id\" = $3) or \"event_outbox\".\"event_id\" = $4)",
+      "params": [
+        "realtutorialhub",
+        "certificate.issued",
+        "fixture-certificate",
+        "81281af8-2134-470e-aa7d-8a6b280cb0ae"
+      ],
+      "affected": 1
+    },
+    {
+      "sql": "update \"event_outbox\" set \"envelope\" = $1, \"updated_at\" = $2 where (\"event_outbox\".\"id\" = $3 and \"event_outbox\".\"envelope\" is null) returning \"id\", \"tenant_id\", \"event_type\", \"event_id\", \"aggregate_id\", \"payload\", \"envelope\", \"status\", \"attempt_count\", \"owner_token\", \"lease_expires_at\", \"last_error\", \"published_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "{\"id\":\"fixture-event\",\"data\":{\"a\":1,\"b\":2}}",
+        "2026-11-07T16:29:18.598Z",
+        "outbox-row"
+      ],
+      "affected": 1
+    }
+  ],
+  "completion": [
+    {
+      "sql": "update \"event_outbox\" set \"status\" = $1, \"lease_expires_at\" = $2, \"last_error\" = $3, \"published_at\" = $4, \"updated_at\" = $5 where (\"event_outbox\".\"tenant_id\" = $6 and \"event_outbox\".\"event_type\" = $7 and \"event_outbox\".\"aggregate_id\" = $8 and \"event_outbox\".\"status\" = $9 and \"event_outbox\".\"owner_token\" = $10 and \"event_outbox\".\"envelope\" = $11::jsonb) returning \"id\", \"tenant_id\", \"event_type\", \"event_id\", \"aggregate_id\", \"payload\", \"envelope\", \"status\", \"attempt_count\", \"owner_token\", \"lease_expires_at\", \"last_error\", \"published_at\", \"created_at\", \"updated_at\"",
+      "params": [
+        "published",
+        null,
+        null,
+        "2026-11-07T05:00:00.000Z",
+        "2026-11-07T05:00:00.000Z",
+        "realtutorialhub",
+        "certificate.issued",
+        "fixture-certificate",
+        "publishing",
+        "owner",
+        "{\"id\":\"fixture-event\",\"data\":{\"a\":1,\"b\":2}}"
+      ],
+      "affected": 1
+    }
+  ]
+}

@@ -3,6 +3,8 @@ import { backgroundJobs } from "./jobs";
 
 // --- CORE IDENTITY ---
 
+export const tenantEnum = pgEnum("tenant", ["realtutorialhub", "skillup", "skillhubcore"]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -14,6 +16,9 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   shadowUserId: uuid('shadow_user_id'),
+  // FND03: Tenant-qualified ownership
+  tenantId: tenantEnum('tenant_id'),
+  localSubjectId: text('local_subject_id'), // Tenant-scoped user identifier
   // Onboarding fields
   isOnboarded: boolean("is_onboarded").notNull().default(false),
   primaryGoal: text("primary_goal"),
@@ -23,6 +28,7 @@ export const users = pgTable("users", {
   journeyStatus: text("journey_status"),
 }, (t) => ({
   idx_users_created_at: index("idx_users_created_at").on(t.createdAt),
+  idx_users_tenant_local_subject: index("idx_users_tenant_local_subject").on(t.tenantId, t.localSubjectId),
 }));
 
 export const adaptiveLevelEnum = pgEnum("adaptive_level", ["beginner", "intermediate", "advanced"]);

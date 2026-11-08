@@ -1,0 +1,46 @@
+import { test, expect } from './fixtures/auth.fixtures';
+import { enforceReadinessBoundary } from './helpers/readiness';
+import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-credentials';
+
+test.describe('RTH Token Refresh Flow Qualification', () => {
+  test('AQ-04-RTH: RTH learner active refresh rotation, cookie update, and protected access', async ({ auth }, testInfo) => {
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'rth-chromium',
+      projectOrigin: process.env.RTH_BASE_URL,
+      requiredAccountVars: [
+        SYNTHETIC_ACCOUNTS.RTH_LEARNER.emailEnvVar,
+        SYNTHETIC_ACCOUNTS.RTH_LEARNER.passwordEnvVar,
+      ],
+    });
+
+    const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.RTH_LEARNER);
+    await auth.loginViaUI('/login', creds.email, creds.password);
+
+    // Ensure session navigation and cookies are established
+    await expect(auth.page).toHaveURL(/\/dashboard|\/onboarding|\/tutorials|\/account|\/learn/, { timeout: 30000 });
+
+    const cookiesBefore = await auth.context.cookies();
+    const initialRefresh = cookiesBefore.find(c => c.name === 'refreshToken');
+    const initialAccess = cookiesBefore.find(c => c.name === 'accessToken');
+    expect(initialRefresh !== undefined, 'Initial refreshToken must exist').toBe(true);
+    expect(initialAccess !== undefined, 'Initial accessToken must exist').toBe(true);
+
+    // Call POST /api/auth/refresh directly using guarded API helper
+    const refreshRes = await auth.apiPost('/api/auth/refresh');
+    expect(refreshRes.status()).toBe(200);
+
+    // Verify cookies updated in memory without leaking token values
+    const cookiesAfter = await auth.context.cookies();
+    const rotatedRefresh = cookiesAfter.find(c => c.name === 'refreshToken');
+    const rotatedAccess = cookiesAfter.find(c => c.name === 'accessToken');
+    expect(rotatedRefresh !== undefined, 'Rotated refreshToken must exist').toBe(true);
+    expect(rotatedAccess !== undefined, 'Rotated accessToken must exist').toBe(true);
+
+    const refreshRotated = rotatedRefresh!.value !== initialRefresh!.value;
+    expect(refreshRotated, 'Refresh token value must change upon rotation').toBe(true);
+
+    // Verify subsequent protected use with rotated session using guarded API helper
+    const meRes = await auth.apiGet('/api/profile');
+    expect(meRes.status()).toBe(200);
+  });
+});

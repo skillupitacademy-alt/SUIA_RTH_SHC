@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('@/lib/assignment-auth', () => ({
   requireStudent: mocks.requireStudent,
+  AssignmentAuthError: class extends Error { constructor(message: string, public statusCode: number) { super(message); } },
 }));
 
 vi.mock('@/lib/assignment', () => ({
@@ -27,6 +28,7 @@ vi.mock('@/lib/assignment', () => ({
 }));
 
 import { POST } from '../route';
+import { AssignmentAuthError } from '@/lib/assignment-auth';
 
 const userId = crypto.randomUUID();
 const subtopicId = crypto.randomUUID();
@@ -54,7 +56,7 @@ describe('assignment help route', () => {
   });
 
   it('returns 401 when student auth is missing', async () => {
-    mocks.requireStudent.mockRejectedValueOnce(new Error('Unauthorized'));
+    mocks.requireStudent.mockRejectedValueOnce(new AssignmentAuthError('Unauthorized', 401));
 
     const response = await POST(createRequest({ subtopicId, assignmentId, question: 'Need help' }));
 

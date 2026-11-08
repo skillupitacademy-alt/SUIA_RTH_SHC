@@ -24,6 +24,7 @@ import { RBACService } from './rbac.service';
 import { OwnershipRBACService } from './ownership.service';
 import { createRBACUser } from './rbac.adapter';
 import type { Permission } from './permissions';
+import { ForbiddenError } from '../errors/auth-errors';
 
 // Note: AuthContext should be imported from your API server
 // This is a minimal type definition for the guard
@@ -53,6 +54,12 @@ export interface RBACOptions {
    * Required if ownership is true
    */
   getResourceUserId?: (req: NextRequest) => Promise<string> | string;
+  
+  /**
+   * Function to extract resource tenant from request (FND03)
+   * Required if ownership is true
+   */
+  getResourceTenant?: (req: NextRequest) => Promise<string> | string;
   
   /**
    * Custom error message for permission denial
@@ -109,6 +116,14 @@ export function withRBAC(
       );
     }
 
+    if (!['skillup', 'realtutorialhub', 'skillhubcore'].includes(auth.brand)) {
+      return new Response(JSON.stringify({
+        code: 'PERMISSION_DENIED',
+        message: options.denialMessage || `Permission required: ${options.permission}`,
+        permission: options.permission,
+      }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+
     // 2. Create RBAC user
     let rbacUser;
     try {
@@ -155,17 +170,29 @@ export function withRBAC(
     // 4. Perform RBAC check
     try {
       if (options.ownership) {
-        // Ownership-based check
+        // Ownership-based check (FND03: tenant-aware)
         if (!options.getResourceUserId) {
           throw new Error('getResourceUserId is required when ownership is enabled');
         }
+        if (!options.getResourceTenant) {
+          throw new Error('getResourceTenant is required when ownership is enabled (FND03)');
+        }
         
         const resourceUserId = await options.getResourceUserId(req);
+        const resourceTenant = await options.getResourceTenant(req);
+        
+        // FND03: Validate JWT brand claim is present (tenant context required)
+        if (!(auth as any).brand) {
+          throw new ForbiddenError('JWT brand claim required for tenant-qualified ownership');
+        }
         
         OwnershipRBACService.requirePermissionOrOwnership(
           {
             requestingUserId: auth.userId,
+            requestingTenant: (auth as any).brand,
+            requestingShadowUserId: (auth as any).shadowUserId,
             resourceOwnerId: resourceUserId,
+            resourceTenant,
             userRoles: rbacUser.roles,
           },
           options.permission
@@ -176,6 +203,7 @@ export function withRBAC(
           route: req.url,
           method: req.method,
           userId: auth.userId.slice(0, 8),
+          tenant: (auth as any).brand,
           roles: rbacUser.roles,
           permission: options.permission,
           isOwner: auth.userId === resourceUserId,
@@ -238,19 +266,21 @@ export function withRBAC(
 }
 
 /**
- * 🔐 Helper: Create ownership-based RBAC guard
+ * 🔐 Helper: Create ownership-based RBAC guard (FND03: tenant-aware)
  * 
  * Convenience function for routes that use ownership checks.
  */
 export function withOwnershipRBAC(
   handler: RouteHandler,
   permission: Permission,
-  getResourceUserId: (req: NextRequest) => Promise<string> | string
+  getResourceUserId: (req: NextRequest) => Promise<string> | string,
+  getResourceTenant: (req: NextRequest) => Promise<string> | string
 ): RouteHandler {
   return withRBAC(handler, {
     permission,
     ownership: true,
     getResourceUserId,
+    getResourceTenant,
   });
 }
 

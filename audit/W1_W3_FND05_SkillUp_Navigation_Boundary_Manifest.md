@@ -1,0 +1,3 @@
+# FND05 SkillUp navigation BFF boundary manifest
+
+Baseline ed390148. Actual central query contract requires UUID subtopic; navigation ID is nonempty text max 200, not UUID. Bound SkillUp navigation BFF to authenticate first, enforce those existing shape limits, encode node as one URL segment, retain valid node text, identity/secret forwarding/status, and sanitize upstream/caught errors. Add guarded actual-route controls for ordinary slug, malformed subtopic, empty/overlength node, encoded path special characters, auth and upstream/transport failure. No gateway route correction or ownership policy; physical services/browser NOT EXECUTED. Exact behavior for historically slash-containing node IDs requires review; encoding avoids treating it as a new URL path.

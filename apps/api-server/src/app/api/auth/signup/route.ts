@@ -15,6 +15,7 @@ import { withRateLimit } from '@/middleware/rate-limit.middleware';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { InvalidPurposeError } from '@/modules/auth/login.service';
 import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { signupSchema } from '@/schemas/auth.schemas';
@@ -42,7 +43,14 @@ async function handler(_req: NextRequest) {
     const _user = await authService.signup(email, password, name, ip, brand);
 
     // Auto-login after signup
-    const { accessToken, refreshToken } = await authService.login(email, password, ip, brand);
+    const { accessToken, refreshToken } = await authService.login(
+      email,
+      password,
+      ip,
+      brand,
+      undefined,
+      { purpose: 'learner' }
+    );
 
     recordCounter(METRICS.AUTH.SIGNUP, 1, { outcome: 'success' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'success' });
@@ -67,6 +75,9 @@ async function handler(_req: NextRequest) {
 
     return response;
   } catch (_error: unknown) {
+    if (_error instanceof InvalidPurposeError) {
+      return ApiResponse.error(badRequest('Invalid login purpose'));
+    }
     const message = _error instanceof Error ? _error.message : 'Unknown error';
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'signup_failed', operation: 'signup' });
     recordTimer(METRICS.AUTH.SIGNUP + '.duration', Date.now() - start, { outcome: 'failure' });

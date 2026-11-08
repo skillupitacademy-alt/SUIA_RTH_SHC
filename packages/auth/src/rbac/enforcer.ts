@@ -33,21 +33,32 @@ export function requirePermission(
 
 /**
  * Require user has permission OR owns the resource
+ * FND03: Tenant-aware ownership check
  * 
- * @param user - User context
+ * @param user - User context with tenant (tenant is required)
  * @param resourceOwnerId - Owner of the resource
+ * @param resourceTenant - Tenant of the resource
  * @param permission - Required permission
  * @throws Error if access denied
  */
 export function requirePermissionOrOwnership(
-  user: { userId: string; roles: Role[] },
+  user: { userId: string; roles: Role[]; tenant: string; shadowUserId?: string },
   resourceOwnerId: string,
+  resourceTenant: string,
   permission: Permission
 ): void {
+  // FND03: Validate tenant context is present
+  if (!user.tenant) {
+    throw new ForbiddenError('Tenant context required for ownership checks');
+  }
+  
   OwnershipRBACService.requirePermissionOrOwnership(
     {
       requestingUserId: user.userId,
+      requestingTenant: user.tenant,
+      requestingShadowUserId: user.shadowUserId,
       resourceOwnerId,
+      resourceTenant,
       userRoles: user.roles,
     },
     permission

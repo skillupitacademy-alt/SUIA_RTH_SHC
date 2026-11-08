@@ -1,6 +1,60 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders } from '../request-brand';
+import { resolveRequestBrand, resolveRequestBrandFromHeaders, resolveRequestHostnameFromHeaders, resolveStrictRefreshBrandFromHeaders } from '../request-brand';
+
+describe('resolveStrictRefreshBrandFromHeaders', () => {
+  it('returns missing_brand when neither x-brand nor x-platform is present', () => {
+    const headers = { get: () => null };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ error: 'missing_brand' });
+  });
+
+  it('returns missing_brand when headers are empty or whitespace', () => {
+    const headers = { get: (name: string) => (name === 'x-brand' ? '   ' : null) };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ error: 'missing_brand' });
+  });
+
+  it('rejects shared as invalid_brand', () => {
+    const headers = { get: (name: string) => (name === 'x-brand' ? 'shared' : null) };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ error: 'invalid_brand' });
+  });
+
+  it('rejects conflicting x-brand and x-platform', () => {
+    const headers = {
+      get: (name: string) => {
+        if (name === 'x-brand') return 'realtutorialhub';
+        if (name === 'x-platform') return 'skillup';
+        return null;
+      },
+    };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ error: 'conflicting_brand' });
+  });
+
+  it('resolves canonical skillup brand', () => {
+    const headers = { get: (name: string) => (name === 'x-brand' ? 'skillup' : null) };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ brand: 'skillup' });
+  });
+
+  it('resolves canonical realtutorialhub brand', () => {
+    const headers = { get: (name: string) => (name === 'x-platform' ? 'realtutorialhub' : null) };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ brand: 'realtutorialhub' });
+  });
+
+  it('resolves matching x-brand and x-platform', () => {
+    const headers = {
+      get: (name: string) => {
+        if (name === 'x-brand') return 'skillup';
+        if (name === 'x-platform') return 'skillup';
+        return null;
+      },
+    };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ brand: 'skillup' });
+  });
+
+  it('rejects unknown or invalid brand string', () => {
+    const headers = { get: (name: string) => (name === 'x-brand' ? 'unknown-portal' : null) };
+    expect(resolveStrictRefreshBrandFromHeaders(headers)).toEqual({ error: 'invalid_brand' });
+  });
+});
 
 describe('resolveRequestBrandFromHeaders', () => {
   it('prefers the explicit x-brand header when present', () => {

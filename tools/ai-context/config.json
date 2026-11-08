@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "1.1.0",
+  "description": "Canonical AI context optimization configuration for Graphify queries, Repomix/source packet generation, token/byte budget gates, and commit-aware FND checkpoints (OPT01-OPT05).",
+  "graphify": {
+    "graphPath": "graphify-out/graph.json",
+    "manifestPath": "graphify-out/manifest.json",
+    "buildStatePath": "graphify-out/.graphify_build_state.json",
+    "analysisPath": "graphify-out/.graphify_analysis.json",
+    "reportPath": "graphify-out/GRAPH_REPORT.md",
+    "provenanceFile": ".context-packets/graph-provenance.json",
+    "maxResultsDefault": 20,
+    "defaultTraversalDepth": 2,
+    "defaultCliTokenBudget": 1800,
+    "sqlParser": {
+      "driver": "tree_sitter_sql",
+      "supportedConstructs": [
+        "file_node",
+        "CREATE TABLE",
+        "CREATE INDEX"
+      ],
+      "unsupportedConstructs": [
+        "PL/pgSQL procedural DO $$ ... END $$; blocks (e.g. fail-closed RAISE EXCEPTION migration guards)",
+        "Cross-language Drizzle TypeScript pgTable/schema-to-SQL DDL edges",
+        "Inline SQL template strings embedded inside TypeScript repositories"
+      ]
+    },
+    "ripgrepFallbackPaths": [
+      "rg",
+      "C:\\Users\\RealTutorialHub\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe\\ripgrep-15.2.0-x86_64-pc-windows-msvc\\rg.exe",
+      "C:\\Users\\RealTutorialHub\\.gemini\\tmp\\bin\\rg.exe"
+    ]
+  },
+  "budgets": {
+    "explorationBudget": {
+      "maxBytes": 16384,
+      "maxChars": 16384,
+      "maxTokensEstimate": 4000,
+      "description": "Maximum payload for bounded Graphify subgraph queries and caller discovery summaries."
+    },
+    "sourcePacketBudget": {
+      "maxBytes": 262144,
+      "maxChars": 262144,
+      "maxTokensEstimate": 65000,
+      "description": "Maximum payload for task-scoped source packets with uncompressed security logic, negative tests, and Sol decisions."
+    },
+    "terminalSummaryBudget": {
+      "maxBytes": 4096,
+      "maxChars": 4096,
+      "maxLines": 60,
+      "description": "Maximum stdout summary emitted by context-cli; full artifacts are persisted to .context-packets/."
+    }
+  },
+  "secretDenylist": {
+    "forbiddenPathGlobs": [
+      "**/.env",
+      "**/.env.*",
+      "!**/.env.example",
+      "!**/.env.template",
+      "**/.npmrc",
+      "**/*.pem",
+      "**/*.key",
+      "**/*.p12",
+      "**/*.pfx",
+      "**/credentials*.json",
+      "**/secrets*.json",
+      "**/*secret*.key",
+      "**/id_rsa*",
+      "**/id_ed25519*"
+    ],
+    "contentPatterns": [
+      {
+        "id": "PEM_PRIVATE_KEY",
+        "description": "PEM-encoded private key block",
+        "regex": "-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----"
+      },
+      {
+        "id": "DATABASE_URL_WITH_PASSWORD",
+        "description": "PostgreSQL/MySQL/Redis connection URL with embedded non-placeholder password",
+        "regex": "(?:postgres(?:ql)?|mysql|rediss?)://[^/\\s:@]+:(?!password|postgres|test|example|<|\\$\\{)[^@\\s]{6,}@(?!(?:localhost|127\\.0\\.0\\.1))"
+      },
+      {
+        "id": "LIVE_SECRET_ASSIGNMENT",
+        "description": "Hardcoded live Upstash/QStash/Stripe/Resend/JWT secret token assignment",
+        "regex": "(?:UPSTASH_REDIS_REST_TOKEN|QSTASH_TOKEN|QSTASH_CURRENT_SIGNING_KEY|STRIPE_SECRET_KEY|RESEND_API_KEY|SUPABASE_SERVICE_ROLE_KEY)\\s*[:=]\\s*[\"']?(?!test|mock|placeholder|your-|example|<)[A-Za-z0-9_=.-]{20,}"
+      },
+      {
+        "id": "GITHUB_OR_CLOUD_OR_LLM_TOKEN",
+        "description": "GitHub PAT, AWS access key, Slack token, or OpenAI/Anthropic live key",
+        "regex": "\\b(?:ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{50,}|sk-proj-[A-Za-z0-9_-]{32,}|sk-ant-api03-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[baprs]-[0-9A-Za-z-]{24,})\\b"
+      },
+      {
+        "id": "BEARER_JWT_LIVE_CREDENTIAL",
+        "description": "Hardcoded three-part Bearer JWT credential",
+        "regex": "Authorization\\s*[:=]\\s*[\"']Bearer\\s+eyJ[A-Za-z0-9_-]{16,}\\.eyJ[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}[\"']"
+      }
+    ]
+  },
+  "defaultExcludeGlobs": [
+    "node_modules/**",
+    ".next/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    ".turbo/**",
+    ".git/**",
+    ".context-packets/**",
+    "graphify-out/**"
+  ],
+  "sonnetDocumentationDeliverables": {
+    "DOC01": "docs/ai-context/operating-guide.md",
+    "DOC02": "docs/ai-context/fnd-checkpoint-template.md",
+    "DOC03": "docs/ai-context/task-retrieval-guide.md"
+  },
+  "packets": {
+    "fnd03": {
+      "id": "fnd03",
+      "title": "FND03 Tenant & Resource Ownership Isolation Packet",
+      "taskIds": [
+        "FND03",
+        "TC01",
+        "TC02",
+        "TC03",
+        "TC05",
+        "TC06",
+        "TC09",
+        "GM03",
+        "GM04",
+        "GM05"
+      ],
+      "description": "Complete task-scoped context packet for FND03 tenant/ownership authorization, callers, Drizzle schemas, fail-closed SQL migrations, negative security regression tests, and Sol D1/D3 architectural decisions.",
+      "callerSearchPattern": "canAccessResource|requirePermissionOrOwnership|hasPermissionOrOwnership|isOwner|createOwnershipChecker|withOwnershipRBAC|withRBAC|createRBACUser|OwnershipRBACService",
+      "callerSearchRoots": [
+        "packages/auth",
+        "apps",
+        "src"
+      ],
+      "securityCriticalFiles": [
+        "packages/auth/src/rbac/ownership.service.ts",
+        "packages/auth/src/rbac/enforcer.ts",
+        "packages/auth/src/rbac/rbac.adapter.ts",
+        "packages/auth/src/rbac/rbac.service.ts",
+        "packages/auth/src/rbac/rbac.guard.ts",
+        "packages/auth/src/rbac/normalize-roles.ts",
+        "packages/auth/src/rbac/role-permissions.ts",
+        "packages/auth/src/rbac/roles.ts",
+        "packages/auth/src/rbac/permissions.ts",
+        "packages/auth/src/rbac/index.ts",
+        "packages/auth/src/audit/rbac.audit.ts",
+        "packages/auth/src/errors/auth-errors.ts",
+        "apps/api-server/src/app/api/auth/profile/route.ts",
+        "apps/api-server/src/modules/auth/brand-db.ts",
+        "apps/api-server/src/app/api/auth/onboarding/route.ts",
+        "apps/api-server/src/app/api/auth/me/route.ts",
+        "apps/api-server/src/app/api/auth/sessions/route.ts",
+        "apps/api-server/src/app/api/auth/sessions/[sessionId]/route.ts"
+      ],
+      "schemaAndMigrationFiles": [
+        "packages/db/src/schema/auth.ts",
+        "packages/db-tutorial/src/schema/tutorial-progress.ts",
+        "packages/db-tutorial/src/repositories/tutorial-progress.repository.ts",
+        "packages/db/migrations/0001_fnd03_add_tenant_ownership.sql",
+        "packages/db-tutorial/migrations/0029_fnd03_add_tenant_to_progress.sql"
+      ],
+      "securityTestFiles": [
+        "packages/auth/src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts",
+        "packages/auth/src/rbac/__tests__/ownership.service.test.ts",
+        "packages/auth/src/rbac/__tests__/rbac.service.test.ts",
+        "apps/api-server/src/app/api/auth/sessions/__tests__/[sessionId].route.ownership.test.ts"
+      ],
+      "solDecisionFiles": [
+        "audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md",
+        "audit/FND03_FND11_Sol_Review_041e5fe9.md",
+        "audit/Tera_W1_W3_Critical_Implementation_Assignment.md"
+      ],
+      "governingSolDecisionSections": [
+        {
+          "sectionId": "D1",
+          "heading": "## D1. Private profile ownership and explicit tenant provenance",
+          "sourceFile": "audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md",
+          "appliesTo": "TC02-TC05, TC13, FND03/06/18/24 and GM03/04"
+        },
+        {
+          "sectionId": "D3",
+          "heading": "## D3. Tenant persistence, progress, exports and admin context",
+          "sourceFile": "audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md",
+          "appliesTo": "TC06/09-TC13 and GM05/07-GM09"
+        }
+      ],
+      "observedCheckpointRunnerEvidence": [
+        {
+          "command": "node audit/Sol_W1_W3_Checkpoint_f88fef44.mjs boundary",
+          "recordedIn": "audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md",
+          "observedResult": "Exit 1; six files, 60 passed / 1 failed (Ownership/guard 27, admission/normalization 25, RTH worker 4, SkillUp worker 4 passed / 1 failed)"
+        }
+      ],
+      "conventionalSameCoverageBaseline": {
+        "description": "Same-coverage conventional retrieval workflow for FND03: reading the exact same 30 required FND03 source, caller, schema, SQL migration, negative test, and full Sol/Tera decision documents plus the conventional discovery overhead (graphify-out/GRAPH_REPORT.md + full Tera/Gemini multi-slice handoff reports loaded during manual investigation).",
+        "requiredSecurityFiles": [
+          "packages/auth/src/rbac/ownership.service.ts",
+          "packages/auth/src/rbac/enforcer.ts",
+          "packages/auth/src/rbac/rbac.adapter.ts",
+          "packages/auth/src/rbac/rbac.service.ts",
+          "packages/auth/src/rbac/rbac.guard.ts",
+          "packages/auth/src/rbac/normalize-roles.ts",
+          "packages/auth/src/rbac/role-permissions.ts",
+          "packages/auth/src/rbac/roles.ts",
+          "packages/auth/src/rbac/permissions.ts",
+          "packages/auth/src/rbac/index.ts",
+          "packages/auth/src/audit/rbac.audit.ts",
+          "packages/auth/src/errors/auth-errors.ts",
+          "packages/auth/src/rbac/__tests__/sol-fnd03-tenant-boundary.test.ts",
+          "packages/auth/src/rbac/__tests__/ownership.service.test.ts",
+          "packages/auth/src/rbac/__tests__/rbac.service.test.ts",
+          "apps/api-server/src/app/api/auth/profile/route.ts",
+          "apps/api-server/src/modules/auth/brand-db.ts",
+          "apps/api-server/src/app/api/auth/onboarding/route.ts",
+          "apps/api-server/src/app/api/auth/me/route.ts",
+          "apps/api-server/src/app/api/auth/sessions/route.ts",
+          "apps/api-server/src/app/api/auth/sessions/[sessionId]/route.ts",
+          "apps/api-server/src/app/api/auth/sessions/__tests__/[sessionId].route.ownership.test.ts",
+          "packages/db/src/schema/auth.ts",
+          "packages/db-tutorial/src/schema/tutorial-progress.ts",
+          "packages/db-tutorial/src/repositories/tutorial-progress.repository.ts",
+          "packages/db/migrations/0001_fnd03_add_tenant_ownership.sql",
+          "packages/db-tutorial/migrations/0029_fnd03_add_tenant_to_progress.sql",
+          "audit/W1_W3_Sol_Decisions_And_Gemini_Review_f88fef44.md",
+          "audit/FND03_FND11_Sol_Review_041e5fe9.md",
+          "audit/Tera_W1_W3_Critical_Implementation_Assignment.md"
+        ],
+        "conventionalDiscoveryOverheadFiles": [
+          "graphify-out/GRAPH_REPORT.md",
+          "audit/Tera_W1_W3_Critical_Handoff.md",
+          "audit/Gemini_W1_W3_Independent_Verification_Report.md"
+        ]
+      },
+      "externalRepomixArtifacts": {
+        "compressedStructureOnly": {
+          "path": "E:\\AI-Context-Packets\\FND03-RBAC-Structure.md",
+          "filesCount": 13,
+          "repomixTokens_o200k_base": 6038,
+          "chars": 22214,
+          "bytes": 22226,
+          "compress": true,
+          "auditSafeAlone": false,
+          "reasonNotAuditSafeAlone": "Repomix --compress strips function implementation bodies in ownership.service.ts, strips brand: auth.brand || 'realtutorialhub' fallback at rbac.adapter.ts:64, strips ROLE_PERMISSIONS table in role-permissions.ts, and strips all expect(...) assertions in test files."
+        },
+        "uncompressedRbacOnly": {
+          "path": "E:\\AI-Context-Packets\\FND03-RBAC-Uncompressed.md",
+          "filesCount": 13,
+          "repomixTokens_o200k_base": 14281,
+          "chars": 62630,
+          "bytes": 62630,
+          "compress": false,
+          "auditSafeAlone": false,
+          "reasonNotAuditSafeAlone": "Preserves RBAC implementation bodies and tests, but omits api-server callers (profile/route.ts, brand-db.ts, onboarding/route.ts), Drizzle schemas, SQL migrations, and Sol D1/D3 decisions."
+        },
+        "uncompressedSecurityComplete": {
+          "path": "E:\\AI-Context-Packets\\FND03-Security-Complete.md",
+          "filesCount": 25,
+          "repomixTokens_o200k_base": 41664,
+          "chars": 156072,
+          "bytes": 156202,
+          "compress": false,
+          "auditSafeAlone": true
+        }
+      }
+    }
+  }
+}

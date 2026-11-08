@@ -20,7 +20,12 @@ import {
 import { eq, inArray, type InferSelectModel } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
-import { normalizeQuestionOptions, normalizeQuestionType, parseAnswer } from '@/modules/question/question-contract';
+import {
+  normalizeQuestionOptions,
+  normalizeQuestionType,
+  resolveQuestionAnswerForScoring,
+  resolveQuestionCorrectAnswerForScoring,
+} from '@/modules/question/question-contract';
 
 import type { AnswerEvaluationEngine } from '../answer-engine/answer.engine';
 import { ExamObserver } from '../exam-engine/exam.observer';
@@ -41,37 +46,11 @@ type ScorableQuestion = {
 };
 
 function resolveAnswerForScoring(question: ScorableQuestion, answer: string): string {
-  const normalizedType = normalizeQuestionType(question.type);
-  const normalizedOptions = normalizeQuestionOptions(question.options);
-
-  if (normalizedOptions.length === 0) {
-    return normalizedType === 'multi_select' ? parseAnswer(answer).join(',') : answer.trim();
-  }
-
-  const answerIds = normalizedType === 'multi_select' ? parseAnswer(answer) : [answer.trim()];
-  const optionById = new Map(normalizedOptions.map((option) => [option.id.toLowerCase(), option]));
-  const optionByLabel = new Map(
-    normalizedOptions
-      .filter((option) => typeof option.label === 'string' && option.label.trim() !== '')
-      .map((option) => [option.label!.toLowerCase(), option])
-  );
-
-  const resolvedAnswers = answerIds.map((answerId) => {
-    const key = answerId.toLowerCase();
-    const option = optionById.get(key) ?? optionByLabel.get(key);
-    return option?.text ?? option?.code ?? option?.label ?? answerId;
-  });
-
-  return resolvedAnswers.join(',');
+  return resolveQuestionAnswerForScoring(question, answer);
 }
 
 function resolveCorrectAnswerForScoring(question: ScorableQuestion): string {
-  const normalizedOptions = normalizeQuestionOptions(question.options);
-  const flaggedCorrect = normalizedOptions
-    .filter((option) => option.isCorrect === true)
-    .map((option) => option.text ?? option.code ?? option.label ?? option.id);
-
-  return flaggedCorrect.length > 0 ? flaggedCorrect.join(',') : question.correctAnswer ?? '';
+  return resolveQuestionCorrectAnswerForScoring(question);
 }
 
 export class ScoringEngine {

@@ -4,7 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { badRequest, forbidden, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
+import {
+  isLearnerExportBrand,
+  resolveStoredExamBrand,
+  resolveStoredJobBrand,
+} from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
+import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -32,13 +38,30 @@ export async function GET(req: NextRequest) {
     }
 
     // Authenticate
-    const token = container.get(TokenService).getAccessToken(req, { scope: 'user' });
-    if (token === null || token === undefined) {
+    const tokenService = container.get(TokenService);
+    const token = tokenService.getAccessToken(req, { scope: 'user' });
+    if (token === null || token === undefined || token === '') {
       throw unauthorized('Unauthorized');
     }
-    const payload = await container.get(TokenService).verifyUserAccessToken(token);
+    let payload;
+    try {
+      payload = await tokenService.verifyUserAccessToken(token);
+    } catch {
+      throw unauthorized('Unauthorized');
+    }
     if (!payload?.userId) {
       throw unauthorized('Unauthorized');
+    }
+    if (
+      !isLearnerExportBrand(payload.brand) ||
+      hasConflictingRequestTenantContext(
+        payload.brand,
+        payload.tokenType,
+        req.headers,
+        new URL(req.url).hostname
+      )
+    ) {
+      throw forbidden('Forbidden');
     }
 
     let fileRef: string;
@@ -50,7 +73,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Job not found' }, { status: 404 });
       }
 
-      if (job.userId !== payload.userId) {
+      const jobBrand = resolveStoredJobBrand(job);
+      if (job.userId !== payload.userId || jobBrand !== payload.brand) {
         throw forbidden('Forbidden');
       }
 
@@ -73,7 +97,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
       }
 
-      if (exam.userId !== payload.userId) {
+      const examBrand = resolveStoredExamBrand(exam);
+      if (exam.userId !== payload.userId || examBrand !== payload.brand) {
         throw forbidden('Forbidden');
       }
 
@@ -101,6 +126,14 @@ export async function GET(req: NextRequest) {
       format = 'csv';
     } else if (lowerUrl.endsWith('.json')) {
       format = 'json';
+    }
+
+    // Enforce brand/tenant provenance on scoped export keys when present
+    if (fileRef.startsWith('exports/realtutorialhub/') || fileRef.startsWith('exports/skillup/')) {
+      const [, keyBrand] = fileRef.split('/', 3);
+      if (keyBrand !== payload.brand) {
+        throw forbidden('Forbidden: Cross-brand export access denied');
+      }
     }
 
     const readUrl = await storage.getReadUrl(fileRef);

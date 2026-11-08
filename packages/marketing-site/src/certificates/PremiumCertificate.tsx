@@ -148,11 +148,13 @@ function CertificateCanvas({
   data,
   certificateRef,
   withShadow,
+  isPreview,
 }: {
   branding: PremiumCertificateProps["branding"];
   data: PremiumCertificateProps["data"];
   certificateRef?: PremiumCertificateProps["certificateRef"];
   withShadow: boolean;
+  isPreview: boolean;
 }) {
   const patternId = `${branding.brandShortName}-waves`;
   const topArcStart = branding.brandId === "skillupitacademy" ? 286 : 240;
@@ -172,6 +174,7 @@ function CertificateCanvas({
         position: "relative",
       }}
     >
+      {isPreview && <div style={{ position: "absolute", top: 500, left: 0, right: 0, zIndex: 10, textAlign: "center", fontFamily: "Arial, sans-serif", fontSize: 72, fontWeight: 800, color: "rgba(150, 0, 0, 0.65)", transform: "rotate(-15deg)", pointerEvents: "none" }}>SAMPLE — NOT ISSUED</div>}
       <svg
         width="100%"
         height="100%"
@@ -481,7 +484,7 @@ function CertificateCanvas({
                 background: "#ffffff",
               }}
             >
-              <CertificateQr value={data.verificationUrl} color="#111111" size={104} />
+              {!isPreview && <CertificateQr value={data.verificationUrl} color="#111111" size={104} />}
             </div>
             <div
               style={{
@@ -493,8 +496,7 @@ function CertificateCanvas({
                 wordBreak: "break-all",
               }}
             >
-              <div>Verify this certificate at</div>
-              <div>{data.verificationUrl}</div>
+              {isPreview ? <div>Sample preview; verification unavailable</div> : <><div>Verify this certificate at</div><div>{data.verificationUrl}</div></>}
             </div>
           </div>
 
@@ -646,6 +648,7 @@ export function PremiumCertificate({
   branding,
   data,
   fitToViewport = true,
+  isPreview = false,
   certificateRef,
 }: PremiumCertificateProps) {
   const [scale, setScale] = useState(1);
@@ -680,6 +683,7 @@ export function PremiumCertificate({
           data={data}
           certificateRef={certificateRef}
           withShadow={false}
+          isPreview={isPreview}
         />
       </>
     );
@@ -723,6 +727,7 @@ export function PremiumCertificate({
             data={data}
             certificateRef={certificateRef}
             withShadow
+            isPreview={isPreview}
           />
         </div>
       </div>

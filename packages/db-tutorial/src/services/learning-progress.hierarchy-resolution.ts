@@ -17,9 +17,74 @@
  * - Time tracking
  */
 
+import { CodeBlockSchema, MAX_BLOCKS_PER_DOCUMENT, MAX_NESTING_DEPTH } from '@quiz/types';
 import type { AuthenticatedIdentity } from './learning-progress.types';
-import { InvalidNavigationHierarchyError } from './learning-progress.types';
+import { InvalidBlockCompletionError, InvalidNavigationHierarchyError } from './learning-progress.types';
 import type { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
+
+const UNVERSIONED_STRUCTURAL_TYPES = new Set([
+  'heading', 'paragraph', 'list', 'code', 'table', 'image', 'callout', 'example',
+  'quote', 'diagram', 'comparison', 'two-column', 'three-column', 'card-grid', 'timeline',
+]);
+
+/** Validate an ID/version against the resolved document, including supported containers. */
+export async function validateCompletionMembership(
+  sectionRepository: TutorialSectionRepository,
+  subtopicId: string,
+  navigationNodeId: string,
+  identity: AuthenticatedIdentity,
+  blockId: string,
+  blockVersion: string,
+  allowStructural = false,
+): Promise<void> {
+  const section = await sectionRepository.getTutorialByPageIdentity(subtopicId, navigationNodeId, identity.brand);
+  const document = section?.content as unknown;
+  const fail = (): never => { throw new InvalidBlockCompletionError('Block identity is not present in current tutorial content'); };
+  const record = (value: unknown): Record<string, unknown> => {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return fail();
+    return value as Record<string, unknown>;
+  };
+  const root = record(document);
+  if (root.schemaVersion !== 1 || !Array.isArray(root.blocks) || root.blocks.length > MAX_BLOCKS_PER_DOCUMENT) return fail();
+  const seen = new Set<string>();
+  const seenArrays = new WeakSet<object>();
+  let matches = 0;
+  const walk = (blocks: unknown, depth: number): void => {
+    if (!Array.isArray(blocks) || depth > MAX_NESTING_DEPTH) return fail();
+    if (seenArrays.has(blocks)) return fail();
+    seenArrays.add(blocks);
+    for (const value of blocks) {
+      const block = record(value);
+      if (typeof block.id !== 'string' || !block.id.trim() || typeof block.type !== 'string' || !block.type.trim()) return fail();
+      record(block.content);
+      if (block.version !== undefined && (typeof block.version !== 'string' || !block.version.trim())) return fail();
+      if (seen.has(block.id)) return fail();
+      seen.add(block.id);
+      const matchesVersion = block.version === blockVersion ||
+        (allowStructural && block.version === undefined && blockVersion === 'unversioned' &&
+          UNVERSIONED_STRUCTURAL_TYPES.has(block.type) &&
+          (block.type !== 'code' || CodeBlockSchema.safeParse(block).success) &&
+          (block.progressRole === undefined || block.progressRole === 'structural'));
+      if (block.id === blockId && matchesVersion) matches++;
+      if (block.type === 'two-column') {
+        const content = record(block.content);
+        walk(record(content.left).blocks, depth + 1);
+        walk(record(content.right).blocks, depth + 1);
+      } else if (block.type === 'three-column' || block.type === 'card-grid' || block.type === 'timeline') {
+        const content = record(block.content);
+        const entries = block.type === 'three-column' ? content.columns : block.type === 'card-grid' ? content.cards : content.items;
+        if (!Array.isArray(entries) || (block.type === 'three-column' && entries.length !== 3)) return fail();
+        for (const entry of entries) {
+          const child = record(entry);
+          if (block.type !== 'timeline' || child.blocks !== undefined) walk(child.blocks, depth + 1);
+        }
+      }
+    }
+    seenArrays.delete(blocks);
+  };
+  walk(root.blocks, 0);
+  if (matches !== 1) fail();
+}
 
 /**
  * Resolve required blocks from canonical section content

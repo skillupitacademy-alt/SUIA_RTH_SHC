@@ -18,6 +18,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import { LearningProgressService, type AuthenticatedIdentity } from '../learning-progress.service';
+vi.mock('../../db', () => ({ db: { transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn({}) } }));
 import type { ITutorialNavigationProgressRepository } from '@quiz/types';
 import type { TutorialSectionRepository } from '../../repositories/tutorial-section.repository';
 import type { BlockLearningStateRepository, BlockLearningState } from '../../repositories/block-learning-state.repository';
@@ -30,6 +31,7 @@ import type { TutorialSection } from '../../schema/tutorial-sections';
 // Mock section repository for hierarchy validation
 class MockSectionRepository {
   private sections: Map<string, TutorialSection> = new Map();
+  version = 'D1';
 
   async getTutorialByPageIdentity(
     subtopicId: string,
@@ -37,7 +39,9 @@ class MockSectionRepository {
     brandId: string = 'shared'
   ): Promise<TutorialSection | undefined> {
     const key = `${subtopicId}:${navigationNodeId}:${brandId}`;
-    return this.sections.get(key);
+    const section = this.sections.get(key);
+    if (section) section.content = { schemaVersion: 1, blocks: [{ id: 'block-1', type: 'definition', version: this.version, content: {} }] } as never;
+    return section;
   }
 
   registerSection(
@@ -378,6 +382,7 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
         'session-1'
       );
 
+      mockSectionRepo.version = 'D2';
       const v2 = await service.recordBlockVisit(
         testIdentity,
         'node-1',
@@ -398,6 +403,22 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
   // ==========================================================================
 
   describe('recordBlockActiveTime', () => {
+    it('acknowledges duplicate and rejects conflicting immutable event content', async () => {
+      const eventId = randomUUID();
+      const submit = (amount: number) => service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', 'block-1', 'D1', eventId, amount);
+      const first = await submit(30); const duplicate = await submit(30);
+      expect(first.wasProcessed).toBe(true); expect(duplicate.wasAlreadyProcessed).toBe(true);
+      expect(duplicate.state.activeTimeSec).toBe(30);
+      await expect(submit(31)).rejects.toMatchObject({ code: 'EVENT_PAYLOAD_CONFLICT' });
+    });
+    it('claims concurrent same event only once in the isolated in-memory adapter', async () => {
+      const eventId = randomUUID();
+      const submit = () => service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', 'block-1', 'D1', eventId, 30);
+      const results = await Promise.all([submit(), submit()]);
+      expect(results.filter(result => result.wasProcessed)).toHaveLength(1);
+      expect(results.filter(result => result.wasAlreadyProcessed)).toHaveLength(1);
+      expect(results.map(result => result.state.activeTimeSec)).toEqual([30, 30]);
+    });
     it('accumulates active time', async () => {
       // Phase D-2: Generate unique event IDs
       const eventId1 = randomUUID();

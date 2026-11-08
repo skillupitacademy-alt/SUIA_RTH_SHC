@@ -1,0 +1,5 @@
+# FND13 upcoming session display manifest
+
+Baseline 46853be4. Dashboard calls all scheduled status rows upcoming regardless of date and displays first three descending sessions under Upcoming; batches page labels an unfiltered schedule upcoming. Use same nearest-future scheduled criterion established by fa09457f for dashboard count/list and batch schedule while retaining full session history for other consumers. Capture current time once per helper; sort a copy ascending. Add real-helper controls with future, past and completed fixtures and retain no-session/owner paths. No DB/browser; offline guard. Sol review required.
+
+Manifest amendment before edit: dashboard now returns upcoming-only session list, so its prior progress display gate based on `sessions.length` would hide a real zero/completed metric when no future session exists. Preserve measured progress independently by returning null only when there are no total batch sessions, and test completed-only versus empty. This does not certify the existing progress formula.

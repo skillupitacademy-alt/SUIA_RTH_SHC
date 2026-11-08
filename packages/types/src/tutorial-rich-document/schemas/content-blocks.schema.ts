@@ -67,6 +67,7 @@ export const ListBlockSchema = z.object({
 export const CodeBlockSchema = z.object({
   id: BlockIdSchema,
   type: z.literal('code'),
+  version: z.undefined().optional(),
   content: z.object({
     language: CodeLanguageSchema,
     code: z.string().min(1),
@@ -226,7 +227,7 @@ export const SummaryS1BlockSchema = z.object({
   presentation: PresentationConfigSchema.optional(),
   expectedTimeSec: z.number().int().positive().optional(),
   progressRole: BlockProgressRoleSchema.default('instructional').optional(),
-}).strict();
+});
 
 /**
  * Summary Block Schema (Version Union)

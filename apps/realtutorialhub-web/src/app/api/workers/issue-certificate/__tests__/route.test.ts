@@ -1,7 +1,15 @@
 import { SignatureError } from '@upstash/qstash';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createIsolatedTestOutboxRepository } from '../../worker-lease';
+
+const testOutboxRepo = createIsolatedTestOutboxRepository();
 
 const fakeTx = {
+  select: vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(async () => []),
+    })),
+  })),
   insert: vi.fn(() => ({
     values: vi.fn(() => ({
       returning: vi.fn(async () => [{
@@ -15,6 +23,12 @@ const fakeTx = {
       }]),
     })),
   })),
+  update: vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(async () => undefined),
+    })),
+  })),
+  upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
 };
 
 const mocks = vi.hoisted(() => ({
@@ -49,6 +63,7 @@ vi.mock('@upstash/redis', () => ({
     get = mocks.redisGet;
     set = mocks.redisSet;
     del = vi.fn();
+    eval = vi.fn(async (_script: string, _keys: string[], _args: Array<string | number>) => 1);
     constructor() {}
   },
 }));
@@ -76,6 +91,21 @@ vi.mock('@quiz/db-tutorial', () => ({
         where: vi.fn(async () => []),
       })),
     })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        returning: vi.fn(async () => []),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(async () => undefined),
+      })),
+    })),
+    claimIntent: (input: any) => testOutboxRepo.claimIntent(input),
+    markPublished: (input: any) => testOutboxRepo.markPublished(input),
+    markFailed: (input: any) => testOutboxRepo.markFailed(input),
+    findIntent: (t: any, e: any, a: any) => testOutboxRepo.findIntent!(t, e, a),
+    upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
     transaction: mocks.dbTransaction,
   },
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),
@@ -175,5 +205,32 @@ describe('issue certificate worker', () => {
     }));
 
     expect(response.status).toBe(401);
+  });
+
+  it('fails closed with 500 when QSTASH_TOKEN is absent', async () => {
+    vi.stubEnv('QSTASH_TOKEN', '');
+
+    const response = await POST(makeRequest({
+      id: crypto.randomUUID(),
+      type: 'project.certificate_requested',
+      correlationId: crypto.randomUUID(),
+      source: 'quiz-platform',
+      occurredAt: new Date().toISOString(),
+      version: 1,
+      data: {
+        userId,
+        scope: 'topic',
+        parentId,
+        parentName: 'Topic One',
+      },
+    }));
+
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('error');
+    expect(mocks.loggerError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.stringContaining('QSTASH_TOKEN'),
+      })
+    );
   });
 });

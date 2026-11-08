@@ -26,6 +26,8 @@ export type { RBACUser } from './rbac.adapter';
 // Ownership-based RBAC
 export { OwnershipRBACService, createOwnershipChecker } from './ownership.service';
 export type { OwnershipContext } from './ownership.service';
+export const requireAdminProfileManagementAuthority = OwnershipRBACService.requireAdminProfileManagementAuthority.bind(OwnershipRBACService);
+export const hasAdminProfileManagementAuthority = OwnershipRBACService.hasAdminProfileManagementAuthority.bind(OwnershipRBACService);
 
 // RBAC Guard (Wrapper)
 export { withRBAC, withOwnershipRBAC, withPermissionRBAC } from './rbac.guard';

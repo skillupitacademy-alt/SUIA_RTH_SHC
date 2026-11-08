@@ -13,11 +13,21 @@ import {
 } from './presentation.schema';
 
 // Forward declaration for recursive block schema
-// This will be properly defined in blocks.schema.ts
+// Properly bound in blocks.schema.ts to enforce recursive canonical validation
 export type TutorialBlockSchemaType = z.ZodType<any>;
 
-// Placeholder that will be replaced with actual recursive schema
-export const TutorialBlockSchemaLazy: TutorialBlockSchemaType = z.lazy(() => z.any());
+let boundTutorialBlockSchema: TutorialBlockSchemaType | undefined;
+
+export function bindTutorialBlockSchema(schema: TutorialBlockSchemaType): void {
+  boundTutorialBlockSchema = schema;
+}
+
+export const TutorialBlockSchemaLazy: TutorialBlockSchemaType = z.lazy(() => {
+  if (!boundTutorialBlockSchema) {
+    throw new Error('TutorialBlockSchema has not been bound to TutorialBlockSchemaLazy');
+  }
+  return boundTutorialBlockSchema;
+});
 
 // ============================================================
 // CONTAINER BLOCKS

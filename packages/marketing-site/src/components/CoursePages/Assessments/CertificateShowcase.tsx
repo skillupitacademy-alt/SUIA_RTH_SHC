@@ -63,6 +63,7 @@ function ScaledCertificate({ branding, data }: { branding: any; data: any }) {
           branding={branding}
           data={data}
           fitToViewport={false}
+          isPreview
         />
       </div>
     </div>

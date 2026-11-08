@@ -59,6 +59,7 @@ export * from './domain-content-config';
 export * from './content-generation-jobs';
 export * from './subtopic-flow-progress';
 export * from './student-streaks';
+export * from './event-outbox';
 
 import * as enums from './enums';
 
@@ -117,6 +118,7 @@ import * as domainContentConfigModule from './domain-content-config';
 import * as contentGenerationJobsModule from './content-generation-jobs';
 import * as subtopicFlowProgressModule from './subtopic-flow-progress';
 import * as studentStreaksModule from './student-streaks';
+import * as eventOutboxModule from './event-outbox';
 
 export const schema = {
   ...enums,
@@ -176,4 +178,5 @@ export const schema = {
   ...contentGenerationJobsModule,
   ...subtopicFlowProgressModule,
   ...studentStreaksModule,
+  ...eventOutboxModule,
 };

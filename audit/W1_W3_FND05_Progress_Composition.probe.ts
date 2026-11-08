@@ -1,0 +1,33 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
+import { TokenService } from '@quiz/auth';
+import { proxy } from '@central-proxy';
+import { GET } from '@skillup-progress';
+import { requireStudentAuth } from '@/lib/student-auth';
+vi.mock('@central-rbac', () => ({ _verifyActiveAccount: vi.fn(), _verifyAdmin: vi.fn() }));
+vi.mock('@/lib/student-auth', () => ({ requireStudentAuth: vi.fn() }));
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.clearAllMocks(); });
+it('preserves tutorial exemption and denies an empty key on a non-exempt path', async () => {
+  vi.stubEnv('INTERNAL_API_KEY', '');
+  vi.stubEnv('INTERNAL_API_URL', 'http://isolated.invalid');
+  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'learner', payload: { userId: 'learner' } as never });
+  const token = await new TokenService().generateAccessToken({ userId: 'learner', originalUserId: 'learner', shadowUserId: 'shadow', email: 'fixture@example.invalid', roles: ['student'], brand: 'skillup', tokenType: 'user', aud: 'user' });
+  let gateStatus = 0;
+  const upstream = vi.fn(async (url: string, options: RequestInit) => {
+    const gate = await proxy(new NextRequest(url, options));
+    gateStatus = gate.status;
+    if (gate.headers.get('x-middleware-next') !== '1') return new Response(null, { status: gate.status });
+    return Response.json({ data: {} });
+  });
+  vi.stubGlobal('fetch', upstream);
+  const response = await GET(new NextRequest('http://skillup.localhost/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111', { headers: { authorization: `Bearer ${token}` } }));
+  expect(gateStatus).toBe(200);
+  expect(response.status).toBe(200);
+  expect(new Headers(upstream.mock.calls[0][1].headers).get('x-internal-key')).toBe('');
+  const allowed = await proxy(new NextRequest('http://isolated.invalid/api/private-probe', { headers: { authorization: `Bearer ${token}` } }));
+  expect(allowed.headers.get('x-middleware-next')).toBe('1');
+  const bad = await proxy(new NextRequest('http://isolated.invalid/api/private-probe', { headers: { authorization: `Bearer ${token}`, 'x-internal-key': '' } }));
+  expect(bad.status).toBe(403);
+  const wrong = await proxy(new NextRequest('http://isolated.invalid/api/private-probe', { headers: { authorization: `Bearer ${token}`, 'x-internal-key': 'wrong' } }));
+  expect(wrong.status).toBe(403);
+});

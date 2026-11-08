@@ -6,7 +6,13 @@ import { eventBus } from '@/lib/event-bus';
 import { AppEvents } from '@/lib/events';
 import { ExportAggregator } from '@/lib/export/exportAggregator';
 import { ExportQueryBuilder } from '@/lib/export/exportQueryBuilder';
-import { ExportFormat, ExportPayload } from '@/lib/export/exportTypes';
+import {
+  type ExportFormat,
+  type ExportPayload,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+} from '@/lib/export/exportTypes';
 import { CsvFormatter } from '@/lib/export/formatters/csvFormatter';
 import { JsonFormatter } from '@/lib/export/formatters/jsonFormatter';
 import { logger } from '@/lib/logger';
@@ -29,15 +35,35 @@ async function getWorkflowHandler() {
       examId: string;
       userId: string;
       format: ExportFormat;
+      brand?: LearnerExportBrand;
       jobId: string;
     }>(async (context) => {
       const { examId, userId, format, jobId } = context.requestPayload;
+      const rawBrand = (context.requestPayload as { brand?: unknown }).brand;
+      const payloadBrand = isLearnerExportBrand(rawBrand) ? rawBrand : undefined;
+      let brandId: LearnerExportBrand | undefined = payloadBrand;
+      if (brandId === undefined) {
+        try {
+          const examRow = await db.query.exams.findFirst({
+            where: eq(exams.id, examId),
+            columns: { userId: true, exportUrls: true },
+          });
+          if (examRow && examRow.userId === userId) {
+            brandId = resolveStoredExamBrand(examRow);
+          }
+        } catch (error: unknown) {
+          log.warn({ err: error, jobId, examId }, 'Failed to resolve exam brand in export workflow');
+        }
+      }
+      if (!isLearnerExportBrand(brandId)) {
+        throw new Error('Export workflow requires verified learner brand provenance');
+      }
       const stateKey = `export:workflow:${jobId}`;
       const queryBuilder = new ExportQueryBuilder();
       const aggregator = new ExportAggregator();
       const jsonFormatter = new JsonFormatter();
       const csvFormatter = new CsvFormatter();
-      const cacheKey = `export:${examId}:${userId}:${format}`;
+      const cacheKey = `export:${brandId}:${examId}:${userId}:${format}`;
 
   const persistState = async (state: Record<string, unknown>) => {
     try {
@@ -60,7 +86,7 @@ async function getWorkflowHandler() {
 
       await persistState({ step: 'aggregate-data', examId, userId, format });
       // ExportEngine handles formatter + ReportPdfService + upload + exams.export_urls persistence.
-      const ref = await engine.processExport(examId, userId, 'student-insight-pdf');
+      const ref = await engine.processExport(examId, userId, 'student-insight-pdf', brandId);
 
       await persistState({ step: 'render-pdf', examId, userId, format });
       await persistState({ step: 'upload-report', examId, userId, format });
@@ -106,34 +132,24 @@ async function getWorkflowHandler() {
     log.info({ examId, jobId }, 'Step: Fetch Raw Data');
     await JobsService.updateJobStatus(jobId, JobStatus.PROCESSING);
 
-    // Idempotency: check cache and DB before heavy work
-    try {
-      const cachedUrl = await redis.get<string>(cacheKey);
-      if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
-        log.info({ examId, jobId, format }, 'Export workflow cache hit');
-        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
-          result: {
-            examId,
-            format,
-            downloadUrl: cachedUrl,
-            completedAt: new Date().toISOString()
-          }
-        });
-        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: cachedUrl } as const;
-      }
-      log.info({ examId, jobId, format }, 'Export workflow cache miss');
-    } catch (error: unknown) {
-      log.warn({ err: error, jobId, examId }, 'Export workflow cache read failed');
-    }
-
     try {
       const examRow = await db.query.exams.findFirst({
         where: eq(exams.id, examId),
-        columns: { exportUrls: true }
+        columns: { userId: true, exportUrls: true }
       });
-      const existingUrl = format === 'json'
-        ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
-        : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv;
+      if (examRow && examRow.userId !== userId) {
+        throw new Error('Unauthorized export workflow: exam ownership mismatch');
+      }
+      const storedBrand = resolveStoredExamBrand(examRow);
+      if (storedBrand !== undefined && storedBrand !== brandId) {
+        throw new Error('Unauthorized export workflow: exam brand provenance mismatch');
+      }
+      const existingUrl =
+        storedBrand === brandId
+          ? (format === 'json'
+              ? (examRow?.exportUrls as { analytics_json?: string } | null)?.analytics_json
+              : (examRow?.exportUrls as { analytics_csv?: string } | null)?.analytics_csv)
+          : undefined;
       if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
         log.info({ examId, jobId, format }, 'Export workflow idempotency hit from exams.export_urls');
         try {
@@ -145,6 +161,8 @@ async function getWorkflowHandler() {
           result: {
             examId,
             format,
+            brand: brandId,
+            tenantId: brandId,
             downloadUrl: existingUrl,
             completedAt: new Date().toISOString()
           }
@@ -152,7 +170,31 @@ async function getWorkflowHandler() {
         return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: existingUrl } as const;
       }
     } catch (error: unknown) {
+      if (error instanceof Error && error.message.startsWith('Unauthorized export workflow')) {
+        throw error;
+      }
       log.warn({ err: error, jobId, examId }, 'Export workflow idempotency lookup failed');
+    }
+
+    try {
+      const cachedUrl = await redis.get<string>(cacheKey);
+      if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
+        log.info({ examId, jobId, format }, 'Export workflow cache hit');
+        await JobsService.updateJobStatus(jobId, JobStatus.COMPLETED, {
+          result: {
+            examId,
+            format,
+            brand: brandId,
+            tenantId: brandId,
+            downloadUrl: cachedUrl,
+            completedAt: new Date().toISOString()
+          }
+        });
+        return { meta: null, currentRows: [], historicalRows: [], shortCircuitUrl: cachedUrl } as const;
+      }
+      log.info({ examId, jobId, format }, 'Export workflow cache miss');
+    } catch (error: unknown) {
+      log.warn({ err: error, jobId, examId }, 'Export workflow cache read failed');
     }
 
     const [meta, currentRows, historicalRows] = await Promise.all([
@@ -207,7 +249,7 @@ async function getWorkflowHandler() {
     const buffer = format === 'csv' ? await csvFormatter.formatAsZip(payload) : jsonFormatter.format(payload);
     const contentType = format === 'csv' ? 'application/zip' : 'application/json';
     const extension = format === 'csv' ? 'zip' : 'json';
-    const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
+    const filename = `exports/${brandId}/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
     const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
     await persistState({ step: 'upload-to-storage', examId, userId, format, downloadUrl: fileRef, bufferBytes: buffer.length });
     return fileRef;

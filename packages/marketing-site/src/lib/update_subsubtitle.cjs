@@ -57,7 +57,7 @@ if (match) {
           
       const replacementText = getReplacement(current.title);
       
-      const replacedSlice = slice.replace(/subSubtitle:\s*['"][^'"]+['"]/, \`subSubtitle: "\${replacementText}"\`);
+      const replacedSlice = slice.replace(/subSubtitle:\s*['"][^'"]+['"]/, `subSubtitle: "${replacementText}"`);
       resultStr = resultStr.substring(0, current.index) + replacedSlice + resultStr.substring(next);
       
       // Update indices since length changed

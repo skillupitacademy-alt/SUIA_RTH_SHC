@@ -1,0 +1,143 @@
+
+ RUN  v4.1.0 E:/onlinewebsites/quiz-platform
+
+·xx·xxxxx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  audit/Sol_Durable_State_Probe_5abcd87a.test.ts > issued invitation remains redeemable by a fresh application module instance
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ audit/Sol_Durable_State_Probe_5abcd87a.test.ts:20:164
+     18|   vi.resetModules();
+     19|   const freshApplication = await import(invitationModule);
+     20|   expect(freshApplication.redeemStudentInvitationToken({ invitationTok…
+       |                                                                                                                                                                    ^
+     21| });
+     22|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  audit/Sol_Durable_State_Probe_5abcd87a.test.ts > pending publication intent survives a fresh application module instance
+AssertionError: expected undefined to match object { …(2) }
+
+- Expected:
+{
+  "eventId": "e1785c4f-86f4-4f05-b3f2-a071ce13cb23",
+  "status": "pending",
+}
+
++ Received:
+undefined
+
+ ❯ audit/Sol_Durable_State_Probe_5abcd87a.test.ts:29:115
+     27|   vi.resetModules();
+     28|   const freshWorker = await import(workerModule);
+     29|   expect(await freshWorker.getWorkerOutboxIntent('realtutorialhub', 'c…
+       |                                                                                                                   ^
+     30| });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  audit/Sol_Durable_State_Probe_5abcd87a.test.ts > a competing dispatcher cannot publish the same in-flight intent
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ audit/Sol_Durable_State_Probe_5abcd87a.test.ts:44:20
+     42|   release();
+     43|   await Promise.allSettled([first, second]);
+     44|   expect(observed).toBe(1);
+       |                    ^
+     45| });
+     46|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  audit/Sol_Durable_State_Probe_5abcd87a.test.ts > an existing event identity cannot silently replace its publication payload
+AssertionError: expected { userId: 'different-user' } to deeply equal { userId: 'original-user' }
+
+- Expected
++ Received
+
+  {
+-   "userId": "original-user",
++   "userId": "different-user",
+  }
+
+ ❯ audit/Sol_Durable_State_Probe_5abcd87a.test.ts:54:26
+     52|   try { await worker.upsertWorkerOutboxIntent({ ...input, payload: { u…
+     53|   catch { /* Explicit payload conflict is permitted. */ }
+     54|   expect(intent.payload).toEqual({ userId: 'original-user' });
+       |                          ^
+     55| });
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts > a failed password persistence does not irreversibly consume the invitation
+AssertionError: expected 409 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 409
+
+ ❯ audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts:42:68
+     40|   state.failUpdate = false;
+     41|   state.affected = 1;
+     42|   expect((await POST(request(invitation.invitationToken))).status).toB…
+       |                                                                    ^
+     43| });
+     44|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts > zero affected account rows cannot be reported as successful activation
+AssertionError: expected 200 not to be 200 // Object.is equality
+ ❯ audit/Sol_Invitation_Commit_Probe_5abcd87a.test.ts:49:72
+     47|   state.failUpdate = false;
+     48|   state.affected = 0;
+     49|   expect((await POST(request(invitation.invitationToken))).status).not…
+       |                                                                        ^
+     50| });
+     51|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  audit/Sol_Publication_Identity_Probe_5abcd87a.test.ts > republication with a stable event ID remains an exact duplicate for the real consumer
+AssertionError: expected 409 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 409
+
+ ❯ audit/Sol_Publication_Identity_Probe_5abcd87a.test.ts:37:63
+     35|   });
+     36|   expect((await consume(request(captured.bodies[0]))).status).toBe(200…
+     37|   expect((await consume(request(captured.bodies[1]))).status).toBe(200…
+       |                                                               ^
+     38|   expect(effect).toHaveBeenCalledOnce();
+     39| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  7 failed | 2 passed (9)
+   Start at  05:27:53
+   Duration  1.34s (transform 93ms, setup 67ms, import 257ms, tests 262ms, environment 0ms)

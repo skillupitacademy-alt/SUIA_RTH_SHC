@@ -1,0 +1,3 @@
+# FND19 taxonomy schema adverse control manifest
+
+Baseline 25167351. Active `TopicTable` emits named `complexity`; central `topicSchema` defines numeric `complexityLevel` and strips unknown fields. Add isolated actual-schema sensitivity control retaining the invariant that a caller-selected value must not silently disappear, alongside numeric valid and malformed numeric controls. No policy choice or mapping is assumed and no production edits; existing schema source is outside explicitly enumerated roots. The test does not exercise mounted client, HTTP, engine or database. Offline guard and config-free Vitest. Sol review and contract decision required.

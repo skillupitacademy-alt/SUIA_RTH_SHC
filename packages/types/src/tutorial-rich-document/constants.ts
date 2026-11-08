@@ -27,6 +27,11 @@ export const MAX_BLOCK_ID_LENGTH = 50;
 export const MAX_BLOCKS_PER_DOCUMENT = 500;
 
 /**
+ * Maximum total block/container nodes across an entire document tree (D6 traversal guard)
+ */
+export const MAX_TOTAL_DOCUMENT_NODES = 10_000;
+
+/**
  * Maximum items in a list
  */
 export const MAX_LIST_ITEMS = 100;

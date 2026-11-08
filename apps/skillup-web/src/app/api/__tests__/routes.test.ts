@@ -141,13 +141,14 @@ describe('SkillUp BFF routes', () => {
 
     mocks.getSkillupPlacement.mockResolvedValue({
       profile: {
-        roleGoal: 'Frontend Developer',
-        resumeStatus: 'Ready for review',
-        profileCompletion: 82,
-        interviewCount: 4,
+        roleGoal: null,
+        resumeStatus: null,
+        profileCompletion: null,
         skills: ['React', 'Next.js'],
+        readinessScore: 82,
       },
       jobs: [{ id: 'job-1', company: 'BrightStack', title: 'Junior Frontend Engineer', location: 'Bengaluru', match: 94 }],
+      matchingStatus: 'matched',
     });
 
     mocks.getSkillupBatches.mockResolvedValue({
@@ -230,10 +231,12 @@ describe('SkillUp BFF routes', () => {
 
   it('returns placement data', async () => {
     const response = await getPlacement(new Request('http://localhost/api/student/placement') as Request);
-    const payload = await readJson<{ profile: { roleGoal: string }; jobs: unknown[] }>(response);
+    const payload = await readJson<{ profile: { skills: string[] } | null; jobs: unknown[]; matchingStatus: string }>(response);
     expect(response.status).toBe(200);
-    expect(payload.profile.roleGoal).toBeTruthy();
+    expect(payload.profile).not.toBe(null);
+    expect(payload.profile?.skills).toBeTruthy();
     expect(payload.jobs.length).toBeGreaterThan(0);
+    expect(payload.matchingStatus).toBeTruthy();
     expect(mocks.getSkillupPlacement).toHaveBeenCalledWith('student-1');
   });
 
@@ -261,6 +264,23 @@ describe('SkillUp BFF routes', () => {
     expect(response.status).toBe(401);
     expect(payload.error).toBe('Authentication required');
     expect(mocks.getSkillupStudentDashboard).not.toHaveBeenCalled();
+  });
+
+  it('rejects placement route without authentication', async () => {
+    mocks.requireStudentAuth.mockResolvedValueOnce({
+      ok: false,
+      response: new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      }),
+    });
+
+    const response = await getPlacement(new Request('http://localhost/api/student/placement') as Request);
+    const payload = await readJson<{ error: string }>(response);
+
+    expect(response.status).toBe(401);
+    expect(payload.error).toBe('Authentication required');
+    expect(mocks.getSkillupPlacement).not.toHaveBeenCalled();
   });
 
   it('returns faculty data', async () => {

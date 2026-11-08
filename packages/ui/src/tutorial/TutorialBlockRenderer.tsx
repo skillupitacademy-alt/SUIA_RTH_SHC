@@ -122,7 +122,14 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
       block={childBlock} 
       depth={childDepth} 
       theme={theme}
-      runtimeContext={runtimeContext}
+      runtimeContext={runtimeContext ? {
+        ...runtimeContext,
+        blockId: childBlock.id,
+        blockType: childBlock.type,
+        blockVersion: 'version' in childBlock && typeof childBlock.version === 'string'
+          ? childBlock.version
+          : 'unversioned',
+      } : undefined}
     />
   );
 

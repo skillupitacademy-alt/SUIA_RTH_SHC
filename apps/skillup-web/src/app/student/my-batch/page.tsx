@@ -10,16 +10,20 @@ type MyBatchResponse = {
     name: string;
     faculty: string;
     currentTopic: string;
-    nextSession: string;
+    nextSession: string | null;
     studentCount: number;
     schedule: Array<{ day: string; time: string; topic: string; mode: string }>;
     materials: string[];
-  };
+  } | null;
   sessions: SkillupSession[];
 };
 
 export default async function MyBatchPage() {
   const { batch, sessions } = await fetchSkillupApi<MyBatchResponse>('/api/student/my-batch');
+
+  if (!batch) {
+    return <section className="mx-auto max-w-7xl px-6 py-8"><p>No active batch enrollment is available.</p></section>;
+  }
 
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
@@ -34,7 +38,7 @@ export default async function MyBatchPage() {
           </div>
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4">
             <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Next session</p>
-            <p className="mt-2 text-lg font-black text-slate-950 font-outfit">{formatDateTime(batch.nextSession)}</p>
+            <p className="mt-2 text-lg font-black text-slate-950 font-outfit">{batch.nextSession ? formatDateTime(batch.nextSession) : 'Unavailable'}</p>
           </div>
         </div>
 

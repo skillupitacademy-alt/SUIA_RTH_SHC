@@ -11,10 +11,10 @@ type ProgramsResponse = {
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Programs | SkillUp IT Academy',
-    description: 'Explore the active SkillUp IT Academy programs.',
+    description: 'Explore SkillUp IT Academy programs.',
     openGraph: {
       title: 'Programs | SkillUp IT Academy',
-      description: 'Explore the active SkillUp IT Academy programs.',
+      description: 'Explore SkillUp IT Academy programs.',
     },
   };
 }
@@ -28,7 +28,7 @@ export default async function ProgramsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="section-kicker text-cyan-600">Programs</p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Active learning tracks</h1>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Learning tracks</h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               Course catalog cards follow the same light layout as the rest of the platform while keeping the content easy to scan.
             </p>
@@ -38,6 +38,7 @@ export default async function ProgramsPage() {
           </Link>
         </div>
 
+        {programs.length === 0 && <p className="mt-8 text-sm text-slate-600">No programs are currently available.</p>}
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {programs.map((program) => (
             <Link

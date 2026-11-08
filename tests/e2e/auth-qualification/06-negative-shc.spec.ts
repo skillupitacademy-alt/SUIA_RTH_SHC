@@ -1,0 +1,29 @@
+import { test, expect } from './fixtures/auth.fixtures';
+import { enforceReadinessBoundary } from './helpers/readiness';
+import { assertCookieAbsent } from './helpers/sanitized-evidence';
+
+test.describe('SHC Negative Authentication Qualification', () => {
+  test('AQ-06-SHC: Invalid credentials rejection and zero-cookie state on SHC', async ({ auth }, testInfo) => {
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'shc-chromium',
+      projectOrigin: process.env.SHC_BASE_URL,
+    });
+
+    // Attempt login with invalid credentials on /login via UI helper
+    await auth.loginViaUI('/login', 'invalid-admin@skillhubcore.invalid', 'InvalidPassword!999');
+
+    // Verify error feedback is visible
+    const errorAlert = auth.page.locator('.text-red-700, [role="alert"]').filter({ hasText: /invalid|failed|incorrect/i }).first();
+    await expect(errorAlert).toBeVisible({ timeout: 15000 });
+
+    // Verify URL did NOT navigate to dashboard or admin
+    expect(auth.page.url()).toContain('/login');
+
+    // Verify NO authentication cookies were set
+    const cookies = await auth.context.cookies();
+    assertCookieAbsent(cookies, 'accessToken');
+    assertCookieAbsent(cookies, 'refreshToken');
+    assertCookieAbsent(cookies, 'admin_accessToken');
+    assertCookieAbsent(cookies, 'admin_refreshToken');
+  });
+});

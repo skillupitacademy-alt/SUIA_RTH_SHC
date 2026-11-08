@@ -1,0 +1,15 @@
+# FND10 browser and physical-store readiness (partial)
+
+As of f596d3c1. These scenarios are NOT EXECUTED here. BROWSER-01 and RC-ID-01 remain IN_PROGRESS. No live service, browser, account, database or deployment is authorized in this assignment. Prior browser smoke is historical only and does not establish the new work.
+
+| Scenario and source provenance | Required preparation and decisive evidence |
+| --- | --- |
+| Independent SUIA/RTH learner sessions, same email/local IDs | Separately authorized isolated tenants/accounts and known equal-ID fixtures; record build/commit, domains, auth purpose and sanitized identity mapping; exercise login, logout and A-to-B continuously mounted and remount/delayed responses. Do not record cookies/tokens. |
+| Legacy tutorial progress | Same-brand browser -> learner progress BFF -> central route -> actual tenant store; legitimate read/write and colliding foreign user/tenant denials, trusted gateway forwarding and effect counts. `W1.2_Batch_08_Progress_Identity_Design.md` contains prior source lanes and compatibility history. |
+| Canonical completion and active-time | Renderer/provider -> BFF -> ILS route/service -> real repositories; unique page/block/version, parent/child, retries, visibility and rollback/dedup controls. Keep completion, telemetry and private persistence evidence separate. Resolve selected tenant store/identity authority first. |
+| Private export job and exam downloads | Seed owner and equal local-ID foreign tenant job/exam/blob in isolated infrastructure with independently verified provenance; demonstrate owner positive and foreign denial before Redis/storage access, plus malformed credentials and recovery. Current Sol probe has two foreign-tenant failures and policy is pending. |
+| SHC admin context | Independently provision permitted admin and denied learner/other-tenant principals, verified host/gateway context and resource classification; capture sanitized outcomes and zero privileged effects. Requires Sol classification before implementing any policy. |
+| Shared event processing | Controlled signed messages to isolated queue/store with supported event types; match/mismatch, duplicate, handler failure/retry and crash/commit boundaries; record IDs/counters without payloads or secrets. Current isolated registered-type probe fails, and event ownership/retry policy is pending. |
+| W2 truth views | Known persisted, zero, empty, unavailable and failed requests under both brands; capture data-source provenance and rendered states, including intentional unavailable SHC prototype pages. Requires reviewed build and isolated test data. |
+
+A separate authorized runtime plan must specify exact hosts/builds and isolated credentials, account/store ownership, a safe reversible cleanup plan, network access controls, command and evidence destinations. Commands are deployment-specific and cannot be truthfully finalized without those inputs. Do not paste credentials, cookie values, DB URLs or private data into evidence. This document is a readiness input, not an execution claim or closure.

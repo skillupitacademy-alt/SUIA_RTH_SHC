@@ -292,6 +292,273 @@ class WorkflowGovernanceService:
         workflow_model.state_transitions = transitions
         
         return _workflow_model_to_domain(workflow_model)
+
+    @staticmethod
+    def _validate_gate_1_approval_record(
+        workflow: ProjectLLMWorkflow,
+        triggered_by: str,
+    ) -> dict:
+        """
+        Verify persisted Gate 1 approval record per Sol D4:
+        - Explicit human principal (no automated triggers)
+        - Requester self-approval forbidden (approved_by != workflow.requester_id and triggered_by != workflow.requester_id)
+        - D4 SHC authority (brand == 'skillhubcore', role in {'super_admin', 'contract_admin'}, capability == 'project_llm:contract:approve')
+        - Non-revoked APPROVED decision bound to non-empty workflow.contract_id and workflow.contract_sha256
+        """
+        forbidden_automated_triggers = {
+            "",
+            "system",
+            "auto",
+            "ensurecandidaterequested",
+            "ui-auto",
+            "automated",
+            "bot",
+        }
+        normalized_trigger = (triggered_by or "").strip()
+        if normalized_trigger.lower() in forbidden_automated_triggers:
+            raise ValueError(
+                "Authorization failed: Gate 1 requires an explicit verified human principal; automated transitions are forbidden"
+            )
+        requester_id = (workflow.requester_id or "").strip()
+        if requester_id and normalized_trigger == requester_id:
+            raise ValueError(
+                "Authorization failed: Workflow requester cannot self-approve or advance Gate 1 without independent approval"
+            )
+
+        gate_1_record = (workflow.gate_results or {}).get("gate_1_approval")
+        if not isinstance(gate_1_record, dict) or gate_1_record.get("status") != "APPROVED":
+            raise ValueError(
+                "Authorization failed: Cannot advance past Gate 1 without a persisted human Gate 1 approval decision"
+            )
+        if gate_1_record.get("revoked") is True:
+            raise ValueError(
+                "Authorization failed: Persisted Gate 1 approval decision has been revoked"
+            )
+
+        approved_by = (gate_1_record.get("approved_by") or "").strip()
+        if not approved_by or approved_by.lower() in forbidden_automated_triggers:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval record lacks a valid human approver identity"
+            )
+        if requester_id and approved_by == requester_id:
+            raise ValueError(
+                "Authorization failed: Gate 1 requester self-approval is forbidden"
+            )
+
+        approver_brand = (gate_1_record.get("brand") or "").strip().lower()
+        if approver_brand != "skillhubcore":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires verified skillhubcore authority"
+            )
+        approver_roles = gate_1_record.get("roles")
+        if not isinstance(approver_roles, list) or not any(
+            r in {"super_admin", "contract_admin"} for r in approver_roles
+        ):
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires super_admin or contract_admin role"
+            )
+        if gate_1_record.get("capability") != "project_llm:contract:approve":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires project_llm:contract:approve capability"
+            )
+        record_token_type = gate_1_record.get("token_type")
+        if record_token_type is not None and str(record_token_type).strip().lower() != "admin":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires admin credential class (token_type='admin')"
+            )
+        record_is_admin = gate_1_record.get("is_admin")
+        if record_is_admin is not None and record_is_admin is not True:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires is_admin=True"
+            )
+        record_aud = gate_1_record.get("aud")
+        if record_aud is not None and str(record_aud).strip().lower() not in {"shc-admin", "admin"}:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires shc-admin or admin audience"
+            )
+
+        workflow_contract_id = (workflow.contract_id or "").strip()
+        approval_contract_id = (gate_1_record.get("contract_id") or "").strip()
+        if not workflow_contract_id or not approval_contract_id or workflow_contract_id != approval_contract_id:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval contract_id is missing or does not match workflow contract_id"
+            )
+
+        workflow_contract_sha = (workflow.contract_sha256 or "").strip().lower()
+        approval_contract_sha = (gate_1_record.get("contract_sha256") or "").strip().lower()
+        if not workflow_contract_sha or not approval_contract_sha or workflow_contract_sha != approval_contract_sha:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval contract_sha256 is missing or does not match workflow contract_sha256"
+            )
+
+        return gate_1_record
+
+    async def approve_gate_1(
+        self,
+        workflow_id: str,
+        approved_by: str,
+        actor_brand: str,
+        actor_roles: list[str],
+        actor_capabilities: Optional[list[str]] = None,
+        actor_token_type: str = "admin",
+        actor_is_admin: bool = True,
+        actor_aud: str = "shc-admin",
+        contract_id: Optional[str] = None,
+        contract_sha256: Optional[str] = None,
+        reason: Optional[str] = None,
+        decision_id: Optional[str] = None,
+    ) -> ProjectLLMWorkflow:
+        """
+        Record a verified human Gate 1 approval decision and transition AWAITING_GATE_1 -> GUI_APPROVED atomically.
+        """
+        workflow = await self.get_workflow(workflow_id)
+        if workflow is None:
+            raise ValueError(f"Workflow not found: {workflow_id}")
+
+        normalized_approver = (approved_by or "").strip()
+        normalized_brand = (actor_brand or "").strip().lower()
+        roles_list = [str(r) for r in (actor_roles or [])]
+        normalized_token_type = str(actor_token_type or "").strip().lower()
+        normalized_aud = str(actor_aud or "").strip().lower()
+
+        if normalized_token_type != "admin" or actor_is_admin is not True or normalized_aud not in {"shc-admin", "admin"}:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires verified SHC admin credential class (token_type='admin', is_admin=True, aud in {'shc-admin', 'admin'})"
+            )
+        if normalized_brand != "skillhubcore":
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires verified skillhubcore authority"
+            )
+        if not any(r in {"super_admin", "contract_admin"} for r in roles_list):
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires super_admin or contract_admin role"
+            )
+
+        capabilities_list = (
+            [str(c) for c in actor_capabilities]
+            if actor_capabilities is not None
+            else ["project_llm:contract:approve"]
+        )
+        if "project_llm:contract:approve" not in capabilities_list:
+            raise ValueError(
+                "Authorization failed: Gate 1 approval requires project_llm:contract:approve capability"
+            )
+
+        effective_contract_id = (contract_id or workflow.contract_id or "").strip()
+        effective_contract_sha = (contract_sha256 or workflow.contract_sha256 or "").strip().lower()
+
+        if workflow.current_state == CanonicalWorkflowState.GUI_APPROVED:
+            existing_gate_1 = self._validate_gate_1_approval_record(workflow, normalized_approver)
+            if (
+                existing_gate_1.get("contract_id") == effective_contract_id
+                and str(existing_gate_1.get("contract_sha256") or "").lower() == effective_contract_sha
+            ):
+                return workflow
+            raise ValueError(
+                "Authorization failed: Conflicting Gate 1 approval replay for already-approved workflow"
+            )
+
+        if workflow.current_state != CanonicalWorkflowState.AWAITING_GATE_1:
+            raise ValueError(
+                f"Invalid state for Gate 1 approval: {workflow.current_state.value}. Must be AWAITING_GATE_1"
+            )
+
+        existing_record = (workflow.gate_results or {}).get("gate_1_approval")
+        if (
+            isinstance(existing_record, dict)
+            and decision_id
+            and existing_record.get("decision_id") == decision_id
+            and existing_record.get("revoked") is True
+        ):
+            raise ValueError("Authorization failed: Cannot replay a revoked Gate 1 decision_id")
+
+        now = datetime.now(timezone.utc)
+        approval_record = {
+            "decision_id": decision_id or str(uuid4()),
+            "status": "APPROVED",
+            "revoked": False,
+            "approved_by": normalized_approver,
+            "brand": normalized_brand,
+            "roles": roles_list,
+            "token_type": normalized_token_type,
+            "is_admin": True,
+            "aud": normalized_aud,
+            "capability": (
+                "project_llm:contract:approve"
+                if "project_llm:contract:approve" in capabilities_list
+                else ""
+            ),
+            "approved_at": now.isoformat(),
+            "contract_id": effective_contract_id,
+            "contract_sha256": effective_contract_sha,
+            "reason": (reason or "").strip() or "Explicit human Gate 1 contract approval",
+        }
+
+        current_gates = dict(workflow.gate_results or {})
+        current_gates["gate_1_approval"] = approval_record
+        workflow.gate_results = current_gates
+
+        # Validate complete D4 contract before any repository writes
+        self._validate_gate_1_approval_record(workflow, normalized_approver)
+
+        transition = StateTransition(
+            from_state=workflow.current_state,
+            to_state=CanonicalWorkflowState.GUI_APPROVED,
+            timestamp=now,
+            triggered_by=normalized_approver,
+            evidence_id=approval_record["decision_id"],
+            reason=approval_record["reason"],
+        )
+        workflow.current_state = CanonicalWorkflowState.GUI_APPROVED
+        workflow.state_history.append(transition)
+        workflow.updated_at = now
+
+        workflow_model_current = await self.workflow_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model_current is None:
+            raise ValueError(f"Workflow not found in database: {workflow_id}")
+
+        expected_version = workflow_model_current.version
+        workflow_model = _domain_to_workflow_model(workflow)
+        await self.workflow_repo.upsert(workflow_model, expected_version=expected_version)
+
+        transition_model = StateTransitionModel(
+            workflow_id=workflow_id,
+            from_state=transition.from_state.value if transition.from_state else None,
+            to_state=transition.to_state.value,
+            timestamp=transition.timestamp,
+            triggered_by=transition.triggered_by,
+            evidence_id=transition.evidence_id,
+            reason=transition.reason,
+        )
+        await self.state_transition_repo.create(transition_model)
+        return workflow
+
+    async def revoke_gate_1_approval(
+        self,
+        workflow_id: str,
+        revoked_by: str,
+        reason: str,
+    ) -> ProjectLLMWorkflow:
+        """Revoke an existing Gate 1 approval record so it cannot authorize subsequent transitions."""
+        workflow_model = await self.workflow_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model is None:
+            raise ValueError(f"Workflow not found: {workflow_id}")
+
+        current_gates = dict(workflow_model.gate_results or {})
+        gate_1_record = dict(current_gates.get("gate_1_approval") or {})
+        if not gate_1_record:
+            raise ValueError("No Gate 1 approval record exists to revoke")
+
+        gate_1_record["status"] = "REVOKED"
+        gate_1_record["revoked"] = True
+        gate_1_record["revoked_by"] = (revoked_by or "").strip()
+        gate_1_record["revoked_at"] = datetime.now(timezone.utc).isoformat()
+        gate_1_record["revocation_reason"] = (reason or "").strip() or "Gate 1 approval revoked"
+        current_gates["gate_1_approval"] = gate_1_record
+        workflow_model.gate_results = current_gates
+        workflow_model.updated_at = datetime.now(timezone.utc)
+        await self.workflow_repo.upsert(workflow_model, expected_version=workflow_model.version)
+        return await self.get_workflow(workflow_id)
     
     async def validate_transition(
         self,
@@ -385,9 +652,25 @@ class WorkflowGovernanceService:
             )
             if not can_implement:
                 raise ValueError(f"Authorization failed: {auth_reason}")
-        
+
         # Execute transition
         now = datetime.now(timezone.utc)
+
+        # Gate 1 human approval enforcement and persisted approval binding (TC15 / D4)
+        if to_state == CanonicalWorkflowState.GUI_APPROVED:
+            normalized_reason = (reason or "").strip()
+            if "ensurecandidaterequested" in normalized_reason.lower() or "auto-approve" in normalized_reason.lower():
+                raise ValueError(
+                    "Authorization failed: Gate 1 auto-approval bypass is forbidden"
+                )
+            self._validate_gate_1_approval_record(workflow, triggered_by)
+
+        if (
+            workflow.current_state == CanonicalWorkflowState.GUI_APPROVED
+            and to_state == CanonicalWorkflowState.CANDIDATE_REQUESTED
+        ):
+            self._validate_gate_1_approval_record(workflow, triggered_by)
+
         transition = StateTransition(
             from_state=workflow.current_state,
             to_state=to_state,
@@ -488,6 +771,20 @@ class WorkflowGovernanceService:
             raise ValueError(f"Workflow not found: {workflow_id}")
         
         if artifact_type == "contract":
+            if (
+                workflow_model.contract_id is not None
+                and str(workflow_model.contract_id) != str(artifact_id)
+            ) or (
+                workflow_model.contract_sha256 is not None
+                and workflow_model.contract_sha256 != artifact_sha256
+            ):
+                current_gates = dict(workflow_model.gate_results or {})
+                if isinstance(current_gates.get("gate_1_approval"), dict):
+                    revoked_gate = dict(current_gates["gate_1_approval"])
+                    revoked_gate["status"] = "REVOKED_BY_CONTRACT_CHANGE"
+                    revoked_gate["revoked"] = True
+                    current_gates["gate_1_approval"] = revoked_gate
+                    workflow_model.gate_results = current_gates
             workflow_model.contract_id = artifact_id
             workflow_model.contract_sha256 = artifact_sha256
         elif artifact_type == "candidate":

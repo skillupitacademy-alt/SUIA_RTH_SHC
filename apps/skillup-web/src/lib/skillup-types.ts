@@ -22,8 +22,8 @@ export type SkillupSession = {
   id: string;
   date: string;
   title: string;
-  mode: 'online' | 'offline' | 'hybrid';
-  status: 'completed' | 'upcoming' | 'cancelled';
+  mode: 'online' | 'offline' | 'hybrid' | 'unavailable';
+  status: 'completed' | 'upcoming' | 'cancelled' | 'unavailable';
   recording?: string;
 };
 
@@ -41,7 +41,21 @@ export type SkillupJobMatch = {
   company: string;
   title: string;
   location: string;
-  match: number;
+  match: number | null;
+};
+
+export type SkillupPlacementProfile = {
+  roleGoal: string | null;
+  resumeStatus: string | null;
+  profileCompletion: number | null;
+  skills: string[];
+  readinessScore: number;
+};
+
+export type SkillupPlacementResponse = {
+  profile: SkillupPlacementProfile | null;
+  jobs: SkillupJobMatch[];
+  matchingStatus: 'missing_profile' | 'unavailable' | 'uncalibrated' | 'matched';
 };
 
 export type SkillupFacultyMember = {

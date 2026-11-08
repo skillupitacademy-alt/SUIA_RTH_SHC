@@ -14,6 +14,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const invalidBrand = portalBrand === undefined;
   if (invalidBrand) {
     return (
@@ -34,8 +35,9 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      await fetch('/api/auth/forgot-password', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,8 +46,11 @@ export default function ForgotPasswordPage() {
         credentials: 'include',
         body: JSON.stringify({ email, platform: activeBrand }),
       });
-    } finally {
+      if (!response.ok) throw new Error('Request unavailable');
       setSubmitted(true);
+    } catch {
+      setError('Unable to confirm the request. Please try again.');
+    } finally {
       setLoading(false);
     }
   }
@@ -56,7 +61,7 @@ export default function ForgotPasswordPage() {
         <p className="text-sm font-bold uppercase tracking-[0.35em]" style={{ color: accentColor }}>{brandDefinition.brandName} Recovery</p>
         <h1 className="mt-4 text-4xl font-black tracking-tight text-slate-950">Forgot password</h1>
         <p className="mt-3 text-base leading-7 text-slate-600">
-          {submitted ? `If an account exists for ${email}, we sent a reset link.` : 'Enter your email and we will send a secure reset link.'}
+          {submitted ? 'Request received. If eligible, check your email for reset instructions; delivery is not confirmed.' : 'Enter your email and we will send a secure reset link.'}
         </p>
         {submitted ? (
           <div className="mt-8 flex gap-3">
@@ -77,6 +82,7 @@ export default function ForgotPasswordPage() {
               placeholder="learner@example.com"
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
+            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
             <button type="submit" disabled={loading} className="rounded-full bg-rose-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-60">
               {loading ? 'Sending...' : 'Send reset link'}
             </button>

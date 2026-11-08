@@ -2,7 +2,8 @@
 
 export {};
 
-const CACHE_NAME = 'skillup-app-shell-v1';
+const CACHE_NAME = 'skillup-static-assets-v2';
+const LEGACY_CACHE_NAME = 'skillup-app-shell-v1';
 
 type PrecacheEntry = string | { url: string; revision: string | null };
 type SkillupWorkerEventMap = {
@@ -28,7 +29,10 @@ sw.addEventListener('install', (event) => {
 });
 
 sw.addEventListener('activate', (event) => {
-  event.waitUntil(sw.clients.claim());
+  event.waitUntil((async () => {
+    await caches.delete(LEGACY_CACHE_NAME);
+    await sw.clients.claim();
+  })());
 });
 
 sw.addEventListener('fetch', (event) => {
@@ -40,6 +44,16 @@ sw.addEventListener('fetch', (event) => {
 
   if (!url.pathname.startsWith('/')) return;
 
+  // Navigation responses can depend on authenticated request context even
+  // at a public URL. Only immutable Next static assets use the shared cache.
+  const staticAsset = url.pathname.startsWith('/_next/static/');
+  if (!staticAsset) {
+    event.respondWith(fetch(request).catch(() => new Response('offline', {
+      status: 503, headers: { 'content-type': 'text/plain' },
+    })));
+    return;
+  }
+
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -47,14 +61,13 @@ sw.addEventListener('fetch', (event) => {
 
       try {
         const response = await fetch(request);
-        if (response.ok && (request.mode === 'navigate' || url.pathname.startsWith('/_next/'))) {
+        if (response.ok) {
           await cache.put(request, response.clone());
         }
         return response;
       } catch {
         return (
           cached ??
-          (await cache.match('/offline')) ??
           new Response('offline', {
             status: 503,
             headers: { 'content-type': 'text/plain' },

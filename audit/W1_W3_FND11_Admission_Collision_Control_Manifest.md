@@ -1,0 +1,3 @@
+# FND11 admission ambiguous email isolation control manifest
+
+Baseline 548ded9b. Sol checkpoint authorizes isolated tests under skillup-admin; actual admission uses email-only first match. Add guarded actual route test with fake admin, enquiry, isolated query adapter presenting a foreign-platform match, and all writes spied. Assert no admission/enrollment effects from foreign match. Credential-bearing source inspected only through redacted output; bcrypt is mocked to return an inert fixture and no input credential is captured, logged or reported. No account/DB/event/browser/network action. Retain failure pending identity/migration and invitation contract. Sol review required.

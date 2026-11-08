@@ -1,0 +1,3 @@
+# FND05 SkillUp denied-read fallback containment manifest
+
+Baseline 7538c911, clean tree. `fetchSkillupApi` falls back to direct catalog/faculty DB helpers even after explicit HTTP 401/403; existing independent controls demand propagation. Bound change to treating explicit upstream authorization denial as terminal before broad transport/other-status fallback. Preserve current requestless static-generation and non-denial fallback behavior pending catalog policy; no public/private classification or DB change. Tests: 401/403 for both applicable paths with zero DB calls, successful HTTP, 5xx/transport fallback positives and protected failure; pre-import offline guard, isolated request/DB fixtures. Real proxy, browser, network and DB NOT EXECUTED.

@@ -19,6 +19,13 @@ import {
   buildAiTutorVectorChunks,
   createAiTutorVectorIndex,
 } from '../../../../lib/ai-tutor-vector';
+import {
+  completeWorkerLeaseIfOwner,
+  isPendingWorkerLeaseValue,
+  releaseWorkerLeaseIfOwner,
+  requireAtomicWorkerLeaseAdapter,
+  type WorkerRedisLike,
+} from '../worker-lease';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +62,7 @@ type WorkerDeps = {
   logger: typeof logger;
 };
 
-type RedisLike = {
+type RedisLike = WorkerRedisLike & {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, options?: { ex?: number; nx?: boolean }): Promise<unknown>;
   del(key: string): Promise<number>;
@@ -69,7 +76,7 @@ const createRedisClient = (): RedisLike => {
     throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required');
   }
 
-  return new Redis({ url, token });
+  return new Redis({ url, token }) as unknown as RedisLike;
 };
 
 const defaultDeps: WorkerDeps = {
@@ -102,6 +109,7 @@ async function processIndexContentEnvelope(
   const resolvedDifficulty = difficulty ?? 'simple';
   const redisKey = `vector-index:${subtopicId}:${resolvedDifficulty}`;
   const redis = deps.getRedis();
+  requireAtomicWorkerLeaseAdapter(redis);
   const existingVersion = await redis.get(redisKey);
   if (existingVersion === String(version)) {
     deps.logger.info({
@@ -113,12 +121,18 @@ async function processIndexContentEnvelope(
     return new Response('ok', { status: 200 });
   }
 
-  if (existingVersion !== null) {
-    await redis.del(redisKey);
+  if (existingVersion !== null && isPendingWorkerLeaseValue(String(existingVersion))) {
+    return new Response('Event processing already in progress', { status: 409 });
   }
 
-  const claimed = await redis.set(redisKey, `processing:${version}`, { ex: 86_400, nx: true });
-  if (claimed == null) {
+  if (existingVersion !== null) {
+    await releaseWorkerLeaseIfOwner(redis, redisKey, String(existingVersion));
+  }
+
+  const leaseToken = crypto.randomUUID();
+  const pendingValue = `processing:${version}:${leaseToken}`;
+  const claimed = await redis.set(redisKey, pendingValue, { ex: 86_400, nx: true });
+  if (claimed !== 'OK' && claimed !== true) {
     deps.logger.info({
       event: 'ai_tutor.vector_index_skipped',
       subtopicId,
@@ -138,7 +152,7 @@ async function processIndexContentEnvelope(
       : await deps.getPublishedContent(subtopicId, difficulty);
 
   if (sourceDocuments.length === 0) {
-    await redis.del(redisKey);
+    await releaseWorkerLeaseIfOwner(redis, redisKey, pendingValue);
     throw new Error('Published tutorial content not found');
   }
 
@@ -160,7 +174,16 @@ async function processIndexContentEnvelope(
       'index-content-vector.upsert'
     );
 
-    await redis.set(redisKey, String(version), { ex: 86_400 });
+    const completionTransition = await completeWorkerLeaseIfOwner(
+      redis,
+      redisKey,
+      pendingValue,
+      String(version),
+      86_400
+    );
+    if (completionTransition !== 'applied') {
+      return new Response('Event lease ownership lost before completion', { status: 409 });
+    }
 
     deps.logger.info({
       event: 'ai_tutor.vector_indexed',
@@ -171,7 +194,7 @@ async function processIndexContentEnvelope(
 
     return new Response('ok', { status: 200 });
   } catch (error) {
-    await redis.del(redisKey);
+    await releaseWorkerLeaseIfOwner(redis, redisKey, pendingValue).catch(() => undefined);
     throw error;
   }
 }
@@ -182,6 +205,7 @@ function buildIndexContentVectorHandler() {
     async (envelope: unknown) => processIndexContentEnvelope(envelope as IndexContentEnvelope),
     {
       schema: IndexContentEnvelopeSchema,
+      tenantScope: 'realtutorialhub',
     }
   );
 }
@@ -198,7 +222,7 @@ export async function POST(req: Request): Promise<Response> {
       return NextResponse.json({ error: error instanceof Error ? error.message : 'Invalid payload' }, { status: 400 });
     }
 
-    logger.error({
+    defaultDeps.logger.error({
       event: 'ai_tutor.vector_index_failed',
       error: buildErrorMessage(error),
     });

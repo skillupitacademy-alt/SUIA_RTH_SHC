@@ -7,7 +7,7 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    email: text('email').notNull().unique(),
+    email: text('email').notNull(),
     passwordHash: text('password_hash').notNull(),
     role: userRoleEnum('role').notNull().default('student'),
     platform: platformEnum('platform').notNull().default('realtutorialhub'),
@@ -20,8 +20,8 @@ export const users = pgTable(
     externalBrand: text('external_brand'),
   },
   (table) => ({
-    idxUsersEmailPlatform: index('idx_users_email_platform')
-      .on(table.email, table.platform)
+    uniqEmailPlatform: uniqueIndex('uniq_users_email_platform')
+      .on(sql`LOWER(TRIM(${table.email}))`, table.platform)
       .where(sql`${table.deletedAt} IS NULL`),
     idxUsersExternalIdPlatform: uniqueIndex('idx_users_external_id_platform')
       .on(table.externalId, table.platform)

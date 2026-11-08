@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   FileText,
-  CheckCircle2,
   Copy,
   Check,
   ArrowRight,
@@ -75,7 +74,7 @@ const requirements: RequirementCard[] = [
       'Pure component pattern with zero hardcoded CSS globals',
       'Fluid responsiveness (mobile, tablet, desktop breakpoints)',
       'Design token binding: fonts, radiuses, shadows, spacings',
-      'Accessible contrast ratios (WCAG 2.1 AA certified)',
+      'Accessible contrast ratios (WCAG 2.1 AA target)',
     ],
   },
   {
@@ -164,22 +163,28 @@ export default function ComplianceBriefPage() {
   const workflowId = searchParams.get('workflowId') || state.workflowId;
   const [viewMode, setViewMode] = useState<'grid' | 'checklist'>('grid');
   const [copied, setCopied] = useState(false);
-  const [contract, setContract] = useState<EngineeringContract | null>(null);
+  const [loadedContract, setLoadedContract] = useState<{ workflowId: string; data: EngineeringContract } | null>(null);
+  const contract = loadedContract?.workflowId === workflowId ? loadedContract.data : null;
   const [contractLoading, setContractLoading] = useState(false);
 
-  // Load engineering contract from backend when workflowId is available
+  // Ignore responses from a workflow that is no longer selected.
   useEffect(() => {
-    if (!workflowId) return;
+    let active = true;
+    setLoadedContract(null);
+    if (!workflowId) {
+      setContractLoading(false);
+      return () => { active = false; };
+    }
     setContractLoading(true);
     projectLlmClient.getEngineeringContract(workflowId)
       .then((data) => {
-        setContract(data);
+        if (active) setLoadedContract({ workflowId, data });
       })
       .catch(() => {
-        // Fall back to static requirements — contract may not be generated yet
-        setContract(null);
+        if (active) setLoadedContract(null);
       })
-      .finally(() => setContractLoading(false));
+      .finally(() => { if (active) setContractLoading(false); });
+    return () => { active = false; };
   }, [workflowId]);
 
   const handleCopyBrief = () => {
@@ -188,7 +193,7 @@ export default function ComplianceBriefPage() {
     const targetVersion = String(contract?.target?.version || state.targetVersion || 'V1').toUpperCase();
     const typeId = targetFamily.toLowerCase();
     const componentName = `${targetFamily}${targetVersion}Block`;
-    const briefText = `PROJECT LLM CANONICAL COMPLIANCE BRIEF & ENGINEERING CONTRACT
+    const briefText = `PROJECT LLM REFERENCE BRIEF AND BACKEND CONTRACT
 Workflow ID: ${workflowId || 'not supplied'}
 Contract SHA-256: ${String(contract?.contract_hash || 'not available')}
 Target Block: ${targetFamily} (${targetVersion})
@@ -244,8 +249,8 @@ that any gate passed without attached verification evidence.`;
               Compliance Brief & Specifications
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl font-medium">
-              Review mandatory engineering requirements generated for{' '}
-              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. External AI models must strictly adhere to these 9 structural contracts.
+              Review reference topics for{' '}
+              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. The reference topics below are not verification or the workflow contract.
             </p>
           </div>
 
@@ -267,10 +272,10 @@ that any gate passed without attached verification evidence.`;
               </div>
               <div>
                 <h2 className="text-lg font-bold text-slate-900 font-outfit">
-                  Engineering Compliance Requirements
+                  Reference topics
                 </h2>
                 <p className="text-xs text-slate-500">
-                  9 specification domains • All required for candidate certification
+                  Static reference material; consult the loaded backend contract for workflow requirements
                 </p>
               </div>
             </div>
@@ -295,9 +300,14 @@ that any gate passed without attached verification evidence.`;
               )}
             </button>
 
+            {contract === null && (
+              <span className="text-xs text-slate-500" role="status">
+                {contractLoading ? 'Loading current contract-' : 'Current contract unavailable; copying is disabled.'}
+              </span>
+            )}
             <button
               onClick={handleCopyBrief}
-              disabled={contractLoading}
+              disabled={contractLoading || contract === null}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 rounded-xl transition-all shadow-sm shadow-pink-500/20 active:scale-95"
             >
               {copied ? (
@@ -334,7 +344,7 @@ that any gate passed without attached verification evidence.`;
                         </span>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                           <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                          Required
+                          Reference
                         </span>
                       </div>
 
@@ -358,7 +368,7 @@ that any gate passed without attached verification evidence.`;
                         {req.items.map((item, i) => (
                           <div key={i} className="flex items-start gap-2.5 text-xs text-slate-600 font-medium leading-relaxed">
                             <div className="h-4 w-4 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                              <Check size={10} strokeWidth={3} />
+                              <span aria-hidden="true">-</span>
                             </div>
                             <span>{item}</span>
                           </div>
@@ -368,11 +378,7 @@ that any gate passed without attached verification evidence.`;
 
                     {/* Bottom Status bar */}
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                      <span className="font-mono">v1.0 Standard</span>
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
-                        <CheckCircle2 size={12} />
-                        Enforced by Gate
-                      </span>
+                      <span>Reference only; gate enforcement not established here</span>
                     </div>
                   </div>
                 );
@@ -403,7 +409,7 @@ that any gate passed without attached verification evidence.`;
                         </div>
                       </div>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 w-fit">
-                        Mandatory Contract
+                        Reference
                       </span>
                     </div>
 
@@ -414,7 +420,7 @@ that any gate passed without attached verification evidence.`;
                           className="flex items-start gap-2.5 p-2 rounded-lg bg-slate-50/70 border border-slate-100 text-xs text-slate-700"
                         >
                           <div className="h-4 w-4 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                            <Check size={11} strokeWidth={3} />
+                            <span aria-hidden="true">-</span>
                           </div>
                           <span className="font-medium">{item}</span>
                         </div>
@@ -439,7 +445,7 @@ that any gate passed without attached verification evidence.`;
               Next Step: Handoff to External AI
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-              Review these requirements carefully. When you proceed, this compliance brief will be packaged as instructions for the External AI to implement{' '}
+              Review the loaded workflow contract and these reference topics before continuing to the handoff for{' '}
               <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>. The implementation proceeds in two distinct phases: Design Phase (HTML/CSS/JS prototype) and Implementation Phase (React/TypeScript package).
             </p>
           </div>

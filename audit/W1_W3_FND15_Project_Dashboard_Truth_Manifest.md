@@ -1,0 +1,3 @@
+# FND15 Project LLM dashboard truth slice manifest
+
+Baseline b37395f8; RC-TRUTH-01 / RC-PLLM-01. Active `tools/project-llm/page.tsx` is an entirely static dashboard containing invented snapshot/commit, counts, certification and recent workflow activity without data source. Its hardcoded copy action can perpetuate an invented commit. Scope: that page and its adjacent mounted test. Replace unsourced dashboard measurements and activity with unavailable state and preserve direct navigation to actual workflow tools. No backend, actor, approval or workflow state changes. Guarded mounted test verifies invented claims absent and links resolve; no browser/API/store execution. Sol review required.

@@ -26,6 +26,7 @@ class AuthenticatedPrincipal(TypedDict):
     portal_identity: Optional[Literal['admin', 'user', 'faculty', 'super_admin', 'infrastructure']]
     token_type: Optional[Literal['user', 'admin']]
     is_admin: bool
+    aud: Optional[str]
 
     # Additional context
     email: Optional[str]

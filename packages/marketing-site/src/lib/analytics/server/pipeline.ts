@@ -46,6 +46,7 @@ const analyticsQueue: AnalyticsEventEnvelope[] = [];
 
 function createDedupeKey(event: AnalyticsEventEnvelope) {
   const hash = createHash("sha256");
+  hash.update(JSON.stringify(event.context.brandId));
   hash.update(event.name);
   hash.update(JSON.stringify(event.payload));
   hash.update(event.context.user.anonymousId);
@@ -150,6 +151,7 @@ async function dispatchToMetaCapi(event: AnalyticsEventEnvelope) {
 async function dispatchToInternalWarehouse(event: AnalyticsEventEnvelope) {
   const config = getAnalyticsRuntimeConfig({ brandId: event.context.brandId });
   const resolvedIdentity = resolveIdentity({
+    brandId: event.context.brandId,
     anonymousId: event.context.user.anonymousId,
     sessionId: event.context.session.sessionId,
     userId: event.context.user.userId,
@@ -162,6 +164,7 @@ async function dispatchToInternalWarehouse(event: AnalyticsEventEnvelope) {
   const funnelProgress = evaluateFunnelProgress(event);
   const leadScore = updateLeadScore(event);
   const sessionSnapshot = updateSession({
+    brandId: event.context.brandId,
     sessionId: event.context.session.sessionId,
     at: event.context.session.occurredAt,
     type:
@@ -176,7 +179,10 @@ async function dispatchToInternalWarehouse(event: AnalyticsEventEnvelope) {
               : "click",
     path: event.context.page?.path,
   });
-  const sessionClosure = event.name === "education.payment_completed" ? endSession(event.context.session.sessionId) : undefined;
+  const sessionClosure =
+    event.name === "education.payment_completed"
+      ? endSession(event.context.brandId, event.context.session.sessionId)
+      : undefined;
   const warehouseRow = buildWarehouseEventRow(event, leadScore, funnelProgress);
   const automations = evaluateAutomationRules(event, leadScore);
   const attribution = processAttributionEvent({

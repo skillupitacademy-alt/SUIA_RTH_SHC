@@ -19,6 +19,7 @@ export interface DeliveryEvent {
   blockId: string;
   blockVersion: string;
   activeTimeSec: number;
+  sessionId?: string;
 }
 
 /**
@@ -68,6 +69,7 @@ export function createDeliveryEvents(input: {
   blockId: string;
   blockVersion: string;
   activeTimeSec: number;
+  sessionId?: string;
 }): DeliveryEvent[] {
   const chunks = splitActiveTimeSeconds(input.activeTimeSec);
   
@@ -79,6 +81,7 @@ export function createDeliveryEvents(input: {
     blockId: input.blockId,
     blockVersion: input.blockVersion,
     activeTimeSec,
+    ...(input.sessionId ? { sessionId: input.sessionId } : {}),
   }));
 }
 

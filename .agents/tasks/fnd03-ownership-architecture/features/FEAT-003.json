@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-003",
+  "type": "docs",
+  "description": "Design service-level ownership context propagation from token (brand claim) through session.service.ts and ownership.service.ts to repository calls, with explicit tenant/subject threading and denial of unknown provenance",
+  "status": "pending",
+  "steps": [
+    "Read FEAT-001 findings for credential propagation gaps: packages/auth/src/token.service.ts has brand claim, but session.service.ts and ownership.service.ts use userId only",
+    "Read packages/auth/src/rbac/ownership.service.ts (current implementation). Note OwnershipContext interface has requestingUserId, resourceOwnerId, userRoles but no tenantId",
+    "Design enhanced OwnershipContext: Add tenantId: string field. Update OwnershipRBACService.hasPermissionOrOwnership to check requestingUserId === resourceOwnerId AND requestingTenantId === resourceTenantId. Update ForbiddenError messages to distinguish 'not owner' from 'wrong tenant'",
+    "Design session.service.ts enhancement: SessionRepository.create and Session type must include tenantId. Extract tenantId from JWT brand claim when creating session (map brand enum to tenantId). Update validateSession to return tenantId in session object",
+    "Design tenant propagation pattern: Services receive tenantId as explicit parameter (not ambient context). Example: TutorialProgressRepository.getProgress(tenantId: string, userId: string, subtopicId: string). Repositories validate tenantId IS NOT NULL before queries (reject unknown provenance)",
+    "Design unknown provenance denial: At API route entry, extract tenantId from validated token. If tenantId is null/undefined, return 403 Forbidden before repository calls. Document: session metadata (IP, device) is NOT identity authority per directive",
+    "Design brand-to-tenant mapping: If tenant table exists, map JWT brand claim to tenantId via lookup. If tenant is platform enum only, use brand value directly as tenantId text. Document mapping service location (packages/auth/src/tenant.service.ts or inline in token.service.ts)",
+    "Trace impacted services: List all service files calling ownership.service.ts or session.service.ts (grep -r 'OwnershipRBACService\\|SessionService' packages/ apps/). For each, determine how tenantId will be threaded from request → service → repository",
+    "Design export ownership enhancement: apps/api-server/src/app/api/export/download/route.ts currently checks job.userId === payload.userId. Add tenantId extraction from payload (via TokenService). Add job.tenantId check: if (job.tenantId !== payload.tenantId) throw forbidden('Tenant mismatch'). Preserve existing userId check as second layer",
+    "Design progress ownership enhancement: packages/db-tutorial/src/repositories/tutorial-progress.repository.ts methods (getProgress, markBlockComplete, isSubtopicComplete) must accept tenantId parameter. Update WHERE clauses: and(eq(tutorialProgress.tenantId, tenantId), eq(tutorialProgress.userId, userId), ...)",
+    "Write service design document at .agents/tasks/fnd03-ownership-architecture/service-changes.md with: Executive Summary, Enhanced OwnershipContext (TypeScript interface), Session Service Changes, Tenant Propagation Pattern (with code examples), Unknown Provenance Denial (at route entry), Brand-to-Tenant Mapping, Export Download Enhancement, Progress Repository Enhancement, Impacted Service List, Migration Strategy (add tenantId parameters in stages)"
+  ],
+  "acceptance_criteria": [
+    "service-changes.md contains enhanced OwnershipContext interface with tenantId field",
+    "Tenant propagation pattern documented: explicit parameter threading from route → service → repository",
+    "Unknown provenance denial documented: 403 before repository calls if tenantId is null",
+    "Export download route enhancement designed with tenantId check before storage access",
+    "Progress repository enhancement designed with tenantId in WHERE clauses",
+    "Impacted services listed with required signature changes"
+  ],
+  "verification": [
+    "File .agents/tasks/fnd03-ownership-architecture/service-changes.md exists",
+    "grep 'tenantId.*string' service-changes.md (expect enhanced OwnershipContext and repository signatures)",
+    "grep 'unknown provenance\\|tenantId IS NOT NULL' service-changes.md (confirm denial strategy documented)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

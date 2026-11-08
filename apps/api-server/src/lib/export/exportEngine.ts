@@ -8,7 +8,13 @@ import { withSpan } from '@/lib/tracer';
 
 import { ExportAggregator } from './exportAggregator';
 import { ExportQueryBuilder } from './exportQueryBuilder';
-import type { ExportFormat, ExportPayload } from './exportTypes';
+import {
+  type ExportFormat,
+  type ExportPayload,
+  isLearnerExportBrand,
+  type LearnerExportBrand,
+  resolveStoredExamBrand,
+} from './exportTypes';
 import { CsvFormatter } from './formatters/csvFormatter';
 import { JsonFormatter } from './formatters/jsonFormatter';
 
@@ -29,15 +35,99 @@ export class ExportEngine {
     return ExportEngine.instance;
   }
 
-  async processExport(examId: string, userId: string, format: ExportFormat): Promise<string> {
+  async processExport(
+    examId: string,
+    userId: string,
+    format: ExportFormat,
+    brandId: LearnerExportBrand
+  ): Promise<string> {
+    if (!isLearnerExportBrand(brandId)) {
+      throw new Error('Export requires verified learner tenant brand provenance');
+    }
     return withSpan('ExportEngine.processExport', async (span) => {
       span.setAttribute('examId', examId);
       span.setAttribute('userId', userId);
       span.setAttribute('format', format);
+      span.setAttribute('brandId', brandId);
 
-      this.log.info({ examId, userId, format }, 'Starting analytical export process');
+      this.log.info({ examId, userId, format, brandId }, 'Starting analytical export process');
 
-      const cacheKey = `export:${examId}:${userId}:${format}`;
+      const cacheKey = `export:${brandId}:${examId}:${userId}:${format}`;
+
+      // 0. Verify stored exam ownership & brand provenance before cache/idempotency reuse
+      let examRow: { userId?: string | null; exportUrls?: unknown } | undefined;
+      try {
+        examRow = await db.query.exams.findFirst({
+          where: eq(exams.id, examId),
+          columns: { userId: true, exportUrls: true }
+        });
+      } catch (error: unknown) {
+        this.log.warn({ err: error, examId, userId }, 'Export exam provenance lookup failed');
+      }
+
+      if (examRow !== undefined && examRow !== null) {
+        if (examRow.userId !== userId) {
+          throw new Error('Unauthorized export access: exam ownership mismatch');
+        }
+        const storedBrand = resolveStoredExamBrand(examRow);
+        if (storedBrand !== undefined && storedBrand !== brandId) {
+          throw new Error('Unauthorized export access: exam brand provenance mismatch');
+        }
+
+        // Idempotency: return existing stored URL only when explicit owner + brand provenance match
+        if (storedBrand === brandId) {
+          const exportUrls = (examRow.exportUrls as Record<string, unknown> | null) ?? null;
+          const existingUrl = format === 'json'
+            ? (exportUrls as { analytics_json?: string } | null)?.analytics_json
+            : format === 'csv'
+            ? (exportUrls as { analytics_csv?: string } | null)?.analytics_csv
+            : (exportUrls as { student_insight_pdf?: string } | null)?.student_insight_pdf;
+
+          if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
+            if (format === 'student-insight-pdf') {
+              const lower = existingUrl.toLowerCase();
+              const looksLikePdf = lower.endsWith('.pdf');
+              const looksLikeReportsPath = lower.includes('/reports/') || lower.startsWith('reports/');
+              if (!looksLikePdf || !looksLikeReportsPath) {
+                this.log.warn({ examId, format, existingUrl }, 'Ignoring invalid student_insight_pdf pointer (expected reports/*.pdf)');
+              } else {
+                const { storage } = await import('@/lib/storage');
+                const exists = await storage.exists(existingUrl);
+                if (!exists) {
+                  this.log.warn({ examId, format, existingUrl }, 'Ignoring missing student_insight_pdf artifact in storage');
+                } else {
+                  this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
+                  try {
+                    await redis.set(cacheKey, existingUrl, { ex: 900 });
+                  } catch (error: unknown) {
+                    this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+                  }
+                  return existingUrl;
+                }
+              }
+
+              // Best-effort cleanup of stale/invalid pointers.
+              try {
+                const nextUrls = { ...(exportUrls ?? {}) };
+                delete (nextUrls as Record<string, unknown>).student_insight_pdf;
+                await db.update(exams).set({ exportUrls: nextUrls }).where(eq(exams.id, examId));
+                await redis.del(cacheKey).catch(() => {});
+              } catch {
+                // ignore cleanup errors
+              }
+            } else {
+              this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
+              try {
+                await redis.set(cacheKey, existingUrl, { ex: 900 });
+              } catch (error: unknown) {
+                this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
+              }
+              return existingUrl;
+            }
+          }
+        }
+      }
+
       try {
         const cachedUrl = await redis.get<string>(cacheKey);
         if (typeof cachedUrl === 'string' && cachedUrl.trim() !== '') {
@@ -47,66 +137,6 @@ export class ExportEngine {
         this.log.info({ examId, userId, format }, 'Export cache miss');
       } catch (error: unknown) {
         this.log.warn({ err: error, examId, userId }, 'Export cache read failed');
-      }
-
-      // Idempotency: return existing stored URL if already generated
-      try {
-        const examRow = await db.query.exams.findFirst({
-          where: eq(exams.id, examId),
-          columns: { exportUrls: true }
-        });
-        const exportUrls = (examRow?.exportUrls as Record<string, unknown> | null) ?? null;
-        const existingUrl = format === 'json'
-          ? (exportUrls as { analytics_json?: string } | null)?.analytics_json
-          : format === 'csv'
-          ? (exportUrls as { analytics_csv?: string } | null)?.analytics_csv
-          : (exportUrls as { student_insight_pdf?: string } | null)?.student_insight_pdf;
-
-        if (typeof existingUrl === 'string' && existingUrl.trim() !== '') {
-          // Guard: student-insight-pdf must be a real PDF report artifact, not a stale JSON export.
-          if (format === 'student-insight-pdf') {
-            const lower = existingUrl.toLowerCase();
-            const looksLikePdf = lower.endsWith('.pdf');
-            const looksLikeReportsPath = lower.includes('/reports/') || lower.startsWith('reports/');
-            if (!looksLikePdf || !looksLikeReportsPath) {
-              this.log.warn({ examId, format, existingUrl }, 'Ignoring invalid student_insight_pdf pointer (expected reports/*.pdf)');
-            } else {
-              const { storage } = await import('@/lib/storage');
-              const exists = await storage.exists(existingUrl);
-              if (!exists) {
-                this.log.warn({ examId, format, existingUrl }, 'Ignoring missing student_insight_pdf artifact in storage');
-              } else {
-                this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
-                try {
-                  await redis.set(cacheKey, existingUrl, { ex: 900 });
-                } catch (error: unknown) {
-                  this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
-                }
-                return existingUrl;
-              }
-            }
-
-            // Best-effort cleanup of stale/invalid pointers.
-            try {
-              const nextUrls = { ...(exportUrls ?? {}) };
-              delete (nextUrls as Record<string, unknown>).student_insight_pdf;
-              await db.update(exams).set({ exportUrls: nextUrls }).where(eq(exams.id, examId));
-              await redis.del(cacheKey).catch(() => {});
-            } catch {
-              // ignore cleanup errors
-            }
-          } else {
-            this.log.info({ examId, userId, format }, 'Export idempotency hit from exams.export_urls');
-            try {
-              await redis.set(cacheKey, existingUrl, { ex: 900 });
-            } catch (error: unknown) {
-              this.log.warn({ err: error, examId, userId }, 'Export cache write failed after idempotency hit');
-            }
-            return existingUrl;
-          }
-        }
-      } catch (error: unknown) {
-        this.log.warn({ err: error, examId, userId }, 'Export idempotency lookup failed');
       }
 
       // 1. Fetch Data
@@ -130,7 +160,12 @@ export class ExportEngine {
       const guidanceSignals = this.aggregator.buildGuidanceSignals(currentRows, historicalRows);
 
       const payload: ExportPayload = {
-        meta,
+        meta: {
+          ...meta,
+          brand: brandId,
+          tenantId: brandId,
+          ownerUserId: userId,
+        },
         rawAttempts: currentRows,
         aggregations,
         historicalProgress,
@@ -185,7 +220,15 @@ export class ExportEngine {
           });
           const existingUrls = (examRow?.exportUrls as Record<string, unknown> | null) ?? {};
           await db.update(exams)
-            .set({ exportUrls: { ...existingUrls, student_insight_pdf: fileRef } })
+            .set({
+              exportUrls: {
+                ...existingUrls,
+                brand: brandId,
+                tenantId: brandId,
+                _meta: { brand: brandId, tenantId: brandId, ownerUserId: userId },
+                student_insight_pdf: fileRef,
+              },
+            })
             .where(eq(exams.id, examId));
         } catch (error: unknown) {
           this.log.warn({ err: error, examId, userId }, 'Failed to persist student_insight_pdf to exams.export_urls');
@@ -203,8 +246,8 @@ export class ExportEngine {
         throw new Error(`Unsupported format: ${format}`);
       }
 
-      // 4. Upload to shared storage provider
-      const filename = `exports/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
+      // 4. Upload to shared storage provider (scoped by brand/tenant + owner + examId)
+      const filename = `exports/${brandId}/${userId}/${examId}/analysis_${Date.now()}.${extension}`;
       const fileRef = await storage.uploadObject(buffer, { key: filename, contentType });
 
       try {

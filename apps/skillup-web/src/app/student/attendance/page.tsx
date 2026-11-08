@@ -23,7 +23,7 @@ export default async function AttendancePage() {
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">
       <article className="surface-panel rounded-[3rem] p-8 lg:p-10">
         <p className="section-kicker text-cyan-600">Attendance</p>
-        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Monthly attendance view</h2>
+        <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-950 font-outfit">Attendance history</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
           The student portal surfaces attendance history with clear state chips so color is not the only signal.
         </p>
@@ -67,13 +67,13 @@ export default async function AttendancePage() {
         </article>
 
         <article className="surface-panel rounded-[2rem] p-6">
-          <p className="section-kicker text-slate-500">Monthly summary</p>
+          <p className="section-kicker text-slate-500">Record summary</p>
           <div className="mt-6 space-y-4">
             {[
-              { label: 'Present days', value: summary.presentDays.toString() },
+              { label: 'Present records', value: summary.presentDays.toString() },
               { label: 'Late arrivals', value: summary.lateDays.toString() },
-              { label: 'Absent days', value: summary.absentDays.toString() },
-              { label: 'Attendance percent', value: `${summary.attendancePercent}%` },
+              { label: 'Absent records', value: summary.absentDays.toString() },
+              { label: 'Attendance percent', value: history.length > 0 ? `${summary.attendancePercent}%` : 'Unavailable' },
             ].map((item) => (
               <div key={item.label} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-4">

@@ -2,7 +2,7 @@ Yes. I have now read the two project audit artifacts as a **single program**, no
 
 The most important thing I want to remove from your confusion is this:
 
-**You do not need to solve 300–500 individual audit flags one by one.**  
+**You do not need to solve 300–500 individual audit flags one by one.**
 You need to fix a much smaller number of **root architectural causes**, then re-run the dependent findings and close them in groups.
 
 Your own matrix already shows exactly this pattern. For the marketing architecture alone, dozens of observations collapse into six root-cause families: consent enforcement, brand-runtime isolation, delivery reliability, identity/scoping, consent-storage/schema, and preference UX. The release register then makes the distinction between actual defects, incomplete audit coverage, tests not executed, and deployment validation not executed. CompleteProjectMatrix

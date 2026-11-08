@@ -1,0 +1,3 @@
+# FND21 nested document schema sensitivity manifest
+
+Baseline 1d510f14. `TutorialDocumentSchema` uses `TutorialBlockSchema` but container descendants resolve `TutorialBlockSchemaLazy` to `z.any()`. Add only isolated actual-schema controls showing valid nested positive and malformed descendant denial expectation, plus wrong schema version denial. Retain any failure; accepted hierarchy/service membership controls are separate and must not be conflated. No production change pending supported structural/legacy representation and consumer compatibility decision. No DB/browser/network; guard before imports. Sol review required.

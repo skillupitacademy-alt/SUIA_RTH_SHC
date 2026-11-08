@@ -1,5 +1,6 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+import { subjectSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb, subjects } from '@quiz/db';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     const cursor = searchParams.get('cursor');
 
     const conditions = [];
-    
+
     if (search) {
       conditions.push(ilike(subjects.name, `%${search}%`));
     }
@@ -45,10 +46,13 @@ export async function GET(request: NextRequest) {
     const rows = hasMore ? results.slice(0, limit) : results;
     const data = rows.map(({ subject, domain }) => ({
       ...subject,
-      domain: domain !== null ? {
-        id: domain.id,
-        name: domain.name,
-      } : undefined,
+      domain:
+        domain !== null
+          ? {
+              id: domain.id,
+              name: domain.name,
+            }
+          : undefined,
     }));
     const nextCursor = hasMore ? data[data.length - 1]?.id : null;
 
@@ -64,17 +68,32 @@ export async function POST(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
-    const body = await request.json();
-    const { name, description, domainId, status = 'active', order = 0 } = body;
+    const rawBody = await request.json();
 
-    if (!name || !domainId) {
-      return NextResponse.json({ error: 'Name and domainId are required' }, { status: 400 });
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json({ error: 'Payload too deep or large' }, { status: 400 });
     }
 
-    const [newSubject] = await db.insert(subjects).values({
-      name, description, domainId, status, order,
-    }).returning();
+    const sanitizedBody = sanitizeJsonField(rawBody);
+    const parsed = subjectSchema.safeParse(sanitizedBody);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const body = parsed.data;
+    const db = getDb();
+
+    const [newSubject] = await db
+      .insert(subjects)
+      .values({
+        name: body.name,
+        description: body.description,
+        domainId: body.domainId,
+        status: body.status ?? 'active',
+        order: body.order ?? 0,
+      })
+      .returning();
 
     return NextResponse.json(newSubject, { status: 201 });
   } catch (error) {
@@ -88,20 +107,33 @@ export async function PUT(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
-    const body = await request.json();
-    const { id, name, description, status, order } = body;
+    const rawBody = await request.json();
+
+    if (!validateJsonDepth(rawBody) || !validateJsonSize(rawBody)) {
+      return NextResponse.json({ error: 'Payload too deep or large' }, { status: 400 });
+    }
+
+    const sanitizedBody = sanitizeJsonField(rawBody) as Record<string, unknown>;
+    const id = typeof sanitizedBody?.id === 'string' ? sanitizedBody.id : '';
 
     if (!id) {
       return NextResponse.json({ error: 'Subject ID is required' }, { status: 400 });
     }
 
-    const updateData: any = { updatedAt: new Date() };
+    const parsed = subjectSchema.partial().safeParse(sanitizedBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const { name, description, domainId, status, order } = parsed.data;
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
+    if (domainId !== undefined) updateData.domainId = domainId;
     if (status !== undefined) updateData.status = status;
     if (order !== undefined) updateData.order = order;
 
+    const db = getDb();
     const [updated] = await db.update(subjects).set(updateData).where(eq(subjects.id, id)).returning();
 
     if (!updated) {
@@ -120,7 +152,6 @@ export async function DELETE(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
     const ids = searchParams.get('ids');
@@ -128,6 +159,8 @@ export async function DELETE(request: NextRequest) {
     if (!id && !ids) {
       return NextResponse.json({ error: 'Subject ID or IDs required' }, { status: 400 });
     }
+
+    const db = getDb();
 
     if (ids) {
       const idArray = ids.split(',');

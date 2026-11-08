@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStudentAuth } from '@/lib/student-auth';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,16 +27,16 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const subtopicId = searchParams.get('subtopicId');
     
-    if (!subtopicId) {
+    if (!subtopicId || !z.string().uuid().safeParse(subtopicId).success || !params.nodeId || params.nodeId.length > 200) {
       return NextResponse.json(
-        { error: 'subtopicId query parameter required' },
+        { error: 'Invalid navigation parameters' },
         { status: 400 }
       );
     }
     
     // Call API server with brand context
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
-    const url = new URL(`${apiUrl}/tutorial/ils/navigation/${params.nodeId}`);
+    const url = new URL(`${apiUrl}/tutorial/ils/navigation/${encodeURIComponent(params.nodeId)}`);
     url.searchParams.set('subtopicId', subtopicId);
     
     const response = await fetch(url.toString(), {
@@ -48,9 +49,8 @@ export async function GET(
     });
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch navigation progress' }));
       return NextResponse.json(
-        { error: error.error || 'Navigation progress not found' },
+        { error: 'Failed to fetch navigation progress' },
         { status: response.status }
       );
     }
@@ -61,7 +61,7 @@ export async function GET(
   } catch (error) {
     console.error('[SkillUp ILS] getNavigationProgress error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

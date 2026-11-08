@@ -1,7 +1,12 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 
-import { resolveBrandAnalyticsConfig } from '@quiz/marketing-site/config/analytics';
+import {
+  resolveStrictServerIngressBrandConfig,
+  type ServerAnalyticsIngressConfig,
+  validateAnalyticsBrandHint,
+  validateAndPinIngressEventBody,
+} from '@quiz/marketing-site/config/analytics';
 import { getAnalyticsObservabilityState, ingestAnalyticsEvent } from '@quiz/marketing-site/lib/analytics/server/pipeline';
 
 import { logger } from './logger';
@@ -24,24 +29,53 @@ function isAuthorized(headers: Headers) {
   return header === `Bearer ${expectedToken}`;
 }
 
-export const createApp = () => {
+function sanitizeCollectorError(error: unknown): { status: 400 | 429 | 500 | 503; code: string } {
+  const rawMessage = error instanceof Error ? error.message : '';
+  if (rawMessage === 'analytics_ingress_unavailable') {
+    return { status: 503, code: 'analytics_ingress_unavailable' };
+  }
+  if (rawMessage === 'analytics_rate_limit_exceeded') {
+    return { status: 429, code: 'analytics_rate_limit_exceeded' };
+  }
+  if (rawMessage === 'invalid_analytics_brand_context') {
+    return { status: 400, code: 'invalid_analytics_brand_context' };
+  }
+  if (rawMessage.startsWith('invalid_')) {
+    return { status: 400, code: rawMessage };
+  }
+  if (error instanceof Error && error.name === 'ZodError') {
+    return { status: 400, code: 'invalid_analytics_event_schema' };
+  }
+  return { status: 500, code: 'analytics_request_failed' };
+}
+
+export const createApp = (options?: ServerAnalyticsIngressConfig) => {
   const app = new Hono();
 
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'analytics-collector-service', ts: Date.now() }));
 
   app.post('/track', async (c) => {
     try {
-      const hostname = c.req.header('host') ?? undefined;
-      const brandHeader = c.req.header('x-analytics-brand');
-      const brandConfig = resolveBrandAnalyticsConfig({
-        brandId:
-          brandHeader === 'realtutorialhub' || brandHeader === 'skillupitacademy'
-            ? brandHeader
-            : undefined,
-        hostname,
+      const brandConfig = resolveStrictServerIngressBrandConfig({
+        mode: 'collector',
+        hostHeader: c.req.raw.headers.get('host'),
+        requestUrl: c.req.url,
+        forwardedHostHeader: c.req.raw.headers.get('x-forwarded-host'),
+        originHeader: c.req.raw.headers.get('origin'),
+        options,
       });
 
-      const body = await c.req.json();
+      const brandHeader = c.req.raw.headers.get('x-analytics-brand');
+      validateAnalyticsBrandHint(brandHeader, brandConfig.brandId);
+
+      let rawBody: unknown;
+      try {
+        rawBody = await c.req.json();
+      } catch {
+        throw new Error('invalid_analytics_request_body');
+      }
+
+      const body = validateAndPinIngressEventBody(rawBody, brandConfig.brandId);
       const result = await ingestAnalyticsEvent({
         body,
         ipAddress: getClientIp(c.req.raw.headers),
@@ -59,16 +93,10 @@ export const createApp = () => {
 
       return c.json({ ok: true, ...result }, 202);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'analytics_request_failed';
-      const status =
-        message === 'analytics_rate_limit_exceeded'
-          ? 429
-          : message.startsWith('invalid_')
-            ? 400
-            : 500;
+      const { status, code } = sanitizeCollectorError(error);
 
-      logger.error({ err: error }, 'analytics event failed');
-      return c.json({ ok: false, error: message }, status as 400 | 429 | 500);
+      logger.error({ error: code, status }, 'analytics event failed');
+      return c.json({ ok: false, error: code }, status);
     }
   });
 

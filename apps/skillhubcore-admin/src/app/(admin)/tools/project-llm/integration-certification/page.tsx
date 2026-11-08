@@ -360,7 +360,7 @@ export default function IntegrationCertificationPage() {
       await fetchCertificationData();
       const evHashSnippet = typeof res?.evidence_hash === 'string' ? res.evidence_hash.slice(0, 12) : '';
       setLiveStatusAnnouncement(
-        `Stage 6.5 complete: Isolated Composer verification ${res?.status || 'PASS'}. Evidence SHA-256 ${evHashSnippet} signed.`
+        `Stage 6.5 complete: Isolated Composer verification ${res?.status || 'status unavailable'}. Evidence SHA-256: ${evHashSnippet || 'unavailable'}.`
       );
     } catch (err) {
       const msg =

@@ -1,0 +1,3 @@
+# FND07 SkillUp service-worker private navigation control manifest
+
+Baseline 48daeac4. Source worker caches all successful same-origin navigations via Cache API, including `/student`; API no-store headers do not establish navigation/account-switch isolation. Add isolated actual worker fetch-handler control with fake self, Cache API and intercepted fetch: student navigation must not write to cache; public navigation remains cacheable. Do not register a worker or use real browser/network/storage; guard pre-import. No production edit in this control. Existing cache cleanup, offline semantics and auth-owner epochs need separate decisions. Preserve any failure.

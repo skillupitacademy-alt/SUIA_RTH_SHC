@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, cleanup } from '@testing-library/react';
 import React from 'react';
 import { BlockTelemetryProvider } from '../BlockTelemetryProvider';
 import * as ActiveBlockModule from '../ActiveBlockContext';
@@ -28,19 +28,13 @@ vi.mock('../ActiveBlockContext', async () => {
   };
 });
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock fetch is installed per test.
 
 // Mock performance.now()
 const mockPerformanceNow = vi.fn();
-global.performance.now = mockPerformanceNow;
-
 // Mock document.visibilityState
 let mockVisibilityState: 'visible' | 'hidden' = 'visible';
-Object.defineProperty(document, 'visibilityState', {
-  configurable: true,
-  get: () => mockVisibilityState,
-});
+const visibilityDescriptor = Object.getOwnPropertyDescriptor(document, 'visibilityState');
 
 const mockNavigationNodeId = 'whatisjava';
 const mockSubtopicId = '5326eeb6-c4c8-4218-9687-2b46f94a9bb4';
@@ -49,18 +43,26 @@ const mockSessionId = 'test-session-uuid';
 
 describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
     vi.clearAllMocks();
     mockVisibilityState = 'visible';
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => mockVisibilityState });
     mockPerformanceNow.mockReturnValue(0);
     
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
-      json: async () => ({}),
+      json: async () => ({ processed: true }),
     } as Response);
   });
 
   afterEach(() => {
+    cleanup();
     vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    if (visibilityDescriptor) Object.defineProperty(document, 'visibilityState', visibilityDescriptor);
+    else Reflect.deleteProperty(document, 'visibilityState');
   });
 
   // ============================================
@@ -70,6 +72,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Visit Emission', () => {
     it('emits visit exactly once per block identity', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       
       const mockActiveBlock = { blockId: 'block-1', blockType: 'code', blockVersion: 'C1' };
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({ activeBlock: mockActiveBlock });
@@ -93,6 +96,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         c => c[0] === '/api/tutorial/ils/block-visit'
       ).length;
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Multiple rerenders with same block
@@ -110,7 +114,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         await act(async () => { vi.advanceTimersByTime(100); });
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await act(async () => { await vi.advanceTimersByTimeAsync(100); });
 
       const visitCallsAfter = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(
         c => c[0] === '/api/tutorial/ils/block-visit'
@@ -128,6 +132,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Heartbeat Active Time', () => {
     it('sends 30 seconds on first heartbeat', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -150,6 +155,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalledWith('/api/tutorial/ils/block-visit', expect.anything());
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Simulate 30 seconds elapsed
@@ -169,6 +175,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
 
     it('sends another 30 seconds on second heartbeat (NOT 60 cumulative)', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -191,6 +198,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalledWith('/api/tutorial/ils/block-visit', expect.anything());
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // First heartbeat: 30 seconds
@@ -205,6 +213,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(body.activeTimeSec).toBe(30);
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Second heartbeat: another 30 seconds (total 60, but send INCREMENT of 30)
@@ -223,6 +232,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
 
     it('preserves fractional milliseconds between heartbeats', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -245,6 +255,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // First heartbeat: 30.7 seconds (30700ms)
@@ -258,6 +269,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(body.activeTimeSec).toBe(30); // Floor to 30s
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Second heartbeat: another 30.5 seconds (total 61.2s elapsed)
@@ -281,6 +293,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Block Transition', () => {
     it('flushes A before starting B timing', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       const mockUseActiveBlock = vi.mocked(ActiveBlockModule.useActiveBlock);
@@ -305,6 +318,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalledWith('/api/tutorial/ils/block-visit', expect.anything());
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // 15 seconds on block A
@@ -355,6 +369,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Visibility API', () => {
     it('excludes hidden time from accumulation', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -377,6 +392,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Active for 10 seconds
@@ -418,6 +434,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Unmount', () => {
     it('flushes pending time on unmount', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -439,6 +456,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Simulate 10 seconds active
@@ -465,8 +483,9 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   // ============================================
 
   describe('600-Second Cap', () => {
-    it('CRITICAL BUG TEST: handles >600s pending time without losing remainder', async () => {
+    it('splits >600s pending time without losing remainder', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -489,6 +508,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Simulate browser suspend/throttle: 1200 seconds elapsed
@@ -498,44 +518,23 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
       await act(async () => { vi.advanceTimersByTime(30000); });
 
       await vi.waitFor(() => {
-        const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
-        const firstCall = calls.find(c => c[0] === '/api/tutorial/ils/block-active-time');
-        
-        expect(firstCall).toBeTruthy();
-        const body = JSON.parse(firstCall[1].body);
-        
-        // Should send 600 (capped)
-        expect(body.activeTimeSec).toBe(600);
+        const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+        const amounts = calls.map(c => JSON.parse(c[1].body).activeTimeSec);
+        expect(amounts).toEqual([600, 600]);
       });
 
       vi.clearAllMocks();
-
-      // Next heartbeat should send remaining 600 seconds
-      // Current implementation BUG: loses this remainder
       mockPerformanceNow.mockReturnValue(1230000);
       await act(async () => { vi.advanceTimersByTime(30000); });
-
       await vi.waitFor(() => {
-        const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
-        const secondCall = calls.find(c => c[0] === '/api/tutorial/ils/block-active-time');
-        
-        if (secondCall) {
-          const body = JSON.parse(secondCall[1].body);
-          // Should send remaining 600s from previous cap + 30s new = 630s → capped to 600s
-          // Current bug: will send 30s (remainder was lost)
-          expect(body.activeTimeSec).toBeGreaterThanOrEqual(600);
-        } else {
-          // If no call, remainder was lost - this is the bug
-          expect(secondCall).toBeTruthy(); // Will fail, documenting the bug
-        }
-      }, { timeout: 5000 }).catch(() => {
-        // Expected to fail with current implementation
-        console.log('TEST DOCUMENTS BUG: 600s remainder is lost');
+        const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+        expect(calls.map(c => JSON.parse(c[1].body).activeTimeSec)).toEqual([30]);
       });
     });
 
     it('respects 600s cap even with delayed heartbeat', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       vi.mocked(ActiveBlockModule.useActiveBlock).mockReturnValue({
@@ -558,6 +557,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // 700 seconds elapsed
@@ -582,79 +582,53 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   // ============================================
 
   describe('Flush Serialization', () => {
-    it('serializes overlapping flushes to prevent double-counting', async () => {
-      vi.useFakeTimers();
-      mockPerformanceNow.mockReturnValue(0);
-
-      let fetchCallCount = 0;
-      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async (url) => {
-        fetchCallCount++;
-        // Simulate slow network
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return { ok: true, json: async () => ({}) } as Response;
-      });
-
-      const mockUseActiveBlock = vi.mocked(ActiveBlockModule.useActiveBlock);
-      mockUseActiveBlock.mockReturnValue({
-        activeBlock: { blockId: 'block-a', blockType: 'code', blockVersion: 'C1' },
-      });
-
-      const { rerender } = render(
-        <BlockTelemetryProvider
-          navigationNodeId={mockNavigationNodeId}
-          subtopicId={mockSubtopicId}
-          sectionId={mockSectionId}
-          sessionId={mockSessionId}
-          heartbeatIntervalMs={30000}
-        >
-          <div>Content</div>
-        </BlockTelemetryProvider>
-      );
-
-      await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
-      });
-
-      fetchCallCount = 0;
-
-      // 15 seconds on block A
-      mockPerformanceNow.mockReturnValue(15000);
-
-      // Trigger heartbeat (starts flush)
-      act(() => { vi.advanceTimersByTime(30000); });
-
-      // Immediately transition to block B (requests another flush)
-      mockUseActiveBlock.mockReturnValue({
-        activeBlock: { blockId: 'block-b', blockType: 'definition', blockVersion: 'D1' },
-      });
-
-      await act(async () => {
-        rerender(
-          <BlockTelemetryProvider
-            navigationNodeId={mockNavigationNodeId}
-            subtopicId={mockSubtopicId}
-            sectionId={mockSectionId}
-            sessionId={mockSessionId}
-            heartbeatIntervalMs={30000}
-          >
-            <div>Content</div>
-          </BlockTelemetryProvider>
-        );
-      });
-
-      // Wait for all flushes
-      await vi.waitFor(() => {
-        expect(fetchCallCount).toBeGreaterThan(0);
-      }, { timeout: 5000 });
-
-      // Should have serialized the flushes (not sent duplicate activeTimeSec for same period)
-      const activeTimeCalls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(
-        c => c[0] === '/api/tutorial/ils/block-active-time'
-      );
-
-      // Exactly one active-time call for block A
-      expect(activeTimeCalls.length).toBeLessThanOrEqual(1);
+    it('serializes a deferred A delivery while a second flush is requested', async () => {
+      vi.useFakeTimers(); vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow); mockPerformanceNow.mockReturnValue(0);
+      let resolveA!: (response: Response) => void;
+      const delayed = new Promise<Response>(resolve => { resolveA = resolve; });
+      vi.mocked(global.fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' ? delayed : ({ ok: true, json: async () => ({ processed: true }) } as Response));
+      const active = vi.mocked(ActiveBlockModule.useActiveBlock);
+      active.mockReturnValue({ activeBlock: { blockId: 'A', blockType: 'code', blockVersion: 'C1' } });
+      const view = () => <BlockTelemetryProvider navigationNodeId={mockNavigationNodeId} subtopicId={mockSubtopicId} sectionId={mockSectionId} sessionId={mockSessionId} heartbeatIntervalMs={30000}><div>Content</div></BlockTelemetryProvider>;
+      const { rerender } = render(view()); await act(async () => {});
+      mockPerformanceNow.mockReturnValue(15000); await act(async () => { vi.advanceTimersByTime(30000); });
+      active.mockReturnValue({ activeBlock: { blockId: 'B', blockType: 'definition', blockVersion: 'D1' } });
+      await act(async () => { rerender(view()); });
+      const calls = () => vi.mocked(global.fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time').map(c => JSON.parse((c[1] as RequestInit).body as string));
+      expect(calls()).toHaveLength(1); expect(calls()[0]).toMatchObject({ blockId: 'A', blockVersion: 'C1', activeTimeSec: 15 });
+      await act(async () => { resolveA({ ok: true, json: async () => ({ processed: true }) } as Response); await delayed; });
+      await act(async () => {}); expect(calls()).toHaveLength(1);
     });
+  });
+
+  it('retries the same failed A event across a transition and acknowledges it once', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
+    mockPerformanceNow.mockReturnValue(0);
+    let failed = false;
+    vi.mocked(global.fetch).mockImplementation(async (url) => {
+      if (url === '/api/tutorial/ils/block-active-time' && !failed) { failed = true; return { ok: false } as Response; }
+      return { ok: true, json: async () => ({ processed: true }) } as Response;
+    });
+    const active = vi.mocked(ActiveBlockModule.useActiveBlock);
+    active.mockReturnValue({ activeBlock: { blockId: 'A', blockType: 'code', blockVersion: 'C1' } });
+    const view = (label: string) => <BlockTelemetryProvider navigationNodeId={mockNavigationNodeId} subtopicId={mockSubtopicId} sectionId={mockSectionId} sessionId={mockSessionId} heartbeatIntervalMs={30000}><div>{label}</div></BlockTelemetryProvider>;
+    const { rerender } = render(view('A'));
+    await act(async () => {});
+    mockPerformanceNow.mockReturnValue(15000);
+    active.mockReturnValue({ activeBlock: { blockId: 'B', blockType: 'definition', blockVersion: 'D1' } });
+    await act(async () => { rerender(view('B')); });
+    await act(async () => {});
+    mockPerformanceNow.mockReturnValue(45000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const bodies = vi.mocked(global.fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time').map(c => JSON.parse((c[1] as RequestInit).body as string));
+    const a = bodies.filter(body => body.blockId === 'A');
+    const b = bodies.filter(body => body.blockId === 'B');
+    expect(a).toHaveLength(2); expect(a[0]).toMatchObject({ blockVersion: 'C1', activeTimeSec: 15 });
+    expect(a[1].eventId).toBe(a[0].eventId); expect(b).toHaveLength(1); expect(b[0]).toMatchObject({ blockVersion: 'D1', activeTimeSec: 30 });
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const after = vi.mocked(global.fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time').map(c => JSON.parse((c[1] as RequestInit).body as string));
+    expect(after.filter(body => body.eventId === a[0].eventId)).toHaveLength(2);
   });
 
   // ============================================
@@ -664,6 +638,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   describe('Error Recovery', () => {
     it('continues timing after failed active-time request', async () => {
       vi.useFakeTimers();
+      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
       mockPerformanceNow.mockReturnValue(0);
 
       let failOnce = true;
@@ -695,6 +670,7 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
         expect(global.fetch).toHaveBeenCalled();
       });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // First heartbeat: 30s (will fail)
@@ -702,8 +678,9 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
       await act(async () => { vi.advanceTimersByTime(30000); });
 
       // Wait for failure
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await act(async () => { await vi.advanceTimersByTimeAsync(100); });
 
+      await act(async () => {});
       vi.clearAllMocks();
 
       // Second heartbeat: another 30s (should succeed)

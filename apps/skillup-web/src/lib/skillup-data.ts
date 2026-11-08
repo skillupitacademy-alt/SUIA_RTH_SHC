@@ -34,93 +34,6 @@ function getPaymentPool() {
 
   return paymentPool;
 }
-const FALLBACK_PROGRAMS = [
-  {
-    id: 'skillup-full-stack',
-    slug: 'full-stack-web',
-    name: 'Full Stack Developer',
-    duration: 'Live track',
-    description: 'Frontend, APIs, deployment, and project delivery.',
-    audience: 'Students targeting product engineering roles',
-    summary: 'Build production-ready web apps and interview-ready projects.',
-    highlights: ['Frontend foundations', 'Next.js app architecture', 'API integration', 'Deployment readiness'],
-  },
-  {
-    id: 'skillup-data',
-    slug: 'data-analytics',
-    name: 'Data Analyst',
-    duration: 'Live track',
-    description: 'SQL, dashboards, reporting, and business communication.',
-    audience: 'Learners building reporting and insight skills',
-    summary: 'Turn datasets into clear business insights and reports.',
-    highlights: ['SQL analysis', 'Dashboard storytelling', 'Spreadsheet workflows', 'Stakeholder reporting'],
-  },
-  {
-    id: 'skillup-cloud',
-    slug: 'cloud-ops',
-    name: 'Cloud Support',
-    duration: 'Live track',
-    description: 'Linux, networking, monitoring, incident response, and cloud workflows.',
-    audience: 'Students preparing for support and operations roles',
-    summary: 'Operate, monitor, and support modern cloud systems confidently.',
-    highlights: ['Linux basics', 'Monitoring and incidents', 'Networking essentials', 'Cloud operations'],
-  },
-] as const;
-
-const FALLBACK_FACULTY = [
-  {
-    name: 'Asha Iyer',
-    title: 'Full Stack Mentor',
-    description: 'Guides front-end and API delivery with weekly code review sessions.',
-  },
-  {
-    name: 'Rahul Mehta',
-    title: 'Data and BI Coach',
-    description: 'Focuses on dashboards, SQL drills, and employer-ready reporting habits.',
-  },
-  {
-    name: 'Neha Shah',
-    title: 'Cloud Support Lead',
-    description: 'Teaches deployment, observability, and production incident management.',
-  },
-] as const;
-
-const FALLBACK_BATCH = {
-  batch: {
-    name: 'SkillUp FS-24 Morning',
-    faculty: 'Asha Iyer',
-    currentTopic: 'React state patterns',
-    nextSession: '2026-03-24T09:30:00+05:30',
-    studentCount: 28,
-    schedule: [
-      { day: 'Mon', time: '09:30 AM', topic: 'React components', mode: 'offline' },
-      { day: 'Wed', time: '09:30 AM', topic: 'API integration', mode: 'online' },
-      { day: 'Fri', time: '09:30 AM', topic: 'Project review', mode: 'hybrid' },
-    ],
-    materials: ['React component guide', 'API error handling notes', 'Project review rubric'],
-  },
-  sessions: [
-    { id: 'session-1', date: '2026-03-24T09:30:00+05:30', title: 'React state patterns and component design', mode: 'offline', status: 'upcoming' },
-    { id: 'session-2', date: '2026-03-22T09:30:00+05:30', title: 'REST API integration and error handling', mode: 'online', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/rest-api-integration' },
-    { id: 'session-3', date: '2026-03-20T09:30:00+05:30', title: 'Project review and feedback clinic', mode: 'hybrid', status: 'completed', recording: 'https://learn.skillupitacademy.com/recordings/project-review' },
-  ],
-};
-
-const FALLBACK_PLACEMENT = {
-  profile: {
-    roleGoal: 'Frontend Developer',
-    resumeStatus: 'Ready for review',
-    profileCompletion: 82,
-    interviewCount: 4,
-    skills: ['React', 'Next.js', 'TypeScript', 'REST APIs', 'Testing'],
-  },
-  jobs: [
-    { id: 'job-1', company: 'BrightStack', title: 'Junior Frontend Engineer', location: 'Bengaluru', match: 94 },
-    { id: 'job-2', company: 'Northwind Labs', title: 'Product Engineer Intern', location: 'Remote', match: 89 },
-    { id: 'job-3', company: 'BlueOrbit', title: 'Web Developer Associate', location: 'Pune', match: 87 },
-  ],
-};
-
 const attendanceDateFormatter = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
 
 function toDate(value: string | Date | null | undefined): Date {
@@ -135,12 +48,13 @@ function toDateString(value: string | Date | null | undefined): string {
 function formatSessionStatus(status: string): SkillupSession['status'] {
   if (status === 'scheduled') return 'upcoming';
   if (status === 'cancelled') return 'cancelled';
-  return 'completed';
+  if (status === 'completed') return 'completed';
+  return 'unavailable';
 }
 
 function formatSessionMode(mode: string): SkillupSession['mode'] {
   if (mode === 'offline' || mode === 'online' || mode === 'hybrid') return mode;
-  return 'hybrid';
+  return 'unavailable';
 }
 
 async function getStudentProfile(userId: string) {
@@ -207,42 +121,40 @@ async function getStudentBatchContext(userId: string) {
 }
 
 export async function getSkillupPrograms() {
-  try {
-    const rows = await db
-      .select({
-        id: batches.id,
-        slug: batches.id,
-        name: batches.name,
-        duration: batches.startDate,
-        description: subjects.name,
-        audience: domains.name,
-        summary: batches.status,
-      })
-      .from(batches)
-      .leftJoin(subjects, eq(subjects.id, batches.subjectId))
-      .leftJoin(domains, eq(domains.id, batches.domainId))
-      .where(isNull(batches.deletedAt))
-      .orderBy(desc(batches.createdAt));
+  const rows = await db
+    .select({
+      id: batches.id,
+      slug: batches.id,
+      name: batches.name,
+      description: subjects.name,
+      audience: domains.name,
+      status: batches.status,
+    })
+    .from(batches)
+    .leftJoin(subjects, eq(subjects.id, batches.subjectId))
+    .leftJoin(domains, eq(domains.id, batches.domainId))
+    .where(isNull(batches.deletedAt))
+    .orderBy(desc(batches.createdAt));
 
-    if (rows.length === 0) {
-      return { programs: [...FALLBACK_PROGRAMS] };
-    }
+  return {
+    programs: rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      duration: 'Unavailable',
+      description: row.description ? `Subject: ${row.description}` : 'Unavailable',
+      audience: row.audience ? `Domain: ${row.audience}` : 'Unavailable',
+      summary: row.status ? `Batch status: ${row.status}` : 'Batch status unavailable',
+      highlights: [],
+    })),
+  };
+}
 
-    return {
-      programs: rows.map((row) => ({
-        id: row.id,
-        slug: row.slug,
-        name: row.name,
-        duration: row.duration ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(toDate(row.duration)) : 'Live track',
-        description: row.description ?? 'Live SkillUp program',
-        audience: row.audience ?? 'SkillUp learners',
-        summary: row.summary === 'active' ? 'Active live batch' : 'Upcoming live batch',
-        highlights: [row.description ?? 'Live curriculum', row.audience ?? 'SkillUp learners', 'Placement-ready workflow'],
-      })),
-    };
-  } catch {
-    return { programs: [...FALLBACK_PROGRAMS] };
-  }
+function upcomingScheduledSessions<T extends { status: string; scheduledAt: Date | string }>(sessions: T[]): T[] {
+  const now = Date.now();
+  return sessions
+    .filter((session) => session.status === 'scheduled' && new Date(session.scheduledAt).getTime() >= now)
+    .sort((left, right) => new Date(left.scheduledAt).getTime() - new Date(right.scheduledAt).getTime());
 }
 
 export async function getSkillupStudentDashboard(userId: string) {
@@ -264,33 +176,28 @@ export async function getSkillupStudentDashboard(userId: string) {
 
     const sessions = batchContext?.sessions ?? [];
     const completedCount = sessions.filter((session) => session.status === 'completed').length;
-    const presentCount = await db
-      .select({ count: attendanceRecords.id })
-      .from(attendanceRecords)
-      .innerJoin(batchSessions, eq(batchSessions.id, attendanceRecords.sessionId))
-      .where(and(eq(attendanceRecords.studentUserId, userId), eq(attendanceRecords.status, 'present')));
-
     const paymentDue = installments
       .filter((item) => item.status !== 'paid')
       .reduce((sum, item) => sum + item.amount, 0);
 
-    const nextSession = sessions.find((session) => session.status === 'scheduled') ?? sessions[0];
+    const upcomingSessions = upcomingScheduledSessions(sessions);
+    const nextSession = upcomingSessions[0];
 
-    const attendancePercent = sessions.length > 0 ? Math.round((presentCount.length / sessions.length) * 100) : 0;
-    const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : 0;
+    const attendancePercent = null;
+    const progressPercent = sessions.length > 0 ? Math.round((completedCount / sessions.length) * 100) : null;
 
     return {
       summary: {
         name: profile.name ?? profile.email,
-        batchName: batchContext?.batchName ?? 'SkillUp Batch',
-        facultyName: batchContext?.facultyName ?? 'SkillUp Faculty',
-        currentTopic: batchContext?.sessions.find((session) => session.status === 'scheduled')?.title ?? batchContext?.sessions[0]?.title ?? 'SkillUp session',
+        batchName: batchContext?.batchName ?? 'Unavailable',
+        facultyName: batchContext?.facultyName ?? 'Unavailable',
+        currentTopic: 'Unavailable',
         attendancePercent,
         progressPercent,
         paymentDue,
         outstandingInstallments: installments.filter((item) => item.status !== 'paid').length,
-        nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
-        upcomingSessions: sessions.filter((session) => session.status === 'scheduled').length,
+        nextSessionAt: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
+        upcomingSessions: upcomingSessions.length,
         placementMatches: (
           await placementDb
             .select({ id: placementJobListings.id })
@@ -298,51 +205,49 @@ export async function getSkillupStudentDashboard(userId: string) {
             .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
         ).length,
       },
-      sessions: sessions.map((session) => ({
+      sessions: upcomingSessions.map((session) => ({
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
 
 export async function getSkillupMyBatch(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
-    const profile = await getStudentProfile(userId);
 
     if (batchContext === null) {
-      return FALLBACK_BATCH;
+      return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled') ?? batchContext.sessions[0];
-    const currentTopic = nextSession?.title ?? 'SkillUp session';
-    const schedule = batchContext.sessions.slice(0, 3).map((session) => ({
+    const upcomingSessions = upcomingScheduledSessions(batchContext.sessions);
+    const nextSession = upcomingSessions[0];
+    const currentTopic = 'Unavailable';
+    const schedule = upcomingSessions.slice(0, 3).map((session) => ({
       day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
       time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
       topic: session.title ?? 'SkillUp session',
-      mode: session.mode ?? 'hybrid',
+      mode: formatSessionMode(session.mode ?? ''),
     }));
 
     return {
       batch: {
         name: batchContext.batchName,
-        faculty: batchContext.facultyName ?? profile.name ?? 'SkillUp Faculty',
+        faculty: batchContext.facultyName ?? 'Unavailable',
         currentTopic,
-        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
+        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
         schedule,
-        materials: batchContext.sessions.slice(0, 3).map((session) => session.title ?? 'Session notes'),
+        materials: [],
       },
       sessions: batchContext.sessions.map((session) => ({
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
@@ -361,12 +266,7 @@ export async function getSkillupAttendance(userId: string) {
       history: rows.map((row) => ({
         date: attendanceDateFormatter.format(toDate(row.markedAt)),
         state: row.status,
-        note:
-          row.status === 'present'
-            ? 'On time for class'
-            : row.status === 'late'
-              ? 'Joined after 10 minutes'
-              : 'Planned leave',
+        note: 'Details unavailable',
       })),
     };
 }
@@ -374,7 +274,7 @@ export async function getSkillupAttendance(userId: string) {
 export async function getSkillupPayments(userId: string) {
     const paymentPoolClient = getPaymentPool();
     if (paymentPoolClient === null) {
-      return { installments: [] };
+      throw new Error('Payment data unavailable');
     }
 
     const { rows: installments } = await paymentPoolClient.query<{
@@ -445,67 +345,92 @@ export async function getSkillupPlacement(userId: string) {
       .where(and(eq(placementJobListings.status, 'open'), isNull(placementJobListings.deletedAt)))
       .orderBy(desc(placementJobListings.deadline), desc(placementJobListings.createdAt));
 
+    // Return null profile when no active profile exists (no fabricated data)
+    const profile = profileRows[0] !== undefined
+      ? {
+          roleGoal: null, // Unavailable until authoritative source established
+          resumeStatus: null, // Unavailable until authoritative source established
+          profileCompletion: null, // Unavailable until authoritative source established
+          skills: profileRows[0].skills,
+          readinessScore: profileRows[0].readinessScore,
+        }
+      : null;
+
+    // Process jobs: keep persisted jobs browsable in DB order, with null match when uncalibrated
+    let vectorMatchingAttempted = false;
+    let hasValidVectorResults = false;
+
+    const jobsWithMatches = await (async () => {
+      // Without profile, return jobs in DB order with null match (no matching available)
+      if (profileRows[0] === undefined) {
+        return jobs.map((job) => ({
+          id: job.id,
+          company: job.companyName,
+          title: job.title,
+          location: job.location,
+          match: null as number | null,
+        }));
+      }
+
+      // With profile, attempt vector matching
+      try {
+        vectorMatchingAttempted = true;
+        const vectorMatches = await findJobsForStudent({
+          userId,
+          readinessScore: profileRows[0].readinessScore,
+          skills: profileRows[0].skills,
+          experienceSummary: profileRows[0].experienceSummary,
+          preferredLocation: profileRows[0].preferredLocation,
+          expectedCtc: profileRows[0].expectedCtc,
+        }, Math.max(2, jobs.length));
+
+        // Validate vector results: finite scores, non-negative
+        const validResults = vectorMatches.filter(
+          (match) => typeof match.score === 'number' &&
+                     Number.isFinite(match.score) &&
+                     match.score >= 0
+        );
+
+        if (validResults.length > 0) {
+          hasValidVectorResults = true;
+        }
+
+        // Preserve ALL jobs in DB order; vector results are uncalibrated raw similarity
+        // Return null match for all jobs since no calibrated percentage exists
+        return jobs.map((job) => ({
+          id: job.id,
+          company: job.companyName,
+          title: job.title,
+          location: job.location,
+          match: null as number | null,
+        }));
+      } catch {
+        // Vector service failed, return DB ordering with null match
+        vectorMatchingAttempted = true;
+        hasValidVectorResults = false;
+      }
+
+      // Return jobs in DB order with null match (matching unavailable)
+      return jobs.map((job) => ({
+        id: job.id,
+        company: job.companyName,
+        title: job.title,
+        location: job.location,
+        match: null as number | null,
+      }));
+    })();
+
+    // Determine matching status: missing_profile, unavailable, uncalibrated, or matched
+    const matchingStatus = profile === null
+      ? 'missing_profile'
+      : !vectorMatchingAttempted || !hasValidVectorResults
+        ? 'unavailable'
+        : 'uncalibrated';
+
     return {
-      profile: profileRows[0] !== undefined
-        ? {
-            roleGoal: profileRows[0].skills[0] ?? 'Placement-ready role',
-            resumeStatus: profileRows[0].status === 'active' ? 'Ready for review' : 'Paused',
-            profileCompletion: profileRows[0].readinessScore,
-            interviewCount: Math.max(1, Math.round(profileRows[0].readinessScore / 20)),
-            skills: profileRows[0].skills,
-          }
-        : FALLBACK_PLACEMENT.profile,
-      jobs: profileRows[0] === undefined
-        ? jobs.map((job, index) => ({
-            id: job.id,
-            company: job.companyName,
-            title: job.title,
-            location: job.location,
-            match: Math.max(60, 90 - index * 3),
-          }))
-        : await (async () => {
-            try {
-              const vectorMatches = await findJobsForStudent({
-                userId,
-                readinessScore: profileRows[0].readinessScore,
-                skills: profileRows[0].skills,
-                experienceSummary: profileRows[0].experienceSummary,
-                preferredLocation: profileRows[0].preferredLocation,
-                expectedCtc: profileRows[0].expectedCtc,
-              }, Math.max(2, jobs.length));
-
-              const jobMap = new Map(jobs.map((job) => [job.id, job]));
-              const ranked = vectorMatches
-                .map((match) => {
-                  const job = jobMap.get(String(match.id));
-                  if (job === undefined) {
-                    return null;
-                  }
-                  return {
-                    id: job.id,
-                    company: job.companyName,
-                    title: job.title,
-                    location: job.location,
-                    match: Math.max(1, Math.round((match.score ?? 0) * 100)),
-                  };
-                })
-                .filter((item): item is { id: string; company: string; title: string; location: string; match: number } => item !== null);
-
-              if (ranked.length > 0) {
-                return ranked;
-              }
-            } catch {
-              // Fall back to DB ordering below.
-            }
-
-            return jobs.map((job, index) => ({
-              id: job.id,
-              company: job.companyName,
-              title: job.title,
-              location: job.location,
-              match: Math.max(60, profileRows[0].readinessScore - index * 3),
-            }));
-          })(),
+      profile,
+      jobs: jobsWithMatches,
+      matchingStatus,
     };
 }
 
@@ -513,24 +438,25 @@ export async function getSkillupBatches(userId: string) {
     const batchContext = await getStudentBatchContext(userId);
 
     if (batchContext === null) {
-      return FALLBACK_BATCH;
+      return { batch: null, sessions: [] };
     }
 
-    const nextSession = batchContext.sessions.find((session) => session.status === 'scheduled') ?? batchContext.sessions[0];
-    const materials = batchContext.sessions.slice(0, 3).map((session) => session.title ?? 'Session notes');
+    const upcomingSessions = upcomingScheduledSessions(batchContext.sessions);
+    const nextSession = upcomingSessions[0];
+    const materials: string[] = [];
 
     return {
       batch: {
         name: batchContext.batchName,
-        faculty: batchContext.facultyName ?? 'SkillUp Faculty',
-        currentTopic: nextSession?.title ?? 'SkillUp session',
-        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : new Date().toISOString(),
+        faculty: batchContext.facultyName ?? 'Unavailable',
+        currentTopic: 'Unavailable',
+        nextSession: nextSession !== undefined ? toDateString(nextSession.scheduledAt) : null,
         studentCount: batchContext.enrolledCount,
-        schedule: batchContext.sessions.slice(0, 3).map((session) => ({
+        schedule: upcomingSessions.slice(0, 3).map((session) => ({
           day: new Intl.DateTimeFormat('en-IN', { weekday: 'short' }).format(toDate(session.scheduledAt)),
           time: new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(toDate(session.scheduledAt)),
           topic: session.title ?? 'SkillUp session',
-          mode: session.mode ?? 'hybrid',
+          mode: formatSessionMode(session.mode ?? ''),
         })),
         materials,
       },
@@ -538,62 +464,33 @@ export async function getSkillupBatches(userId: string) {
         id: session.id,
         date: toDateString(session.scheduledAt),
         title: session.title ?? 'SkillUp session',
-        mode: formatSessionMode(session.mode ?? 'hybrid'),
+        mode: formatSessionMode(session.mode ?? ''),
         status: formatSessionStatus(session.status),
-        recording: session.status === 'completed' ? `https://learn.skillupitacademy.com/recordings/${session.id}` : undefined,
       })),
     };
 }
 
 export async function getSkillupFaculty() {
-  try {
-    const mentors = await db
-      .select({
-        name: userProfiles.name,
-        title: faculty.availabilityType,
-        description: faculty.status,
-      })
-      .from(faculty)
-      .innerJoin(users, eq(users.id, faculty.userId))
-      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .where(eq(faculty.status, 'active'));
+  const mentors = await db
+    .select({ name: userProfiles.name, title: faculty.availabilityType })
+    .from(faculty)
+    .innerJoin(users, eq(users.id, faculty.userId))
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .where(eq(faculty.status, 'active'));
 
-    const heroStats = [
-      { label: 'Active mentors', value: String(mentors.length) },
-      { label: 'Batch reviews', value: String((await db.select({ id: batchSessions.id }).from(batchSessions)).length) },
-      { label: 'Upcoming sessions', value: String((await db.select({ id: batchSessions.id }).from(batchSessions).where(eq(batchSessions.status, 'scheduled'))).length) },
-      { label: 'Quality score', value: '96%' },
-    ];
-
-    return {
-      faculty: mentors.length > 0
-        ? mentors.map((mentor) => ({
-            name: mentor.name ?? 'SkillUp Mentor',
-            title: mentor.title === 'fulltime' ? 'Full-time Mentor' : mentor.title === 'parttime' ? 'Part-time Mentor' : 'Contract Mentor',
-            description:
-              mentor.description === 'active'
-                ? 'Guides learners through the live batch journey.'
-                : 'Supports the batch flow and learner guidance.',
-          }))
-        : [...FALLBACK_FACULTY],
-      heroStats,
-    };
-  } catch {
-    return {
-      faculty: [...FALLBACK_FACULTY],
-      heroStats: [
-        { label: 'Active mentors', value: String(FALLBACK_FACULTY.length) },
-        { label: 'Batch reviews', value: '3' },
-        { label: 'Upcoming sessions', value: '3' },
-        { label: 'Quality score', value: '96%' },
-      ],
-    };
-  }
+  return {
+    faculty: mentors.map((mentor) => ({
+      name: mentor.name ?? 'Name unavailable',
+      title: mentor.title ?? 'Availability unavailable',
+      description: 'Faculty details unavailable',
+    })),
+    heroStats: [{ label: 'Active mentors', value: String(mentors.length) }],
+  };
 }
 
 export async function getSkillupProgramBySlug(slug: string) {
   const programs = (await getSkillupPrograms()).programs;
-  return programs.find((program) => program.slug === slug) ?? FALLBACK_PROGRAMS.find((program) => program.slug === slug);
+  return programs.find((program) => program.slug === slug);
 }
 
 export async function getSkillupProgramDetail(slug: string): Promise<SkillupProgramDetail | null> {
@@ -605,19 +502,6 @@ export async function getSkillupProgramDetail(slug: string): Promise<SkillupProg
   return {
     ...program,
     highlights: [...program.highlights],
-    curriculum: [
-      {
-        title: 'Foundation',
-        items: [program.highlights[0] ?? program.description, program.highlights[1] ?? program.summary],
-      },
-      {
-        title: 'Build and ship',
-        items: [program.highlights[2] ?? program.audience, program.highlights[3] ?? 'Live project delivery'],
-      },
-      {
-        title: 'Placement prep',
-        items: ['Interview readiness drills', 'Portfolio and resume review', 'Mentor feedback sessions'],
-      },
-    ],
+    curriculum: [],
   };
 }

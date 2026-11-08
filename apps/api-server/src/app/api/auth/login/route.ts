@@ -13,6 +13,7 @@ import { withLogging } from '@/lib/withLogging';
 import { AuthService } from '@/modules/auth/auth.service';
 import { getClientIp } from '@/modules/auth/client-ip';
 import { setCsrfToken } from '@/modules/auth/csrf.middleware';
+import { InvalidPurposeError } from '@/modules/auth/login.service';
 import { setOnboardingStateCookie } from '@/modules/auth/onboarding-state-cookie';
 import { container } from '@/modules/core/container';
 import { loginSchema } from '@/schemas/auth.schemas';
@@ -98,7 +99,17 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       return ApiResponse.error(badRequest('Brand is required'));
     }
 
-    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(email, password, ip, brand, deviceContext);
+    const isTenantBrand = brand === 'skillup' || brand === 'realtutorialhub';
+    const loginOptions = isTenantBrand ? { purpose: 'learner' as const } : undefined;
+
+    const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(
+      email,
+      password,
+      ip,
+      brand,
+      deviceContext,
+      loginOptions
+    );
     timings.afterLogin = Date.now();
     
     const rawProfile = Array.isArray(_user.profile) ? _user.profile[0] ?? {} : (_user.profile ?? {});
@@ -222,6 +233,10 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
           ? 'account_blocked'
           : 'credentials_invalid'
     });
+
+    if (_error instanceof InvalidPurposeError) {
+      return ApiResponse.error(badRequest('Invalid login purpose'));
+    }
 
     if (message === 'Account temporarily locked. Try again later.') {
       return ApiResponse.error(locked(message));
