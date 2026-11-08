@@ -1,6 +1,8 @@
 # PROJECT AI TASK — SHC Admin Technical Verification (READ-ONLY)
 
-**Read `00_READ_ME_FIRST_SHC_ADMIN.md` first, then **`01_ProjectWideSoftwareArchitectureAndEngineeringGovernanceStandard_v1.1_PROPOSED.md`** as the governing policy for all apps and future modules.** Use the supplied files in its reading order. **Work ONLY on SHC Admin verification, not project redesign or service migration.**
+**Read [00 Read Me First](00_READ_ME_FIRST_SHC_ADMIN.md), including its current reviewer feedback, then [PSEG-001 proposed v1.1](../01_ProjectWideSoftwareArchitectureAndEngineeringGovernanceStandard_v1.1_PROPOSED.md). Use it as the working audit reference; formal owner approval remains pending.** Read the tracked files directly from the current Git checkout (or pinned GitHub blobs), not the old ZIP, in the README reading order. **Work ONLY on SHC Admin verification, not project redesign or service migration.**
+
+**Target:** `main`, `apps/skillhubcore-admin`. Record current HEAD; `4207cb1ca11abc29ca263310f5a4d54b859cd77f` is historical provenance, not the branch to check out. Record dirty paths and any HEAD change between checkpoints.
 
 ## Mission
 Independently verify prior SHC Admin acceptance findings against the live checked-out repo, safely execute available verification commands, update the canonical 62-row ledger, and return one evidence-based SHC Admin technical verification report.
@@ -11,17 +13,18 @@ Independently verify prior SHC Admin acceptance findings against the live checke
 2. Read 01 project-wide governance first; 02 architecture, 03 acceptance, 04 workflow annexes; 05 criterion definitions; 06/07 historical source leads; 08 latest source status. Work using 10 CSV (single living status). Apply the universal `PSEG-U*` gates and relevant API/security/architecture contracts in `PSEG-AR*` / section 18 alongside the 62 existing `SHCA-*` checks. Do not create a competing `PSEG` checklist or change the 62-row ledger structure; map PSEG references within evidence/notes or the final report. Do not regenerate independent numeric finding IDs unless adding to ledger with references.
 3. For each high-risk finding, trace `page/component -> client/API -> BFF -> backend module/service -> repository -> data`, recording concrete paths/line ranges. Reconcile current code with source report; statuses `CONFIRMED / FALSE_POSITIVE / RESOLVED_AT_NEW_SHA / UNVERIFIED` are distinct from acceptance `PASS / FAIL / PENDING / N/A`.
 4. Check protection for anonymous **page HTML/RSC**, role/brand/object access, origin/CSRF, destructive academic CRUD, TOTP actions, demo data vs operational data, Project AI durable approvals, tutorial versioning/visibility, question import/delete, certificate preview vs actual issuance, and marketing query provider. No deployment or data changes.
-5. Only if safe: run from exact repo checkout `pnpm --filter @quiz/skillhubcore-admin check:boundaries`, `lint`, `type-check`, `test:security`, `test`, `build` sequentially. Capture command, date, SHA, exit code and redacted output. **Before `test` or any DB-backed test, confirm isolated test database, no Hostinger/shared database URLs, no live provider credentials, no migrations/writes; if not certain, SKIP and mark NOT RUN.** Do not run production checks or migrations.
+5. First inspect actual scripts, setup hooks, environment loading and build-time dependency calls; this safety check applies to lint/type/security/build as well as tests. Prefer guarded offline subsets when broad execution cannot be proven isolated. Do not install dependencies or execute lifecycle hooks merely because an example lists them. Only if safe: run from exact repo checkout `pnpm --filter @quiz/skillhubcore-admin check:boundaries`, `lint`, `type-check`, `test:security`, `test`, `build` sequentially. Capture command, date, SHA, exit code and redacted output. **Before `test` or any DB-backed test, confirm isolated test database, no Hostinger/shared database URLs, no live provider credentials, no migrations/writes; if not certain, SKIP and mark NOT RUN.** Do not run production checks or migrations.
 6. Do not use an 80%/90% score to waive hard blockers. Mark PASS only on satisfying source + required runtime/integration evidence. Never confuse authored tests with executed tests. A source FAIL is allowed with a proposed fix, not permission to fix it now.
 7. Produce one `SHC_ADMIN_TECHNICAL_VERIFICATION_REPORT.md` with SHA, checked files, each finding ID with severity, source lines and actual tests, false positives and constraints, safe future remediation priority, non-SHC dependencies, and unresolved test work. Update `10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv` with accurate evidence. If you cannot edit local files, output a patch/CSV and report with the exact output names specified here.
-8. Stop after reporting. **DO NOT modify app source, migrate SHC/brand functionality, touch production DB, deploy Docker/Hostinger, commit/push, alter CI/CD, or delete anything.**
+8. Existing ledger seed markers `FAIL_SOURCE_REVERIFY` / `PENDING_REVERIFY` are not new acceptance states. For assessed rows use PASS / FAIL / PENDING / N/A; retain historical status, independent finding disposition and relevant PSEG/API references in existing notes. Do not infer current FAIL from an old report. Use complete identifier names: PSEG approval stages G0–G5 are distinct from W1–W3 foundation groups G1–G9.
+9. Stop after reporting. **DO NOT modify app source, migrate SHC/brand functionality, touch production DB, deploy Docker/Hostinger, commit/push, alter CI/CD, or delete anything.**
 
 ## Token efficiency
 Start with prior FAIL rows and the few dependency files they refer to. Process ≤8 findings per checkpoint and persist results after each checkpoint. Avoid loading all historical project audits. Use Argon/high effort only to adjudicate complex contradictory evidence. A PASS requires actual evidence, not confidence.
 
 ## Deliver back to reviewer
 - `10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv` (62 rows retained; changed statuses/evidence)
-- `SHC_ADMIN_TECHNICAL_VERIFICATION_REPORT.md`
+- `docs/architecture/reviews/SHC/SHC_ADMIN_TECHNICAL_VERIFICATION_REPORT.md`
 - Command output logs redacted, if any
 - Explicit list of NOT RUN checks and WHY
 
