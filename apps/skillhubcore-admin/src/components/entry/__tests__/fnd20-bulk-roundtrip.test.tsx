@@ -1,3 +1,4 @@
+/** @vitest-environment jsdom */
 import React from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +9,6 @@ vi.mock('@quiz/ui', () => ({ ZLoader: () => null }));
 vi.mock('@/utils/clientLogger', () => ({ clientLogger: { error: vi.fn() } }));
 
 import { BulkUploadPanel } from '../BulkUploadPanel';
-import { bulkQuestionSchema } from '../../../../../api-server/src/schemas/admin.schemas';
 
 beforeEach(() => {
   api.bulkCreateQuestions.mockResolvedValue({});

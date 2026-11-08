@@ -15,6 +15,40 @@
 import { expect, it, describe } from 'vitest';
 import { prepareBlockForStorage } from '../blockVersionDefinitions';
 
+interface StoragePreparedTestContent {
+  page?: {
+    type?: string;
+    category?: string;
+    badge?: string;
+    title?: string;
+    subtitle?: string;
+    intro?: string;
+    definition?: string;
+    explanation?: string | string[];
+    example?: {
+      language?: string;
+      code?: string;
+    };
+    characteristics?: Array<{ title: string; description: string }>;
+    takeaway?: string;
+    learningGoal?: string;
+    motto?: {
+      lines?: string[];
+    };
+    topic?: {
+      title?: string;
+      description?: string;
+      quote?: string;
+    };
+    solution?: {
+      code?: {
+        code?: string;
+      };
+    };
+    keyTakeaway?: string;
+  };
+}
+
 describe('FND21 Storage Preparation Truth', () => {
   describe('Definition D1 storage preparation', () => {
     it('FAILING: does not fill missing definition with example claims', () => {
@@ -25,7 +59,7 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(incompletePayload, 'definition', 'D1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Verify the title is preserved
       expect(content.page?.title).toBe('Understanding Python Lists');
@@ -57,7 +91,7 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(partialPayload, 'definition', 'D1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Verify author content preserved
       expect(content.page?.title).toBe('Lambda Functions');
@@ -98,13 +132,13 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(completePayload, 'definition', 'D1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Complete content should pass through unchanged
       expect(content.page?.title).toBe('Dictionary');
       expect(content.page?.definition).toBe('A dictionary is an unordered collection of key-value pairs.');
       expect(content.page?.explanation).toHaveLength(2);
-      expect(content.page?.example.code).toContain('student');
+      expect(content.page?.example?.code).toContain('student');
     });
   });
 
@@ -118,7 +152,7 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(incompletePayload, 'introduction', 'I1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Verify the title is preserved
       expect(content.page?.title).toBe('Getting Started with Django');
@@ -151,7 +185,7 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(partialPayload, 'introduction', 'I1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Verify author content preserved
       expect(content.page?.badge).toBe('Web Development');
@@ -192,12 +226,12 @@ describe('FND21 Storage Preparation Truth', () => {
       };
 
       const prepared = prepareBlockForStorage(completePayload, 'introduction', 'I1');
-      const content = prepared.content as any;
+      const content = prepared.content as StoragePreparedTestContent;
 
       // Complete content should pass through
       expect(content.page?.title).toBe('SQL Joins');
       expect(content.page?.learningGoal).toContain('SQL joins');
-      expect(content.page?.motto.lines[0]).toBe('Master');
+      expect(content.page?.motto?.lines?.[0]).toBe('Master');
       expect(content.page?.keyTakeaway).toContain('relational queries');
     });
   });
