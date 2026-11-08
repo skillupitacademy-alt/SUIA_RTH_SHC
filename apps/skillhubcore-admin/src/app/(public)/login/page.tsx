@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Loader2, Network } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
+import { sanitizeRedirectUrl } from '@/lib/sanitize-redirect';
 
 function LoginForm() {
   const router = useRouter();
@@ -60,9 +61,9 @@ function LoginForm() {
 
       console.log('[SHC_LOGIN] Auth store updated, redirecting to dashboard...');
 
-      // Redirect to dashboard
-      const redirectTarget = searchParams.get('redirect');
-      router.push(redirectTarget || '/dashboard');
+      // Redirect to dashboard or validated internal redirect target
+      const redirectTarget = sanitizeRedirectUrl(searchParams.get('redirect'));
+      router.push(redirectTarget);
     } catch (err) {
       console.error('[SHC_LOGIN] Login failed:', err);
       setError(err instanceof Error ? err.message : 'Login failed');

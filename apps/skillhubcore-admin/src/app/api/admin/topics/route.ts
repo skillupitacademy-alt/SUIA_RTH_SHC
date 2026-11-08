@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { TOPIC_COMPLEXITY_ENUM_TO_LEVEL, topicSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb, subjects, topics } from '@quiz/db';
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
     const subjectId = searchParams.get('subjectId');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parsePaginationLimit(searchParams.get('limit'));
 
     const conditions = [];
     if (search) conditions.push(ilike(topics.name, `%${search}%`));

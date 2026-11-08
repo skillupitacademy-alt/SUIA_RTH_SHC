@@ -74,6 +74,7 @@ export function QuestionTable() {
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isBatchDeleting, setIsBatchDeleting] = useState(false);
+    const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
 
     const currentPage = cursorStack.length + 1;
 
@@ -290,6 +291,7 @@ export function QuestionTable() {
             await apiClient.admin.batchDeleteQuestions(idsToDelete);
             setQuestions(prev => prev.filter(q => !selectedIds.has(q.id)));
             setSelectedIds(new Set());
+            setIsBatchDeleteModalOpen(false);
             toast.success(`Successfully deleted ${idsToDelete.length} assessments.`);
         } catch (error) {
             clientLogger.error('Batch delete questions failed', { error: error instanceof Error ? error.message : 'unknown' });
@@ -410,7 +412,7 @@ export function QuestionTable() {
                                     </button>
 
                                     <button
-                                        onClick={() => { void handleBatchDelete(); }}
+                                        onClick={() => { setIsBatchDeleteModalOpen(true); }}
                                         disabled={isBatchDeleting}
                                         className="px-6 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 group disabled:opacity-50"
                                     >
@@ -487,6 +489,44 @@ export function QuestionTable() {
                             <button
                                 onClick={handleCloseDelete}
                                 className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-600 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> : null}
+
+            {/* Batch Delete Confirmation Modal */}
+            {isBatchDeleteModalOpen === true ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="w-full max-w-md bg-white border border-white/20 rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden">
+                    {/* Glows */}
+                    <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-red-500/5 rounded-full blur-[60px] -z-10" />
+
+                    <div className="flex flex-col items-center text-center gap-6">
+                        <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center text-red-600 shadow-lg shadow-red-200">
+                            <AlertTriangle size={32} />
+                        </div>
+
+                        <div>
+                            <h2 className="text-2xl font-black text-[#1A1A1A] mb-2 text-center uppercase tracking-tight">Confirm Bulk Deletion</h2>
+                            <p className="text-sm font-bold text-muted-foreground">
+                                Are you sure you want to decommission <span className="font-extrabold text-[#1A1A1A]">{selectedIds.size}</span> selected assessment records? They will be marked as <span className="text-red-500 underline">inactive</span> and removed from active rotations.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-3 w-full pt-4">
+                            <button
+                                onClick={() => { void handleBatchDelete(); }}
+                                disabled={isBatchDeleting}
+                                className="flex items-center justify-center gap-2 w-full py-4 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-all disabled:opacity-50"
+                            >
+                                {isBatchDeleting === true ? <ZLoader size="xs" className="text-white" center={false} /> : `Decommission ${selectedIds.size} Questions`}
+                            </button>
+                            <button
+                                onClick={() => setIsBatchDeleteModalOpen(false)}
+                                disabled={isBatchDeleting}
+                                className="w-full py-4 text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-600 transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>

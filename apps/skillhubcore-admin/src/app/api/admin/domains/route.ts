@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb } from '@quiz/db';
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parsePaginationLimit(searchParams.get('limit'));
     const cursor = searchParams.get('cursor');
 
     const conditions = [];

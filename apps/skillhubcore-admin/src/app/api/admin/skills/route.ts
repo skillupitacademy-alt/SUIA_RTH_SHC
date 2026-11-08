@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { skillSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, skills } from '@quiz/db';
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search') || '';
     const category = searchParams.get('category') as 'technical' | 'cognitive' | 'process' | null;
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parsePaginationLimit(searchParams.get('limit'));
 
     const conditions = [];
     if (search) conditions.push(ilike(skills.name, `%${search}%`));
