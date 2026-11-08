@@ -1,15 +1,15 @@
 # SkillHubCore Admin — Architecture Acceptance Technical Verification Report (Scope A Remediated Baseline)
 
-**Document ID:** SHCA-VR-2026-11-08-REV4\
+**Document ID:** SHCA-VR-2026-11-08-REV5\
 **Reconciliation Date:** 8 November 2026 (Asia/Kolkata)\
 **Auditor / Reviewer:** Antigravity (AI Technical Verifier)\
 **Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`\
 **Target Branch:** `main`\
-**Current Remote HEAD SHA:** `322aa3bc5b57376ce2023ffcf5262bb51c5cf9de`\
-**Tested Application Revision:** `8c8f86a394aafb8391d99711b8aa14e0970194e0` (Scope A remediation; base verification at `b14cabf3834f7684737d5dd54c0898f4fe74d97d`)\
+**Current Remote HEAD SHA:** `577c3fc2d10b3b2623e1efbafcb55ff6e02f36b9`\
+**Tested Application Revision:** `8c8f86a394aafb8391d99711b8aa14e0970194e0` (Scope A remediation; evidence and test fixes reconciled at `577c3fc2d10b3b2623e1efbafcb55ff6e02f36b9`; base verification at `b14cabf3834f7684737d5dd54c0898f4fe74d97d`)\
 **Historical Audit Provenance SHA:** `4207cb1ca11abc29ca263310f5a4d54b859cd77f` (`feature/project-llm-linux-worker`)\
 **Governance Added SHA:** `2640981f8c942d813fb9b48f67a93fa63fb0e04d`\
-**Working Tree Status:** Evidence Reconciliation (Scope A test strengthened, evidence references corrected)\
+**Working Tree Status:** Evidence Reconciliation (Scope A test strengthened, evidence references corrected; awaiting owner decision on Scope B)\
 **Governing Baseline:** [PSEG-001 proposed v1.1](../01_ProjectWideSoftwareArchitectureAndEngineeringGovernanceStandard_v1.1_PROPOSED.md) (Working audit baseline; owner approval pending)\
 **Authoritative Acceptance Ledger:** [10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv](10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv)\
 **Audit Scope:** `apps/skillhubcore-admin` and directly imported workspace packages (`@quiz/auth`, `@quiz/db`, `@quiz/db-tutorial`, `@quiz/marketing-site`, `@quiz/api-client`, `@quiz/validation`, `@quiz/observability`, `@quiz/ui`). Read-only technical verification with authorized Scope A remediation.
@@ -29,7 +29,7 @@
 - **Grouped Thematic Narrative Findings:**
   - **9 Confirmed Defect Narratives** (thematic architectural defect clusters remaining)
   - **12 Intervening Resolution & Scope A Remediated Narratives** (4 Scope A fixes + 8 prior resolutions/stubs verified)
-- **Execution Evidence:** 6 local verification test suites safely executed with **exit code 0** (`check:boundaries` 80 handlers, `lint` 0 errors and 0 warnings, `type-check` 0 errors, `test:security` 61/61 tests, Scope A dedicated tests 19/19 tests, `build` 45 routes compiled cleanly with Turbopack); 1 unit test command exited with **code 1** due to a fixture diagnostic expectation (`test:isolated`: 89 passed, 1 failed). Physical database, migration, and live Hostinger deployment commands were explicitly **SKIPPED / NOT RUN** to guarantee test isolation and prevent data loss.
+- **Execution Evidence:** 6 local verification test suites safely executed with **exit code 0** (`check:boundaries` 80 handlers, `lint` historical run at `8c8f86a3` with 0 errors / 7 warnings and subsequent remediation at `577c3fc2` with 0 errors / 0 warnings, `type-check` 0 errors, `test:security` 61/61 tests, Scope A dedicated tests 19/19 tests, `build` 45 routes compiled cleanly with Turbopack); 1 unit test command exited with **code 1** due to a fixture diagnostic expectation (`test:isolated`: 89 passed, 1 failed). Physical database, migration, and live Hostinger deployment commands were explicitly **SKIPPED / NOT RUN** to guarantee test isolation and prevent data loss.
 
 ### Reconciled Criteria Tally
 
@@ -53,7 +53,7 @@ Following architectural review of the initial verification pass, five gates are 
    - *Assessment:* While Next.js 16.1.6 Turbopack cleanly compiled all 45 routes without type errors, build logs do not independently prove runtime `params`/`searchParams` handling or client/server boundary contracts across all routes. Scope A isolated the client-side `<QueryClientProvider>` in `marketing/layout.tsx`, but runtime testing across all 34 dynamic page routes remains incomplete. Criterion remains **PENDING**.
 2. **`SHCA-D01` (Lint, type-check, boundary, security scripts): Reassessed to PENDING**
    - *Requirement:* Run app-specific lint, type-check, unit/integration/security tests in safe isolated environment; record exact output.
-   - *Assessment:* Individual commands passed (`check:boundaries` Exit 0 on 80 handlers, `lint` Exit 0 with 7 warnings, `type-check` Exit 0, `test:security` Exit 0 with 61/61 tests, Scope A unit tests Exit 0 with 19/19 tests). However, `test:isolated` had 1 failed test (`validate-fixtures.test.ts`: 89 passed, 1 failed), and physical integration tests were not run. Broad criterion `SHCA-D01` remains **PENDING**.
+   - *Assessment:* Individual commands passed (`check:boundaries` Exit 0 on 80 handlers, `lint` Exit 0 with 7 warnings at historical `8c8f86a3` and 0 warnings at subsequent `577c3fc2`, `type-check` Exit 0, `test:security` Exit 0 with 61/61 tests, Scope A unit tests Exit 0 with 19/19 tests). However, `test:isolated` had 1 failed test (`validate-fixtures.test.ts`: 89 passed, 1 failed), and physical integration tests were not run. Broad criterion `SHCA-D01` remains **PENDING**.
 3. **`SHCA-I03` (Forged header / gateway bypass defenses): Reassessed to PENDING**
    - *Requirement:* No direct origin, gateway, bearer/cookie or forged header request can bypass SHC permission or brand checks.
    - *Assessment:* Unit tests (`upstream-proxy.test.ts` and `admin-boundary.test.ts`) verify unit logic for header stripping and origin rejection under mock request conditions. However, mock-based unit tests do not prove resistance to real network gateway or direct-origin bypasses in an actual deployed network. Reassessed as **PENDING**.
@@ -137,6 +137,8 @@ Checked 80 SHC API handlers: explicit auth/origin guards; only GET /api/health i
 ```
 
 ### Check 4: ESLint Code Quality Gate
+
+#### 4.1 Historical Baseline Run (at commit `8c8f86a3`)
 - **Command:** `pnpm --filter @quiz/skillhubcore-admin lint`
 - **Executed at:** 2026-11-08T10:43:39+05:30
 - **Exit Code:** `0`
@@ -158,6 +160,19 @@ E:\onlinewebsites\quiz-platform\apps\skillhubcore-admin\src\components\entry\__t
 
 ✖ 7 problems (0 errors, 7 warnings)
 ```
+
+#### 4.2 Subsequent Clean Remediation Run (at commit `577c3fc2`)
+- **Command:** `pnpm --filter @quiz/skillhubcore-admin lint`
+- **Executed at:** 2026-11-08T17:21:48+05:30
+- **Exit Code:** `0`
+- **Output:**
+```text
+> @quiz/skillhubcore-admin@0.1.0 lint E:\onlinewebsites\quiz-platform\apps\skillhubcore-admin
+> cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx .
+
+✔ No ESLint warnings or errors (0 errors, 0 warnings).
+```
+- **Remediation Context:** The 7 pre-existing ESLint warnings in the two test files (`storage-preparation-truth.test.ts` explicit typing and `fnd20-bulk-roundtrip.test.tsx` unused import removal) were resolved cleanly without any suppression comments (`eslint-disable` or `@ts-ignore`).
 
 ### Check 5: Next.js Production Build
 - **Command:** `pnpm --filter @quiz/skillhubcore-admin build`
@@ -320,8 +335,14 @@ flowchart TD
         S5["Dashboard Metrics Real/Mock Indicator"]
     end
 
+    subgraph MarketingRoadmap ["Deferred Roadmap: Central Marketing Governance (SUIA & RTH)"]
+        MG1["MG-01: Marketing System Monitoring<br/>(SUIA/RTH System Health, Collector Status, Errors)"]
+        MG2["MG-02: Enquiries, Admissions & Revenue<br/>(Attributed Leads, Admissions, Verified Revenue)"]
+    end
+
     Batch1 --> Housekeeping
     Batch1 --> Batch2
+    Batch1 --> MarketingRoadmap
 ```
 
 ### Batch 1: Core Security & Defensive Stability Status
@@ -362,6 +383,62 @@ flowchart TD
 3. **Cross-Brand Authority Scoping (`SHCA-I01`, `SHCA-U03`):** Policy for tenant isolation between SkillUp and RealTutorialHub administrators.
 4. **Question Factory Duplicate Preflight Fail-Closed (`SHCA-F13`):** Backend enforcement of duplicate prevention.
 5. **Dashboard Metrics Architecture (`SHCA-F04`, `SHCA-F21`, `SHCA-U10`):** Cached aggregate query vs. honest dev badge.
+
+---
+
+### Deferred Roadmap — Central Marketing Governance for SUIA and RTH
+
+**Cross-References:** [`SHCA-F08`](10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv) (Marketing Governance Dashboard), [`SHCA-A09`](10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv) (Marketing BFF and API Boundaries)  
+**Governance & Boundary Mandate:**
+- **Single Central Marketing Governance GUI:** SHC Admin (`/marketing`) is designated as the sole, centralized Marketing Governance dashboard for both educational brands:
+  - **SUIA:** SkillUp IT Academy
+  - **RTH:** Real Tutorial Hub
+- **No Separate Brand Dashboards:** Dedicated or duplicate Marketing Governance dashboards will **not** be proposed or constructed in SUIA Admin or RTH Admin. Centralized oversight is consolidated within SHC Admin.
+- **Strict Brand Domain & Data Boundaries:** SUIA and RTH retain their respective authoritative domain, database, and business boundaries. Central SHC Admin monitors and queries these boundaries via trusted, authenticated BFF integrations without collapsing tenant isolation.
+- **Separation from Scope B:** This roadmap is explicitly decoupled from Scope B page security (which remains strictly B1 page authorization, B2 conditional current-account integration, and B3 unresolved session/brand policy).
+- **Zero Premature Acceptance:** Documenting this deferred roadmap does **not** promote `SHCA-F08` or `SHCA-A09` to `PASS`; their criteria remain `PENDING` until real implementation and end-to-end integration evidence are qualified.
+
+The implementation is structured into two sequential, prioritized phases:
+
+#### Phase 1: MG-01 — Marketing System Monitoring (First Priority)
+- **Primary Objective:** Enable administrators to determine whether SUIA and RTH marketing infrastructure and telemetry pipelines are functioning correctly from the existing SHC Admin `/marketing` GUI.
+- **Architecture & System Requirements:**
+  1. *Preserve and Reuse Existing Baseline:* Maintain and reuse the existing `/marketing` client layout, its `<QueryClientProvider>`, and the five active API integrations:
+     - `/api/marketing/bootstrap/realtutorialhub`
+     - `/api/marketing/bootstrap/skillupitacademy`
+     - `/api/marketing/control-plane/realtutorialhub`
+     - `/api/marketing/control-plane/skillupitacademy`
+     - `/api/marketing/collector/observability`
+  2. *Dual-Brand Visibility:* Display SUIA and RTH marketing bootstrap payloads and control-plane registries distinctly with clear brand labels.
+  3. *Collector Telemetry:* Display analytics collector availability, queue depths, error rates, and observability health clearly.
+  4. *High-Fidelity Status States:* Replace binary assertions with meaningful states supported by verified backend contracts: `Loading`, `Healthy`, `Degraded`, `Error`, `Unavailable`, and `Not Configured`.
+  5. *Deep Health Verification:* Do not interpret a bare HTTP 200/successful response alone as proof of complete system health; inspect the response payload for internal service errors, collector lag, or configuration gaps.
+  6. *Auditability & Diagnostics:* Render the last verified status-check timestamp and actionable diagnostic error details when supported by authoritative data.
+  7. *Navigation Placement:* Provide a dedicated, verified "Marketing Governance" entry in `LeftSidebar.tsx` (routing to `/marketing`), replacing dead or `#` placeholder navigation links.
+  8. *Security & Isolation:* Preserve existing administrative role checks, strict brand separation, monitoring safety (read-only, side-effect free), and sensitive telemetry protection. Avoid duplicating marketing infrastructure across apps.
+- **Required Acceptance Evidence (for future promotion):** Real backend API contract verification, brand-specific response validation tests, failure/degradation state unit and integration tests, monitoring accuracy verification, and authenticated route guard tests.
+
+#### Phase 2: MG-02 — Marketing Enquiries, Admissions and Revenue Monitoring (Future Priority)
+- **Primary Objective:** From the *same* SHC Admin Marketing Governance GUI, enable authorized administrators to track verified business outcomes and conversion funnels for SUIA, RTH, and the combined organization.
+- **Reporting & Funnel Requirements:**
+  1. *Traffic & Acquisition:* Track unique website visitors segmented by verified campaign, medium, and channel sources (e.g., validated UTM parameters).
+  2. *Lead Generation:* Report enquiries and leads generated distinctly for SUIA and RTH.
+  3. *Admissions Attribution:* Track student admissions and course enrolments attributable to verified marketing touchpoints.
+  4. *Verified Revenue:* Report revenue tied directly to admitted students and validated transactions.
+  5. *Conversion Metrics:* Calculate visitor-to-enquiry and enquiry-to-admission conversion ratios using explicitly defined, standardized denominators.
+  6. *Filtering & Aggregation:* Provide flexible date-range pickers, individual brand filters (`SUIA`, `RTH`), and an executive combined summary view.
+  7. *Financial Rigor & Reconciliation:* Enforce unambiguous definitions distinguishing gross revenue, net revenue, completed payments, pending settlements, refunds, cancellations, and de-duplicated leads.
+  8. *Truthful State Representation:* Explicitly distinguish between unavailable data, unattributed traffic, and true zero values (e.g., zero conversions vs. collector disconnected).
+  9. *Compliance & Governance:* Strictly adhere to user consent preferences, personal data minimization (GDPR/privacy-safe aggregation; no PII leaks in analytics views), cross-brand access rules, and role-based permissions.
+- **Mandatory Prerequisite: Read-Only Data-Source Mapping (Before Implementation):**
+  Prior to authoring any frontend or backend code for MG-02, an exhaustive, read-only data-source audit must document the end-to-end chain:
+  $$\text{Marketing Source} \longrightarrow \text{Visitor/Event} \longrightarrow \text{Enquiry/Lead} \longrightarrow \text{Admission/Enrolment} \longrightarrow \text{Verified Payment/Revenue}$$
+  For each link in the chain, the audit must specify:
+  - Authoritative owning service and database table
+  - Exact API contract and schema
+  - Brand key and foreign key relationships
+  - Evidence quality and confidence score
+  - **Prohibition:** Under no circumstances will mock numbers, fabricated KPIs, or duplicate CRM, admissions, analytics, or payment database tables be introduced.
 
 
 ## 9. Scope B focused Sol security-design review — 2026-11-08

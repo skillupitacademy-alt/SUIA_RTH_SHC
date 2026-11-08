@@ -67,11 +67,19 @@ describe('MarketingLayout & MarketingGovernancePage', () => {
     expect(screen.getByText('SUIA Control Plane')).toBeDefined();
     expect(screen.getByText('Collector Health')).toBeDefined();
 
-    // After fetch resolves, cards transition from Loading to Healthy
+    // After fetch resolves, all 3 cards transition from Loading to Healthy
     await waitFor(() => {
       const healthyBadges = screen.getAllByText('Healthy');
-      expect(healthyBadges.length).toBeGreaterThanOrEqual(1);
+      expect(healthyBadges).toHaveLength(3);
     });
+
+    // Verify all 5 queries executed their fetches
+    expect(global.fetch).toHaveBeenCalledTimes(5);
+    expect(global.fetch).toHaveBeenCalledWith('/api/marketing/bootstrap/realtutorialhub', expect.any(Object));
+    expect(global.fetch).toHaveBeenCalledWith('/api/marketing/bootstrap/skillupitacademy', expect.any(Object));
+    expect(global.fetch).toHaveBeenCalledWith('/api/marketing/control-plane/realtutorialhub', expect.any(Object));
+    expect(global.fetch).toHaveBeenCalledWith('/api/marketing/control-plane/skillupitacademy', expect.any(Object));
+    expect(global.fetch).toHaveBeenCalledWith('/api/marketing/collector/observability', expect.any(Object));
   });
 
   it('fails when MarketingGovernancePage is rendered outside of QueryClientProvider (demonstrating defect)', () => {
