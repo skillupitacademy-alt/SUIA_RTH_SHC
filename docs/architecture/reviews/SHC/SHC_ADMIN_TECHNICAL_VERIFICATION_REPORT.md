@@ -347,3 +347,22 @@ Each item in this batch is strictly bounded, carries low risk, and includes an e
 3. **Cross-Brand Authority Scoping (`SHCA-I01`, `SHCA-U03`):** Policy for tenant isolation between SkillUp and RealTutorialHub administrators.
 4. **Question Factory Duplicate Preflight Fail-Closed (`SHCA-F13`):** Backend enforcement of duplicate prevention.
 5. **Dashboard Metrics Architecture (`SHCA-F04`, `SHCA-F21`, `SHCA-U10`):** Cached aggregate query vs. honest dev badge.
+
+
+## 9. Scope B focused Sol security-design review — 2026-11-08
+
+[Scope B design review](SHC_ADMIN_SCOPE_B_SECURITY_DESIGN_REVIEW.md) inspects source
+`86d44c1db2a54a34dfe1588995f6e26b325be35c`, inventories all 34 page entries (32 protected),
+and preserves both layouts' AdminGuard/ClientShell structure. Its selected contract uses
+existing Proxy, one server-only principal policy and authorization near sensitive data;
+actual JWT validation, current role/activity, distinct missing/forbidden/unavailable
+outcomes and cache/session lifecycle tests are mandatory. Cookie presence and layout-only
+authority are not approved designs. The backend session/error/freshness contract and
+refresh limitations are explicitly recorded, not assumed complete.
+
+**Design direction CONDITIONALLY ACCEPTABLE with the review's mandatory corrections;
+owner Scope B implementation authorization still required.** Scope A remains separate.
+Existing 61 security tests and the 80-handler static tripwire passed independently;
+new Scope B implementation/tests remain NOT EXECUTED. The same ledger's four related
+FAIL states and overall 2 PASS / 21 FAIL / 39 PENDING are unchanged. No code, migration,
+deployment, parked-work resumption or W4 approval is granted.

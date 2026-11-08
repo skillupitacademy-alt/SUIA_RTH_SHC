@@ -80,3 +80,14 @@ This is a **document-package review**, not current-source verification or formal
 7. **Keep acceptance and release distinct.** Reconcile accepted W1–W3 source fixes against the actual current SHA rather than declaring every old lead unresolved. An audit can finish with FAIL/PENDING; neither completion nor scope parking grants architecture acceptance, deployment or W4 approval. Exact image/runtime evidence is separate from Git source. No application/source audit, build, runtime, database or deployment check was executed in this document review.
 
 **Next output:** the existing [09 technical work order](09_PROJECT_AI_TASK_SHC_ADMIN_READ_ONLY.md), the same [10 ledger](10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv), and `SHC_ADMIN_TECHNICAL_VERIFICATION_REPORT.md` in this SHC folder. This feedback is guidance within the entry document, not a second standard, checklist or status register.
+
+
+### Focused Scope B design review (2026-11-08)
+
+Before proposing SHC server-page authentication changes, read the
+[focused Sol review](SHC_ADMIN_SCOPE_B_SECURITY_DESIGN_REVIEW.md). It supplements the
+same technical report/ledger with a bounded design decision; it is not another standard
+or acceptance checklist. Preserve AdminGuard/ClientShell and API guards, cover all actual
+protected URLs and data-access boundaries, and keep missing/forbidden/unavailable states
+distinct. Scope B implementation still needs separate owner authorization; Scope A,
+parked migrations and W4 are not authorized by this review.
