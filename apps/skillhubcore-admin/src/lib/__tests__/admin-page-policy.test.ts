@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PERMISSIONS } from '@quiz/auth/rbac';
 import {
   isProtectedAdminPage,
@@ -8,9 +10,11 @@ import {
   getRequiredPagePermission,
   PROTECTED_PAGE_PREFIXES,
   PUBLIC_PAGE_PATHS,
+  CANONICAL_PROTECTED_ROUTES,
+  isUnderProtectedPrefix,
 } from '../admin-page-policy';
 
-describe('Admin Page Policy — Route Inventory & Classification', () => {
+describe('Admin Page Policy — Route Inventory, Dynamic Routes & Drift Protection', () => {
   const all32CanonicalProtectedPages = [
     // 27 (admin) pages
     '/audit',
@@ -86,7 +90,29 @@ describe('Admin Page Policy — Route Inventory & Classification', () => {
     expect(isPublicPath('/forbidden-extra')).toBe(false);
   });
 
-  it('classifies static and framework asset paths as public and exempt', () => {
+  it('protects dynamic routes with file extensions (Tasks 6 & 16)', () => {
+    // Dynamic paths with extensions like /users/account.js or /subscriptions/example.js
+    // must NOT be treated as public assets
+    const dynamicExtensionPaths = [
+      '/users/account.js',
+      '/users/profile.json',
+      '/users/avatar.png',
+      '/subscriptions/example.js',
+      '/subscriptions/invoice.pdf',
+      '/dashboard/metrics.css',
+      '/marketing/campaign.js',
+      '/questions/export.csv',
+      '/tools/project-llm/model.js',
+    ];
+
+    for (const dynamicPath of dynamicExtensionPaths) {
+      expect(isProtectedAdminPage(dynamicPath), `${dynamicPath} must remain protected`).toBe(true);
+      expect(isPublicPath(dynamicPath), `${dynamicPath} must NOT be exempted as a public asset`).toBe(false);
+      expect(isUnderProtectedPrefix(dynamicPath)).toBe(true);
+    }
+  });
+
+  it('classifies legitimate static and framework asset paths as public and exempt (Task 7)', () => {
     const assets = [
       '/_next/static/chunks/main.js',
       '/_next/static/css/app.css',
@@ -97,6 +123,7 @@ describe('Admin Page Policy — Route Inventory & Classification', () => {
       '/static/images/hero.png',
       '/assets/theme.css',
       '/fonts/inter.woff2',
+      '/brand-logo.png',
     ];
     for (const asset of assets) {
       expect(isPublicPath(asset), `Asset ${asset} must be public`).toBe(true);
@@ -104,7 +131,7 @@ describe('Admin Page Policy — Route Inventory & Classification', () => {
     }
   });
 
-  it('assigns correct granular RBAC permissions per page family', () => {
+  it('assigns correct granular RBAC permissions per page family (Task 12)', () => {
     // Marketing family -> ANALYTICS_VIEW
     expect(getRequiredPagePermission('/marketing')).toBe(PERMISSIONS.ANALYTICS_VIEW);
     expect(getRequiredPagePermission('/marketing/subpage')).toBe(PERMISSIONS.ANALYTICS_VIEW);
@@ -122,5 +149,68 @@ describe('Admin Page Policy — Route Inventory & Classification', () => {
     expect(getRequiredPagePermission('/tools/tutorial-block-composer')).toBe(PERMISSIONS.ADMIN_PANEL);
     expect(getRequiredPagePermission('/factory/question-generator')).toBe(PERMISSIONS.ADMIN_PANEL);
   });
-});
 
+  it('automatically detects filesystem drift across all page.tsx files in app directory (Task 8)', () => {
+    // Dynamically locate apps/skillhubcore-admin/src/app
+    const appDir = path.resolve(__dirname, '../../app');
+    expect(fs.existsSync(appDir), `App directory ${appDir} must exist`).toBe(true);
+
+    function findPages(dir: string, baseDir: string): string[] {
+      const results: string[] = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          results.push(...findPages(fullPath, baseDir));
+        } else if (entry.isFile() && entry.name === 'page.tsx') {
+          const relPath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+          results.push(relPath);
+        }
+      }
+      return results;
+    }
+
+    const allPages = findPages(appDir, appDir);
+
+    // Map each page.tsx to its URL route path
+    const protectedPagesFromDisk: string[] = [];
+    const publicPagesFromDisk: string[] = [];
+
+    for (const pageRel of allPages) {
+      if (pageRel.startsWith('(admin)/') || pageRel.startsWith('(authenticated)/')) {
+        const routePath = '/' + pageRel
+          .replace(/^\((admin|authenticated)\)\//, '')
+          .replace(/\/page\.tsx$/, '')
+          .replace(/^page\.tsx$/, '');
+        protectedPagesFromDisk.push(routePath);
+      } else {
+        const routePath = '/' + pageRel
+          .replace(/^\((public)\)\//, '')
+          .replace(/\/page\.tsx$/, '')
+          .replace(/^page\.tsx$/, '');
+        publicPagesFromDisk.push(routePath);
+      }
+    }
+
+    // Exactly 32 protected pages must be present on disk
+    expect(protectedPagesFromDisk).toHaveLength(32);
+    expect(CANONICAL_PROTECTED_ROUTES).toHaveLength(32);
+
+    for (const diskRoute of protectedPagesFromDisk) {
+      // Must be present in canonical routes inventory
+      expect(CANONICAL_PROTECTED_ROUTES).toContain(diskRoute);
+
+      // Suffix dynamic params for evaluation (e.g. [id] -> '123')
+      const concretePath = diskRoute.replace(/\[[^\]]+\]/g, 'test-id-123');
+      expect(isProtectedAdminPage(concretePath), `Route ${concretePath} must be protected by policy`).toBe(true);
+      expect(isPublicPath(concretePath), `Route ${concretePath} must NOT be public`).toBe(false);
+    }
+
+    // Public pages on disk must be recognized as public
+    for (const publicRoute of publicPagesFromDisk) {
+      const concretePath = publicRoute === '' ? '/' : publicRoute;
+      expect(isPublicPath(concretePath), `Public route ${concretePath} must be public`).toBe(true);
+      expect(isProtectedAdminPage(concretePath), `Public route ${concretePath} must NOT be protected`).toBe(false);
+    }
+  });
+});

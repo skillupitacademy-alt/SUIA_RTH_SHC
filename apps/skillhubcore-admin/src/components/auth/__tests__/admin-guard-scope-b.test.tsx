@@ -49,7 +49,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => currentPathname,
 }));
 
-describe('AdminGuard — Scope B1 Client Guard Verification', () => {
+describe('AdminGuard — Scope B1 Client Guard Verification & Stale State Elimination', () => {
   let currentHref = '';
 
   beforeEach(() => {
@@ -126,6 +126,51 @@ describe('AdminGuard — Scope B1 Client Guard Verification', () => {
     await waitFor(() => {
       expect(screen.getByTestId('protected-questions')).toBeDefined();
     });
+  });
+
+  it('does NOT render protected children before revalidation even if Zustand store has admin role (Tasks 14 & 20)', async () => {
+    // Stale Zustand state from previous session
+    useAuthStore.getState().login({
+      id: 'stale-admin-1',
+      name: 'Stale Admin',
+      email: 'stale@shc.in',
+      role: 'admin',
+      isAdmin: true,
+    });
+
+    // Revalidation is in flight and resolves to demoted student
+    let resolveSession: (value: unknown) => void = () => {};
+    const pendingPromise = new Promise((resolve) => {
+      resolveSession = resolve;
+    });
+    mockApiClient.auth.getAdminSession.mockReturnValueOnce(pendingPromise);
+
+    render(
+      <AdminGuard>
+        <div data-testid="sensitive-admin-data">Secret Admin Financials</div>
+      </AdminGuard>
+    );
+
+    // Assert: while revalidation is in-flight, protected children MUST NOT be displayed!
+    expect(screen.queryByTestId('sensitive-admin-data')).toBeNull();
+    expect(screen.getByText('Loading SkillHubCore Admin...')).toBeDefined();
+
+    // Now resolve revalidation as a revoked/demoted role
+    resolveSession({
+      user: {
+        id: 'stale-admin-1',
+        email: 'stale@shc.in',
+        role: 'student',
+        isAdmin: false,
+      },
+    });
+
+    await waitFor(() => {
+      expect(window.location.href).toBe('/forbidden');
+    });
+
+    // Content was NEVER rendered to the DOM
+    expect(screen.queryByTestId('sensitive-admin-data')).toBeNull();
   });
 
   it('redirects to /login when session revalidation returns 401 Unauthorized', async () => {

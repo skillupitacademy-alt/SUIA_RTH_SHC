@@ -1,9 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdminMutationOrigin, requireAdminRequest } from '@/lib/admin-route-guard';
-import { isProtectedAdminPage, isPublicPath } from '@/lib/admin-page-policy';
-import { evaluateRequestPageAccess } from '@/lib/server-page-auth';
-import { sanitizeRedirectUrl } from '@/lib/sanitize-redirect';
+import { isProtectedAdminPage, isPublicPath } from './lib/admin-page-policy';
+import { sanitizeRedirectUrl } from './lib/sanitize-redirect';
+import { evaluateRequestPageAccess } from './lib/server-page-auth';
 
+/**
+ * Next.js Edge Middleware for SkillHubCore Admin.
+ *
+ * Enforces server-side authentication and authorization admission on all 32 protected
+ * admin pages (HTML, RSC, HEAD, prefetch) before any React Server Components render.
+ *
+ * Unauthenticated users are redirected to /login?redirect=...
+ * Authenticated non-admin or unauthorized roles are redirected to /forbidden (403).
+ * Upstream and internal API routes (/api/*) are guarded by admin-route-guard and 80 handlers.
+ */
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
@@ -57,8 +67,17 @@ export async function proxy(request: NextRequest) {
       });
     }
 
-    // Outcome is AUTHORIZED: allow rendering with private, no-store response header
-    const response = NextResponse.next();
+    // Outcome is AUTHORIZED:
+    // Pass downstream with x-shc-pathname request header so Server Component layouts
+    // can independently enforce route-specific permission policies.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-shc-pathname', path);
+
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   }

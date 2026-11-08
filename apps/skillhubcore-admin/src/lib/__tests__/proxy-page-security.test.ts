@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { NextRequest } from 'next/server';
 import { SignJWT } from 'jose';
 import { proxy } from '@/proxy';
+import { requireAdminMutationOrigin } from '@/lib/admin-route-guard';
 
-describe('Proxy Page Security — Direct HTTP, RSC, HEAD & API Preservations', () => {
+describe('Proxy Page Security — Direct HTTP, RSC, HEAD, Dynamic Routes & API Preservations', () => {
   const secretKey = new TextEncoder().encode(
     process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || 'test-admin-secret-at-least-32-chars-long!!'
   );
@@ -106,6 +107,36 @@ describe('Proxy Page Security — Direct HTTP, RSC, HEAD & API Preservations', (
     });
   });
 
+  // --- Task 6 & 16: Dynamic Routes With Extensions Protected At Proxy ---
+  describe('Dynamic Routes With Extensions Protection', () => {
+    it('intercepts and redirects unauthenticated requests for dynamic routes ending in .js (Task 6)', async () => {
+      const req = createRequest('/users/account.js');
+      const res = await proxy(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toContain('/login');
+      expect(res.headers.get('cache-control')).toBe('private, no-store');
+    });
+
+    it('intercepts and redirects unauthenticated requests for /subscriptions/example.js', async () => {
+      const req = createRequest('/subscriptions/example.js');
+      const res = await proxy(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toContain('/login');
+      expect(res.headers.get('cache-control')).toBe('private, no-store');
+    });
+
+    it('admits authenticated admin requests for dynamic routes with extensions', async () => {
+      const token = await createValidAdminToken();
+      const req = createRequest('/users/account.js', { token });
+      const res = await proxy(req);
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('cache-control')).toBe('private, no-store');
+    });
+  });
+
   // --- Task 23: RSC & Prefetch Request Admission ---
   describe('React Server Component (RSC) and Prefetch Requests', () => {
     it('blocks unauthenticated RSC payload requests (rsc: 1) and redirects to /login', async () => {
@@ -197,27 +228,28 @@ describe('Proxy Page Security — Direct HTTP, RSC, HEAD & API Preservations', (
       expect(res.status).toBe(200);
     });
 
-    it('enforces API route guards on /api/admin/* endpoints', async () => {
+    it('enforces API route guards on /api/admin/* endpoints returning 401 JSON without page redirect', async () => {
       const req = createRequest('/api/admin/domains');
       const res = await proxy(req);
 
-      // Unauthenticated API request must receive HTTP 401 JSON, not a 307 page redirect
+      // Unauthenticated API request receives HTTP 401 JSON from proxy admin-route-guard, not a 307 page redirect
       expect(res.status).toBe(401);
+      expect(res.headers.get('location')).toBeNull();
       const json = await res.json();
       expect(json.error).toBeDefined();
     });
 
-    it('enforces mutation origin checks on /api/auth/login', async () => {
+    it('enforces mutation origin checks on /api/auth/login via route guard helper', async () => {
       const req = createRequest('/api/auth/login', {
         method: 'POST',
         headers: { origin: 'https://evil-untrusted-origin.com' },
       });
-      const res = await proxy(req);
+      const denied = requireAdminMutationOrigin(req);
 
-      expect(res.status).toBe(403);
-      const json = await res.json();
+      expect(denied).not.toBeNull();
+      expect(denied?.status).toBe(403);
+      const json = await denied?.json();
       expect(json.error).toBe('Untrusted request origin');
     });
   });
 });
-

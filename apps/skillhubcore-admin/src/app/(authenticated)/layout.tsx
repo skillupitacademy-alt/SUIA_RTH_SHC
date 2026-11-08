@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { evaluateServerCookiesPageAccess } from '@/lib/server-page-auth';
+import { sanitizeRedirectUrl } from '@/lib/sanitize-redirect';
 
 const ClientShell = dynamic(() => import('../(admin)/ClientShell'), {
   ssr: true,
@@ -11,10 +12,16 @@ const ClientShell = dynamic(() => import('../(admin)/ClientShell'), {
 
 export default async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
-  const outcome = await evaluateServerCookiesPageAccess(cookieStore, '/questions');
+  const headersList = await headers();
+  const requestedPath = headersList.get('x-shc-pathname') || '/questions';
+  const outcome = await evaluateServerCookiesPageAccess(cookieStore, requestedPath);
 
   if (outcome.status === 'UNAUTHENTICATED') {
-    redirect('/login');
+    const destination = sanitizeRedirectUrl(requestedPath, '/questions');
+    const redirectParam = destination && destination !== '/questions' && destination !== '/'
+      ? `?redirect=${encodeURIComponent(destination)}`
+      : '';
+    redirect(`/login${redirectParam}`);
   }
 
   if (outcome.status === 'FORBIDDEN') {

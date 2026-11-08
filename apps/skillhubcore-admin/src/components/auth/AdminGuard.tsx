@@ -45,7 +45,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     })),
   );
   const pathname = usePathname();
-  const [isCheckingSession, setIsCheckingSession] = useState(pathname !== '/login');
+  const [isCheckingSession, setIsCheckingSession] = useState(pathname !== '/login' && pathname !== '/forbidden');
   const [revalidateError, setRevalidateError] = useState<string | null>(null);
 
   const isSameAuthSession = useCallback((currentUser: typeof user, nextUser: typeof user) => {
@@ -195,22 +195,15 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
     void revalidate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isLocked, isSameAuthSession, login, user]); // Removed pathname from dependencies
+  }, [isAuthenticated, isLocked, isSameAuthSession, login, user]);
 
   // Bypass guard for login and forbidden pages
   if (pathname === '/login' || pathname === '/forbidden') {
     return <>{children}</>;
   }
 
-  const hasAdminRole = isAdminEquivalentRole(user?.role);
-
-  // If user is authenticated and has admin role, show content immediately
-  // The revalidation happens in the background
-  if (isAuthenticated === true && hasAdminRole === true) {
-    return <>{children}</>;
-  }
-
-  // Only show loading spinner if we're actively checking and don't have auth state yet
+  // Never render protected children while session revalidation is in progress
+  // Prevents stale client state from flashing or displaying unconfirmed data
   if (isCheckingSession) {
     return (
       <div className="h-screen w-screen bg-slate-50 flex flex-col items-center justify-center">
@@ -242,11 +235,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
               onClick={() => {
                 setIsCheckingSession(true);
                 setRevalidateError(null);
-                const hasRole = isAdminEquivalentRole(user?.role);
-                if (isAuthenticated === true && hasRole === true && user !== null) {
-                  setIsCheckingSession(false);
-                  return;
-                }
                 apiClient.auth.getAdminSession()
                   .then(({ user: valUser }) => {
                     if (valUser && isAdminEquivalentRole(valUser.role)) {
@@ -281,6 +269,13 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not authenticated, render null while revalidation or redirect takes effect
+  const hasAdminRole = isAdminEquivalentRole(user?.role);
+
+  // Confirmed authenticated admin session only
+  if (isAuthenticated === true && hasAdminRole === true) {
+    return <>{children}</>;
+  }
+
+  // If not authenticated or forbidden, render null while revalidation or redirect takes effect
   return null;
 }
