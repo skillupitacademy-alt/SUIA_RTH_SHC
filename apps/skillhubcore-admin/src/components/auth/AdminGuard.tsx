@@ -14,7 +14,7 @@ import { clientLogger } from '@/utils/clientLogger';
 const normalizeRole = (value: string | null | undefined) => (typeof value === 'string' ? value.toLowerCase() : '');
 const isAdminEquivalentRole = (value: string | null | undefined) => {
   const role = normalizeRole(value);
-  return role === 'admin' || role === 'super_admin' || role === 'infrastructure';
+  return role === 'admin' || role === 'super_admin';
 };
 
 function isExplicitAuthError(err: unknown): boolean {
@@ -33,15 +33,6 @@ function isExplicitAuthError(err: unknown): boolean {
 }
 
 apiClient.client.setPortalIdentity('admin');
-
-const LOCAL_TEST_BYPASS_PREFIXES = [
-  '/questions',
-];
-
-const isLocalTestBypassRoute = (pathname: string) => (
-  process.env.NODE_ENV !== 'production' &&
-  LOCAL_TEST_BYPASS_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
-);
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, login, logout, isLocked } = useAuthStore(
@@ -93,11 +84,10 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const handleForbidden = useCallback(
     (e: Event) => {
       e.preventDefault();
-      clientLogger.warn('Circuit Breaker: Global 403 detected. Redirecting to login.');
+      clientLogger.warn('Circuit Breaker: Global 403 detected. Redirecting to /forbidden.');
       recordCounter('admin.ui.auth.forbidden', 1, { route: pathname });
-      // Redirect to login - no legacy modals or query params
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = '/forbidden';
       }
     },
     [pathname],
@@ -114,19 +104,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (pathname === '/login' || isLocalTestBypassRoute(pathname)) {
+    if (pathname === '/login' || pathname === '/forbidden') {
       setIsCheckingSession(false);
       return;
     }
 
     const hasAdminRole = isAdminEquivalentRole(user?.role);
-
-    // Skip revalidation if user is already authenticated and has admin role
-    // Only revalidate on initial mount (when user is null)
-    if (isAuthenticated === true && hasAdminRole === true && user !== null) {
-      setIsCheckingSession(false);
-      return;
-    }
 
     const revalidate = async (retryCount = 0) => {
       setIsCheckingSession(true);
@@ -140,8 +123,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
         if (validatedHasAdminRole === false) {
           recordCounter('admin.ui.auth.revalidate_forbidden', 1, { route: pathname });
-          // Redirect to login - no legacy query params
-          window.location.href = '/login';
+          window.location.href = '/forbidden';
           return;
         }
 
@@ -151,9 +133,24 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         setIsCheckingSession(false);
       } catch (err: unknown) {
         const isAuthError = isExplicitAuthError(err);
+        const errStatus = err instanceof ApiRequestError
+          ? err.status
+          : (err && typeof err === 'object' && 'status' in err && typeof (err as { status?: unknown }).status === 'number')
+            ? (err as { status: number }).status
+            : undefined;
 
-        if (isAuthError) {
-          clientLogger.error('Session authentication failed (401/403)', {
+        if (errStatus === 403) {
+          clientLogger.error('Session authorization failed (403 Forbidden)', {
+            error: err instanceof Error ? err.message : 'forbidden',
+          });
+          recordCounter('admin.ui.auth.revalidate_forbidden', 1, { route: pathname });
+          setIsCheckingSession(false);
+          window.location.href = '/forbidden';
+          return;
+        }
+
+        if (isAuthError || errStatus === 401) {
+          clientLogger.error('Session authentication failed (401)', {
             error: err instanceof Error ? err.message : 'unknown',
           });
           recordCounter('admin.ui.auth.revalidate_failed', 1, {
@@ -161,7 +158,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             reason: 'unauthorized',
           });
           setIsCheckingSession(false);
-          // Redirect to login - no legacy query params
           window.location.href = '/login';
           return;
         }
@@ -201,8 +197,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLocked, isSameAuthSession, login, user]); // Removed pathname from dependencies
 
-  // Bypass guard for login page
-  if (pathname === '/login' || isLocalTestBypassRoute(pathname)) {
+  // Bypass guard for login and forbidden pages
+  if (pathname === '/login' || pathname === '/forbidden') {
     return <>{children}</>;
   }
 
@@ -285,10 +281,6 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not authenticated, redirect to login
-  if (typeof window !== 'undefined') {
-    window.location.href = '/login';
-  }
-
+  // If not authenticated, render null while revalidation or redirect takes effect
   return null;
 }

@@ -62,7 +62,7 @@ function LoginForm() {
       console.log('[SHC_LOGIN] Auth store updated, redirecting to dashboard...');
 
       // Redirect to dashboard or validated internal redirect target
-      const redirectTarget = sanitizeRedirectUrl(searchParams.get('redirect'));
+      const redirectTarget = sanitizeRedirectUrl(searchParams.get('redirect') ?? searchParams.get('returnTo'));
       router.push(redirectTarget);
     } catch (err) {
       console.error('[SHC_LOGIN] Login failed:', err);
