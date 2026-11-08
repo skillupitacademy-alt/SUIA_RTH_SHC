@@ -54,40 +54,27 @@ async function buildCookieHeader(): Promise<string> {
 
 export async function fetchBackendAuthState(): Promise<BackendAuthUserState | null> {
   const MAX_RETRIES = 2;
-  const TIMEOUT_MS = 3000;
-  
-  let lastError: any = null;
+  // The gateway/profile route may compile on its first request in Next.js dev mode.
+  const timeoutMs = process.env.NODE_ENV === 'development' ? 15_000 : 3_000;
+  let lastFailure = 'unavailable';
+
+  let baseUrl: string;
+  let cookieHeader: string;
+  try {
+    baseUrl = await buildBaseUrl();
+    cookieHeader = await buildCookieHeader();
+  } catch {
+    console.warn('[AUTH_STATE] Request context unavailable; returning no profile');
+    return null;
+  }
+  if (!cookieHeader) return null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-      const baseUrl = await buildBaseUrl();
-      const cookieHeader = await buildCookieHeader();
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH_STATE_DEBUG]', {
-          baseUrl,
-          hasCookie: !!cookieHeader,
-          cookieLength: cookieHeader.length,
-          attempt: attempt + 1,
-        });
-      }
-
-      if (!cookieHeader) {
-        console.log('[AUTH_STATE] No cookies → returning null');
-        clearTimeout(timeout);
-        return null;
-      }
-
-      const profileUrl = `${baseUrl}/api/profile`;
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH_STATE] Fetching profile via gateway:', profileUrl);
-      }
-
-      const response = await fetch(profileUrl, {
+      const response = await fetch(`${baseUrl}/api/profile`, {
         headers: {
           cookie: cookieHeader,
           'Cache-Control': 'no-cache',
@@ -96,68 +83,40 @@ export async function fetchBackendAuthState(): Promise<BackendAuthUserState | nu
         signal: controller.signal,
       });
 
-      clearTimeout(timeout);
+      // Invalid credentials must never be retried or replaced with a local user.
+      if (response.status === 401) return null;
 
-      console.log('[AUTH_STATE] Response status:', response.status);
-
-      // ✅ CASE 1: REAL AUTH FAILURE (401 = invalid/expired token)
-      if (response.status === 401) {
-        console.warn('[AUTH_STATE] Auth invalid (401) → logout');
-        return null;
-      }
-
-      // ⚠️ CASE 2: SERVER ERROR (DO NOT LOGOUT - retry)
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unable to read error');
-        console.warn('[AUTH_STATE] API error (will retry):', response.status, errorText);
-        lastError = new Error(`HTTP ${response.status}`);
-        
-        // Wait before retry (exponential backoff)
-        if (attempt < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
-        }
-        continue; // retry
-      }
-
-      const user = (await response.json().catch(() => null)) as BackendAuthUserState | null;
-
-      if (!user) {
-        console.error('[AUTH_STATE] No user in response');
-        lastError = new Error('Empty response');
-        
-        if (attempt < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
-        }
-        continue; // retry
-      }
-
-      console.log('[AUTH_STATE] Success:', {
-        userId: user.id,
-        email: user.email,
-        onboardingCompleted: user.onboardingCompleted,
-      });
-
-      return user;
-    } catch (error: any) {
-      lastError = error;
-
-      if (error.name === 'AbortError') {
-        console.warn('[AUTH_STATE] Request timeout (attempt', attempt + 1, ')');
+        // Do not log private response bodies or credentials.
+        lastFailure = `HTTP ${response.status}`;
+        await response.body?.cancel();
       } else {
-        console.warn('[AUTH_STATE] Request failed (attempt', attempt + 1, '):', error.message);
+        const user = (await response.json()) as BackendAuthUserState | null;
+        if (user) return user;
+        lastFailure = 'empty profile response';
       }
+    } catch (error: unknown) {
+      const isAbort = controller.signal.aborted ||
+        (error instanceof Error && error.name === 'AbortError');
+      lastFailure = isAbort ? 'profile request timed out' : 'profile request failed';
+    } finally {
+      // Clear the deadline on success, denial, body failure and network failure.
+      clearTimeout(timeout);
+    }
 
-      // Wait before retry
-      if (attempt < MAX_RETRIES) {
-        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
-      }
+    console.warn('[AUTH_STATE] Profile unavailable', {
+      reason: lastFailure,
+      attempt: attempt + 1,
+    });
+    if (attempt < MAX_RETRIES) {
+      await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
     }
   }
 
-  // 🚨 FINAL FALLBACK: All retries exhausted
-  console.error('[AUTH_STATE] All retries exhausted:', lastError);
-  
-  // ⚠️ IMPORTANT: Return null only after all retries failed
-  // This prevents random logout on temporary issues
+  // This helper supplies optional profile data. Existing callers own auth guards
+  // and fallback behavior; transport failure must not manufacture an auth user.
+  console.warn('[AUTH_STATE] Profile retries exhausted; returning no profile', {
+    reason: lastFailure,
+  });
   return null;
 }
