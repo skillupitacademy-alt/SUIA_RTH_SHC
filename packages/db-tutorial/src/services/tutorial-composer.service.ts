@@ -417,7 +417,9 @@ export class TutorialComposerService {
     // No status transition error for deployed → deployed
 
     // Step 4: Publish
-    const publishedTutorial = await this.repository.publishTutorial(tutorialId);
+    const publishedTutorial = await this.repository.publishTutorial(tutorialId, {
+      userId: context.userId,
+    });
 
     if (!publishedTutorial) {
       throw new TutorialNotFoundError(tutorialId);

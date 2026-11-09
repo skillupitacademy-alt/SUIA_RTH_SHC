@@ -59,10 +59,27 @@ export const BRAND_TUTORIAL_THEMES: Record<Exclude<TutorialSidebarBrandId, 'shar
   },
 };
 
+export const BRAND_THEME_REGISTRY: Record<string, BrandTutorialTheme> = {
+  realtutorialhub: BRAND_TUTORIAL_THEMES.realtutorialhub,
+  rth: BRAND_TUTORIAL_THEMES.realtutorialhub,
+  skillup: BRAND_TUTORIAL_THEMES.skillup,
+};
+
+/**
+ * Register a custom theme for a new or future tenant
+ */
+export function registerTenantTheme(tenantId: string, theme: BrandTutorialTheme): void {
+  BRAND_THEME_REGISTRY[tenantId] = theme;
+}
+
 /**
  * Single source of truth for tutorial theme colors across Composer and Learner runtimes.
+ * Supports known brands (realtutorialhub, skillup) and extensible future tenants.
  */
-export function themeForBrand(brandId: TutorialSidebarBrandId | 'rth'): BrandTutorialTheme {
+export function themeForBrand(brandId: TutorialSidebarBrandId | 'rth' | string): BrandTutorialTheme {
+  if (BRAND_THEME_REGISTRY[brandId]) {
+    return BRAND_THEME_REGISTRY[brandId];
+  }
   if (brandId === 'realtutorialhub' || brandId === 'rth') {
     return BRAND_TUTORIAL_THEMES.realtutorialhub;
   }

@@ -177,9 +177,9 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
   try {
     const tutorialDb = getTutorialDb();
     
-    // Log which database URL is being used
+    // Log database connection presence safely without exposing connection string or credentials
     console.log('[DELIVERY_TRACE] Database connection', { 
-      DATABASE_URL_TUTORIAL: process.env.DATABASE_URL_TUTORIAL?.substring(0, 50) + '...'
+      isTutorialDbConfigured: !!process.env.DATABASE_URL_TUTORIAL
     });
     
     const domainRows = await tutorialDb

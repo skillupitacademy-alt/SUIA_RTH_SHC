@@ -20,7 +20,7 @@
 
 import { db } from '../db';
 import { tutorialSections, tutorialSubtopics } from '../schema';
-import { eq, and, inArray, isNull, or } from 'drizzle-orm';
+import { eq, and, inArray, isNull, or, desc, sql } from 'drizzle-orm';
 import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
 import type { Brand } from '@quiz/types';
 import { tutorialContentSanitizationService } from './tutorial-content-sanitization.service';
@@ -229,7 +229,9 @@ export class TutorialDeliveryService {
       )!
     );
 
-    // V2: Query single tutorial (not array)
+    // V2: Query single tutorial with deterministic tenant priority
+    // 1. Exact tenant-specific tutorial takes precedence (priority 0)
+    // 2. Canonical shared tutorial serves as universal fallback (priority 1)
     const [rawTutorial] = await db
       .select({
         id: tutorialSections.id,
@@ -240,9 +242,18 @@ export class TutorialDeliveryService {
         version: tutorialSections.version,
         language: tutorialSections.language,
         publishedAt: tutorialSections.publishedAt,
+        status: tutorialSections.status,
       })
       .from(tutorialSections)
       .where(and(...conditions))
+      .orderBy(
+        sql`CASE 
+          WHEN ${tutorialSections.brandId} = ${brandId} THEN 0 
+          WHEN ${tutorialSections.brandId} = 'shared' THEN 1 
+          ELSE 2 
+        END ASC`,
+        desc(tutorialSections.updatedAt)
+      )
       .limit(1);
 
     // V2: Return structure with nullable tutorial
@@ -256,8 +267,21 @@ export class TutorialDeliveryService {
       };
     }
 
+    // Protection against Save as Draft altering learner-visible content:
+    // When tutorial is deployed, deliver the frozen published snapshot if available
+    let contentToDeliver = rawTutorial.content;
+    let versionToDeliver = rawTutorial.version;
+
+    if (rawTutorial.status === 'deployed') {
+      const publishedSnapshot = await this.repository.getLatestPublishedVersion(rawTutorial.id);
+      if (publishedSnapshot && publishedSnapshot.content) {
+        contentToDeliver = publishedSnapshot.content as any;
+        versionToDeliver = publishedSnapshot.version;
+      }
+    }
+
     // CRITICAL: Validate TutorialDocument schema at trust boundary
-    const validationResult = TutorialDocumentSchema.safeParse(rawTutorial.content);
+    const validationResult = TutorialDocumentSchema.safeParse(contentToDeliver);
 
     if (!validationResult.success) {
       console.error('[TutorialDeliveryService] Schema validation failed', {
@@ -297,7 +321,7 @@ export class TutorialDeliveryService {
       brandId: rawTutorial.brandId as string,
       orderIndex: rawTutorial.orderIndex,
       content: sanitizationResult.sanitized, // Use sanitized content
-      version: rawTutorial.version,
+      version: versionToDeliver,
       language: rawTutorial.language,
       publishedAt: rawTutorial.publishedAt,
     };

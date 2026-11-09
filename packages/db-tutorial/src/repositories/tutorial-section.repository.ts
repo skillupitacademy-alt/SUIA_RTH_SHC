@@ -493,10 +493,63 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
   }
 
   /**
+   * Get latest published version snapshot from tutorial_content_versions
+   * Used to deliver frozen published content to learners while authors edit drafts
+   */
+  async getLatestPublishedVersion(
+    sectionId: string
+  ): Promise<{ content: any; version: number } | undefined> {
+    try {
+      const rows = await this.runRead(
+        this.dbInstance
+          .select({
+            content: tutorialContentVersions.content,
+            version: tutorialContentVersions.version,
+          })
+          .from(tutorialContentVersions)
+          .where(eq(tutorialContentVersions.contentId, sectionId))
+          .orderBy(desc(tutorialContentVersions.version))
+          .limit(1),
+        'TutorialSectionRepository.getLatestPublishedVersion'
+      );
+      return rows[0];
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
    * V2: Publish tutorial (deploy status)
    */
-  async publishTutorial(tutorialId: string): Promise<TutorialSection | undefined> {
+  async publishTutorial(
+    tutorialId: string,
+    context?: { userId?: string }
+  ): Promise<TutorialSection | undefined> {
     const now = new Date();
+
+    // Load section to get current content and version for immutable snapshot
+    const section = await this.getTutorialById(tutorialId);
+    if (!section) return undefined;
+
+    // Snapshot published content to tutorialContentVersions
+    const isUuid = (val?: string) =>
+      typeof val === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    const savedBy = isUuid(context?.userId)
+      ? context!.userId!
+      : '00000000-0000-0000-0000-000000000001';
+
+    try {
+      await this.dbInstance.insert(tutorialContentVersions).values({
+        contentId: section.id,
+        version: section.version,
+        content: section.content as any,
+        savedBy,
+        createdAt: now,
+      });
+    } catch (versionError) {
+      console.warn('[TutorialSectionRepository] Version snapshot notice:', versionError instanceof Error ? versionError.message : String(versionError));
+    }
 
     const [row] = await this.runRead(
       this.dbInstance
