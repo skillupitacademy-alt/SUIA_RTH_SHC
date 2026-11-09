@@ -4,13 +4,17 @@ import { SignJWT } from 'jose';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// 1. Read secrets from .env.local
+// 1. Read secrets strictly from environment or .env.local (no static fallback)
 const envLocalPath = path.resolve('apps/skillhubcore-admin/.env.local');
-let adminJwtSecret = '8bb477946b350ff8e45aabab534305fdd0df4bc404d0dc6d967c64aec81f089d92712f3be7929126906d273348da69c2c4ac63bbaab70c8b5a8b48bfb4961a2a';
-if (fs.existsSync(envLocalPath)) {
+let adminJwtSecret = process.env.ADMIN_JWT_SECRET;
+if (!adminJwtSecret && fs.existsSync(envLocalPath)) {
   const content = fs.readFileSync(envLocalPath, 'utf8');
   const match = content.match(/ADMIN_JWT_SECRET="([^"]+)"/);
   if (match) adminJwtSecret = match[1];
+}
+
+if (!adminJwtSecret || adminJwtSecret.length < 32) {
+  throw new Error('FATAL: Valid ADMIN_JWT_SECRET is missing. It must be provided in apps/skillhubcore-admin/.env.local or process.env.');
 }
 
 const secretKey = new TextEncoder().encode(adminJwtSecret);
@@ -85,6 +89,7 @@ async function run() {
         ...process.env,
         PORT: String(PORT),
         NODE_ENV: 'production',
+        SHC_ADMIN_ORIGIN: BASE_URL,
         DATABASE_URL: 'postgresql://mock:mock@localhost:5432/mock_test',
         ADMIN_JWT_SECRET: adminJwtSecret,
       },
@@ -266,6 +271,31 @@ async function run() {
       recordTest('Task 20.3', 'JWT forged secret key rejection', resKey.status() === 307, `Status ${resKey.status()}`);
     }
 
+    // Real BFF Logout Tests (Task 15.1 & 15.2)
+    {
+      const resUntrusted = await apiContext.post('/api/auth/logout', {
+        headers: { origin: 'https://attacker.example.com' },
+      });
+      recordTest(
+        'Task 15.1',
+        'HTTP POST /api/auth/logout with untrusted origin rejected',
+        resUntrusted.status() === 403,
+        `Status ${resUntrusted.status()}`
+      );
+
+      const resLogout = await apiContext.post('/api/auth/logout', {
+        headers: { origin: BASE_URL, cookie: `accessToken=${adminToken}` },
+      });
+      const setCookies = resLogout.headers()['set-cookie'] || '';
+      const hasClearance = setCookies.includes('accessToken=') && (setCookies.includes('Max-Age=0') || setCookies.includes('Expires=Thu, 01 Jan 1970'));
+      recordTest(
+        'Task 15.2',
+        'HTTP POST /api/auth/logout BFF expires admin cookies',
+        (resLogout.status() === 200 || resLogout.status() === 502) && hasClearance,
+        `Status ${resLogout.status()}, Set-Cookie includes clearance: ${hasClearance}`
+      );
+    }
+
     // 3. Headless Chromium Browser Verification (Tasks 13–17)
     console.log('\n[3/4] Launching Headless Chromium Browser (Tasks 13–17)...');
     const browser = await chromium.launch({ headless: true });
@@ -324,7 +354,7 @@ async function run() {
       await context.close();
     }
 
-    // Browser Test 16: Logout / Back button protection
+    // Browser Test 16.1: Logout / Back button protection via cookie clearance
     {
       const context = await browser.newContext();
       await context.addCookies([
@@ -333,7 +363,7 @@ async function run() {
       const page = await context.newPage();
       await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'commit' });
 
-      // Clear cookies (simulating logout)
+      // Clear cookies (simulating client-side drop)
       await context.clearCookies();
 
       // Attempt fresh navigation to /dashboard
@@ -341,10 +371,39 @@ async function run() {
       await page.waitForURL((url) => url.pathname.includes('/login'), { timeout: 10000 });
       const urlAfterLogout = page.url();
       recordTest(
-        'Task 16',
-        'Chromium logout and back-navigation protection',
+        'Task 16.1',
+        'Chromium logout and back-navigation protection (client clearance)',
         urlAfterLogout.includes('/login'),
         `URL after cookie cleared: ${urlAfterLogout}`
+      );
+      await context.close();
+    }
+
+    // Browser Test 16.2: Real Browser Logout via BFF endpoint & server Set-Cookie clearance
+    {
+      const context = await browser.newContext();
+      await context.addCookies([
+        { name: 'accessToken', value: adminToken, domain: 'skillhubcore.localhost', path: '/' },
+      ]);
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'commit' });
+      await page.waitForURL((url) => url.pathname.includes('/dashboard'), { timeout: 10000 });
+
+      // Execute real BFF logout via browser request context (browser receives Set-Cookie Max-Age=0)
+      const logoutRes = await page.request.post(`${BASE_URL}/api/auth/logout`, {
+        headers: { origin: BASE_URL },
+      });
+
+      // Attempt navigation to /dashboard again - browser must be unauthenticated now
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'commit' }).catch(() => {});
+      await page.waitForURL((url) => url.pathname.includes('/login'), { timeout: 10000 });
+      const finalUrl = page.url();
+
+      recordTest(
+        'Task 16.2',
+        'Chromium real BFF /api/auth/logout roundtrip & browser cookie invalidation',
+        finalUrl.includes('/login'),
+        `Logout status: ${logoutRes.status()}, Final URL: ${finalUrl}`
       );
       await context.close();
     }

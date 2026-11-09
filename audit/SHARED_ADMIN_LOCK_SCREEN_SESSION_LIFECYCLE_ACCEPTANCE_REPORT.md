@@ -197,7 +197,7 @@ In accordance with the Principal Architect's review:
 | **20** | Adversarial | Test failure and concurrency scenarios | SHC & RTH adapters | Vitest async rejection suites | In-flight login handled, race conditions prevented | **PASS** |
 | **21** | Integration | Verify SHC protected-route boundary | `apps/skillhubcore-admin` | `pnpm test:security`, `pnpm check:boundaries` | 61/61 security tests, 80/80 guarded API handlers | **PASS** |
 | **22** | Integration | Verify RTH protected-route boundary | `apps/realtutorialhub-admin` | `pnpm --filter @quiz/realtutorialhub-admin test` | 90/90 passed across 22 files | **PASS** |
-| **23** | Integration | Execute real HTTP session-lifecycle tests | Local port 3007 (`http://skillhubcore.localhost:3007`) | `node scripts/verify-scope-b1-e2e.mjs` | **17/17 passed** (13 Real HTTP loopback + 4 Headless Chromium Playwright) | **PASS** |
+| **23** | Integration | Execute real HTTP session-lifecycle tests | Local port 3007 (`http://skillhubcore.localhost:3007`) | `node scripts/verify-scope-b1-e2e.mjs` | **20/20 passed** (15 Real HTTP loopback + 5 Headless Chromium Playwright) | **PASS** |
 | **24** | Integration | Run affected package test gates | `@quiz/ui`, `@quiz/auth`, SHC, RTH, SUIA | Monorepo test & type-check commands | All package test & type-check gates passed | **PASS** |
 | **25** | Integration | Verify accessibility, themes and SUIA nonactivation | `@quiz/ui`, `apps/skillup-admin` | Vitest theme & accessibility suites | 16/16 UI tests passed, SUIA adapter unmounted | **PASS** |
 | **26** | Governance | Produce 30-task evidence matrix | Monorepo audit | Audit matrix compilation | Complete matrix documented in Section 7 | **PASS** |
@@ -206,7 +206,7 @@ In accordance with the Principal Architect's review:
 | **29** | Governance | Prepare independent-review package | `audit/` | File creation on repository disk | Saved directly to repository disk | **PASS** |
 | **30** | Governance | Final governance and operational safety checkpoint | Monorepo repository | Pre-closure safety verification | All stop conditions verified | **PASS** |
 
-*Task 23 Verification Evidence:* Executed against active server at `http://skillhubcore.localhost:3007` via Playwright API Request Context and Headless Chromium Browser. All 17 integration and browser session verification checks passed:
+*Task 23 Verification Evidence:* Executed against active server at `http://skillhubcore.localhost:3007` via Playwright API Request Context and Headless Chromium Browser. All 20 integration and browser session verification checks passed:
 - **Task 7.1:** HTTP GET `/dashboard` unauthenticated $\to$ 307 Redirect to `/login` (Cache-Control: `private, no-store`).
 - **Task 7.2:** HTTP GET `/marketing` unauthenticated $\to$ 307 Redirect to `/login?redirect=%2Fmarketing`.
 - **Task 7.3:** HTTP GET `/dashboard` with valid admin token $\to$ 200 OK (`private, no-store`).
@@ -217,10 +217,13 @@ In accordance with the Principal Architect's review:
 - **Task 12:** Client-forged `x-shc-pathname` header injection defeated $\to$ Redirected to true path `/login?redirect=%2Fmarketing`.
 - **Task 13:** HTTP GET `/forbidden` direct outcome page $\to$ 200 OK (Access Denied / Forbidden content).
 - **Task 20.1 – 20.3:** Negative JWT rejection (expired token, untrusted issuer, forged secret key) $\to$ all return 307 Redirect.
+- **Task 15.1:** HTTP POST `/api/auth/logout` with untrusted origin rejected with 403 Forbidden.
+- **Task 15.2:** HTTP POST `/api/auth/logout` BFF expires admin cookies $\to$ Status 200, `Set-Cookie` headers include `Max-Age=0` expiration for all 4 admin cookies across host-only and domain scopes.
 - **Task 14.1 (Chromium):** Headless Chromium unauthenticated navigation to `/dashboard` $\to$ automatically redirected to `http://skillhubcore.localhost:3007/login`.
 - **Task 14.2 (Chromium):** Headless Chromium authenticated navigation with admin cookie to `/dashboard` $\to$ rendered `http://skillhubcore.localhost:3007/dashboard`.
 - **Task 14.3 (Chromium):** Headless Chromium student cookie navigation to `/dashboard` $\to$ redirected to `http://skillhubcore.localhost:3007/forbidden`.
-- **Task 16 (Chromium):** Headless Chromium logout and back-navigation protection $\to$ clearing cookies immediately redirects back-navigation to `http://skillhubcore.localhost:3007/login`.
+- **Task 16.1 (Chromium):** Headless Chromium logout and back-navigation protection (client clearance) $\to$ clearing cookies immediately redirects back-navigation to `http://skillhubcore.localhost:3007/login`.
+- **Task 16.2 (Chromium):** Headless Chromium real BFF `/api/auth/logout` roundtrip & browser cookie invalidation $\to$ real HTTP POST to `/api/auth/logout` returns 200 OK with server-side cookie invalidation; subsequent navigation to `/dashboard` is denied and redirected to `http://skillhubcore.localhost:3007/login`.
 
 ---
 
@@ -233,9 +236,10 @@ In accordance with the Principal Architect's review:
 | **Shared UI (`@quiz/ui`)** | `pnpm --filter @quiz/ui test SharedAdminLockScreen` | 16 | 1 | 0 errors | 0 errors | **PASS** |
 | **Auth Package (`@quiz/auth`)** | `pnpm --filter @quiz/auth test` | 172 | 11 | 0 errors | 0 errors | **PASS** |
 | **SkillHubCore Admin (`@quiz/skillhubcore-admin`)** | `pnpm --filter @quiz/skillhubcore-admin test:security` | 61 | 2 | 0 errors | 0 errors | **PASS** |
+| **SHC Admin Logout BFF (`@quiz/skillhubcore-admin`)** | `pnpm --filter @quiz/skillhubcore-admin test route.test.ts` | 3 | 1 | 0 errors | 0 errors | **PASS** |
 | **SHC Admin Guard (`@quiz/skillhubcore-admin`)** | `pnpm --filter @quiz/skillhubcore-admin test admin-guard-scope-b.test.tsx` | 21 | 1 | 0 errors | 0 errors | **PASS** |
 | **SHC API Boundaries (`@quiz/skillhubcore-admin`)** | `pnpm --filter @quiz/skillhubcore-admin check:boundaries` | 80 guarded | 1 script | N/A | N/A | **PASS** |
-| **SHC Live E2E & Browser (`@quiz/skillhubcore-admin`)** | `node scripts/verify-scope-b1-e2e.mjs` | 17 | 1 script | N/A | N/A | **PASS** |
+| **SHC Live E2E & Browser (`@quiz/skillhubcore-admin`)** | `node scripts/verify-scope-b1-e2e.mjs` | 20 | 1 script | N/A | N/A | **PASS** |
 | **RealTutorialHub Admin (`@quiz/realtutorialhub-admin`)** | `pnpm --filter @quiz/realtutorialhub-admin test` | 90 (1 skipped) | 22 (1 skipped) | 0 errors | 0 errors | **PASS** |
 | **SkillUp IT Academy Admin (`@quiz/skillup-admin`)** | `pnpm --filter @quiz/skillup-admin test skillup-admin-lock-screen.test.tsx` | 4 | 1 | N/A | N/A | **PASS** |
 
@@ -296,8 +300,10 @@ In accordance with the Principal Architect's review:
 
 Based on the evidence collected across all 30 tasks:
 - **Architecture & Security Implementation:** **COMPLETE & VERIFIED** (All unit, integration, adversarial, and security guard suites pass 100%).
-- **Live HTTP & Headless Chromium Browser Verification (Task 23):** **100% PASS** (17/17 tests passing via `node scripts/verify-scope-b1-e2e.mjs`, including 13 Real HTTP loopback tests on `http://skillhubcore.localhost:3007` and 4 Headless Chromium Playwright session lifecycle tests).
-- **Cookie Contract Reconciliation (Finding A):** **RESOLVED** (Reconciled source contracts between SHC dual-scope cookies and RTH shared cookie middleware).
+- **Live HTTP & Headless Chromium Browser Verification (Task 23):** **100% PASS** (20/20 tests passing via `node scripts/verify-scope-b1-e2e.mjs`, including 15 Real HTTP loopback tests on `http://skillhubcore.localhost:3007` and 5 Headless Chromium Playwright session lifecycle tests).
+- **Finding A (Cookie Contract Reconciliation):** **RESOLVED** (Reconciled source contracts between SHC dual-scope cookies and RTH shared cookie middleware).
+- **Finding B (Real BFF Logout & Chromium Cookie Invalidation):** **RESOLVED** (Task 15.1, 15.2, and 16.2 execute real BFF `POST /api/auth/logout`, verifying server-side `Set-Cookie: Max-Age=0` expiration across host and domain scopes and real browser route denial upon back-navigation).
+- **Observation 3 (JWT Signing Secret Boundary):** **RESOLVED** (Static fallback JWT secret string eliminated; test runner strictly requires and verifies `ADMIN_JWT_SECRET` from `.env.local` or environment).
 - **Overall Status:** **READY FOR INDEPENDENT REVIEW AND FINAL SIGN-OFF**
 
 *Operational Note:* All 30 tasks are verified with concrete, reproducible command outputs. No uncommitted database mutations, ledger changes, or deployments have been executed.

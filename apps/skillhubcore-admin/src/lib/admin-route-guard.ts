@@ -21,7 +21,8 @@ export function requireAdminMutationOrigin(request: NextRequest): NextResponse |
   if (process.env.SHC_ADMIN_ORIGIN) {
     try {
       const configured = new URL(process.env.SHC_ADMIN_ORIGIN);
-      if (configured.protocol === 'https:' && !configured.username && !configured.password) {
+      const isLoopback = configured.hostname === 'localhost' || configured.hostname === '127.0.0.1' || configured.hostname.endsWith('.localhost');
+      if ((configured.protocol === 'https:' || isLoopback) && !configured.username && !configured.password) {
         allowed.add(configured.origin);
       }
     } catch { /* Invalid configuration must not weaken the default policy. */ }
