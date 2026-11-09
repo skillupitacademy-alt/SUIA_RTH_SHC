@@ -45,7 +45,7 @@ const BASE_URL = `http://skillhubcore.localhost:${PORT}`;
 
 async function checkRunningServer() {
   try {
-    const res = await fetch(`${BASE_URL}/api/health`);
+    const res = await fetch(`${BASE_URL}/api/health`, { signal: AbortSignal.timeout(2000) });
     if (res.ok) return true;
   } catch {
     // not running
