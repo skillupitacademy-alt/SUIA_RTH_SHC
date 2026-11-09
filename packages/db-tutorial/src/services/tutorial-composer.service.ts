@@ -281,8 +281,7 @@ export class TutorialComposerService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // TODO: Add authorization check
-    // await this.assertCanEditTutorial(context, existingTutorial);
+    this.assertCanEditTutorial(context, existingTutorial);
 
     // Step 2: Validate new content
     const parseResult = TutorialDocumentSchema.safeParse(input.content);
@@ -316,7 +315,11 @@ export class TutorialComposerService {
 
     if (!updatedTutorial) {
       if (input.expectedVersion !== undefined) {
-        throw new VersionConflictError(input.expectedVersion, existingTutorial.version);
+        const current = await this.repository.getTutorialById(tutorialId);
+        if (!current) {
+          throw new TutorialNotFoundError(tutorialId);
+        }
+        throw new VersionConflictError(input.expectedVersion, current.version);
       }
       throw new TutorialNotFoundError(tutorialId);
     }
@@ -342,8 +345,7 @@ export class TutorialComposerService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // TODO: Add authorization check
-    // await this.assertCanUpdateTutorialStatus(context, tutorial);
+    this.assertCanUpdateTutorialStatus(context, tutorial);
 
     // Step 2: Validate status transition
     if (tutorial.status === input.status) {
@@ -382,8 +384,7 @@ export class TutorialComposerService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // TODO: Add authorization check
-    // await this.assertCanPublishTutorial(context, tutorial);
+    this.assertCanPublishTutorial(context, tutorial);
 
     // Step 2: Validate document is publishable
     const parseResult = TutorialDocumentSchema.safeParse(tutorial.content);
@@ -467,7 +468,8 @@ export class TutorialComposerService {
   async appendBlockToTutorial(
     tutorialId: string,
     newBlock: TutorialBlock,
-    context: TutorialComposerServiceContext
+    context: TutorialComposerServiceContext,
+    expectedVersion?: number
   ): Promise<TutorialSection> {
     // Step 1: Load existing tutorial
     const existingTutorial = await this.repository.getTutorialById(tutorialId);
@@ -476,8 +478,11 @@ export class TutorialComposerService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // TODO: Add authorization check
-    // await this.assertCanEditTutorial(context, existingTutorial);
+    if (expectedVersion !== undefined && existingTutorial.version !== expectedVersion) {
+      throw new VersionConflictError(expectedVersion, existingTutorial.version);
+    }
+
+    this.assertCanEditTutorial(context, existingTutorial);
 
     // Step 2: Parse existing content as TutorialDocument
     const parseResult = TutorialDocumentSchema.safeParse(existingTutorial.content);
@@ -516,18 +521,24 @@ export class TutorialComposerService {
 
     const validatedDocument: TutorialDocument = updatedParseResult.data as TutorialDocument;
 
-    // Step 5: Update tutorial with appended block
+    // Step 5: Update tutorial with appended block using optimistic concurrency control
     const repositoryInput: UpdateTutorialContentInput = {
       content: validatedDocument,
     };
 
-    const updatedTutorial = await this.repository.updateTutorialContent(
+    const targetVersion = expectedVersion ?? existingTutorial.version;
+    const updatedTutorial = await this.repository.updateTutorialContentWithVersion(
       tutorialId,
+      targetVersion,
       repositoryInput
     );
 
     if (!updatedTutorial) {
-      throw new TutorialNotFoundError(tutorialId);
+      const current = await this.repository.getTutorialById(tutorialId);
+      if (!current) {
+        throw new TutorialNotFoundError(tutorialId);
+      }
+      throw new VersionConflictError(targetVersion, current.version);
     }
 
     // TODO: Cache invalidation
@@ -545,9 +556,49 @@ export class TutorialComposerService {
   async appendBlockToSection(
     sectionId: string,
     newBlock: TutorialBlock,
-    context: TutorialComposerServiceContext
+    context: TutorialComposerServiceContext,
+    expectedVersion?: number
   ): Promise<TutorialSection> {
-    return this.appendBlockToTutorial(sectionId, newBlock, context);
+    return this.appendBlockToTutorial(sectionId, newBlock, context, expectedVersion);
+  }
+
+  /**
+   * Defense-in-depth authorization check at service layer.
+   */
+  private assertCanEditTutorial(
+    context: TutorialComposerServiceContext,
+    tutorial: TutorialSection
+  ): void {
+    if (!context || !context.userId) {
+      throw new Error('Unauthorized: Service context requires an authenticated user');
+    }
+    if (context.brandId && tutorial.brandId && context.brandId !== tutorial.brandId) {
+      throw new Error(`Forbidden: Brand mismatch (${context.brandId} cannot modify ${tutorial.brandId})`);
+    }
+  }
+
+  private assertCanUpdateTutorialStatus(
+    context: TutorialComposerServiceContext,
+    tutorial: TutorialSection
+  ): void {
+    if (!context || !context.userId) {
+      throw new Error('Unauthorized: Service context requires an authenticated user');
+    }
+    if (context.brandId && tutorial.brandId && context.brandId !== tutorial.brandId) {
+      throw new Error(`Forbidden: Brand mismatch (${context.brandId} cannot modify ${tutorial.brandId})`);
+    }
+  }
+
+  private assertCanPublishTutorial(
+    context: TutorialComposerServiceContext,
+    tutorial: TutorialSection
+  ): void {
+    if (!context || !context.userId) {
+      throw new Error('Unauthorized: Service context requires an authenticated user');
+    }
+    if (context.brandId && tutorial.brandId && context.brandId !== tutorial.brandId) {
+      throw new Error(`Forbidden: Brand mismatch (${context.brandId} cannot modify ${tutorial.brandId})`);
+    }
   }
 }
 

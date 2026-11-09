@@ -35,6 +35,10 @@ interface UseTutorialHydrationResult {
   setLoadedSectionId: React.Dispatch<
     React.SetStateAction<string | null>
   >;
+  loadedSectionVersion: number | null;
+  setLoadedSectionVersion: React.Dispatch<
+    React.SetStateAction<number | null>
+  >;
   hasUnsavedLocalChangesRef: React.MutableRefObject<boolean>;
   loadExistingTutorial: (
     subtopicId: string,
@@ -65,6 +69,9 @@ export function useTutorialHydration({
 
   const [loadedSectionId, setLoadedSectionId] =
     useState<string | null>(null);
+
+  const [loadedSectionVersion, setLoadedSectionVersion] =
+    useState<number | null>(null);
 
   const [message, setMessage] = useState('');
 
@@ -135,6 +142,7 @@ export function useTutorialHydration({
      */
     setDocumentBlocks([]);
     setLoadedSectionId(null);
+    setLoadedSectionVersion(null);
     setIsLoadingDocument(false);
   }, []);
 
@@ -192,6 +200,7 @@ export function useTutorialHydration({
        */
       setDocumentBlocks([]);
       setLoadedSectionId(null);
+      setLoadedSectionVersion(null);
       setIsLoadingDocument(true);
       setMessage('');
 
@@ -278,6 +287,7 @@ export function useTutorialHydration({
         if (!section) {
           setDocumentBlocks([]);
           setLoadedSectionId(null);
+          setLoadedSectionVersion(null);
           setMessage(
             'No existing tutorial found for this navigation node. Ready to create a new document.',
           );
@@ -295,6 +305,7 @@ export function useTutorialHydration({
         ) {
           setDocumentBlocks([]);
           setLoadedSectionId(section.id);
+          setLoadedSectionVersion(typeof section.version === 'number' ? section.version : null);
           setMessage(
             'Existing tutorial has no valid document blocks. Ready for editing.',
           );
@@ -334,6 +345,7 @@ export function useTutorialHydration({
          */
         setDocumentBlocks(instances);
         setLoadedSectionId(section.id);
+        setLoadedSectionVersion(typeof section.version === 'number' ? section.version : null);
 
         setMessage(
           `Loaded ${instances.length} block(s) from existing tutorial.`,
@@ -393,6 +405,8 @@ export function useTutorialHydration({
     isLoadingDocument,
     loadedSectionId,
     setLoadedSectionId,
+    loadedSectionVersion,
+    setLoadedSectionVersion,
     hasUnsavedLocalChangesRef,
     loadExistingTutorial,
     invalidateHydration,

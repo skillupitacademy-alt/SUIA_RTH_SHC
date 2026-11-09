@@ -59,6 +59,8 @@ export function TutorialPageContentBuilderClient() {
     isLoadingDocument,
     loadedSectionId,
     setLoadedSectionId,
+    loadedSectionVersion,
+    setLoadedSectionVersion,
     hasUnsavedLocalChangesRef,
     loadExistingTutorial,
     invalidateHydration,
@@ -75,9 +77,11 @@ export function TutorialPageContentBuilderClient() {
     brandId: form.brandId,
     documentBlocks,
     loadedSectionId,
+    loadedSectionVersion,
     isLoadingDocument,
     hasUnsavedLocalChangesRef,
     setLoadedSectionId,
+    setLoadedSectionVersion,
     setMessage: setHydrationMessage, // Use hydration's setMessage
   });
 

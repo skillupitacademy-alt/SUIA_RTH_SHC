@@ -657,6 +657,7 @@ export const AppendBlockRequestSchema = z
       const { TutorialBlockSchema } = require('../tutorial-rich-document/schemas/blocks.schema');
       return TutorialBlockSchema;
     }),
+    expectedVersion: z.number().int().min(1).optional(),
   })
   .strict();
 

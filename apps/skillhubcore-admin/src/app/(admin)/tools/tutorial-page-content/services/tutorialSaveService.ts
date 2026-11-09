@@ -18,6 +18,7 @@ export interface TutorialSaveParams {
   brandId: TutorialSidebarBrandId;
   documentBlocks: BlockInstance[];
   loadedSectionId: string | null;
+  loadedSectionVersion?: number | null;
   isLoadingDocument: boolean;
 }
 
@@ -25,6 +26,8 @@ export interface TutorialSaveResult {
   success: boolean;
   message: string;
   sectionId?: string;
+  version?: number;
+  isConflict?: boolean;
 }
 
 /**
@@ -122,9 +125,13 @@ export async function saveTutorialSection(
     if (existingTutorial) {
       // Step 4a: UPDATE existing tutorial
       const patchUrl = `/api/tutorial-composer/sections/${existingTutorial.id}`;
+      const expectedVersion = typeof params.loadedSectionVersion === 'number'
+        ? params.loadedSectionVersion
+        : (typeof existingTutorial.version === 'number' ? existingTutorial.version : undefined);
+
       requestPayload = {
         content: tutorialDocument,
-        ...(typeof existingTutorial.version === 'number' ? { expectedVersion: existingTutorial.version } : {}),
+        ...(expectedVersion !== undefined ? { expectedVersion } : {}),
       };
 
       response = await fetch(patchUrl, {
@@ -150,12 +157,20 @@ export async function saveTutorialSection(
       });
     }
 
-    const result = await response.json();
-
     if (!response.ok) {
-      const errorMsg = result.error?.message || result.error || 'Save failed';
+      if (response.status === 409) {
+        return {
+          success: false,
+          message: 'Conflict: This tutorial was modified by another session. Your local changes are preserved. Please copy your work or reload the document.',
+          isConflict: true,
+        };
+      }
+      const result = await response.json().catch(() => null);
+      const errorMsg = result?.error?.message || result?.error || 'Save failed';
       throw new Error(errorMsg);
     }
+
+    const result = await response.json();
 
     // Success
     const action = existingTutorial ? 'updated' : 'created';
@@ -163,6 +178,7 @@ export async function saveTutorialSection(
       success: true,
       message: `Tutorial ${action} successfully with ${tutorialBlocks.length} block(s).`,
       sectionId: result.data?.id,
+      version: result.data?.version,
     };
   } catch (error) {
     return {

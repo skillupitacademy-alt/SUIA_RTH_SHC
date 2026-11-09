@@ -10,9 +10,11 @@ interface SaveDependencies {
   brandId: string;
   documentBlocks: BlockInstance[];
   loadedSectionId: string | null;
+  loadedSectionVersion?: number | null;
   isLoadingDocument: boolean;
   hasUnsavedLocalChangesRef: React.MutableRefObject<boolean>;
   setLoadedSectionId: (id: string | null) => void;
+  setLoadedSectionVersion?: (version: number | null) => void;
   setMessage: (message: string) => void;
 }
 
@@ -50,6 +52,7 @@ export function useTutorialSave(deps: SaveDependencies) {
             brandId: deps.brandId as TutorialSidebarBrandId,
             documentBlocks: deps.documentBlocks,
             loadedSectionId: deps.loadedSectionId,
+            loadedSectionVersion: deps.loadedSectionVersion,
             isLoadingDocument: deps.isLoadingDocument,
           },
           status
@@ -63,6 +66,11 @@ export function useTutorialSave(deps: SaveDependencies) {
         // Update loadedSectionId if we just created a new section
         if (result.sectionId && !deps.loadedSectionId) {
           deps.setLoadedSectionId(result.sectionId);
+        }
+
+        // Update loadedSectionVersion if version returned from save
+        if (typeof result.version === 'number' && deps.setLoadedSectionVersion) {
+          deps.setLoadedSectionVersion(result.version);
         }
 
         // Clear dirty flag after successful save

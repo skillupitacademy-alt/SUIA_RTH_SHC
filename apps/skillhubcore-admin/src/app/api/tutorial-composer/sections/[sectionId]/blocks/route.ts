@@ -17,6 +17,7 @@ import { tutorialComposerService, type TutorialComposerServiceContext } from '@q
 import {
   TutorialDocumentValidationError,
   SectionNotFoundError,
+  VersionConflictError,
 } from '@quiz/types';
 import {
   authenticateRequest,
@@ -41,6 +42,7 @@ const AppendBlockRequestSchema = z.object({
     content: z.unknown(),
     presentation: z.unknown().optional(),
   }),
+  expectedVersion: z.number().int().min(1).optional(),
 });
 
 /**
@@ -69,6 +71,10 @@ function errorResponse(
  */
 function handleServiceError(error: unknown) {
   console.error('Tutorial Composer Block API Error:', error);
+
+  if (error instanceof VersionConflictError) {
+    return errorResponse('VERSION_CONFLICT', error.message, 409);
+  }
 
   if (error instanceof TutorialDocumentValidationError) {
     return errorResponse(
@@ -143,7 +149,7 @@ export async function POST(
       );
     }
 
-    const { block } = parseResult.data;
+    const { block, expectedVersion } = parseResult.data;
 
     // Step 7: Create authenticated context
     const context: TutorialComposerServiceContext = {
@@ -154,7 +160,8 @@ export async function POST(
     const updatedTutorial = await tutorialComposerService.appendBlockToTutorial(
       sectionId,
       block as TutorialBlock,
-      context
+      context,
+      expectedVersion
     );
 
     // Step 9: Invalidate cache (async, don't block response)
