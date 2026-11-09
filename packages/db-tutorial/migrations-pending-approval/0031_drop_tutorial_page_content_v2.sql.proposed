@@ -1,0 +1,10 @@
+-- PROPOSAL ONLY - NOT A LIVE MIGRATION. NOT IN meta/_journal.json. NOT AUTHORIZED.
+-- Do not move into ../migrations or re-add to the journal without explicit owner approval.
+--
+-- Purpose: retire obsolete table tutorial_page_content_v2.
+-- Read-only preflight (2026-11-09): 0 inbound FKs, 0 dependent views, 0 triggers,
+-- 0 function references, 2 disposable legacy rows. Table STILL EXISTS in live DB;
+-- this DROP has NEVER been applied.
+-- Rollback: none for data (owner declared the 2 rows disposable). Recreate DDL: see 0020_add_tutorial_page_content_v2.sql.
+
+DROP TABLE IF EXISTS "public"."tutorial_page_content_v2";

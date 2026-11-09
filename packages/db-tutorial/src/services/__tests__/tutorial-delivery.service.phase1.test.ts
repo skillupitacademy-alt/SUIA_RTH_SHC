@@ -180,7 +180,7 @@ describe('Delivery Integration - Phase 1 Page Identity', () => {
     it('should PUBLISH Page A', async () => {
       if (!tutorialAId) throw new Error('tutorialAId not set');
       
-      const published = await composer.publishTutorial(tutorialAId, mockContext);
+      const published = await composer.publishTutorial(tutorialAId, mockContext, (await composer.getTutorial(tutorialAId)).version);
       
       expect(published?.status).toMatch(/approved|deployed/);
       expect(published?.publishedAt).not.toBeNull();
@@ -189,7 +189,7 @@ describe('Delivery Integration - Phase 1 Page Identity', () => {
     it('should PUBLISH Page B', async () => {
       if (!tutorialBId) throw new Error('tutorialBId not set');
       
-      const published = await composer.publishTutorial(tutorialBId, mockContext);
+      const published = await composer.publishTutorial(tutorialBId, mockContext, (await composer.getTutorial(tutorialBId)).version);
       
       expect(published?.status).toMatch(/approved|deployed/);
     });
@@ -197,7 +197,7 @@ describe('Delivery Integration - Phase 1 Page Identity', () => {
     it('should PUBLISH Page C', async () => {
       if (!tutorialCId) throw new Error('tutorialCId not set');
       
-      const published = await composer.publishTutorial(tutorialCId, mockContext);
+      const published = await composer.publishTutorial(tutorialCId, mockContext, (await composer.getTutorial(tutorialCId)).version);
       
       expect(published?.status).toMatch(/approved|deployed/);
     });
@@ -499,7 +499,7 @@ describe('Delivery Integration - Phase 1 Page Identity', () => {
 
       softDeletedTutorialId = toDelete.id;
 
-      await composer.publishTutorial(softDeletedTutorialId, mockContext);
+      await composer.publishTutorial(softDeletedTutorialId, mockContext, (await composer.getTutorial(softDeletedTutorialId)).version);
 
       // Verify it's deliverable before deletion
       const beforeDelete = await delivery.getTutorialByPage(

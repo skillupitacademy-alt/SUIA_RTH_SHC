@@ -530,7 +530,8 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
    */
   async publishTutorial(
     tutorialId: string,
-    context?: { userId?: string }
+    context: { userId?: string } | undefined,
+    expectedVersion: number
   ): Promise<TutorialSection | undefined> {
     const isUuid = (val?: string) =>
       typeof val === 'string' &&
@@ -538,6 +539,10 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
 
     if (!context || !context.userId || !isUuid(context.userId)) {
       throw new Error('Publication requires a valid authenticated publisher user ID (UUID)');
+    }
+
+    if (typeof expectedVersion !== 'number' || !Number.isInteger(expectedVersion) || expectedVersion < 1) {
+      throw new Error('Publication requires expectedVersion (positive integer)');
     }
 
     const publisherId = context.userId;
@@ -556,6 +561,12 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         );
 
       if (!section) return undefined;
+
+      // 1b. Stale-publish guard: the revision the publisher saw must be the one being published.
+      // Checked BEFORE any snapshot is written so a stale publish leaves no side effects.
+      if (section.version !== expectedVersion) {
+        throw new VersionConflictError(expectedVersion, section.version);
+      }
 
       // 2. Snapshot published content into tutorialContentVersions (idempotent for same version)
       const existingSnapshots = await tx

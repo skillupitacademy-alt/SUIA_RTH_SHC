@@ -175,7 +175,8 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const updated = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       // Verify two blocks exist
@@ -218,17 +219,19 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       // APPEND second C1 block
       const updated = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst.version
       );
 
       // Verify three blocks exist
@@ -265,16 +268,18 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst04 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       const updated = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst04.version
       );
 
       // Verify ordering
@@ -319,16 +324,18 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst05 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst05.version
       );
 
       // Get current tutorial
@@ -355,7 +362,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
       const updated = await tutorialComposerService.updateTutorialContent(
         tutorial.id,
-        { content: updatedDocument },
+        { content: updatedDocument, expectedVersion: tutorial.version },
         mockContext
       );
 
@@ -387,16 +394,18 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst06 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst06.version
       );
 
       // Verify single row via SQL
@@ -430,23 +439,22 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst07 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterSecond07 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst07.version
       );
 
       // PUBLISH
-      const published = await tutorialComposerService.publishTutorial(
-        tutorial.id,
-        mockContext
-      );
+      const published = await tutorialComposerService.publishTutorial(tutorial.id, mockContext, afterSecond07.version);
 
       // Verify status
       expect(published.status).toBe('deployed');
@@ -472,19 +480,21 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterSecond08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst08.version
       );
 
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, afterSecond08.version);
 
       // DELIVERY
       const delivery = await tutorialDeliveryService.getTutorialById(
@@ -521,19 +531,21 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterSecond08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst08.version
       );
 
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, afterSecond08.version);
 
       // DELIVERY
       const delivery = await tutorialDeliveryService.getTutorialById(
@@ -582,19 +594,21 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       );
       createdTutorialIds.push(tutorial.id);
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterFirst08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock1,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
-      await tutorialComposerService.appendBlockToTutorial(
+      const afterSecond08 = await tutorialComposerService.appendBlockToTutorial(
         tutorial.id,
         fixture.codeBlock2,
-        mockContext
+        mockContext,
+        afterFirst08.version
       );
 
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, afterSecond08.version);
 
       // DELIVERY
       const delivery = await tutorialDeliveryService.getTutorialById(

@@ -116,7 +116,7 @@ describe('V2 Delivery Integration Test', () => {
       createdTutorialIds.push(tutorial.id);
 
       // Publish tutorial
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver tutorial
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -156,7 +156,7 @@ describe('V2 Delivery Integration Test', () => {
 
       createdTutorialIds.push(tutorial.id);
 
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver using only subtopicId and brandId
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -226,7 +226,7 @@ describe('V2 Delivery Integration Test', () => {
       createdTutorialIds.push(tutorial.id);
 
       // Publish tutorial
-      const published = await composerService.publishTutorial(tutorial.id, mockContext);
+      const published = await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
       expect(published.status).toBe('deployed');
 
       // Deliver
@@ -283,7 +283,7 @@ describe('V2 Delivery Integration Test', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -374,7 +374,7 @@ describe('V2 Delivery Integration Test', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -489,7 +489,7 @@ describe('V2 Delivery Integration Test', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -525,7 +525,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorialSkillup.id);
-      await composerService.publishTutorial(tutorialSkillup.id, mockContext);
+      await composerService.publishTutorial(tutorialSkillup.id, mockContext, tutorialSkillup.version);
 
       // Request skillup - should get skillup tutorial
       const deliverySkillup = await deliveryService.getTutorialById(testSubtopicId, {
@@ -553,7 +553,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Request skillup (should get shared tutorial due to brand visibility rules)
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -589,7 +589,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -628,7 +628,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -665,7 +665,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -705,7 +705,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -757,7 +757,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {
@@ -812,7 +812,7 @@ describe('V2 Delivery Integration Test', () => {
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
-      await composerService.publishTutorial(tutorial.id, mockContext);
+      await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Deliver
       const delivery = await deliveryService.getTutorialById(testSubtopicId, {

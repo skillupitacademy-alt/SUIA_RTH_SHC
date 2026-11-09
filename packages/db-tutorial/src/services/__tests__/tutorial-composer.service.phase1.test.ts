@@ -283,7 +283,7 @@ describe('Composer Integration - Phase 1 Page Identity', () => {
 
       const updated = await composerService.updateTutorialContent(
         tutorial1Id,
-        { content: updatedContent },
+        { content: updatedContent, expectedVersion: (await composerService.getTutorial(tutorial1Id)).version },
         mockContext
       );
 

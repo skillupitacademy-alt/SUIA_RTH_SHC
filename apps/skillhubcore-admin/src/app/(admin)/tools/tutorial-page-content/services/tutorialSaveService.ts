@@ -124,14 +124,20 @@ export async function saveTutorialSection(
 
     if (existingTutorial) {
       // Step 4a: UPDATE existing tutorial
+      // expectedVersion is mandatory. It must be the revision this editor LOADED (or last saved),
+      // never a freshly-fetched version, otherwise a second administrator's edits are silently overwritten.
+      if (typeof params.loadedSectionVersion !== 'number') {
+        return {
+          success: false,
+          message: 'This page already has saved content that is not loaded in your editor. Reload the document before saving.',
+          isConflict: true,
+        };
+      }
       const patchUrl = `/api/tutorial-composer/sections/${existingTutorial.id}`;
-      const expectedVersion = typeof params.loadedSectionVersion === 'number'
-        ? params.loadedSectionVersion
-        : (typeof existingTutorial.version === 'number' ? existingTutorial.version : undefined);
 
       requestPayload = {
         content: tutorialDocument,
-        ...(expectedVersion !== undefined ? { expectedVersion } : {}),
+        expectedVersion: params.loadedSectionVersion,
       };
 
       response = await fetch(patchUrl, {

@@ -639,7 +639,8 @@ export type ListTutorialsResponse = z.infer<typeof ListTutorialsResponseSchema>;
 export const UpdateTutorialContentRequestSchema = z
   .object({
     content: TutorialDocumentSchema,
-    expectedVersion: z.number().int().min(1).optional(),
+    /** Required: server-enforced optimistic concurrency (HTTP 409 on mismatch). */
+    expectedVersion: z.number().int().min(1),
   })
   .strict();
 
@@ -657,7 +658,7 @@ export const AppendBlockRequestSchema = z
       const { TutorialBlockSchema } = require('../tutorial-rich-document/schemas/blocks.schema');
       return TutorialBlockSchema;
     }),
-    expectedVersion: z.number().int().min(1).optional(),
+    expectedVersion: z.number().int().min(1),
   })
   .strict();
 
@@ -665,9 +666,14 @@ export type AppendBlockRequest = z.infer<typeof AppendBlockRequestSchema>;
 
 /**
  * V2 Publish Tutorial Request
- * Empty body - tutorial ID comes from URL
+ * Tutorial ID comes from URL. expectedVersion is the draft revision the
+ * publisher last saw/saved; a mismatch yields HTTP 409 (stale publish).
  */
-export const PublishTutorialRequestSchema = z.object({}).strict();
+export const PublishTutorialRequestSchema = z
+  .object({
+    expectedVersion: z.number().int().min(1),
+  })
+  .strict();
 
 export type PublishTutorialRequest = z.infer<typeof PublishTutorialRequestSchema>;
 

@@ -209,7 +209,8 @@ async function main() {
     console.log('Step 7: Publishing tutorial...');
     const publishedTutorial = await tutorialComposerService.publishTutorial(
       createdTutorial.id,
-      mockContext
+      mockContext,
+      createdTutorial.version
     );
 
     console.log(`✅ Tutorial published successfully`);

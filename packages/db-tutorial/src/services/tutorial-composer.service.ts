@@ -28,6 +28,22 @@ import { SidebarNavigationValidatorService } from './sidebar-navigation-validato
 // SectionAlreadyExistsError → represents Tutorial already exists (will be renamed in types package later)
 const TutorialNotFoundError = SectionNotFoundError;
 const TutorialAlreadyExistsError = SectionAlreadyExistsError;
+
+/**
+ * Guard for the mandatory optimistic-concurrency token. Defends against
+ * non-TypeScript callers (scripts, JS tests) omitting the revision.
+ */
+function assertExpectedVersionProvided(expectedVersion: unknown): asserts expectedVersion is number {
+  if (typeof expectedVersion !== 'number' || !Number.isInteger(expectedVersion) || expectedVersion < 1) {
+    throw new TutorialDocumentValidationError([
+      {
+        code: 'EXPECTED_VERSION_REQUIRED',
+        message: 'expectedVersion (positive integer) is required',
+        path: 'expectedVersion',
+      },
+    ]);
+  }
+}
 import type { TutorialSection } from '../schema/tutorial-sections';
 import {
   TutorialSectionRepository,
@@ -65,7 +81,8 @@ export interface CreateTutorialServiceInput {
  */
 export interface UpdateTutorialContentServiceInput {
   content: TutorialDocument;
-  expectedVersion?: number;
+  /** Required: draft revision the caller last saw. Mismatch → VersionConflictError (HTTP 409). */
+  expectedVersion: number;
 }
 
 /**
@@ -283,6 +300,12 @@ export class TutorialComposerService {
 
     this.assertCanEditTutorial(context, existingTutorial);
 
+    // Step 1b: Mandatory optimistic concurrency (fail fast; repository re-checks atomically)
+    assertExpectedVersionProvided(input.expectedVersion);
+    if (existingTutorial.version !== input.expectedVersion) {
+      throw new VersionConflictError(input.expectedVersion, existingTutorial.version);
+    }
+
     // Step 2: Validate new content
     const parseResult = TutorialDocumentSchema.safeParse(input.content);
     if (!parseResult.success) {
@@ -297,31 +320,23 @@ export class TutorialComposerService {
 
     const document: TutorialDocument = parseResult.data as TutorialDocument;
 
-    // Step 3: Update tutorial
+    // Step 3: Update tutorial (atomic compare-and-set on version; no unversioned path)
     const repositoryInput: UpdateTutorialContentInput = {
       content: document,
     };
 
-    const updatedTutorial = input.expectedVersion !== undefined
-      ? await this.repository.updateTutorialContentWithVersion(
-          tutorialId,
-          input.expectedVersion,
-          repositoryInput
-        )
-      : await this.repository.updateTutorialContent(
-          tutorialId,
-          repositoryInput
-        );
+    const updatedTutorial = await this.repository.updateTutorialContentWithVersion(
+      tutorialId,
+      input.expectedVersion,
+      repositoryInput
+    );
 
     if (!updatedTutorial) {
-      if (input.expectedVersion !== undefined) {
-        const current = await this.repository.getTutorialById(tutorialId);
-        if (!current) {
-          throw new TutorialNotFoundError(tutorialId);
-        }
-        throw new VersionConflictError(input.expectedVersion, current.version);
+      const current = await this.repository.getTutorialById(tutorialId);
+      if (!current) {
+        throw new TutorialNotFoundError(tutorialId);
       }
-      throw new TutorialNotFoundError(tutorialId);
+      throw new VersionConflictError(input.expectedVersion, current.version);
     }
 
     // TODO: Cache invalidation if required
@@ -375,7 +390,8 @@ export class TutorialComposerService {
    */
   async publishTutorial(
     tutorialId: string,
-    context: TutorialComposerServiceContext
+    context: TutorialComposerServiceContext,
+    expectedVersion: number
   ): Promise<TutorialSection> {
     // Step 1: Load tutorial
     const tutorial = await this.repository.getTutorialById(tutorialId);
@@ -385,6 +401,12 @@ export class TutorialComposerService {
     }
 
     this.assertCanPublishTutorial(context, tutorial);
+
+    // Step 1b: Mandatory stale-publish guard (fail fast; repository re-checks inside the transaction)
+    assertExpectedVersionProvided(expectedVersion);
+    if (tutorial.version !== expectedVersion) {
+      throw new VersionConflictError(expectedVersion, tutorial.version);
+    }
 
     // Step 2: Validate document is publishable
     const parseResult = TutorialDocumentSchema.safeParse(tutorial.content);
@@ -417,9 +439,11 @@ export class TutorialComposerService {
     // No status transition error for deployed → deployed
 
     // Step 4: Publish
-    const publishedTutorial = await this.repository.publishTutorial(tutorialId, {
-      userId: context.userId,
-    });
+    const publishedTutorial = await this.repository.publishTutorial(
+      tutorialId,
+      { userId: context.userId },
+      expectedVersion
+    );
 
     if (!publishedTutorial) {
       throw new TutorialNotFoundError(tutorialId);
@@ -471,7 +495,7 @@ export class TutorialComposerService {
     tutorialId: string,
     newBlock: TutorialBlock,
     context: TutorialComposerServiceContext,
-    expectedVersion?: number
+    expectedVersion: number
   ): Promise<TutorialSection> {
     // Step 1: Load existing tutorial
     const existingTutorial = await this.repository.getTutorialById(tutorialId);
@@ -480,7 +504,8 @@ export class TutorialComposerService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    if (expectedVersion !== undefined && existingTutorial.version !== expectedVersion) {
+    assertExpectedVersionProvided(expectedVersion);
+    if (existingTutorial.version !== expectedVersion) {
       throw new VersionConflictError(expectedVersion, existingTutorial.version);
     }
 
@@ -528,7 +553,7 @@ export class TutorialComposerService {
       content: validatedDocument,
     };
 
-    const targetVersion = expectedVersion ?? existingTutorial.version;
+    const targetVersion = expectedVersion;
     const updatedTutorial = await this.repository.updateTutorialContentWithVersion(
       tutorialId,
       targetVersion,
@@ -559,7 +584,7 @@ export class TutorialComposerService {
     sectionId: string,
     newBlock: TutorialBlock,
     context: TutorialComposerServiceContext,
-    expectedVersion?: number
+    expectedVersion: number
   ): Promise<TutorialSection> {
     return this.appendBlockToTutorial(sectionId, newBlock, context, expectedVersion);
   }

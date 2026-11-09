@@ -18,6 +18,7 @@ import {
   TutorialDocumentValidationError,
   SectionNotFoundError,
   InvalidStatusTransitionError,
+  VersionConflictError,
 } from '@quiz/types';
 import {
   authenticateRequest,
@@ -74,6 +75,10 @@ function handleServiceError(error: unknown) {
     return errorResponse('INVALID_STATUS_TRANSITION', error.message, 409);
   }
 
+  if (error instanceof VersionConflictError) {
+    return errorResponse('VERSION_CONFLICT', error.message, 409);
+  }
+
   // Generic error
   return errorResponse('INTERNAL_ERROR', 'An unexpected error occurred', 500);
 }
@@ -123,12 +128,12 @@ export async function POST(
       return createAuthErrorResponse(brandAuthError);
     }
 
-    // Step 5: Parse and validate request body (empty body expected)
+    // Step 5: Parse and validate request body (expectedVersion is mandatory)
     const body = await request.json().catch(() => ({}));
     const parseResult = PublishTutorialRequestSchema.safeParse(body);
     
     if (!parseResult.success) {
-      return errorResponse('VALIDATION_ERROR', 'Invalid request data', 400);
+      return errorResponse('VALIDATION_ERROR', 'Invalid request data: expectedVersion is required', 400);
     }
 
     // Step 6: Create authenticated context
@@ -136,10 +141,11 @@ export async function POST(
       userId: user.userId,
     };
 
-    // Step 7: Publish tutorial via V2 service
+    // Step 7: Publish tutorial via V2 service (409 if the draft changed since the publisher saw it)
     const tutorial = await tutorialComposerService.publishTutorial(
       sectionId,
-      context
+      context,
+      parseResult.data.expectedVersion
     );
 
     // Step 8: Invalidate cache (CRITICAL for publish - learners must see new content)

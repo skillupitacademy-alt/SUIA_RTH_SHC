@@ -473,7 +473,8 @@ describe('V2 Composer Integration Test', () => {
       const updated = await composerService.appendBlockToTutorial(
         tutorial.id,
         newBlock,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       expect(updated.content.blocks).toHaveLength(2);
@@ -531,7 +532,8 @@ describe('V2 Composer Integration Test', () => {
       const updated = await composerService.appendBlockToTutorial(
         tutorial.id,
         summaryBlock,
-        mockContext
+        mockContext,
+        tutorial.version
       );
 
       expect(updated.content.blocks).toHaveLength(2);
@@ -576,7 +578,7 @@ describe('V2 Composer Integration Test', () => {
 
       const updated = await composerService.updateTutorialContent(
         tutorial.id,
-        { content: updatedDoc },
+        { content: updatedDoc, expectedVersion: tutorial.version },
         mockContext
       );
 
@@ -602,10 +604,7 @@ describe('V2 Composer Integration Test', () => {
 
       createdTutorialIds.push(tutorial.id);
 
-      const published = await composerService.publishTutorial(
-        tutorial.id,
-        mockContext
-      );
+      const published = await composerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       expect(published.status).toBe('deployed');
       expect(published.publishedAt).not.toBeNull();

@@ -23,6 +23,7 @@ import {
   registerTenant,
   getTenantConfig,
   isRecognizedTenant,
+  VersionConflictError,
   type BrandTutorialTheme,
 } from '@quiz/types';
 
@@ -89,11 +90,11 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
     it('rejects publication when service context or userId is missing', async () => {
       const repo = new TutorialSectionRepository({} as any);
 
-      await expect(repo.publishTutorial(testSectionId, undefined)).rejects.toThrow(
+      await expect(repo.publishTutorial(testSectionId, undefined, 1)).rejects.toThrow(
         /Publication requires a valid authenticated publisher user ID/
       );
 
-      await expect(repo.publishTutorial(testSectionId, { userId: '' })).rejects.toThrow(
+      await expect(repo.publishTutorial(testSectionId, { userId: '' }, 1)).rejects.toThrow(
         /Publication requires a valid authenticated publisher user ID/
       );
     });
@@ -102,7 +103,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       const repo = new TutorialSectionRepository({} as any);
 
       await expect(
-        repo.publishTutorial(testSectionId, { userId: 'not-a-uuid' })
+        repo.publishTutorial(testSectionId, { userId: 'not-a-uuid' }, 1)
       ).rejects.toThrow(/Publication requires a valid authenticated publisher user ID \(UUID\)/);
     });
   });
@@ -163,7 +164,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       };
 
       const repo = new TutorialSectionRepository(mockDb);
-      const result = await repo.publishTutorial(testSectionId, { userId: validPublisherId });
+      const result = await repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1);
 
       expect(mockDb.transaction).toHaveBeenCalled();
       expect(fakeTx.insert).toHaveBeenCalled();
@@ -222,7 +223,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       };
 
       const repo = new TutorialSectionRepository(mockDb);
-      await repo.publishTutorial(testSectionId, { userId: validPublisherId });
+      await repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1);
 
       // Because snapshot already existed for version 1, insert was skipped (idempotent)
       expect(fakeTx.insert).not.toHaveBeenCalled();
@@ -242,7 +243,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       };
 
       const repo = new TutorialSectionRepository(mockDb);
-      const res = await repo.publishTutorial(testSectionId, { userId: validPublisherId });
+      const res = await repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1);
       expect(res).toBeUndefined();
     });
 
@@ -280,7 +281,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
 
       const repo = new TutorialSectionRepository(mockDb);
       await expect(
-        repo.publishTutorial(testSectionId, { userId: validPublisherId })
+        repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1)
       ).rejects.toThrow('Snapshot insertion failed: disk full');
 
       // Update must never be called if snapshot fails
@@ -325,7 +326,7 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
 
       const repo = new TutorialSectionRepository(mockDb);
       await expect(
-        repo.publishTutorial(testSectionId, { userId: validPublisherId })
+        repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1)
       ).rejects.toThrow(/Version conflict/);
     });
   });
@@ -342,7 +343,8 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
         status: 'deployed',
       };
 
-      mockDeliveryRepo.getTutorialById.mockResolvedValue(deployedSection);
+      // Existing draft is at v1; the save (expectedVersion 1) CAS-increments it to v2.
+      mockDeliveryRepo.getTutorialById.mockResolvedValue({ ...deployedSection, version: 1 });
       mockDeliveryRepo.updateTutorialContentWithVersion.mockResolvedValue(deployedSection);
 
       const updated = await composerService.updateTutorialContent(
@@ -358,6 +360,11 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       );
 
       expect(updated.version).toBe(2);
+      expect(mockDeliveryRepo.updateTutorialContentWithVersion).toHaveBeenCalledWith(
+        testSectionId,
+        1,
+        expect.anything()
+      );
       expect(mockDeliveryRepo.publishTutorial).not.toHaveBeenCalled();
     });
 
@@ -387,9 +394,11 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
       mockDeliveryRepo.getTutorialById.mockResolvedValue(republishedSection);
       mockDeliveryRepo.publishTutorial.mockResolvedValue(republishedSection);
 
-      const published = await composerService.publishTutorial(testSectionId, {
-        userId: validPublisherId,
-      });
+      const published = await composerService.publishTutorial(
+        testSectionId,
+        { userId: validPublisherId },
+        2
+      );
 
       expect(published.version).toBe(2);
       expect(published.content).toEqual(mockRepublishedDoc);
@@ -568,6 +577,163 @@ describe('Tutorial Publication Lifecycle & Multi-Tenant Delivery Verification', 
         /Unrecognized tenant for theme resolution/
       );
       expect(isRecognizedTenant('unregistered_tenant_xyz')).toBe(false);
+    });
+  });
+
+  describe('9. Mandatory expectedVersion: two-administrator editing & stale publish (HTTP 409 source)', () => {
+    const adminA = { userId: '11111111-2222-4333-8444-aaaaaaaaaaaa', brandId: 'shared' };
+    const adminB = { userId: '11111111-2222-4333-8444-bbbbbbbbbbbb', brandId: 'shared' };
+
+    /** In-memory repository with the same compare-and-set semantics as the SQL `WHERE version = $expected`. */
+    function makeCasRepo(initialDoc: TutorialDocument) {
+      const row: any = {
+        id: testSectionId,
+        subtopicId: 'internal-subtopic-1',
+        navigationNodeId: 'intro',
+        brandId: 'shared',
+        content: initialDoc,
+        version: 1,
+        status: 'draft',
+        deletedAt: null,
+      };
+      const repo: any = {
+        getTutorialById: vi.fn(async () => ({ ...row })),
+        updateTutorialContentWithVersion: vi.fn(async (_id: string, expected: number, input: any) => {
+          if (row.version !== expected) return null; // 0 rows updated
+          row.content = input.content;
+          row.version += 1;
+          return { ...row };
+        }),
+        updateTutorialContent: vi.fn(async () => {
+          throw new Error('unversioned update path must never be used');
+        }),
+        publishTutorial: vi.fn(async (_id: string, _ctx: any, expected: number) => {
+          if (row.version !== expected) throw new VersionConflictError(expected, row.version);
+          row.status = 'deployed';
+          return { ...row };
+        }),
+      };
+      return { row, repo };
+    }
+
+    it('two administrators load v1; first save wins, second save gets VersionConflictError and cannot overwrite', async () => {
+      const { row, repo } = makeCasRepo(mockPublishedDoc);
+      const service = new TutorialComposerService(repo);
+
+      // Both administrators loaded version 1.
+      const savedByA = await service.updateTutorialContent(
+        testSectionId,
+        { content: mockRepublishedDoc, expectedVersion: 1 },
+        adminA
+      );
+      expect(savedByA.version).toBe(2);
+
+      await expect(
+        service.updateTutorialContent(
+          testSectionId,
+          { content: mockDraftDoc, expectedVersion: 1 },
+          adminB
+        )
+      ).rejects.toBeInstanceOf(VersionConflictError);
+
+      // Administrator A's work is intact; B never wrote.
+      expect(row.content).toEqual(mockRepublishedDoc);
+      expect(row.version).toBe(2);
+      expect(repo.updateTutorialContent).not.toHaveBeenCalled();
+    });
+
+    it('rejects an update that omits expectedVersion (no silent unversioned overwrite)', async () => {
+      const { row, repo } = makeCasRepo(mockPublishedDoc);
+      const service = new TutorialComposerService(repo);
+
+      await expect(
+        service.updateTutorialContent(testSectionId, { content: mockDraftDoc } as any, adminA)
+      ).rejects.toMatchObject({ validationErrors: [{ code: 'EXPECTED_VERSION_REQUIRED' }] });
+
+      expect(repo.updateTutorialContentWithVersion).not.toHaveBeenCalled();
+      expect(repo.updateTutorialContent).not.toHaveBeenCalled();
+      expect(row.version).toBe(1);
+      expect(row.content).toEqual(mockPublishedDoc);
+    });
+
+    it('stale publish: publisher saw v1 but another administrator saved v2 → VersionConflictError, nothing published', async () => {
+      const { row, repo } = makeCasRepo(mockPublishedDoc);
+      const service = new TutorialComposerService(repo);
+
+      await service.updateTutorialContent(
+        testSectionId,
+        { content: mockRepublishedDoc, expectedVersion: 1 },
+        adminA
+      );
+
+      await expect(service.publishTutorial(testSectionId, adminB, 1)).rejects.toBeInstanceOf(
+        VersionConflictError
+      );
+
+      expect(repo.publishTutorial).not.toHaveBeenCalled(); // fail-fast before the transaction
+      expect(row.status).toBe('draft');
+    });
+
+    it('publish at the exact current revision succeeds', async () => {
+      const { row, repo } = makeCasRepo(mockPublishedDoc);
+      const service = new TutorialComposerService(repo);
+
+      const saved = await service.updateTutorialContent(
+        testSectionId,
+        { content: mockRepublishedDoc, expectedVersion: 1 },
+        adminA
+      );
+      const published = await service.publishTutorial(testSectionId, adminA, saved.version);
+
+      expect(published.status).toBe('deployed');
+      expect(repo.publishTutorial).toHaveBeenCalledWith(
+        testSectionId,
+        { userId: adminA.userId },
+        2
+      );
+      expect(row.status).toBe('deployed');
+    });
+
+    it('publish without expectedVersion is rejected before any repository write', async () => {
+      const { repo } = makeCasRepo(mockPublishedDoc);
+      const service = new TutorialComposerService(repo);
+
+      await expect(
+        service.publishTutorial(testSectionId, adminA, undefined as any)
+      ).rejects.toMatchObject({ validationErrors: [{ code: 'EXPECTED_VERSION_REQUIRED' }] });
+      expect(repo.publishTutorial).not.toHaveBeenCalled();
+    });
+
+    it('repository-level stale publish inside the transaction throws VersionConflictError with NO snapshot insert or status update', async () => {
+      const section = {
+        id: testSectionId,
+        version: 2, // another administrator saved after the publisher loaded v1
+        content: mockPublishedDoc,
+        status: 'draft',
+        deletedAt: null,
+      };
+      const fakeTx = {
+        select: vi.fn().mockReturnValue({
+          from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([section]) }),
+        }),
+        insert: vi.fn(),
+        update: vi.fn(),
+      };
+      const db = { transaction: vi.fn().mockImplementation(async (cb: any) => cb(fakeTx)) };
+      const repo = new TutorialSectionRepository(db as any);
+
+      await expect(
+        repo.publishTutorial(testSectionId, { userId: validPublisherId }, 1)
+      ).rejects.toBeInstanceOf(VersionConflictError);
+      expect(fakeTx.insert).not.toHaveBeenCalled();
+      expect(fakeTx.update).not.toHaveBeenCalled();
+    });
+
+    it('repository rejects publication without a valid expectedVersion', async () => {
+      const repo = new TutorialSectionRepository({} as any);
+      await expect(
+        repo.publishTutorial(testSectionId, { userId: validPublisherId }, undefined as any)
+      ).rejects.toThrow(/expectedVersion/);
     });
   });
 

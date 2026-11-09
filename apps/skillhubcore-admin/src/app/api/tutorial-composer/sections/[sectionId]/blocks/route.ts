@@ -42,7 +42,7 @@ const AppendBlockRequestSchema = z.object({
     content: z.unknown(),
     presentation: z.unknown().optional(),
   }),
-  expectedVersion: z.number().int().min(1).optional(),
+  expectedVersion: z.number().int().min(1),
 });
 
 /**

@@ -329,7 +329,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       createdTutorialIds.push(tutorial.id);
 
       // Step 6: V2 - Publish tutorial (make it deliverable)
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // Step 7: V2 - Retrieve via Delivery Service
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
@@ -455,7 +455,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
@@ -489,7 +489,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
@@ -527,7 +527,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
@@ -565,7 +565,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
@@ -613,7 +613,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       );
 
       createdTutorialIds.push(tutorial.id);
-      await tutorialComposerService.publishTutorial(tutorial.id, mockContext);
+      await tutorialComposerService.publishTutorial(tutorial.id, mockContext, tutorial.version);
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {

@@ -83,12 +83,20 @@ export function useTutorialSave(deps: SaveDependencies) {
           const publishResponse = await fetch(publishUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            // Publish exactly the revision that was just saved; 409 if anyone changed it since.
+            body: JSON.stringify({ expectedVersion: result.version }),
           });
 
           if (!publishResponse.ok) {
-            const publishError = await publishResponse.json();
+            if (publishResponse.status === 409) {
+              deps.setMessage(
+                'Saved, but publish was blocked: this tutorial was changed by another session after your save. Reload the document and review before publishing.'
+              );
+              return;
+            }
+            const publishError = await publishResponse.json().catch(() => null);
             deps.setMessage(
-              `Saved but publish failed: ${publishError.error?.message || 'Unknown error'}`
+              `Saved but publish failed: ${publishError?.error?.message || 'Unknown error'}`
             );
             return;
           }

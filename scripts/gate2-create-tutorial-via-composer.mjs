@@ -140,7 +140,7 @@ try {
   // Step 2: Publish the tutorial
   console.log('Step 2: Publishing tutorial...');
   
-  const published = await composer.publishTutorial(tutorial.id, mockContext);
+  const published = await composer.publishTutorial(tutorial.id, mockContext, tutorial.version);
   
   console.log('✅ Tutorial published successfully!');
   console.log(`   Status: ${published.status}`);
