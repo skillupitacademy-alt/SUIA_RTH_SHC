@@ -359,7 +359,9 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
 
 ### Task 26: Deliverable Artifacts
 1. `audit/SHC_ADMIN_TUTORIAL_CONCURRENCY_AND_ACCEPTANCE_CLOSURE.md` (This document)
-2. `docs/architecture/reviews/RTH/RTH_WEB_DEFERRED_INTEGRATION_AND_ACCEPTANCE_HANDOFF.md` (Deferred RTH Integration Register)
+2. `docs/architecture/reviews/SHARED_BRAND_INTEGRATION_HANDOFF.md` (Common Shared Brand Integration Register)
+3. `docs/architecture/reviews/SUIA/SUIA_WEB_DEFERRED_INTEGRATION_AND_ACCEPTANCE_HANDOFF.md` (SUIA Tutor-Led Brand Handoff)
+4. `docs/architecture/reviews/RTH/RTH_WEB_DEFERRED_INTEGRATION_AND_ACCEPTANCE_HANDOFF.md` (RTH Online/AI Brand Handoff)
 
 ### Task 27: AST Code Graph Rebuild
 Ran `graphify update .` to synchronize codebase relationship graphs with the new concurrency schemas and assertion guards.
