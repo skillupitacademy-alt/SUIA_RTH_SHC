@@ -21,8 +21,9 @@ export function AdminLockScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const cleanupUnauthorizedSession = useCallback(async () => {
+    let response: Response | null = null;
     try {
-      await fetch('/api/auth/logout', {
+      response = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,10 +31,21 @@ export function AdminLockScreen() {
         },
         credentials: 'include',
       });
-    } catch {
-      // Fail-safe cleanup
+    } catch (err: unknown) {
+      clientLogger.error('Session cleanup network error', {
+        reason: err instanceof Error ? err.message : 'network_error',
+      });
     }
-  }, []);
+
+    if (!response || !response.ok) {
+      // Fail closed: invalidate client state to prevent lingering in inconsistent state
+      logout();
+      clientLogger.error('Session cleanup failed on server', {
+        status: response ? response.status : 0,
+      });
+      throw new Error('Session invalidation failed: Unable to verify server-side logout');
+    }
+  }, [logout]);
 
   const handleUnlock = useCallback(
     async (password: string) => {

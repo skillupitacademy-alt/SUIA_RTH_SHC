@@ -319,4 +319,46 @@ describe('RTH AdminLockScreen Adapter', () => {
       expect(window.location.href).toBe('/login');
     });
   });
+
+  it('fails closed and clears client auth store if server-side logout fails during session cleanup', async () => {
+    const mockLoginPortal = vi.mocked(loginPortalSession);
+    mockLoginPortal.mockResolvedValueOnce({
+      user: {
+        id: 'different-attacker-id',
+        email: 'attacker@realtutorialhub.com',
+        role: 'admin',
+        isAdmin: true,
+      },
+      expiresAt: null,
+    });
+
+    // Cleanup fetch returns non-OK error response
+    fetchMock.mockImplementation(async (url: string) => {
+      if (typeof url === 'string' && url.includes('/api/auth/logout')) {
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'Server Error' }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    render(<AdminLockScreen />);
+
+    const passwordInput = screen.getByLabelText(/account password/i);
+    fireEvent.change(passwordInput, { target: { value: 'AnyPassword' } });
+
+    const submitBtn = screen.getByRole('button', { name: /unlock terminal/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      // Crucial fail closed: client store MUST be cleared
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(useAuthStore.getState().user).toBeNull();
+    });
+
+    // Verify that logout endpoint was called during the failed cleanup
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+  });
 });

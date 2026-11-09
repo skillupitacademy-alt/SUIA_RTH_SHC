@@ -756,5 +756,62 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         expect(window.location.href).toBe('/login');
       });
     });
+
+    it('fails closed and clears client auth store if server-side logout fails during session cleanup', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      // Login succeeds with mismatched identity, but subsequent cleanup logout fails (500)
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-attacker-99',
+              email: 'attacker@other.in',
+              role: 'admin',
+              isAdmin: true,
+            },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'Internal Server Error' }),
+        });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        // Crucial fail-closed: client store MUST be cleared to prevent lingering authenticated state
+        expect(useAuthStore.getState().isAuthenticated).toBe(false);
+        expect(useAuthStore.getState().user).toBeNull();
+      });
+
+      // Verify that logout endpoint was called during the failed cleanup
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/auth/logout',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      );
+    });
   });
 });
