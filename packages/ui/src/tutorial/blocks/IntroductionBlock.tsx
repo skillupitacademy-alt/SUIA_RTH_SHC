@@ -99,7 +99,7 @@ function IntroductionI1View({
   className?: string;
   runtimeContext?: BlockComponentProps<IIntroductionBlock>['runtimeContext'];
 }) {
-  const page = block.content.page;
+  const page = block.content?.page ?? ({} as IIntroductionBlock['content']['page']);
 
   // Router guarantees theme.primary and theme.secondary exist
   const primary = theme.primary;
@@ -124,22 +124,24 @@ function IntroductionI1View({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           {/* Left: Title Content */}
           <div className="lg:col-span-6 space-y-4">
-            <div
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
-              style={{
-                color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
-                backgroundColor: withAlpha(primary, '14'),
-              }}
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>{page.badge}</span>
-            </div>
+            {page.badge && (
+              <div
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
+                style={{
+                  color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
+                  backgroundColor: withAlpha(primary, '14'),
+                }}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>{page.badge}</span>
+              </div>
+            )}
 
             <h1
               className="text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]"
               style={{ color: secondary }}
             >
-              {page.title}
+              {page.title || 'Introduction'}
             </h1>
 
             <div
@@ -149,12 +151,14 @@ function IntroductionI1View({
               aria-hidden="true"
             />
 
-            <p
-              className="text-base sm:text-lg font-medium leading-[1.7] max-w-xl"
-              style={{ color: withAlpha(secondary, 'dd') }}
-            >
-              {page.subtitle}
-            </p>
+            {page.subtitle && (
+              <p
+                className="text-base sm:text-lg font-medium leading-[1.7] max-w-xl"
+                style={{ color: withAlpha(secondary, 'dd') }}
+              >
+                {page.subtitle}
+              </p>
+            )}
           </div>
 
           {/* Right: Mountain Roadmap Illustration with Motto */}
@@ -167,16 +171,18 @@ function IntroductionI1View({
               }}
             >
               {/* Handwritten Motto */}
-              <div className="absolute top-3 left-4 z-10">
-                <div className="font-hand text-xl font-bold leading-tight" style={{ color: secondary, fontFamily: 'Caveat, cursive' }}>
-                  {(page.motto?.lines ?? []).map((line: string, index: number) => (
-                    <React.Fragment key={index}>
-                      {line}
-                      {index < (page.motto?.lines.length ?? 0) - 1 && <br />}
-                    </React.Fragment>
-                  ))}
+              {page.motto?.lines && page.motto.lines.length > 0 && (
+                <div className="absolute top-3 left-4 z-10">
+                  <div className="font-hand text-xl font-bold leading-tight" style={{ color: secondary, fontFamily: 'Caveat, cursive' }}>
+                    {page.motto.lines.map((line: string, index: number) => (
+                      <React.Fragment key={index}>
+                        {line}
+                        {index < page.motto.lines.length - 1 && <br />}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Decorative Mountain SVG Background */}
               <svg viewBox="0 0 400 200" className="w-full h-full absolute inset-0 opacity-40">
@@ -190,269 +196,307 @@ function IntroductionI1View({
       </header>
 
       {/* LEARNING GOAL */}
-      <section className="mb-10">
-        <div
-          className="rounded-xl border p-6"
-          style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <Target className="h-6 w-6" style={{ color: primary }} />
-            <h2 className="text-xl font-bold" style={{ color: secondary }}>
-              Learning Goal
-            </h2>
+      {page.learningGoal && (
+        <section className="mb-10">
+          <div
+            className="rounded-xl border p-6"
+            style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <Target className="h-6 w-6" style={{ color: primary }} />
+              <h2 className="text-xl font-bold" style={{ color: secondary }}>
+                Learning Goal
+              </h2>
+            </div>
+            <p className="text-base leading-relaxed" style={{ color: secondary }}>
+              {page.learningGoal}
+            </p>
           </div>
-          <p className="text-base leading-relaxed" style={{ color: secondary }}>
-            {page.learningGoal}
-          </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SECTION 1: THE TOPIC */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={1} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.topic.title}
-          </h2>
-        </div>
-        <p className="text-base leading-relaxed mb-3" style={{ color: secondary }}>
-          {page.topic.description}
-        </p>
-        <div
-          className="rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 text-base font-semibold italic shadow-xl backdrop-blur-md -translate-y-0.5 transition-all duration-300"
-          style={{
-            borderColor: withAlpha(primary, '25'),
-            backgroundColor: withAlpha(primary, '06'),
-            color: `${secondary}dd`,
-          }}
-        >
-          "{page.topic.quote}"
-        </div>
-      </section>
+      {page.topic && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={1} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.topic.title}
+            </h2>
+          </div>
+          {page.topic.description && (
+            <p className="text-base leading-relaxed mb-3" style={{ color: secondary }}>
+              {page.topic.description}
+            </p>
+          )}
+          {page.topic.quote && (
+            <div
+              className="rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 text-base font-semibold italic shadow-xl backdrop-blur-md -translate-y-0.5 transition-all duration-300"
+              style={{
+                borderColor: withAlpha(primary, '25'),
+                backgroundColor: withAlpha(primary, '06'),
+                color: `${secondary}dd`,
+              }}
+            >
+              "{page.topic.quote}"
+            </div>
+          )}
+        </section>
+      )}
 
       {/* SECTION 2: WHERE DOES IT FIT? */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={2} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.whereFit.title}
-          </h2>
-        </div>
-        <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
-          {page.whereFit.description}
-        </p>
+      {page.whereFit && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={2} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.whereFit.title}
+            </h2>
+          </div>
+          {page.whereFit.description && (
+            <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
+              {page.whereFit.description}
+            </p>
+          )}
 
-        {/* Flow Cards Container */}
-        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
-          {page.whereFit.flowCards.map((card, index: number) => {
-            const IconComponent = getIcon(card.icon);
-            return (
-              <React.Fragment key={index}>
-                <CardSurface
-                  theme={theme}
-                  elevation="dashboard"
-                  hoverable={false}
-                  className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${
-                    card.highlight ? 'ring-2 ring-offset-2' : ''
-                  }`}
-                  style={
-                    card.highlight
-                      ? { borderColor: primary, backgroundColor: 'white' }
-                      : { borderColor: getThemeColor(theme, 'gray', 200), backgroundColor: getThemeColor(theme, 'gray', 50) }
-                  }
-                >
-                  <div className="h-10 flex items-center justify-center">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                        card.highlight ? '' : 'bg-opacity-80'
+          {/* Flow Cards Container */}
+          {Array.isArray(page.whereFit.flowCards) && page.whereFit.flowCards.length > 0 && (
+            <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
+              {page.whereFit.flowCards.map((card, index: number) => {
+                const IconComponent = getIcon(card.icon);
+                return (
+                  <React.Fragment key={index}>
+                    <CardSurface
+                      theme={theme}
+                      elevation="dashboard"
+                      hoverable={false}
+                      className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${
+                        card.highlight ? 'ring-2 ring-offset-2' : ''
                       }`}
-                      style={{ backgroundColor: card.highlight ? withAlpha(primary, '14') : getThemeColor(theme, 'gray', 200), color: card.highlight ? primary : getThemeColor(theme, 'gray', 500) }}
+                      style={
+                        card.highlight
+                          ? { borderColor: primary, backgroundColor: 'white' }
+                          : { borderColor: getThemeColor(theme, 'gray', 200), backgroundColor: getThemeColor(theme, 'gray', 50) }
+                      }
+                    >
+                      <div className="h-10 flex items-center justify-center">
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                            card.highlight ? '' : 'bg-opacity-80'
+                          }`}
+                          style={{ backgroundColor: card.highlight ? withAlpha(primary, '14') : getThemeColor(theme, 'gray', 200), color: card.highlight ? primary : getThemeColor(theme, 'gray', 500) }}
+                        >
+                          <IconComponent className="h-5 w-5" />
+                        </div>
+                      </div>
+                      <h4
+                        className="font-bold text-sm sm:text-base leading-snug"
+                        style={{ color: card.highlight ? primary : secondary }}
+                      >
+                        {card.title}
+                      </h4>
+                      <p className="text-xs leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
+                        {card.subtitle}
+                      </p>
+                    </CardSurface>
+                    {index < page.whereFit.flowCards.length - 1 && (
+                      <div className="flex items-center justify-center text-lg" style={{ color: primary }}>
+                        <ArrowRight className="hidden min-[1600px]:block h-5 w-5" />
+                        <div className="block min-[1600px]:hidden">
+                          <ArrowRight className="h-5 w-5 rotate-90" />
+                        </div>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* SECTION 3: THE SOLUTION */}
+      {page.solution && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={3} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.solution.title}
+            </h2>
+          </div>
+          {page.solution.description && (
+            <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
+              {page.solution.description}
+            </p>
+          )}
+
+          {/* Code Editor Box with TerminalWindow primitive */}
+          {page.solution.code && (
+            <TerminalWindow title={page.solution.code.language} copySource={page.solution.code.code} theme={theme}>
+              <div
+                className="p-5 overflow-x-auto"
+                style={{ backgroundColor: getThemeColor(theme, 'slate', 950) }}
+              >
+                <pre className="font-mono text-sm leading-relaxed text-slate-200">
+                  <code>{page.solution.code.code}</code>
+                </pre>
+              </div>
+            </TerminalWindow>
+          )}
+        </section>
+      )}
+
+      {/* SECTION 4: WHERE IS IT USED? */}
+      {page.whereUsed && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={4} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.whereUsed.title}
+            </h2>
+          </div>
+          {page.whereUsed.description && (
+            <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
+              {page.whereUsed.description}
+            </p>
+          )}
+
+          {/* Use Cases Grid with CardSurface */}
+          {Array.isArray(page.whereUsed.useCases) && page.whereUsed.useCases.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {page.whereUsed.useCases.map((useCase, index: number) => {
+                const IconComponent = getIcon(useCase.icon);
+                return (
+                  <CardSurface
+                    key={index}
+                    hoverable={false}
+                    theme={theme}
+                    className="p-6 text-center space-y-3"
+                    style={
+                      useCase.highlight
+                        ? { backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }
+                        : undefined
+                    }
+                  >
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto shadow-sm"
+                      style={{ backgroundColor: withAlpha(primary, '14'), color: primary }}
+                    >
+                      <IconComponent className="h-6 w-6" />
+                    </div>
+                    <h4 className="font-bold text-lg" style={{ color: secondary }}>
+                      {useCase.title}
+                    </h4>
+                    <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
+                      {useCase.description}
+                    </p>
+                  </CardSurface>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* SECTION 5: WHAT WILL YOU LEARN? (ROADMAP) */}
+      {page.roadmap && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={5} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.roadmap.title}
+            </h2>
+          </div>
+          {page.roadmap.description && (
+            <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
+              {page.roadmap.description}
+            </p>
+          )}
+
+          {/* Roadmap Steps Flow */}
+          {Array.isArray(page.roadmap.steps) && page.roadmap.steps.length > 0 && (
+            <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
+              {page.roadmap.steps.map((step, index: number) => (
+                <React.Fragment key={index}>
+                  <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
+                    <StepBadge step={index + 1} size="md" theme={theme} className="mx-auto" />
+                    <h4 className="font-bold text-xs sm:text-sm leading-snug" style={{ color: secondary }}>
+                      {step.title}
+                    </h4>
+                    <p className="text-[11px] leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
+                      {step.subtitle}
+                    </p>
+                  </div>
+                  {index < page.roadmap.steps.length - 1 && (
+                    <div className="flex items-center justify-center" style={{ color: getStepBrandColor(theme, index + 1) }}>
+                      <ArrowRight className="hidden min-[1600px]:block h-4 w-4" />
+                      <div className="block min-[1600px]:hidden">
+                        <ArrowRight className="h-4 w-4 rotate-90" />
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* SECTION 6: WHY THIS MATTERS */}
+      {page.whyMatters && (
+        <section className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <StepBadge step={6} size="md" theme={theme} />
+            <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
+              {page.whyMatters.title}
+            </h2>
+          </div>
+
+          {/* Benefits Grid with CardSurface */}
+          {Array.isArray(page.whyMatters.benefits) && page.whyMatters.benefits.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {page.whyMatters.benefits.map((benefit, index: number) => {
+                const IconComponent = getIcon(benefit.icon);
+                return (
+                  <CardSurface
+                    key={index}
+                    hoverable={false}
+                    theme={theme}
+                    className="p-5 text-center space-y-3"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center mx-auto"
+                      style={{ backgroundColor: withAlpha(primary, '14'), color: primary }}
                     >
                       <IconComponent className="h-5 w-5" />
                     </div>
-                  </div>
-                  <h4
-                    className="font-bold text-sm sm:text-base leading-snug"
-                    style={{ color: card.highlight ? primary : secondary }}
-                  >
-                    {card.title}
-                  </h4>
-                  <p className="text-xs leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
-                    {card.subtitle}
-                  </p>
-                </CardSurface>
-                {index < page.whereFit.flowCards.length - 1 && (
-                  <div className="flex items-center justify-center text-lg" style={{ color: primary }}>
-                    <ArrowRight className="hidden min-[1600px]:block h-5 w-5" />
-                    <div className="block min-[1600px]:hidden">
-                      <ArrowRight className="h-5 w-5 rotate-90" />
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* SECTION 3: THE SOLUTION */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={3} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.solution.title}
-          </h2>
-        </div>
-        <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
-          {page.solution.description}
-        </p>
-
-        {/* Code Editor Box with TerminalWindow primitive */}
-        <TerminalWindow title={page.solution.code.language} copySource={page.solution.code.code} theme={theme}>
-          <div
-            className="p-5 overflow-x-auto"
-            style={{ backgroundColor: getThemeColor(theme, 'slate', 950) }}
-          >
-            <pre className="font-mono text-sm leading-relaxed text-slate-200">
-              <code>{page.solution.code.code}</code>
-            </pre>
-          </div>
-        </TerminalWindow>
-      </section>
-
-      {/* SECTION 4: WHERE IS IT USED? */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={4} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.whereUsed.title}
-          </h2>
-        </div>
-        <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
-          {page.whereUsed.description}
-        </p>
-
-        {/* Use Cases Grid with CardSurface */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {page.whereUsed.useCases.map((useCase, index: number) => {
-            const IconComponent = getIcon(useCase.icon);
-            return (
-              <CardSurface
-                key={index}
-                hoverable={false}
-                theme={theme}
-                className="p-6 text-center space-y-3"
-                style={
-                  useCase.highlight
-                    ? { backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }
-                    : undefined
-                }
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-xl mx-auto shadow-sm"
-                  style={{ backgroundColor: withAlpha(primary, '14'), color: primary }}
-                >
-                  <IconComponent className="h-6 w-6" />
-                </div>
-                <h4 className="font-bold text-lg" style={{ color: secondary }}>
-                  {useCase.title}
-                </h4>
-                <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
-                  {useCase.description}
-                </p>
-              </CardSurface>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* SECTION 5: WHAT WILL YOU LEARN? (ROADMAP) */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={5} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.roadmap.title}
-          </h2>
-        </div>
-        <p className="text-base leading-relaxed mb-4" style={{ color: secondary }}>
-          {page.roadmap.description}
-        </p>
-
-        {/* Roadmap Steps Flow */}
-        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
-          {page.roadmap.steps.map((step, index: number) => (
-            <React.Fragment key={index}>
-              <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
-                <StepBadge step={index + 1} size="md" theme={theme} className="mx-auto" />
-                <h4 className="font-bold text-xs sm:text-sm leading-snug" style={{ color: secondary }}>
-                  {step.title}
-                </h4>
-                <p className="text-[11px] leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
-                  {step.subtitle}
-                </p>
-              </div>
-              {index < page.roadmap.steps.length - 1 && (
-                <div className="flex items-center justify-center" style={{ color: getStepBrandColor(theme, index + 1) }}>
-                  <ArrowRight className="hidden min-[1600px]:block h-4 w-4" />
-                  <div className="block min-[1600px]:hidden">
-                    <ArrowRight className="h-4 w-4 rotate-90" />
-                  </div>
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      </section>
-
-      {/* SECTION 6: WHY THIS MATTERS */}
-      <section className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <StepBadge step={6} size="md" theme={theme} />
-          <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
-            {page.whyMatters.title}
-          </h2>
-        </div>
-
-        {/* Benefits Grid with CardSurface */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {page.whyMatters.benefits.map((benefit, index: number) => {
-            const IconComponent = getIcon(benefit.icon);
-            return (
-              <CardSurface
-                key={index}
-                hoverable={false}
-                theme={theme}
-                className="p-5 text-center space-y-3"
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center mx-auto"
-                  style={{ backgroundColor: withAlpha(primary, '14'), color: primary }}
-                >
-                  <IconComponent className="h-5 w-5" />
-                </div>
-                <h4 className="font-bold text-base leading-snug" style={{ color: secondary }}>
-                  {benefit.title}
-                </h4>
-                <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
-                  {benefit.subtitle}
-                </p>
-              </CardSurface>
-            );
-          })}
-        </div>
-      </section>
+                    <h4 className="font-bold text-base leading-snug" style={{ color: secondary }}>
+                      {benefit.title}
+                    </h4>
+                    <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
+                      {benefit.subtitle}
+                    </p>
+                  </CardSurface>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* KEY TAKEAWAY with CalloutBanner primitive */}
-      <CalloutBanner
-        variant="takeaway"
-        theme={theme}
-        title="Key Takeaway"
-        className="rounded-xl p-6"
-      >
-        <p className="text-base leading-relaxed" style={{ color: secondary }}>
-          {page.keyTakeaway}
-        </p>
-      </CalloutBanner>
+      {page.keyTakeaway && (
+        <CalloutBanner
+          variant="takeaway"
+          theme={theme}
+          title="Key Takeaway"
+          className="rounded-xl p-6"
+        >
+          <p className="text-base leading-relaxed" style={{ color: secondary }}>
+            {page.keyTakeaway}
+          </p>
+        </CalloutBanner>
+      )}
     </BlockShell>
   );
 }

@@ -270,5 +270,23 @@ describe('UBA Refactored Blocks Suite', () => {
       const badges = container.querySelectorAll('.rounded-full');
       expect(badges.length).toBeGreaterThan(0);
     });
+
+    it('gracefully renders draft or partial introduction blocks without crashing on missing topic', () => {
+      const partialIntroBlock = {
+        id: 'intro-draft-1',
+        type: 'introduction',
+        version: 'I1',
+        content: {
+          page: {
+            title: 'Draft Introduction',
+          },
+        },
+      } as unknown as IIntroductionBlock;
+
+      expect(() => {
+        render(<IntroductionBlock block={partialIntroBlock} theme={themeA} />);
+      }).not.toThrow();
+      expect(screen.getByRole('heading', { level: 1, name: 'Draft Introduction' })).toBeDefined();
+    });
   });
 });

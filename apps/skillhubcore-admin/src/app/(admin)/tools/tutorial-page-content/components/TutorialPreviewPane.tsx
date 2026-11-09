@@ -15,6 +15,7 @@ import type {
 } from '@quiz/types';
 
 import { themeForBrand } from '../theme/brandTheme';
+import { normalizeBlockPreviewPayload } from '../document/blockVersionDefinitions';
 import type { BlockInstance } from '../document/documentTransformation';
 import { toTutorialBlock } from '../document/documentTransformation';
 import { getBlockType } from '../registry';
@@ -132,6 +133,8 @@ function renderBlockContent(
   try {
     const resetKey = getPreviewResetKey(blockInfo.id, effectiveType, effectiveVersion, payload);
 
+    const previewPayload = (normalizeBlockPreviewPayload(payload, effectiveType, effectiveVersion).content ?? payload) as BlockInstance['payload'];
+
     // Canonical TutorialBlockRenderer for all blocks.
     const tutorialBlock = toTutorialBlock({
       id: blockInfo.id,
@@ -139,7 +142,7 @@ function renderBlockContent(
       version: effectiveVersion,
       versionCode: effectiveVersion,
       title: '',
-      payload,
+      payload: previewPayload,
       payloadFormat: 'legacy',
       sourceFormat: 'json',
       sourceContent: '',
