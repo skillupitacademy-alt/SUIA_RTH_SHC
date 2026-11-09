@@ -93,25 +93,8 @@ export default function AssignmentFactoryPage({ embedded = false }: { embedded?:
       setSourceDirty(false);
       return;
     }
-
-    const controller = new AbortController();
-    const load = async () => {
-      setLoadingSource(true);
-      try {
-        const response = await fetch(`/api/tutorial/content/${encodeURIComponent(selection.subtopicId)}?difficulty=${encodeURIComponent(selection.difficulty)}`, { signal: controller.signal });
-        const payload = await response.json().catch(() => null) as PublishedContentResponse | null;
-        if (!response.ok) throw new Error(payload?.error ?? 'Failed to load published tutorial content.');
-        if (!sourceDirty) setSourceMaterial(payload?.data?.content?.layman?.simpleExplanation ?? '');
-      } catch (error) {
-        if ((error as { name?: string } | null)?.name !== 'AbortError') {
-          toast.error(error instanceof Error ? error.message : 'Failed to load published tutorial content.');
-        }
-      } finally {
-        setLoadingSource(false);
-      }
-    };
-    void load();
-    return () => controller.abort();
+    // Legacy tutorial content fetching is retired (OD-01, OD-05).
+    setLoadingSource(false);
   }, [selection.difficulty, selection.subtopicId, sourceDirty]);
 
   const validation = useMemo(() => {

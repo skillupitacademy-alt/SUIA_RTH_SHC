@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { LearnerProgressPanel } from '@/components/content/LearnerProgressPanel';
 import { getDomainTheme } from '@/lib/domain-themes';
-import { SEED_SUBTOPIC_ID, getSeededTutorialContent } from '@/lib/tutorial-content';
 import { getHierarchyBySlugs, getPublishedTutorialContent, slugifySegment } from '@/lib/tutorial-hierarchy';
 
 interface PageProps {
@@ -34,14 +34,18 @@ function getNotesSummary(content: unknown): string {
 export default async function TutorialAssignmentsPage({ params }: PageProps) {
   const resolved = await params;
   const hierarchy = await getHierarchyBySlugs(resolved);
-  const publishedContent = hierarchy != null ? await getPublishedTutorialContent(hierarchy.subtopic.id) : null;
-  const content = publishedContent?.content ?? (await getSeededTutorialContent());
-  const theme = getDomainTheme(resolved.domainSlug);
-  const subtopicId = hierarchy?.subtopic.id ?? SEED_SUBTOPIC_ID;
+  if (hierarchy === null) {
+    notFound();
+  }
 
-  const subtopicName = hierarchy?.subtopic.name ?? titleCaseFromSlug(slugifySegment(resolved.subtopicSlug));
-  const topicName = hierarchy?.topic.name ?? titleCaseFromSlug(slugifySegment(resolved.topicSlug));
-  const domainName = hierarchy?.domain.name ?? titleCaseFromSlug(slugifySegment(resolved.domainSlug));
+  const publishedContent = await getPublishedTutorialContent(hierarchy.subtopic.id);
+  const content = publishedContent?.content ?? null;
+  const theme = getDomainTheme(resolved.domainSlug);
+  const subtopicId = hierarchy.subtopic.id;
+
+  const subtopicName = hierarchy.subtopic.name;
+  const topicName = hierarchy.topic.name;
+  const domainName = hierarchy.domain.name;
   const notesSummary = getNotesSummary(content) || `Review the notes for ${subtopicName} before moving through the practice tiers.`;
 
   return (
@@ -103,10 +107,15 @@ export default async function TutorialAssignmentsPage({ params }: PageProps) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolved = await params;
   const hierarchy = await getHierarchyBySlugs(resolved);
-  const content = hierarchy != null ? await getPublishedTutorialContent(hierarchy.subtopic.id) : null;
-  const subtopicName = hierarchy?.subtopic.name ?? titleCaseFromSlug(slugifySegment(resolved.subtopicSlug));
-  const topicName = hierarchy?.topic.name ?? titleCaseFromSlug(slugifySegment(resolved.topicSlug));
-  const description = getNotesSummary(content?.content ?? null);
+  if (hierarchy === null) {
+    return {
+      title: 'Assignments Not Found | RealTutorialHub',
+    };
+  }
+  const content = await getPublishedTutorialContent(hierarchy.subtopic.id);
+  const subtopicName = hierarchy.subtopic.name;
+  const topicName = hierarchy.topic.name;
+  const description = getNotesSummary(content?.content ?? null) || `Review the notes for ${subtopicName} before moving through the practice tiers.`;
 
   return {
     title: `${subtopicName} Assignments - ${topicName} | RealTutorialHub`,

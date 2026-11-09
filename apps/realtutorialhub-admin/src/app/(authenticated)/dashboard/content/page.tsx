@@ -200,8 +200,6 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
     const [rawJson, setRawJson] = useState(() => JSON.stringify(DEFAULT_CONTENT, null, 2));
     const [publishState, setPublishState] = useState<PublishState>('draft');
     const [savedContentId, setSavedContentId] = useState<string | null>(null);
-    const [isSavingDraft, setIsSavingDraft] = useState(false);
-    const [isPublishing, setIsPublishing] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
     const [editingBlock, setEditingBlock] = useState<BlockKey | null>(null);
     const [promptText, setPromptText] = useState('');
@@ -346,74 +344,8 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
         setPublishState('draft');
     };
 
-    const persistContent = async (shouldPublish: boolean) => {
-        if (selectionComplete === false) {
-            toast.error('Select the full target context first.');
-            return;
-        }
-        if (validation.parsedContent == null || validation.isValid === false) {
-            toast.error('Fix JSON validation errors before saving.');
-            return;
-        }
-
-        const payload: ContentPayload = {
-            subtopicId: selection.subtopicId,
-            difficulty,
-            content: validation.parsedContent,
-            language: 'en',
-            isPublished: false,
-            generatedByAi: true,
-        };
-
-        const hasExistingContent = savedContentId !== null;
-
-        setIsSavingDraft(true);
-        try {
-            const saveResponse = await fetch(hasExistingContent ? `/api/tutorial/content/${savedContentId}` : '/api/tutorial/content', {
-                method: hasExistingContent ? 'PATCH' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const savePayload = await saveResponse.json().catch(() => null) as { data?: { id?: string }; error?: string } | null;
-            if (saveResponse.ok === false) {
-                throw new Error(savePayload?.error ?? 'Failed to save tutorial content.');
-            }
-
-            const contentId = savePayload?.data?.id ?? savedContentId;
-            if (contentId == null) {
-                throw new Error('Tutorial content id missing after save.');
-            }
-            setSavedContentId(contentId);
-
-            if (shouldPublish === true) {
-                setIsPublishing(true);
-                try {
-                    const publishResponse = await fetch(`/api/tutorial/content/${contentId}/publish`, {
-                        method: 'POST',
-                    });
-                    const publishPayload = await publishResponse.json().catch(() => null) as { error?: string } | null;
-                    if (publishResponse.ok === false) {
-                        throw new Error(publishPayload?.error ?? 'Failed to publish tutorial content.');
-                    }
-
-                    setPublishState('published');
-                    toast.success('Tutorial content published.');
-                } finally {
-                    setIsPublishing(false);
-                }
-            } else {
-                setPublishState('draft');
-                toast.success(hasExistingContent ? 'Draft updated.' : 'Draft saved.');
-            }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Failed to save tutorial content.');
-        } finally {
-            setIsSavingDraft(false);
-        }
-    };
+    // Legacy RTH content persistence is retired (OD-01, OD-05, Sol Review R2).
+    // All tutorial authoring and publishing is managed in SHC Admin Tutorial Composer (/tools/tutorial-page-content).
 
     const _body = (
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
@@ -850,34 +782,10 @@ export default function ContentFactoryPage({ embedded = false }: ContentFactoryP
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => { void persistContent(false); }}
-                                        disabled={canPersist === false || isSavingDraft === true}
-                                        className={cn(
-                                            'h-11 px-5 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-[10px] transition-all',
-                                            canPersist === false || isSavingDraft === true
-                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
-                                        )}
-                                    >
-                                        <Save size={16} />
-                                        <span>{isSavingDraft === true ? 'Saving...' : 'Save Draft'}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { void persistContent(true); }}
-                                        disabled={canPersist === false || isSavingDraft === true || isPublishing === true}
-                                        className={cn(
-                                            'h-11 px-5 rounded-2xl flex items-center gap-3 font-black uppercase tracking-widest text-[10px] transition-all',
-                                            canPersist === false || isSavingDraft === true || isPublishing === true
-                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                                : 'bg-[#FF4B91] hover:bg-[#FF4B91]/90 text-white shadow-xl shadow-[#FF4B91]/25 active:scale-[0.98]'
-                                        )}
-                                    >
-                                        <Upload size={16} />
-                                        <span>{isPublishing === true ? 'Publishing...' : 'Publish'}</span>
-                                    </button>
+                                    <div className="px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2 shadow-sm">
+                                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                                        <span>Tutorial authoring is retired in RTH Admin. Content is authored and published exclusively in SHC Admin Tutorial Composer (/tools/tutorial-page-content).</span>
+                                    </div>
                                 </div>
                             </div>
 

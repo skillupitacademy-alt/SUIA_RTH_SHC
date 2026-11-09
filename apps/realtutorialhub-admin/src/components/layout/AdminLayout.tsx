@@ -65,16 +65,13 @@ const ADMIN_SECTIONS: SidebarSection[] = [
         ],
     },
     {
-        label: 'Tutorial',
+        label: 'Assignments & Practice',
         items: [
-            { type: 'link', name: 'Tutorial', href: '/dashboard/tutorial', icon: Sparkles },
-            { type: 'soon', name: 'Content Versions', icon: Clock3 },
-            { type: 'soon', name: 'Audit Trail', icon: Clock3 },
-            { type: 'soon', name: 'Prompt Generator', icon: Clock3 },
+            { type: 'link', name: 'Assignments Factory', href: '/dashboard/assignments', icon: Sparkles },
+            { type: 'link', name: 'Tutorial Workspace', href: '/dashboard/tutorial', icon: Sparkles },
         ],
     },
 ];
-
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();

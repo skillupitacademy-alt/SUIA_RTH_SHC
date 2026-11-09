@@ -2,7 +2,6 @@ import { eq } from 'drizzle-orm';
 
 import { db, domains, subjects, subtopics, topics, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
 import { TutorialSectionRepository } from '@quiz/db-tutorial';
-import { getTutorialContentBySubtopicId } from './tutorial-content-api';
 
 export interface TutorialHierarchyNode {
   id: string;
@@ -109,23 +108,10 @@ export async function getHierarchyBySlugs(params: {
   };
 }
 
-export async function getPublishedTutorialContent(subtopicId: string, difficulty?: 'simple' | 'mixed' | 'intermediate' | 'expert') {
-  const content = await getTutorialContentBySubtopicId(subtopicId);
-  if (content === null) {
-    return null;
-  }
-
-  if (difficulty !== undefined && content.difficulty !== difficulty) {
-    return null;
-  }
-
-  return {
-    id: content.id,
-    subtopicId: content.subtopicId,
-    difficulty: content.difficulty,
-    content: content.content,
-    updatedAt: new Date(content.updatedAt),
-  } satisfies PublishedTutorialContent;
+export async function getPublishedTutorialContent(_subtopicId: string, _difficulty?: 'simple' | 'mixed' | 'intermediate' | 'expert'): Promise<PublishedTutorialContent | null> {
+  // Legacy monolithic content retrieval is retired (OD-01, OD-03, Task 12).
+  // Canonical learning is exclusively block-based via TutorialDeliveryService and /tutorial-v2.
+  return null;
 }
 
 export async function getPublishedTutorialPaths() {

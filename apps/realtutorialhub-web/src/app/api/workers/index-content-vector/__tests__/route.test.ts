@@ -5,9 +5,6 @@ import { SignatureError } from '@upstash/qstash';
 const mocks = vi.hoisted(() => {
   return {
     receiverVerify: vi.fn(),
-    redisGet: vi.fn(),
-    redisSet: vi.fn(),
-    redisDel: vi.fn(),
     indexUpsert: vi.fn(),
     loggerInfo: vi.fn(),
     loggerError: vi.fn(),
@@ -38,30 +35,6 @@ vi.mock('@upstash/vector', () => ({
     constructor() {}
   },
 }));
-
-vi.mock('@upstash/redis', () => ({
-  Redis: class {
-    get = mocks.redisGet;
-    set = mocks.redisSet;
-    del = mocks.redisDel;
-    eval = vi.fn(async (_script: string, _keys: string[], _args: Array<string | number>) => 1);
-    constructor() {}
-  },
-}));
-
-vi.mock('@quiz/db-tutorial', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@quiz/db-tutorial')>();
-  return {
-    ...actual,
-    TutorialContentRepository: class {
-      async getPublished() {
-        return [];
-      }
-    },
-    withTimeout: async <T>(promise: Promise<T>) => promise,
-    STANDARD_QUERY_TIMEOUT: 15_000,
-  };
-});
 
 vi.mock('@/lib/logger', () => ({
   logger: {
@@ -135,52 +108,39 @@ const createRequest = (body: unknown, signature = 'valid-signature') =>
     body: JSON.stringify(body),
   });
 
-describe('index-content-vector worker', () => {
+describe('index-content-vector worker (Retired Lifecycle)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.receiverVerify.mockResolvedValue(undefined);
-    mocks.redisGet.mockResolvedValue(null);
-    mocks.redisSet.mockResolvedValue('OK');
-    mocks.redisDel.mockResolvedValue(1);
     mocks.indexUpsert.mockResolvedValue({ success: true });
     vi.stubEnv('QSTASH_CURRENT_SIGNING_KEY', 'current-signing-key');
     vi.stubEnv('QSTASH_NEXT_SIGNING_KEY', 'next-signing-key');
-    vi.stubEnv('UPSTASH_VECTOR_REST_URL', 'https://vector.example.com');
-    vi.stubEnv('UPSTASH_VECTOR_REST_TOKEN', 'vector-token');
-    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com');
-    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'redis-token');
   });
 
-  it('indexes five chunks for a valid publish payload', async () => {
-    const response = await POST(createRequest(createEnvelope()));
-
-    expect(response.status).toBe(200);
-    expect(mocks.indexUpsert).toHaveBeenCalledTimes(1);
-    const chunks = mocks.indexUpsert.mock.calls[0][0];
-    expect(chunks).toHaveLength(5);
-    expect(chunks.map((chunk: { id: string }) => chunk.id)).toEqual([
-      expect.stringContaining(':notes'),
-      expect.stringContaining(':layman'),
-      expect.stringContaining(':real_life'),
-      expect.stringContaining(':technical'),
-      expect.stringContaining(':code'),
-    ]);
-    expect(mocks.loggerInfo).toHaveBeenCalledWith(expect.objectContaining({
-      event: 'ai_tutor.vector_indexed',
-    }));
-  });
-
-  it('skips a duplicate publish for the same version', async () => {
-    mocks.redisGet.mockResolvedValueOnce('1');
-
+  it('terminates with 200 and zero vector upserts when legacy content is present inline', async () => {
     const response = await POST(createRequest(createEnvelope()));
 
     expect(response.status).toBe(200);
     expect(mocks.indexUpsert).not.toHaveBeenCalled();
-    expect(mocks.redisSet).not.toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringContaining('processing'),
-      expect.anything()
+    expect(mocks.loggerInfo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_tutor.vector_index_retired',
+      })
+    );
+  });
+
+  it('terminates with 200 and zero vector upserts when legacy content is absent', async () => {
+    const envelopeWithoutContent = createEnvelope();
+    delete (envelopeWithoutContent.data as Record<string, unknown>).content;
+
+    const response = await POST(createRequest(envelopeWithoutContent));
+
+    expect(response.status).toBe(200);
+    expect(mocks.indexUpsert).not.toHaveBeenCalled();
+    expect(mocks.loggerInfo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_tutor.vector_index_retired',
+      })
     );
   });
 
@@ -206,17 +166,5 @@ describe('index-content-vector worker', () => {
 
     expect(response.status).toBe(400);
     expect(mocks.indexUpsert).not.toHaveBeenCalled();
-  });
-
-  it('returns 500 and logs an error when vector upsert fails', async () => {
-    mocks.indexUpsert.mockRejectedValue(new Error('vector failed'));
-
-    const response = await POST(createRequest(createEnvelope()));
-
-    expect(response.status).toBe(500);
-    expect(mocks.loggerError).toHaveBeenCalledWith(expect.objectContaining({
-      event: 'ai_tutor.vector_index_failed',
-      error: 'vector failed',
-    }));
   });
 });

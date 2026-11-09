@@ -1,101 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/tutorial/content/:subtopicId
- * 
- * @deprecated LEGACY SYSTEM - Use /api/tutorial/sections/* instead
- * 
- * This endpoint queries the tutorial_content table which is incomplete/abandoned.
- * Production pages use /api/tutorial/sections/* with tutorial_sections table.
- * 
- * Migration Path:
- * - Current: /api/tutorial/content/* → tutorial_content (empty/incomplete)
- * - Recommended: /api/tutorial/sections/* → tutorial_sections (active/complete)
- * 
- * RTH BFF - Calls centralized Tutorial Engine in API server
- * UI/UX remains unchanged - only backend routing updated
+ *
+ * @deprecated RETIRED (OD-01, OD-02, Phase B Task 07)
+ *
+ * This legacy content route querying the old monolithic tutorial_content table
+ * is completely retired. The canonical block-based learning experience is
+ * served exclusively via /tutorial-v2/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/[navigationNodeId]
+ * powered by tutorial_sections and TutorialDeliveryService.
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
-  try {
-    const params = await context.params;
-    
-    console.log('[RTH Tutorial Content - DEPRECATED] Request for:', params.subtopicId);
-    console.warn('[RTH Tutorial Content] ⚠️  DEPRECATION WARNING: Use /api/tutorial/sections/* instead');
-    
-    // Authenticate user (RTH-specific)
-    const user = await requireStudent(request);
-    
-    console.log('[RTH Tutorial Content] User authenticated:', user.userId);
-    
-    // Call API server with brand context
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
-    const apiEndpoint = `${apiUrl}/api/tutorial/content/${params.subtopicId}`;
-    
-    console.log('[RTH Tutorial Content] Calling API:', apiEndpoint);
-    
-    const response = await fetch(
-      apiEndpoint,
-      {
-        headers: {
-          'X-Brand': 'realtutorialhub',           // Brand context
-          'X-User-ID': user.userId,                // RTH user ID
-          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
-        },
-        cache: 'no-store'
-      }
-    );
-    
-    console.log('[RTH Tutorial Content] API response status:', response.status);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch content' }));
-      
-      console.error('[RTH Tutorial Content] API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: error
-      });
-      
-      // CRITICAL: Preserve upstream status code for proper observability
-      // 404 remains 404, 401 remains 401, 403 remains 403, 500 remains 500
-      return NextResponse.json(
-        { 
-          error: error.error || 'Tutorial content not found',
-          _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.'
-        },
-        { status: response.status }
-      );
-    }
-    
-    const data = await response.json();
-    
-    console.log('[RTH Tutorial Content] Success, returning data');
-    
-    // Return with cache headers and deprecation warning
-    const result = NextResponse.json({
-      ...data,
-      _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.'
-    });
-    result.headers.set('Cache-Control', 'private, no-store');
-    result.headers.set('X-Deprecated', 'true');
-    result.headers.set('X-Deprecation-Message', 'Use /api/tutorial/sections/* instead');
-    return result;
-  } catch (error) {
-    if (error instanceof AssignmentAuthError) {
-      return NextResponse.json({ error: error.message }, {
-        status: error.statusCode, headers: { 'Cache-Control': 'private, no-store' },
-      });
-    }
-    console.error('[RTH Tutorial Content] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  const { subtopicId } = await context.params;
+  return NextResponse.json(
+    {
+      error: 'Gone',
+      message: `Legacy tutorial content route for subtopic "${subtopicId}" is permanently retired. Use canonical /tutorial-v2 block routes.`,
+      statusCode: 410,
+    },
+    { status: 410 }
+  );
 }

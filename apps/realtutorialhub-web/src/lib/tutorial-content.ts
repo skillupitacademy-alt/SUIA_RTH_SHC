@@ -1,4 +1,3 @@
-import { TutorialContentRepository } from '@quiz/db-tutorial';
 import type { TutorialContentJSON } from '@quiz/types';
 
 export const SEED_SUBTOPIC_ID = '11111111-1111-1111-1111-111111111111';
@@ -123,16 +122,5 @@ export const DEFAULT_TUTORIAL_CONTENT: TutorialContentJSON = {
 };
 
 export async function getSeededTutorialContent(): Promise<TutorialContentJSON> {
-  const repository = new TutorialContentRepository();
-  try {
-    const rows = await repository.findBySubtopicId(SEED_SUBTOPIC_ID, 'simple');
-    const content = rows.find((row) => row.isPublished) ?? rows[0];
-    if (content) {
-      return content.content;
-    }
-  } catch {
-    // Fall back to the embedded seed so the app can build without Neon env vars.
-  }
-
   return DEFAULT_TUTORIAL_CONTENT;
 }

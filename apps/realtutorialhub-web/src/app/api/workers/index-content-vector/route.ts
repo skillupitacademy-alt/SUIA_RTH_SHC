@@ -1,5 +1,4 @@
 import { SignatureError } from '@upstash/qstash';
-import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 import { z, ZodError } from 'zod';
 
@@ -7,25 +6,10 @@ import {
   createQStashHandler,
   PlatformEventTypes,
 } from '@quiz/events';
-import {
-  STANDARD_QUERY_TIMEOUT,
-  TutorialContentRepository,
-  withTimeout,
-} from '@quiz/db-tutorial';
-import { TutorialContentSchema, type TutorialContentJSON, type TutorialDifficulty } from '@quiz/types';
+import { TutorialContentSchema } from '@quiz/types';
 
 import { logger } from '@/lib/logger';
-import {
-  buildAiTutorVectorChunks,
-  createAiTutorVectorIndex,
-} from '../../../../lib/ai-tutor-vector';
-import {
-  completeWorkerLeaseIfOwner,
-  isPendingWorkerLeaseValue,
-  releaseWorkerLeaseIfOwner,
-  requireAtomicWorkerLeaseAdapter,
-  type WorkerRedisLike,
-} from '../worker-lease';
+import { createAiTutorVectorIndex } from '../../../../lib/ai-tutor-vector';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,157 +36,46 @@ type IndexContentEnvelope = z.infer<typeof IndexContentEnvelopeSchema>;
 type IndexVectorLike = ReturnType<typeof createAiTutorVectorIndex>;
 
 type WorkerDeps = {
-  getVector: () => IndexVectorLike;
-  getPublishedContent: (subtopicId: string, difficulty?: TutorialDifficulty) => Promise<Array<{
-    subtopicId: string;
-    difficulty: TutorialDifficulty;
-    content: TutorialContentJSON;
-  }>>;
-  getRedis: () => RedisLike;
+  getVector?: () => IndexVectorLike;
   logger: typeof logger;
 };
 
-type RedisLike = WorkerRedisLike & {
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string, options?: { ex?: number; nx?: boolean }): Promise<unknown>;
-  del(key: string): Promise<number>;
-};
-
-const createRedisClient = (): RedisLike => {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (typeof url !== 'string' || url.trim().length === 0 || typeof token !== 'string' || token.trim().length === 0) {
-    throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required');
-  }
-
-  return new Redis({ url, token }) as unknown as RedisLike;
-};
-
 const defaultDeps: WorkerDeps = {
-  getVector: () => createAiTutorVectorIndex(),
-  getPublishedContent: async (subtopicId, difficulty) => {
-    const repository = new TutorialContentRepository();
-    const rows = await withTimeout(
-      repository.getPublished(subtopicId, difficulty),
-      STANDARD_QUERY_TIMEOUT,
-      'index-content-vector.getPublished'
-    );
-
-    return rows.map((row) => ({
-      subtopicId: row.subtopicId,
-      difficulty: row.difficulty,
-      content: row.content,
-    }));
-  },
-  getRedis: createRedisClient,
   logger,
 };
 
 const buildErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
+/**
+ * Terminal Disposition for Retired Vector Indexing Worker
+ *
+ * Per OD-04 and Review R1:
+ * Legacy monolithic tutorial content vector indexing is permanently retired.
+ * Obsolete events terminate with an explicit authenticated HTTP 200 OK
+ * with zero vector upserts, zero database reads, and zero infinite retries.
+ */
 async function processIndexContentEnvelope(
   envelope: IndexContentEnvelope,
   deps: WorkerDeps = defaultDeps
 ): Promise<Response> {
-  const { subtopicId, difficulty, content, version } = envelope.data;
+  const { subtopicId, difficulty, version } = envelope.data;
   const resolvedDifficulty = difficulty ?? 'simple';
-  const redisKey = `vector-index:${subtopicId}:${resolvedDifficulty}`;
-  const redis = deps.getRedis();
-  requireAtomicWorkerLeaseAdapter(redis);
-  const existingVersion = await redis.get(redisKey);
-  if (existingVersion === String(version)) {
-    deps.logger.info({
-      event: 'ai_tutor.vector_index_skipped',
-      subtopicId,
-      difficulty: resolvedDifficulty,
-      version,
-    });
-    return new Response('ok', { status: 200 });
-  }
 
-  if (existingVersion !== null && isPendingWorkerLeaseValue(String(existingVersion))) {
-    return new Response('Event processing already in progress', { status: 409 });
-  }
+  deps.logger.info({
+    event: 'ai_tutor.vector_index_retired',
+    subtopicId,
+    difficulty: resolvedDifficulty,
+    version,
+    message: 'Legacy content vector indexing is permanently retired (OD-04). No vector mutations performed.',
+  });
 
-  if (existingVersion !== null) {
-    await releaseWorkerLeaseIfOwner(redis, redisKey, String(existingVersion));
-  }
-
-  const leaseToken = crypto.randomUUID();
-  const pendingValue = `processing:${version}:${leaseToken}`;
-  const claimed = await redis.set(redisKey, pendingValue, { ex: 86_400, nx: true });
-  if (claimed !== 'OK' && claimed !== true) {
-    deps.logger.info({
-      event: 'ai_tutor.vector_index_skipped',
-      subtopicId,
-      difficulty: resolvedDifficulty,
-      version,
-    });
-    return new Response('ok', { status: 200 });
-  }
-
-  const sourceDocuments =
-    content !== undefined
-      ? [{
-          subtopicId,
-          difficulty: resolvedDifficulty,
-          content,
-        }]
-      : await deps.getPublishedContent(subtopicId, difficulty);
-
-  if (sourceDocuments.length === 0) {
-    await releaseWorkerLeaseIfOwner(redis, redisKey, pendingValue);
-    throw new Error('Published tutorial content not found');
-  }
-
-  try {
-    const vector = deps.getVector();
-    const chunks = sourceDocuments.flatMap((document) =>
-      buildAiTutorVectorChunks(document.content, document.subtopicId, document.difficulty)
-    );
-
-    await withTimeout(
-      vector.upsert(
-        chunks.map((chunk) => ({
-          id: chunk.id,
-          data: chunk.data,
-          metadata: chunk.metadata,
-        }))
-      ),
-      STANDARD_QUERY_TIMEOUT,
-      'index-content-vector.upsert'
-    );
-
-    const completionTransition = await completeWorkerLeaseIfOwner(
-      redis,
-      redisKey,
-      pendingValue,
-      String(version),
-      86_400
-    );
-    if (completionTransition !== 'applied') {
-      return new Response('Event lease ownership lost before completion', { status: 409 });
-    }
-
-    deps.logger.info({
-      event: 'ai_tutor.vector_indexed',
-      subtopicId,
-      chunkCount: chunks.length,
-      difficulty: resolvedDifficulty,
-    });
-
-    return new Response('ok', { status: 200 });
-  } catch (error) {
-    await releaseWorkerLeaseIfOwner(redis, redisKey, pendingValue).catch(() => undefined);
-    throw error;
-  }
+  return new Response('retired', { status: 200 });
 }
 
-function buildIndexContentVectorHandler() {
+function buildIndexContentVectorHandler(deps: WorkerDeps = defaultDeps) {
   return createQStashHandler(
     PlatformEventTypes.CONTENT_APPROVED_AND_PUBLISHED,
-    async (envelope: unknown) => processIndexContentEnvelope(envelope as IndexContentEnvelope),
+    async (envelope: unknown) => processIndexContentEnvelope(envelope as IndexContentEnvelope, deps),
     {
       schema: IndexContentEnvelopeSchema,
       tenantScope: 'realtutorialhub',
