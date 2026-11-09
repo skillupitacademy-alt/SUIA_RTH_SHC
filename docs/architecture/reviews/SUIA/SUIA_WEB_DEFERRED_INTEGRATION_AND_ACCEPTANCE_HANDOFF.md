@@ -68,7 +68,7 @@ SkillUp IT Academy (SUIA) delivers a **structured, tutor-led, cohort-based acade
 | **Implementation maturity** | Implemented but unverified at runtime |
 | **Future acceptance test** | Launch an exam via `http://localhost:3004/launch-exam`; complete questions, verify timer expiration forces submission, and verify attempt results appear in faculty grading queue. |
 | **Recommended correction** | Implement heartbeat auto-save for student answers during timed examinations. |
-| **Dependency** | `src/share-branding/ExamEngine`, MongoDB `student_attempts` |
+| **Dependency** | `src/share-branding/ExamEngine`, PostgreSQL Neon (`@quiz/db` `examSchema` / `exam_attempts`) |
 | **Future workstream** | SUIA Web / Assessment Engine |
 | **Governance mapping** | PSEG-001 §3.2, §5.2 |
 | **Owner approval** | Not required |
@@ -160,7 +160,7 @@ SkillUp IT Academy (SUIA) delivers a **structured, tutor-led, cohort-based acade
 | **Implementation maturity** | UI implemented; eligibility validation service unverified |
 | **Future acceptance test** | Attempt to generate certificate for a student with <80% attendance; verify rejection; complete all batch requirements; verify diploma generates with valid cryptographic verification hash. |
 | **Recommended correction** | Wire certificate generation to batch completion validator checking attendance and final exam grades. |
-| **Dependency** | `src/share-branding/CertificatesPage`, MongoDB `certificates` |
+| **Dependency** | `src/share-branding/CertificatesPage`, PostgreSQL Neon (`@quiz/db` `reportSchema` / verification tables) |
 | **Future workstream** | SUIA Academic Registrar |
 | **Governance mapping** | PSEG-001 §5.2 |
 | **Owner approval** | Not required |
@@ -170,20 +170,20 @@ SkillUp IT Academy (SUIA) delivers a **structured, tutor-led, cohort-based acade
 | Field | Detail |
 | :--- | :--- |
 | **Issue ID** | **SUIA-HO-007** |
-| **Capability** | Dual-DB Hierarchy & Enrollment Reconciliation |
+| **Capability** | Multi-Database Student Enrollment & Batch Reconciliation (PostgreSQL people_prod vs skillup_prod / Tutorial Neon) |
 | **Logical owner** | Platform Data Architecture |
-| **Current implementation owner** | `apps/skillup-admin/src/app/(admin)/students`, MongoDB & PostgreSQL |
+| **Current implementation owner** | `apps/skillup-admin/src/app/(admin)/students`, PostgreSQL (`@quiz/db-people`, `@quiz/db-skillup`, `@quiz/db-tutorial`) |
 | **Affected consumer** | `apps/skillup-admin` & `apps/skillup-web` |
 | **Evidence** | `apps/skillup-admin/src/app/(admin)/students/[id]/page.tsx` |
 | **SHA** | `ec82952d6852696d499e9ecfb15e2f554a120015` |
-| **Observation** | Students are registered in MongoDB, while batch assignments and tutorial progress reside in PostgreSQL Neon. Without cross-database transaction coordination, partial writes can occur during student enrollment. |
-| **Risk** | Inconsistent student state: A student enrolled in a batch in PostgreSQL may not have their program membership recorded in MongoDB. |
+| **Observation** | **RETRACTED HISTORICAL NOTE:** The initial assessment erroneously cited a MongoDB store for student registrations. Forensic code review confirms that all user, student, and enrollment records are stored in PostgreSQL databases (`@quiz/db-people` and `@quiz/db-skillup`).<br><br>**CORRECTED OBSERVATION:** Student user accounts reside in the central people database (`people_prod` via `@quiz/db-people` / `DATABASE_URL_PEOPLE`), while cohort enrollments reside in `skillup_prod` (`@quiz/db-skillup`) and tutorial batch assignments in Tutorial Neon (`DATABASE_URL_TUTORIAL`). Without cross-database transaction coordination across these distinct PostgreSQL connection pools, partial writes can occur during student registration and batch assignment. |
+| **Risk** | Inconsistent student state: A student account created in `people_prod` may fail to have their corresponding enrollment record created in `skillup_prod` or batch assignment in `batch_schedules` if an unhandled network error occurs mid-transaction. |
 | **Severity** | **High** |
-| **Finding state** | **CONFIRMED ARCHITECTURE GAP** |
+| **Finding state** | **RETRACTED** (Historical MongoDB Finding) / **CONFIRMED ARCHITECTURE GAP** (Cross-Database PostgreSQL Coordination) |
 | **Implementation maturity** | Partial |
-| **Future acceptance test** | Enroll a new student via SUIA Admin; verify records exist with matching IDs in both MongoDB `enrollments` and PostgreSQL `batch_schedules`. |
-| **Recommended correction** | Use Outbox pattern in `event_outbox` repository to synchronize student batch memberships across databases. |
-| **Dependency** | `packages/db-tutorial`, `packages/db` |
+| **Future acceptance test** | Enroll a new student via SUIA Admin; verify records exist with matching user IDs across `people_prod.users`, `skillup_prod.enrollments`, and `batch_schedules`. |
+| **Recommended correction** | Use Outbox pattern via `packages/db-tutorial` `event_outbox` table or an idempotent transactional orchestration service to ensure student registration and batch assignment complete atomically across PostgreSQL databases. |
+| **Dependency** | `packages/db-people`, `packages/db-skillup`, `packages/db-tutorial` |
 | **Future workstream** | Shared Backend / Database Architecture |
 | **Governance mapping** | PSEG-001 §4.2, SHCA-A06 |
 | **Owner approval** | **Required** (Storage architecture decision) |

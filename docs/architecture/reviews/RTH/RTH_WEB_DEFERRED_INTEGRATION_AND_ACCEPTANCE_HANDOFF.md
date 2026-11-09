@@ -147,16 +147,16 @@ Real Tutorial Hub (RTH) delivers an **online, self-paced, AI-assisted learning e
 | Field | Detail |
 | :--- | :--- |
 | **Issue ID** | **RTH-HO-006** |
-| **Capability** | Dual-DB Academic Hierarchy Sync for RTH Guide Discovery |
+| **Capability** | Cross-Database Academic Hierarchy Sync for RTH Guide Discovery (PostgreSQL Core DB vs Neon Tutorial DB) |
 | **Logical owner** | Platform Data Architecture |
-| **Current implementation owner** | MongoDB core & PostgreSQL Neon |
+| **Current implementation owner** | Core PostgreSQL (`@quiz/db`) & Tutorial PostgreSQL Neon (`@quiz/db-tutorial`) |
 | **Affected consumer** | `apps/realtutorialhub-web` |
 | **Evidence** | Reference `SHARED-INT-001` |
 | **SHA** | `ec82952d6852696d499e9ecfb15e2f554a120015` |
-| **Observation** | Identical to `SHARED-INT-001`. RTH Web relies on consistent domain/subject/topic hierarchy between MongoDB catalog and PostgreSQL tutorial navigation trees. |
-| **Risk** | Broken tutorial links and SEO 404 indexing errors. |
+| **Observation** | **RETRACTED HISTORICAL NOTE:** The initial assessment erroneously cited a MongoDB core database. Forensic source audit confirms zero MongoDB dependencies; the platform uses 100% PostgreSQL.<br><br>**CORRECTED OBSERVATION:** Identical to `SHARED-INT-001`. RTH Web relies on consistent domain/subject/topic hierarchy between the Core PostgreSQL taxonomy (`@quiz/db` / `people_prod`) and PostgreSQL tutorial navigation trees (`@quiz/db-tutorial` / `DATABASE_URL_TUTORIAL`). |
+| **Risk** | Broken tutorial links and SEO 404 indexing errors if Core PostgreSQL taxonomy changes are not synchronized to Tutorial PostgreSQL navigation trees. |
 | **Severity** | **High** |
-| **Finding state** | **CONFIRMED (Cross-Reference SHARED-INT-001)** |
+| **Finding state** | **RETRACTED** (Historical MongoDB claim) / **CONFIRMED ARCHITECTURE GAP** (Cross-Reference `SHARED-INT-001`) |
 | **Implementation maturity** | Partial |
 | **Future acceptance test** | See `SHARED-INT-001` acceptance test. |
 | **Recommended correction** | See `SHARED-INT-001` recommendation. |

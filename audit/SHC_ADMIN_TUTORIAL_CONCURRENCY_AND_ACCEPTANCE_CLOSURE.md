@@ -253,8 +253,8 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
   - `SHCA-U10` (Dashboard Seed Provenance Notice)
 - **Total Proposed PASS:** 13
 - **Remaining FAILs Requiring Architectural/Owner Decisions:** 6
-  - `SHCA-U01` (Academic Hierarchy Direct Neon Persistence vs MongoDB Canonical Sync)
-  - `SHCA-U02` (Dual-DB Sidebar Navigation Synchronization)
+  - `SHCA-U01` (Academic Hierarchy Direct Tutorial Neon Persistence vs Core PostgreSQL Sync)
+  - `SHCA-U02` (Multi-Database Sidebar Navigation Synchronization across Core and Tutorial DBs)
   - `SHCA-F11` (Academic Hierarchy Deletion Cascades & Integrity Constraints)
   - `SHCA-A04` (Direct ORM CRUD & Hard Deletes vs Soft Deletes)
   - `SHCA-A05` (Cross-Brand Isolation Runtime Guarding)
@@ -272,8 +272,8 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
 | `SHCA-S03` | FAIL | **PROPOSED PASS** | Security | CSRF & Origin Mutation Protection | 56/56 origin tests pass in `admin-boundary.test.ts`. |
 | `SHCA-S04` | FAIL | **PROPOSED PASS** | Security | Real HTTP BFF Logout Cookie Invalidation | 20/20 passed in `verify-scope-b1-e2e.mjs`. |
 | `SHCA-S05` | FAIL | **PROPOSED PASS** | Security | CORS Whitelist & Origin Boundary Enforcement | Tested development/production origin whitelisting in Vitest. |
-| `SHCA-U01` | FAIL | **FAIL** | UX / Domain | Academic Hierarchy Editor DB Mutation | Requires owner approval on Dual-DB PostgreSQL/MongoDB write strategy. |
-| `SHCA-U02` | FAIL | **FAIL** | UX / Domain | Sidebar Navigation Hierarchy Sync | Requires change-data sync between MongoDB core and Tutorial PostgreSQL. |
+| `SHCA-U01` | FAIL | **FAIL** | UX / Domain | Academic Hierarchy Editor DB Mutation | Requires owner approval on cross-database PostgreSQL write strategy (Core DB vs Tutorial DB). |
+| `SHCA-U02` | FAIL | **FAIL** | UX / Domain | Sidebar Navigation Hierarchy Sync | Requires change-data sync between Core PostgreSQL (@quiz/db) and Tutorial PostgreSQL (@quiz/db-tutorial). |
 | `SHCA-U03` | PENDING | PENDING | UX / Tools | Course Management UI Workflows | Pending dedicated course management feature batch. |
 | `SHCA-U04` | FAIL | **PROPOSED PASS** | UX / Tools | Tutorial Block Composer Direct Access | Dead code redirect removed; full 6-tool navigation console accessible. |
 | `SHCA-U05` | PENDING | PENDING | UX / Tools | Quiz Question Authoring UI | Pending question bank evaluation batch. |
@@ -308,7 +308,7 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
 | `SHCA-A03` | PENDING | PENDING | Architecture | Shared Library Dependency Hygiene | `@quiz/*` monorepo workspace dependencies clean. |
 | `SHCA-A04` | FAIL | **FAIL** | Architecture | Direct ORM CRUD & Hard Deletes | Hard deletes in legacy endpoints must be transitioned to soft deletes. |
 | `SHCA-A05` | FAIL | **FAIL** | Architecture | Multi-Tenant Database Partitioning | Requires owner sign-off on database schema brand tenant keys. |
-| `SHCA-A06` | FAIL | **FAIL** | Architecture | Cross-Service Transaction Boundaries | Requires saga / outbox pattern across MongoDB and PostgreSQL. |
+| `SHCA-A06` | FAIL | **FAIL** | Architecture | Cross-Service Transaction Boundaries | Requires saga / outbox pattern across independent PostgreSQL connection pools (Core DB and Tutorial DB). |
 | `SHCA-A07` | PENDING | PENDING | Architecture | Observability & Logging Standards | Pino structured logging adopted in route guards. |
 | `SHCA-A08` | PENDING | PENDING | Architecture | API Error Contract Parity | Consistent `{ error: { code, message } }` format across 80 handlers. |
 | `SHCA-A09` | PENDING | PENDING | Architecture | Next.js Server Action vs Route Handler Usage | Route handler standards adhered to. |
@@ -333,9 +333,9 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
 
 ## Detailed Root Causes & Proposed Remediations for 6 Remaining FAILs
 
-### 1. `SHCA-U01` & `SHCA-U02`: Dual-DB Academic Hierarchy Synchronization
-- **Root Cause:** The academic hierarchy (Domains -> Subjects -> Topics -> Subtopics) currently resides in two separate persistence stores: MongoDB (canonical learner core database) and PostgreSQL (Neon tutorial database). Edits made in the SHC Admin UI write directly to PostgreSQL, resulting in drift between the tutorial database and the MongoDB core catalog used by SUIA/RTH.
-- **Architectural Proposal:** Implement an Event Outbox / CDC synchronizer. When an administrator mutates a hierarchy node in SHC Admin, the write commits to PostgreSQL and emits an outbox event that asynchronously replicates to MongoDB (or vice versa, establishing MongoDB as single source of truth for taxonomy).
+### 1. `SHCA-U01` & `SHCA-U02`: Multi-Database Academic Hierarchy Synchronization (PostgreSQL Core DB vs Neon Tutorial DB)
+- **Root Cause:** The academic hierarchy definitions (Domains -> Subjects -> Topics -> Subtopics) reside in the Core PostgreSQL database (`packages/db/src/schema/domain.ts` connecting via `DATABASE_URL` / `people_prod`), while tutorial navigation nodes and block content reside in the Tutorial Neon PostgreSQL database (`packages/db-tutorial` connecting via `DATABASE_URL_TUTORIAL`). Because these are independent PostgreSQL connection pools and database instances, mutations made in SHC Admin write to `DATABASE_URL_TUTORIAL` without automated transactional synchronization to the core taxonomy tables in `@quiz/db`, risking drift between tutorial navigation trees and brand catalog listings.
+- **Architectural Proposal:** Implement an Event Outbox synchronizer. When an administrator mutates a hierarchy node in SHC Admin, the write commits to the primary database and emits an event via `packages/db-tutorial/src/repositories/event-outbox.repository.ts` to asynchronously propagate the taxonomy change across all brand catalogs.
 
 ### 2. `SHCA-F11`: Academic Hierarchy Deletion Cascades & Referential Integrity
 - **Root Cause:** Foreign-key relationships between `domains`, `subjects`, `topics`, `subtopics`, and `tutorial_sections` currently lack enforced cascade policies. Deleting a topic can orphan subtopics or leave broken tutorial references.
@@ -349,9 +349,9 @@ No autonomous ledger overwrites have occurred. All proposed state transitions be
 - **Root Cause:** While service-level assertions now check `context.brandId !== tutorial.brandId`, cross-brand isolation at the database query level relies on application-level filtering rather than database row-level security or tenant schemas.
 - **Architectural Proposal:** Implement a tenant-aware Drizzle middleware that automatically appends `AND brand_id = :currentBrandId` to all queries unless explicitly invoked by a super-admin cross-brand report.
 
-### 5. `SHCA-A06`: Cross-Service Transaction Boundaries
-- **Root Cause:** Operations that span both MongoDB and PostgreSQL (e.g. creating a course with bundled tutorials) cannot use distributed 2PC transactions.
-- **Architectural Proposal:** Formalize a two-phase Saga pattern using the existing `event_outbox` table in `packages/db-tutorial` to ensure eventual consistency without partial writes.
+### 5. `SHCA-A06`: Cross-Service Transaction Boundaries across Independent PostgreSQL Databases
+- **Root Cause:** Operations that span both Core PostgreSQL (`@quiz/db` / `DATABASE_URL`) and Tutorial PostgreSQL (`@quiz/db-tutorial` / `DATABASE_URL_TUTORIAL`) (e.g. creating a course with bundled tutorials) cannot use distributed 2PC transactions across distinct Neon serverless connection pools.
+- **Architectural Proposal:** Formalize a two-phase Saga / Outbox pattern using the existing `event_outbox` table in `packages/db-tutorial` to ensure eventual consistency without partial writes across independent PostgreSQL connection pools.
 
 ---
 
