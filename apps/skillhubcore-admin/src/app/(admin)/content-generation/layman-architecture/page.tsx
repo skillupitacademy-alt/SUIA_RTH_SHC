@@ -5,7 +5,7 @@ import { ShellContext } from '../../ShellContext';
 import {
   ChevronDown, Plus, Info, Edit2, MoreVertical, CheckCircle2,
   Copy, Eye, RotateCcw, Download,
-  Palette, Brain, Layers, 
+  Palette, Brain, Layers,
   Zap, ShieldCheck, Layout, Globe
 } from 'lucide-react';
 
@@ -38,6 +38,19 @@ export default function EducationalArchitecturePage() {
 
 
 
+      {/* Design Specification & Architecture Canvas Notice */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-amber-50/90 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-amber-800">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-amber-200 text-amber-900 border border-amber-300">
+            SPECIFICATION CANVAS PREVIEW
+          </span>
+          <span className="font-medium">
+            Educational architecture template & design preview canvas. Live subtopic curriculum binding is managed via Section Hierarchy administration.
+          </span>
+        </div>
+        <span className="text-amber-700 font-mono text-[11px]">Mode: Design Prototype</span>
+      </div>
+
       {/* Step 1: Select Scope */}
       <section className="bg-white/80 backdrop-blur rounded-xl border-t border-white/60 shadow-2xl p-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300">
         <div className="flex items-center gap-3 mb-6">
@@ -47,9 +60,9 @@ export default function EducationalArchitecturePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[{ label: 'Domain', value: 'Frontend Development', id: 'domain-select' },
-            { label: 'Subject', value: 'JavaScript', id: 'subject-select' },
-            { label: 'Topic', value: 'JavaScript Basics', id: 'topic-select' },
-            { label: 'Subtopic', value: 'What is JavaScript?', id: 'subtopic-select' }
+          { label: 'Subject', value: 'JavaScript', id: 'subject-select' },
+          { label: 'Topic', value: 'JavaScript Basics', id: 'topic-select' },
+          { label: 'Subtopic', value: 'What is JavaScript?', id: 'subtopic-select' }
           ].map((item, i) => (
             <div key={i} className="space-y-1.5">
               <label htmlFor={item.id} className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">{item.label}</label>
@@ -131,7 +144,7 @@ export default function EducationalArchitecturePage() {
         {/* Main Content Grid (Matching Image Sections A-F) */}
         {/* Main Content Grid (Unified 12-Column Grid for Perfect Alignment) */}
         <div className="grid grid-cols-12 gap-8 items-stretch">
-          
+
           {/* A. Universal Layman Architecture (Row 1, Left 60%) */}
           <div className="col-span-12 xl:col-span-7 flex">
             <div className="bg-white/80 backdrop-blur rounded-2xl border-t border-white/60 shadow-2xl p-6 space-y-6 -translate-y-1 hover:-translate-y-3 transition-transform duration-300 w-full flex flex-col">
@@ -290,8 +303,8 @@ export default function EducationalArchitecturePage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-[#1E293B] font-outfit">G. Architecture Governance & Versioning</h3>
                 <div className="flex items-center gap-3">
-                   <button className="px-4 py-2 bg-pink-50 text-pink-600 text-xs font-bold rounded-lg border border-pink-100 hover:bg-pink-100 transition-colors">Create New Version</button>
-                   <button className="px-4 py-2 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">Export Logs</button>
+                  <button className="px-4 py-2 bg-pink-50 text-pink-600 text-xs font-bold rounded-lg border border-pink-100 hover:bg-pink-100 transition-colors">Create New Version</button>
+                  <button className="px-4 py-2 bg-slate-50 text-slate-600 text-xs font-bold rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">Export Logs</button>
                 </div>
               </div>
               <div className="overflow-hidden flex-1">

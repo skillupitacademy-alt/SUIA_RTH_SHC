@@ -124,6 +124,7 @@ export async function saveTutorialSection(
       const patchUrl = `/api/tutorial-composer/sections/${existingTutorial.id}`;
       requestPayload = {
         content: tutorialDocument,
+        ...(typeof existingTutorial.version === 'number' ? { expectedVersion: existingTutorial.version } : {}),
       };
 
       response = await fetch(patchUrl, {

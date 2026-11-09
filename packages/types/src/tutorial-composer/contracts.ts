@@ -639,6 +639,7 @@ export type ListTutorialsResponse = z.infer<typeof ListTutorialsResponseSchema>;
 export const UpdateTutorialContentRequestSchema = z
   .object({
     content: TutorialDocumentSchema,
+    expectedVersion: z.number().int().min(1).optional(),
   })
   .strict();
 

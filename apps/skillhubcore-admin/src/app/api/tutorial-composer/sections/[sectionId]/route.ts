@@ -19,6 +19,7 @@ import { tutorialComposerService, type TutorialComposerServiceContext } from '@q
 import {
   TutorialDocumentValidationError,
   SectionNotFoundError,
+  VersionConflictError,
 } from '@quiz/types';
 import {
   authenticateRequest,
@@ -69,6 +70,10 @@ function handleServiceError(error: unknown) {
 
   if (error instanceof SectionNotFoundError) {
     return errorResponse('SECTION_NOT_FOUND', error.message, 404);
+  }
+
+  if (error instanceof VersionConflictError) {
+    return errorResponse('VERSION_CONFLICT', error.message, 409);
   }
 
   // Generic error

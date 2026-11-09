@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import {
   Plus,
   FileEdit,
@@ -112,8 +111,6 @@ const OPERATION_CARDS: OperationCard[] = [
 ];
 
 export default function TutorialBlockComposerPage() {
-  redirect('/tools/tutorial-page-content');
-
   return (
     <div className="space-y-8">
       {/* Top Header Card */}

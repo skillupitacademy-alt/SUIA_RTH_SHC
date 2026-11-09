@@ -25,6 +25,19 @@ export default function DashboardPage() {
       
 
 
+      {/* System Baseline & Metric Provenance Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-100/90 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-600">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-slate-200 text-slate-700 border border-slate-300">
+            SYSTEM BASELINE PREVIEW
+          </span>
+          <span className="font-medium text-slate-600">
+            Platform metrics displayed below reflect seed ecosystem baselines. Live telemetry connects via central observability collector.
+          </span>
+        </div>
+        <span className="text-slate-400 font-mono text-[11px]">Source: Seed Snapshot / Governance Reference</span>
+      </div>
+
       {/* Stats Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[

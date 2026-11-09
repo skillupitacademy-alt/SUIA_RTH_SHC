@@ -19,6 +19,7 @@ import {
   SectionNotFoundError,
   SectionAlreadyExistsError,
   InvalidStatusTransitionError,
+  VersionConflictError,
 } from '@quiz/types';
 import { SidebarNavigationValidatorService } from './sidebar-navigation-validator.service';
 
@@ -64,6 +65,7 @@ export interface CreateTutorialServiceInput {
  */
 export interface UpdateTutorialContentServiceInput {
   content: TutorialDocument;
+  expectedVersion?: number;
 }
 
 /**
@@ -301,12 +303,21 @@ export class TutorialComposerService {
       content: document,
     };
 
-    const updatedTutorial = await this.repository.updateTutorialContent(
-      tutorialId,
-      repositoryInput
-    );
+    const updatedTutorial = input.expectedVersion !== undefined
+      ? await this.repository.updateTutorialContentWithVersion(
+          tutorialId,
+          input.expectedVersion,
+          repositoryInput
+        )
+      : await this.repository.updateTutorialContent(
+          tutorialId,
+          repositoryInput
+        );
 
     if (!updatedTutorial) {
+      if (input.expectedVersion !== undefined) {
+        throw new VersionConflictError(input.expectedVersion, existingTutorial.version);
+      }
       throw new TutorialNotFoundError(tutorialId);
     }
 
