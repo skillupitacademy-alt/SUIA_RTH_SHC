@@ -59,6 +59,7 @@ import {
   determineLearningState as determineLearningStateImpl,
   aggregateParentState as aggregateParentStateImpl,
   calculateProgressPercentage as calculateProgressPercentageImpl,
+  countCompletedRequiredBlocks,
 } from './learning-progress.aggregation';
 import {
   validateUserId,
@@ -1158,7 +1159,7 @@ export class LearningProgressService {
       status: this.determineLearningState(record.status),
       progressPercentage,
       completedBlocks: record.completedBlocks,
-      completedBlockCount: record.completedBlocks.length,
+      completedBlockCount: countCompletedRequiredBlocks(record.completedBlocks, requiredBlocks),
       totalBlockCount: requiredBlocks.length,
       requiredBlocks, // Include canonical requirements in DTO
       blocks, // Gate 3C.1R: Per-block telemetry metrics

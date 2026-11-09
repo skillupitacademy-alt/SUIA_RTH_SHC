@@ -95,6 +95,9 @@ interface TutorialPageShellProps {
 }
 
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
+  // Sidebar publication can precede content publication. Do not start learning
+  // activity until delivery supplies both a section identity and published blocks.
+  const hasPublishedContent = Boolean(runtimeContext.sectionId && payload.content.blocks?.length);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false); // Macro 4: RSSB state
 
@@ -180,6 +183,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
   const sessionInitializedRef = useRef(false);
 
   useEffect(() => {
+    if (!hasPublishedContent) return;
     // Guard: only initialize once per component lifetime (Strict Mode safe)
     if (sessionInitializedRef.current) return;
     sessionInitializedRef.current = true;
@@ -197,10 +201,14 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
     // sessionId is now available in sessionStorage["tutorialLearningSessionId"]
     // Future phases (Step 2: VisitEvent) will read it via readTutorialLearningSessionId()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps: run exactly once on mount
+  }, [hasPublishedContent]); // Initialize once content becomes available.
 
   // Phase 2.5: Fetch learner progress and compute completed URLs
   useEffect(() => {
+    if (!hasPublishedContent) {
+      setCompletedUrls(new Set());
+      return;
+    }
     async function loadProgress() {
       try {
         const { getTutorialProgress } = await import('../runtime/tutorialTrackingService');
@@ -241,10 +249,11 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
     }
 
     void loadProgress();
-  }, [runtimeContext.learnerId, runtimeContext.hierarchy.subtopicId, payload.sidebar.topics]);
+  }, [hasPublishedContent, runtimeContext.learnerId, runtimeContext.hierarchy.subtopicId, payload.sidebar.topics]);
 
   // Phase 2.5: Track page view event (async, non-blocking)
   useEffect(() => {
+    if (!hasPublishedContent) return;
     // Fire-and-forget tracking (failure-isolated)
     void trackTutorialEvent({
       eventType: 'page_view',
@@ -253,10 +262,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
       sectionId: runtimeContext.sectionId,
       subtopicId: runtimeContext.hierarchy.subtopicId, // Required for persistence
     });
-  }, [runtimeContext.learnerId, runtimeContext.navigationNodeId, runtimeContext.sectionId, runtimeContext.hierarchy.subtopicId]);
-
-  // V2 Architecture: Render blocks[] when available
-  const hasBlocks = payload.content.blocks && payload.content.blocks.length > 0;
+  }, [hasPublishedContent, runtimeContext.learnerId, runtimeContext.navigationNodeId, runtimeContext.sectionId, runtimeContext.hierarchy.subtopicId]);
 
   // Phase 2.5: Prepare block runtime context for universal rendering
   // This provides tracking/identity boundary without modifying block content schemas
@@ -278,7 +284,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
         brand={payload.sidebar.brand}
         theme={payload.theme}
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
-        onProgressClick={() => setIsProgressSidebarOpen((current) => !current)} // Macro 4: RSSB trigger
+        onProgressClick={hasPublishedContent ? () => setIsProgressSidebarOpen((current) => !current) : undefined}
       />
       {/* B.2-R-2: 3-Column Docked Layout - LSNB | Content | RSSB */}
       <div className="flex w-full min-w-0 gap-0 bg-white">
@@ -288,7 +294,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             tree={payload.sidebar}
             activeUrl={payload.activeUrl}
             activeNavigationNodeId={runtimeContext.navigationNodeId} // Phase 2A: Canonical page identity
-            currentPageProgress={currentPageProgress} // Phase 2A: ILS-derived current page progress
+            currentPageProgress={hasPublishedContent ? currentPageProgress : null}
             // Phase 2.5: Pass actual completed URLs from learner progress
             completedUrls={completedUrls}
             // Phase 2.5: onNavigate can be used for client-side tracking
@@ -300,7 +306,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
           />
         )}
         
-        <ActiveBlockProvider containerRef={contentContainerRef}>
+        {hasPublishedContent ? <ActiveBlockProvider containerRef={contentContainerRef}>
           <ILSProvider
             navigationNodeId={runtimeContext.navigationNodeId}
             subtopicId={runtimeContext.hierarchy.subtopicId}
@@ -351,7 +357,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
                   data-auto-completion-env-value={process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION ?? 'undefined'}
                 >
                   <div ref={contentContainerRef} className="w-full space-y-6">
-                    {hasBlocks ? (
+                    {(
                       // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
                       payload.content.blocks.map((block) => {
                         // Phase 2.5: Construct block runtime context for each block
@@ -375,11 +381,6 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
                           />
                         );
                       })
-                    ) : (
-                      // Empty/Unpublished State
-                      <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
-                        Content is not published for this subtopic yet.
-                      </section>
                     )}
                   </div>
                   <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
@@ -397,7 +398,14 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
               </BlockTelemetryProvider>
             </InstructionalBlockCompletionOrchestrator>
           </ILSProvider>
-        </ActiveBlockProvider>
+        </ActiveBlockProvider> : (
+          <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+            <section role="status" className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
+              Content is not published for this subtopic yet.
+            </section>
+            <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
+          </div>
+        )}
       </div>
     </main>
   );

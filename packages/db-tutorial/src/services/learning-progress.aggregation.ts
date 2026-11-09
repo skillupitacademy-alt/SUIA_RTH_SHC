@@ -116,16 +116,24 @@ export function calculateProgressPercentage(
     return 100;
   }
 
-  const completedCount = requiredBlocks.filter((required) =>
+  const completedCount = countCompletedRequiredBlocks(completedBlocks, requiredBlocks);
+
+  const percentage = (completedCount / requiredBlocks.length) * 100;
+
+  // Clamp to 0-100
+  return Math.max(0, Math.min(100, Math.round(percentage)));
+}
+
+/** Count current requirements, not historical completions of removed/replaced blocks. */
+export function countCompletedRequiredBlocks(
+  completedBlocks: CompletedBlockRecord[],
+  requiredBlocks: Array<{ blockId: string; blockVersion: string }>
+): number {
+  return requiredBlocks.filter((required) =>
     completedBlocks.some(
       (completed) =>
         completed.blockId === required.blockId &&
         completed.blockVersion === required.blockVersion
     )
   ).length;
-
-  const percentage = (completedCount / requiredBlocks.length) * 100;
-
-  // Clamp to 0-100
-  return Math.max(0, Math.min(100, Math.round(percentage)));
 }

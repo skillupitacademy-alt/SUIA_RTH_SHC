@@ -396,12 +396,7 @@ export function TutorialLeftSidebar({ tree, activeUrl, activeNavigationNodeId, c
     >
       <header className="flex shrink-0 items-center gap-4 px-6 pb-5 pt-8">
         <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] text-[20px] font-extrabold text-white" style={{ backgroundColor: tree.theme.primary }}>
-          {tree.brand.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tree.brand.logoUrl} alt={`${tree.brand.name} logo`} className="h-full w-full object-contain" />
-          ) : (
-            tree.brand.shortName
-          )}
+          {tree.brand.shortName === 'SUIA' ? 'SA' : tree.brand.shortName}
         </div>
         <div className="min-w-0">
           <h1 className="m-0 text-[22px] font-extrabold leading-[1.15] tracking-normal text-[#071f63]">{tree.brand.name}</h1>

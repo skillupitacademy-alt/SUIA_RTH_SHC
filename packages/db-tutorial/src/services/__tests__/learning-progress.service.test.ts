@@ -388,6 +388,59 @@ describe('LearningProgressService', () => {
   // IDENTITY VALIDATION
   // ============================================================
 
+  describe('Current document completion summary', () => {
+    const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+
+    it('excludes removed blocks from the counter without deleting completion history', async () => {
+      const record = await mockRepo.createProgress({
+        userId: identity.userId, navigationNodeId: 'node-1', subtopicId: 'subtopic-1',
+      });
+      record.completedBlocks = ['removed-a', 'removed-b', 'removed-c'].map((blockId) => ({
+        blockId, blockVersion: 'D1', completedAt: new Date().toISOString(),
+      }));
+      const history = structuredClone(record.completedBlocks);
+
+      const result = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+
+      expect(result.completedBlockCount).toBe(0);
+      expect(result.totalBlockCount).toBe(1);
+      expect(result.progressPercentage).toBe(0);
+      expect(result.completedBlocks).toEqual(history);
+      expect((await mockRepo.getProgress(identity.userId, 'node-1'))?.completedBlocks).toEqual(history);
+    });
+
+    it('counts a matching current block once even with duplicate and historical completions', async () => {
+      const record = await mockRepo.createProgress({
+        userId: identity.userId, navigationNodeId: 'node-1', subtopicId: 'subtopic-1',
+      });
+      record.completedBlocks = ['block-D1', 'block-D1', 'removed-a', 'removed-b'].map((blockId) => ({
+        blockId, blockVersion: 'D1', completedAt: new Date().toISOString(),
+      }));
+
+      const result = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+
+      expect(result.completedBlockCount).toBe(1);
+      expect(result.totalBlockCount).toBe(1);
+      expect(result.progressPercentage).toBe(100);
+      expect(result.completedBlocks).toHaveLength(4);
+    });
+
+    it('requires the current block version as well as its ID', async () => {
+      const record = await mockRepo.createProgress({
+        userId: identity.userId, navigationNodeId: 'node-1', subtopicId: 'subtopic-1',
+      });
+      record.completedBlocks = [{
+        blockId: 'block-D1', blockVersion: 'previous-version', completedAt: new Date().toISOString(),
+      }];
+
+      const result = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+
+      expect(result.completedBlockCount).toBe(0);
+      expect(result.progressPercentage).toBe(0);
+      expect(result.completedBlocks).toHaveLength(1);
+    });
+  });
+
   describe('Identity Validation', () => {
     const testIdentity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
     

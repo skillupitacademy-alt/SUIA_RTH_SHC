@@ -51,8 +51,9 @@ export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick, onPr
           className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dfe7f1] transition-colors hover:bg-slate-50" 
           style={{ color: theme.secondary }}
           onClick={onProgressClick}
+          disabled={!onProgressClick}
           aria-label="Learning progress"
-          title="Learning Progress"
+          title={onProgressClick ? 'Learning Progress' : 'Progress is available after content is published'}
         >
           <BarChart3 className="h-4 w-4" />
         </button>
