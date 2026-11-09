@@ -20,26 +20,51 @@ export function AdminLockScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cleanupUnauthorizedSession = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-brand': 'skillhubcore',
+        },
+        credentials: 'include',
+      });
+    } catch {
+      // Fail-safe cleanup
+    }
+  }, []);
+
   const handleUnlock = useCallback(
     async (password: string) => {
-      if (!password || !user) return;
+      if (!password) return;
+
+      // 1. Strict validation of locked session identity (fail closed)
+      if (
+        !user ||
+        typeof user.id !== 'string' ||
+        user.id.trim().length === 0 ||
+        typeof user.email !== 'string' ||
+        user.email.trim().length === 0
+      ) {
+        const msg = 'Locked session identity is missing or invalid';
+        setError(msg);
+        throw new Error(msg);
+      }
+
+      const lockedId = user.id.trim();
+      const lockedEmail = user.email.trim().toLowerCase();
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const email = user.email ?? '';
-        if (email.length === 0) {
-          setError('Missing admin email');
-          throw new Error('Missing admin email');
-        }
-
         clientLogger.warn('[AUTH_FLOW][SHC_LOCK_SCREEN][UNLOCK_SUBMIT]', {
           step: 'submit',
-          emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
+          emailDomain: lockedEmail.includes('@') ? lockedEmail.split('@')[1] : 'unknown',
         });
 
-        // Reauthenticate against authentic SHC login BFF
+        // 2. Reauthenticate against authentic SHC login BFF
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
@@ -47,7 +72,7 @@ export function AdminLockScreen() {
             'x-brand': 'skillhubcore',
           },
           body: JSON.stringify({
-            email,
+            email: lockedEmail,
             password,
             platform: 'skillhubcore',
           }),
@@ -55,62 +80,94 @@ export function AdminLockScreen() {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Incorrect master password' }));
-          throw new Error(errorData.error || errorData.message || 'Incorrect master password');
+          throw new Error('Invalid account password');
         }
 
-        const data = await response.json();
-        if (!data || !data.user) {
+        // 3. Validate response shape before reading properties
+        const data = await response.json().catch(() => null);
+        if (!data || typeof data !== 'object' || !data.user || typeof data.user !== 'object') {
+          await cleanupUnauthorizedSession();
           throw new Error('Invalid authentication response');
         }
 
-        // Verify reauthenticated identity matches the locked user
-        if (user.id && data.user.id && data.user.id !== user.id) {
-          throw new Error('Reauthenticated user does not match the locked session');
+        const resUser = data.user as Record<string, unknown>;
+
+        // 4. Require valid, nonempty user.id and user.email in response
+        if (typeof resUser.id !== 'string' || resUser.id.trim().length === 0) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication response is missing user ID');
         }
-        if (user.email && data.user.email && data.user.email.toLowerCase() !== user.email.toLowerCase()) {
+
+        if (typeof resUser.email !== 'string' || resUser.email.trim().length === 0) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication response is missing user email');
+        }
+
+        const resId = resUser.id.trim();
+        const resEmail = resUser.email.trim().toLowerCase();
+
+        // 5. Strict same-account verification: reject mismatch and purge session side effects
+        if (resId !== lockedId || resEmail !== lockedEmail) {
+          await cleanupUnauthorizedSession();
           throw new Error('Reauthenticated user does not match the locked session');
         }
 
-        // Reject inactive or non-admin roles
-        const role = (data.user.role || '').toLowerCase();
-        const isAdminRole = role === 'admin' || role === 'super_admin' || data.user.isAdmin === true;
-        if (!isAdminRole) {
+        // 6. Strict administrator authorization: role must be explicitly authorized
+        if (typeof resUser.role !== 'string' || resUser.role.trim().length === 0) {
+          await cleanupUnauthorizedSession();
           throw new Error('Insufficient permissions: Administrator role required');
+        }
+
+        const normalizedRole = resUser.role.trim().toLowerCase();
+        if (normalizedRole !== 'admin' && normalizedRole !== 'super_admin') {
+          await cleanupUnauthorizedSession();
+          throw new Error('Insufficient permissions: Administrator role required');
+        }
+
+        // Contradictory claims: if isAdmin is boolean and false, reject
+        if (typeof resUser.isAdmin === 'boolean' && resUser.isAdmin === false) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication contract violation: Contradictory administrator status');
         }
 
         clientLogger.warn('[AUTH_FLOW][SHC_LOCK_SCREEN][UNLOCK_SUCCESS]', {
           step: 'success',
-          userId: data.user.id,
+          userId: resId,
         });
 
-        // Update auth store with confirmed refreshed identity
+        // 7. Update auth store with confirmed refreshed identity (no fallbacks or synthesized defaults)
+        const confirmedName =
+          typeof resUser.name === 'string' && resUser.name.trim().length > 0
+            ? resUser.name.trim()
+            : (typeof user.name === 'string' && user.name.trim().length > 0 ? user.name.trim() : resEmail);
+
         login({
-          id: data.user.id ?? user.id,
-          email: data.user.email ?? user.email,
-          name: data.user.name ?? data.user.email ?? user.name ?? 'Admin User',
-          isAdmin: data.user.isAdmin ?? true,
-          role: data.user.role ?? 'admin',
+          id: resId,
+          email: resEmail,
+          name: confirmedName,
+          isAdmin: true,
+          role: resUser.role.trim(),
           onboarded: true,
         });
 
         unlock();
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Incorrect master password';
+        const message = err instanceof Error ? err.message : 'Invalid account password';
         setError(message);
-        clientLogger.error('Lock screen unlock failed', { error: message });
+        clientLogger.error('Lock screen unlock failed', { reason: 'authentication_failed' });
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [user, login, unlock]
+    [user, login, unlock, cleanupUnauthorizedSession]
   );
 
   const handleSwitchAccount = useCallback(() => {
+    void cleanupUnauthorizedSession();
     logout();
     window.location.href = '/login';
-  }, [logout]);
+  }, [logout, cleanupUnauthorizedSession]);
 
   return (
     <SharedAdminLockScreen

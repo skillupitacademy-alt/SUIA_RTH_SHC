@@ -54,7 +54,7 @@ describe('SkillUpAdminLockScreen Adapter (SUIA Compatibility)', () => {
       />
     );
 
-    const input = screen.getByLabelText(/master password/i);
+    const input = screen.getByLabelText(/account password/i);
     fireEvent.change(input, { target: { value: 'StaffSecret123' } });
 
     const submitBtn = screen.getByRole('button', { name: /unlock terminal/i });

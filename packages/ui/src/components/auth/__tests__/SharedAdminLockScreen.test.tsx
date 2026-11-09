@@ -59,7 +59,7 @@ describe('SharedAdminLockScreen Presentation Component', () => {
 
   it('autofocuses the password input on mount', async () => {
     render(<SharedAdminLockScreen {...defaultProps} />);
-    const passwordInput = screen.getByLabelText(/master password/i);
+    const passwordInput = screen.getByLabelText(/account password/i);
 
     await waitFor(() => {
       expect(document.activeElement).toBe(passwordInput);
@@ -70,7 +70,7 @@ describe('SharedAdminLockScreen Presentation Component', () => {
     const onUnlockMock = vi.fn().mockResolvedValue(undefined);
     render(<SharedAdminLockScreen {...defaultProps} onUnlock={onUnlockMock} />);
 
-    const passwordInput = screen.getByLabelText(/master password/i);
+    const passwordInput = screen.getByLabelText(/account password/i);
     fireEvent.change(passwordInput, { target: { value: 'SecretPassword123!' } });
 
     const submitBtn = screen.getByRole('button', { name: /unlock terminal/i });
@@ -84,17 +84,17 @@ describe('SharedAdminLockScreen Presentation Component', () => {
   });
 
   it('captures async rejection from onUnlock and renders polite error alert', async () => {
-    const onUnlockMock = vi.fn().mockRejectedValue(new Error('Incorrect master password'));
+    const onUnlockMock = vi.fn().mockRejectedValue(new Error('Invalid account password'));
     render(<SharedAdminLockScreen {...defaultProps} onUnlock={onUnlockMock} />);
 
-    const passwordInput = screen.getByLabelText(/master password/i);
+    const passwordInput = screen.getByLabelText(/account password/i);
     fireEvent.change(passwordInput, { target: { value: 'WrongPassword' } });
 
     const submitBtn = screen.getByRole('button', { name: /unlock terminal/i });
     fireEvent.click(submitBtn);
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Incorrect master password');
+    expect(alert).toHaveTextContent('Invalid account password');
     expect(alert).toHaveAttribute('aria-live', 'polite');
   });
 

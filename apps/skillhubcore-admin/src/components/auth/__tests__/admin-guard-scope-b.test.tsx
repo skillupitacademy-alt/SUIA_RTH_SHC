@@ -231,7 +231,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
     });
   });
 
-  // --- Tasks 6–12: SHC Lock Screen Authentication & Safe Unlock Flow ---
+  // --- Tasks 6–12 & Scope B1 Security Corrections: SHC Lock Screen Authentication & Safe Unlock Flow ---
   describe('SHC AdminLockScreen — Safe Re-authentication and Unlock Flow', () => {
     it('mounts lock screen with password field and focus trap when session is locked', () => {
       useAuthStore.getState().login({
@@ -249,7 +249,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      expect(screen.getByPlaceholderText('Enter master password')).toBeDefined();
+      expect(screen.getByPlaceholderText('Enter account password')).toBeDefined();
       expect(screen.getByText('SkillHubCore Security Protocol')).toBeDefined();
       expect(screen.getByText('admin@skillhubcore.in')).toBeDefined();
       expect(screen.getByText('Unlock Terminal')).toBeDefined();
@@ -286,7 +286,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      const passwordInput = screen.getByPlaceholderText('Enter master password');
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
       fireEvent.change(passwordInput, { target: { value: 'testing' } });
 
       const unlockBtn = screen.getByText('Unlock Terminal');
@@ -337,20 +337,20 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      const passwordInput = screen.getByPlaceholderText('Enter master password');
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
       fireEvent.change(passwordInput, { target: { value: 'wrong-password' } });
 
       const unlockBtn = screen.getByText('Unlock Terminal');
       fireEvent.click(unlockBtn);
 
       await waitFor(() => {
-        expect(screen.getByText('Invalid credentials')).toBeDefined();
+        expect(screen.getByText('Invalid account password')).toBeDefined();
         // Crucial: terminal MUST remain locked
         expect(useAuthStore.getState().isLocked).toBe(true);
       });
     });
 
-    it('rejects identity mismatch and keeps terminal locked (Task 9)', async () => {
+    it('rejects identity mismatch and purges session side effects (Task 9)', async () => {
       useAuthStore.getState().login({
         id: 'admin-1',
         name: 'Admin User',
@@ -360,19 +360,25 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
       });
       useAuthStore.getState().lock();
 
-      // Return a completely different admin ID
-      const fetchMock = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          user: {
-            id: 'admin-attacker-99',
-            email: 'attacker@other.in',
-            role: 'admin',
-            isAdmin: true,
-          },
-        }),
-      });
+      // Login returns different admin ID (HTTP 200 with cookies), logout cleans up
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-attacker-99',
+              email: 'attacker@other.in',
+              role: 'admin',
+              isAdmin: true,
+            },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true }),
+        });
       vi.stubGlobal('fetch', fetchMock);
 
       render(
@@ -381,7 +387,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      const passwordInput = screen.getByPlaceholderText('Enter master password');
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
       const unlockBtn = screen.getByText('Unlock Terminal');
@@ -390,10 +396,19 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
       await waitFor(() => {
         expect(screen.getByText('Reauthenticated user does not match the locked session')).toBeDefined();
         expect(useAuthStore.getState().isLocked).toBe(true);
+        // Assert cleanup logout was dispatched to purge newly issued cookies
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/auth/logout',
+          expect.objectContaining({
+            method: 'POST',
+            credentials: 'include',
+            headers: expect.objectContaining({ 'x-brand': 'skillhubcore' }),
+          })
+        );
       });
     });
 
-    it('rejects non-admin role returned from login (Task 10)', async () => {
+    it('rejects missing response user ID and purges session side effects', async () => {
       useAuthStore.getState().login({
         id: 'admin-1',
         name: 'Admin User',
@@ -403,18 +418,19 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
       });
       useAuthStore.getState().lock();
 
-      const fetchMock = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          user: {
-            id: 'admin-1',
-            email: 'admin@skillhubcore.in',
-            role: 'student', // non-admin role
-            isAdmin: false,
-          },
-        }),
-      });
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              email: 'admin@skillhubcore.in',
+              role: 'admin',
+              isAdmin: true,
+            },
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
       vi.stubGlobal('fetch', fetchMock);
 
       render(
@@ -423,15 +439,251 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      const passwordInput = screen.getByPlaceholderText('Enter master password');
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
 
-      const unlockBtn = screen.getByText('Unlock Terminal');
-      fireEvent.click(unlockBtn);
+      await waitFor(() => {
+        expect(screen.getByText('Authentication response is missing user ID')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+      });
+    });
+
+    it('rejects missing response email and purges session side effects', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-1',
+              role: 'admin',
+              isAdmin: true,
+            },
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Authentication response is missing user email')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+      });
+    });
+
+    it('rejects missing locked-account identity without calling login endpoint', async () => {
+      useAuthStore.getState().login({
+        id: '',
+        name: 'Empty Admin',
+        email: '',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Locked session identity is missing or invalid')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).not.toHaveBeenCalled();
+      });
+    });
+
+    it('rejects non-admin role returned from login even if isAdmin: true (Task 10)', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-1',
+              email: 'admin@skillhubcore.in',
+              role: 'student', // non-admin role
+              isAdmin: true, // Should be IGNORED because role is not admin/super_admin
+            },
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
 
       await waitFor(() => {
         expect(screen.getByText('Insufficient permissions: Administrator role required')).toBeDefined();
         expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+      });
+    });
+
+    it('rejects missing or malformed non-string role', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-1',
+              email: 'admin@skillhubcore.in',
+              role: 12345, // invalid type
+              isAdmin: true,
+            },
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Insufficient permissions: Administrator role required')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+      });
+    });
+
+    it('rejects contradictory administrator claims (admin role with isAdmin: false)', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'admin-1',
+              email: 'admin@skillhubcore.in',
+              role: 'admin',
+              isAdmin: false, // Contradictory!
+            },
+          }),
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Authentication contract violation: Contradictory administrator status')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
+      });
+    });
+
+    it('rejects HTTP 200 with incomplete data (missing user property)', async () => {
+      useAuthStore.getState().login({
+        id: 'admin-1',
+        name: 'Admin User',
+        email: 'admin@skillhubcore.in',
+        role: 'admin',
+        isAdmin: true,
+      });
+      useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true }), // Missing user object
+        })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+      vi.stubGlobal('fetch', fetchMock);
+
+      render(
+        <AdminGuard>
+          <div data-testid="protected-content">Secret Content</div>
+        </AdminGuard>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(screen.getByText('Unlock Terminal'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid authentication response')).toBeDefined();
+        expect(useAuthStore.getState().isLocked).toBe(true);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/logout', expect.anything());
       });
     });
 
@@ -454,7 +706,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         </AdminGuard>
       );
 
-      const passwordInput = screen.getByPlaceholderText('Enter master password');
+      const passwordInput = screen.getByPlaceholderText('Enter account password');
       fireEvent.change(passwordInput, { target: { value: 'testing' } });
 
       const unlockBtn = screen.getByText('Unlock Terminal');
@@ -466,7 +718,7 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
       });
     });
 
-    it('switch account button logs out and redirects to /login (Task 11)', async () => {
+    it('switch account button purges session cookies, logs out, and redirects to /login (Task 11)', async () => {
       useAuthStore.getState().login({
         id: 'admin-1',
         name: 'Admin User',
@@ -475,6 +727,13 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
         isAdmin: true,
       });
       useAuthStore.getState().lock();
+
+      const fetchMock = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true }),
+      });
+      vi.stubGlobal('fetch', fetchMock);
 
       render(
         <AdminGuard>
@@ -486,6 +745,13 @@ describe('AdminGuard & SHC Lock Screen — Scope B1 Final Closure', () => {
       fireEvent.click(switchBtn);
 
       await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/auth/logout',
+          expect.objectContaining({
+            method: 'POST',
+            credentials: 'include',
+          })
+        );
         expect(useAuthStore.getState().isAuthenticated).toBe(false);
         expect(window.location.href).toBe('/login');
       });

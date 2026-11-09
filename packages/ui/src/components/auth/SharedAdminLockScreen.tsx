@@ -21,8 +21,8 @@ export function SharedAdminLockScreen({
   onLogout,
   isLoading: externalIsLoading,
   error: externalError,
-  passwordLabel = 'Master Password',
-  passwordPlaceholder = 'Enter master password',
+  passwordLabel = 'Account Password',
+  passwordPlaceholder = 'Enter account password',
   className,
 }: SharedAdminLockScreenProps) {
   const [password, setPassword] = useState('');

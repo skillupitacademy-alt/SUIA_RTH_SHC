@@ -22,94 +22,155 @@ export function AdminLockScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cleanupUnauthorizedSession = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-platform': 'realtutorialhub',
+        },
+        credentials: 'include',
+      });
+    } catch {
+      // Fail-safe session cleanup
+    }
+  }, []);
+
   const handleUnlock = useCallback(
     async (password: string) => {
-      if (!password || !user) return;
+      if (!password) return;
+
+      // 1. Strict validation of locked session identity (fail closed)
+      if (
+        !user ||
+        typeof user.id !== 'string' ||
+        user.id.trim().length === 0 ||
+        typeof user.email !== 'string' ||
+        user.email.trim().length === 0
+      ) {
+        const msg = 'Locked session identity is missing or invalid';
+        setError(msg);
+        throw new Error(msg);
+      }
+
+      const lockedId = user.id.trim();
+      const lockedEmail = user.email.trim().toLowerCase();
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const email = user.email ?? '';
-        if (email.length === 0) {
-          setError('Missing admin email');
-          throw new Error('Missing admin email');
-        }
-
         clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_SUBMIT]', {
           step: 'submit',
-          emailDomain: email.includes('@') ? email.split('@')[1] : 'unknown',
+          emailDomain: lockedEmail.includes('@') ? lockedEmail.split('@')[1] : 'unknown',
         });
 
-        const { user: refreshedUser, expiresAt } = await loginPortalSession({
-          email,
-          password,
-          platform: 'realtutorialhub',
-          portalIdentity: 'admin',
-          portalName: 'RealTutorialHub Admin',
-          allowedRoles: ['admin', 'super_admin'],
-        });
+        // 2. Reauthenticate via trusted portal session helper
+        let refreshedUser: { id?: string; email?: string; name?: string; role?: string; isAdmin?: boolean; onboarded?: boolean } | null = null;
+        let expiresAt: string | null = null;
 
-        clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_RESPONSE]', {
-          step: 'response',
-          hasUser: refreshedUser !== null && refreshedUser !== undefined,
-          expiresAt: expiresAt ?? null,
-        });
+        try {
+          const result = await loginPortalSession({
+            email: lockedEmail,
+            password,
+            platform: 'realtutorialhub',
+            portalIdentity: 'admin',
+            portalName: 'RealTutorialHub Admin',
+            allowedRoles: ['admin', 'super_admin'],
+          });
+          refreshedUser = result.user;
+          expiresAt = result.expiresAt;
+        } catch {
+          throw new Error('Invalid account password');
+        }
 
-        if (
-          typeof refreshedUser.id !== 'string' ||
-          refreshedUser.id.length === 0 ||
-          typeof refreshedUser.email !== 'string' ||
-          refreshedUser.email.length === 0
-        ) {
+        // 3. Validate response shape before reading properties
+        const untypedUser: unknown = refreshedUser;
+        if (typeof untypedUser !== 'object' || untypedUser === null) {
+          await cleanupUnauthorizedSession();
           throw new Error('Invalid authentication response');
         }
 
-        // Strict identity check: reauthenticated user must match locked user
-        if (typeof user.id === 'string' && user.id.length > 0 && refreshedUser.id !== user.id) {
-          throw new Error('Reauthenticated user does not match the locked session');
+        // 4. Require valid, nonempty user.id and user.email in response
+        if (typeof refreshedUser.id !== 'string' || refreshedUser.id.trim().length === 0) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication response is missing user ID');
         }
-        if (typeof user.email === 'string' && user.email.length > 0 && refreshedUser.email.toLowerCase() !== user.email.toLowerCase()) {
+
+        if (typeof refreshedUser.email !== 'string' || refreshedUser.email.trim().length === 0) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication response is missing user email');
+        }
+
+        const resId = refreshedUser.id.trim();
+        const resEmail = refreshedUser.email.trim().toLowerCase();
+
+        // 5. Strict same-account verification: reject mismatch and purge session side effects
+        if (resId !== lockedId || resEmail !== lockedEmail) {
+          await cleanupUnauthorizedSession();
           throw new Error('Reauthenticated user does not match the locked session');
         }
 
-        // Enforce admin privilege
-        const role = typeof refreshedUser.role === 'string' ? refreshedUser.role.toLowerCase() : '';
-        const isAdminRole = role === 'admin' || role === 'super_admin' || refreshedUser.isAdmin === true;
-        if (!isAdminRole) {
+        // 6. Strict administrator authorization: role must be explicitly authorized
+        if (typeof refreshedUser.role !== 'string' || refreshedUser.role.trim().length === 0) {
+          await cleanupUnauthorizedSession();
           throw new Error('Insufficient permissions: Administrator role required');
         }
 
-        // Update local auth state with confirmed refreshed user
+        const normalizedRole = refreshedUser.role.trim().toLowerCase();
+        if (normalizedRole !== 'admin' && normalizedRole !== 'super_admin') {
+          await cleanupUnauthorizedSession();
+          throw new Error('Insufficient permissions: Administrator role required');
+        }
+
+        // Contradictory claims: if isAdmin is boolean and false, reject
+        if (typeof refreshedUser.isAdmin === 'boolean' && refreshedUser.isAdmin === false) {
+          await cleanupUnauthorizedSession();
+          throw new Error('Authentication contract violation: Contradictory administrator status');
+        }
+
+        clientLogger.warn('[AUTH_FLOW][ADMIN_LOCK_SCREEN][UNLOCK_SUCCESS]', {
+          step: 'success',
+          userId: resId,
+        });
+
+        // 7. Update local auth state with confirmed refreshed identity (no fallbacks or synthesized defaults)
+        const confirmedName =
+          typeof refreshedUser.name === 'string' && refreshedUser.name.trim().length > 0
+            ? refreshedUser.name.trim()
+            : (typeof user.name === 'string' && user.name.trim().length > 0 ? user.name.trim() : 'Admin User');
+
         login(
           {
-            id: refreshedUser.id,
-            email: refreshedUser.email,
-            name: refreshedUser.name ?? user.name ?? 'Admin User',
-            isAdmin: refreshedUser.isAdmin ?? true,
-            role: refreshedUser.role ?? 'admin',
-            onboarded: refreshedUser.onboarded ?? true,
+            id: resId,
+            email: resEmail,
+            name: confirmedName,
+            isAdmin: true,
+            role: refreshedUser.role.trim(),
+            onboarded: typeof refreshedUser.onboarded === 'boolean' ? refreshedUser.onboarded : true,
           },
           expiresAt
         );
 
         unlock();
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Incorrect master password';
+        const message = err instanceof Error ? err.message : 'Invalid account password';
         setError(message);
-        clientLogger.error('Lock screen unlock failed', { error: message });
+        clientLogger.error('Lock screen unlock failed', { reason: 'authentication_failed' });
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [user, login, unlock]
+    [user, login, unlock, cleanupUnauthorizedSession]
   );
 
   const handleSwitchAccount = useCallback(() => {
+    void cleanupUnauthorizedSession();
     logout();
     window.location.href = '/login';
-  }, [logout]);
+  }, [logout, cleanupUnauthorizedSession]);
 
   return (
     <SharedAdminLockScreen
