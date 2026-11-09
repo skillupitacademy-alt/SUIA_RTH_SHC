@@ -3,3 +3,4 @@
 -- Guarded by accidental-data-loss-prevention: requires explicit user authorization before execution against production.
 
 DROP TABLE IF EXISTS "public"."tutorial_page_content_v2" CASCADE;
+

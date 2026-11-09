@@ -122,10 +122,10 @@ import * as eventOutboxModule from './event-outbox';
 
 export const schema = {
   ...enums,
-  
+
   // Project AI Persistence
   ...projectAiPersistenceModule,
-  
+
   // Phase 1 P0: Modular Tutorial System
   ...enumsModular,
   ...tutorialSectionsModule,
@@ -142,17 +142,17 @@ export const schema = {
   ...aiGenerationMetricsModule,
   ...tutorialSidebarV2Module,
   // REMOVED: tutorialPageContentV2Module (legacy - dropped)
-  
+
   // Phase 1 P0: Gap Remediation - Analytics
   ...analyticsLearningMetricsModule,
   ...analyticsArchitecturePerformanceModule,
   ...analyticsBrandBusinessModule,
-  
+
   // Phase 2B: Layman Hardening
   ...laymanAuditLogsModule,
   ...laymanPromptHistoryModule,
   ...laymanContentRevisionsModule,
-  
+
   // Legacy System (Preserved for Migration)
   // REMOVED: tutorialContentModule (legacy - dropped Phase B)
   ...tutorialDomainsModule,

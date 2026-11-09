@@ -270,9 +270,8 @@ function IntroductionI1View({
                       theme={theme}
                       elevation="dashboard"
                       hoverable={false}
-                      className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${
-                        card.highlight ? 'ring-2 ring-offset-2' : ''
-                      }`}
+                      className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${card.highlight ? 'ring-2 ring-offset-2' : ''
+                        }`}
                       style={
                         card.highlight
                           ? { borderColor: primary, backgroundColor: 'white' }
@@ -281,9 +280,8 @@ function IntroductionI1View({
                     >
                       <div className="h-10 flex items-center justify-center">
                         <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                            card.highlight ? '' : 'bg-opacity-80'
-                          }`}
+                          className={`w-9 h-9 rounded-full flex items-center justify-center ${card.highlight ? '' : 'bg-opacity-80'
+                            }`}
                           style={{ backgroundColor: card.highlight ? withAlpha(primary, '14') : getThemeColor(theme, 'gray', 200), color: card.highlight ? primary : getThemeColor(theme, 'gray', 500) }}
                         >
                           <IconComponent className="h-5 w-5" />
