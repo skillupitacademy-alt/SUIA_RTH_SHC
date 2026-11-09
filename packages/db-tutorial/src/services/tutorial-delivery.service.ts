@@ -210,22 +210,23 @@ export class TutorialDeliveryService {
     }
 
     // Filter by publication status (default: only published)
+    // For ordinary learner access, ONLY status 'deployed' is delivered.
+    // 'approved' is an internal editorial review status and must not be delivered to learners.
     if (!includeUnpublished) {
       conditions.push(
-        inArray(tutorialSections.status, ['approved', 'deployed'])
+        eq(tutorialSections.status, 'deployed')
       );
     }
 
     // Phase 1: Filter by brand visibility
-    // Tutorial visible if:
-    // 1. brandId = 'shared' (universal content)
-    // 2. brandId = requested brand (brand-specific)
-    // 3. brandVisibility = 'shared_visible' (cross-brand visible)
+    // Tutorial visible only if:
+    // 1. brandId = requested brand (exact brand-specific override)
+    // 2. brandId = 'shared' (universal canonical content)
+    // Cross-brand access is strictly forbidden (e.g. skillup content never returned to realtutorialhub).
     conditions.push(
       or(
-        eq(tutorialSections.brandId, 'shared'),
         eq(tutorialSections.brandId, brandId),
-        eq(tutorialSections.brandVisibility, 'shared_visible')
+        eq(tutorialSections.brandId, 'shared')
       )!
     );
 
@@ -268,15 +269,28 @@ export class TutorialDeliveryService {
     }
 
     // Protection against Save as Draft altering learner-visible content:
-    // When tutorial is deployed, deliver the frozen published snapshot if available
+    // When tutorial is deployed, deliver the frozen published snapshot if available.
     let contentToDeliver = rawTutorial.content;
     let versionToDeliver = rawTutorial.version;
 
-    if (rawTutorial.status === 'deployed') {
+    if (rawTutorial.status === 'deployed' && !includeUnpublished) {
       const publishedSnapshot = await this.repository.getLatestPublishedVersion(rawTutorial.id);
       if (publishedSnapshot && publishedSnapshot.content) {
         contentToDeliver = publishedSnapshot.content as any;
         versionToDeliver = publishedSnapshot.version;
+      } else if (rawTutorial.version > 1) {
+        // Draft isolation invariant: If tutorial version > 1 and snapshot is missing,
+        // we must not fall back to the working draft (which contains unverified author edits).
+        console.error(
+          `[TutorialDeliveryService] Draft isolation violation prevented: tutorial ${rawTutorial.id} is at working version ${rawTutorial.version} but published snapshot is missing.`
+        );
+        return {
+          subtopicId,
+          subtopicSlug: subtopicMetadata.slug,
+          subtopicName: subtopicMetadata.name,
+          brandId,
+          tutorial: null,
+        };
       }
     }
 
@@ -341,9 +355,9 @@ export class TutorialDeliveryService {
    */
   async getSingleTutorialById(
     tutorialId: string,
-    options: { brandId?: Brand } = {}
+    options: { brandId?: Brand | string; preview?: boolean } = {}
   ): Promise<DeliveredTutorial> {
-    const { brandId = 'shared' } = options;
+    const { brandId = 'shared', preview = false } = options;
 
     const [rawTutorial] = await db
       .select({
@@ -367,27 +381,48 @@ export class TutorialDeliveryService {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // Verify tutorial is published and not deleted
+    // Verify tutorial is not soft-deleted
     if (rawTutorial.deletedAt) {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    if (!['approved', 'deployed'].includes(rawTutorial.status)) {
+    // Status gate:
+    // When preview is false (ordinary learner delivery), status MUST be 'deployed'.
+    // Status 'approved' is an editorial review stage and is NOT delivered to learners.
+    if (!preview && rawTutorial.status !== 'deployed') {
       throw new TutorialNotFoundError(tutorialId);
     }
 
-    // Verify brand access
+    // Brand access gate:
+    // Only exact tenant match or canonical shared content.
+    // Competing tenant content is strictly denied.
     const hasAccess =
       rawTutorial.brandId === 'shared' ||
-      rawTutorial.brandId === brandId ||
-      rawTutorial.brandVisibility === 'shared_visible';
+      rawTutorial.brandId === brandId;
 
     if (!hasAccess) {
       throw new TutorialNotFoundError(tutorialId);
     }
 
+    // Content resolution:
+    // If deployed and not in preview mode, deliver the immutable published snapshot.
+    let contentToDeliver = rawTutorial.content;
+    let versionToDeliver = rawTutorial.version;
+
+    if (rawTutorial.status === 'deployed' && !preview) {
+      const publishedSnapshot = await this.repository.getLatestPublishedVersion(rawTutorial.id);
+      if (publishedSnapshot && publishedSnapshot.content) {
+        contentToDeliver = publishedSnapshot.content as any;
+        versionToDeliver = publishedSnapshot.version;
+      } else if (rawTutorial.version > 1) {
+        throw new Error(
+          `[TutorialDeliveryService] Published snapshot missing for deployed tutorial ${tutorialId} (version ${rawTutorial.version})`
+        );
+      }
+    }
+
     // Validate content
-    const validationResult = TutorialDocumentSchema.safeParse(rawTutorial.content);
+    const validationResult = TutorialDocumentSchema.safeParse(contentToDeliver);
 
     if (!validationResult.success) {
       console.error('[TutorialDeliveryService] Schema validation failed for single tutorial', {
@@ -417,7 +452,7 @@ export class TutorialDeliveryService {
       brandId: rawTutorial.brandId as string,
       orderIndex: rawTutorial.orderIndex,
       content: sanitizationResult.sanitized, // Use sanitized content
-      version: rawTutorial.version,
+      version: versionToDeliver,
       language: rawTutorial.language,
       publishedAt: rawTutorial.publishedAt,
     };

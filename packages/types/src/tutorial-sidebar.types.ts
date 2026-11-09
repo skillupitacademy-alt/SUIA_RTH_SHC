@@ -73,17 +73,102 @@ export function registerTenantTheme(tenantId: string, theme: BrandTutorialTheme)
 }
 
 /**
+ * Complete runtime configuration for a recognized platform tenant
+ */
+export interface TenantConfig {
+  id: string;
+  name: string;
+  shortName: string;
+  tagline: string;
+  logoUrl?: string;
+  theme: BrandTutorialTheme;
+  hostnames?: string[];
+  isActive: boolean;
+}
+
+export const TENANT_REGISTRY: Record<string, TenantConfig> = {
+  skillup: {
+    id: 'skillup',
+    name: 'SkillUp IT Academy',
+    shortName: 'SUIA',
+    tagline: 'Build Skills That Move Careers',
+    logoUrl: '/logos/skillup.svg',
+    theme: BRAND_TUTORIAL_THEMES.skillup,
+    hostnames: ['user.skillupitacademy.com', 'admin.skillupitacademy.com', 'skillup.localhost'],
+    isActive: true,
+  },
+  realtutorialhub: {
+    id: 'realtutorialhub',
+    name: 'RealTutorialHub',
+    shortName: 'RTH',
+    tagline: 'Learn Smarter, Not Harder',
+    logoUrl: '/logos/realtutorialhub.svg',
+    theme: BRAND_TUTORIAL_THEMES.realtutorialhub,
+    hostnames: ['user.realtutorialhub.com', 'admin.realtutorialhub.com', 'realtutorialhub.localhost'],
+    isActive: true,
+  },
+  rth: {
+    id: 'rth',
+    name: 'RealTutorialHub',
+    shortName: 'RTH',
+    tagline: 'Learn Smarter, Not Harder',
+    logoUrl: '/logos/realtutorialhub.svg',
+    theme: BRAND_TUTORIAL_THEMES.realtutorialhub,
+    hostnames: ['user.realtutorialhub.com', 'admin.realtutorialhub.com', 'realtutorialhub.localhost'],
+    isActive: true,
+  },
+  shared: {
+    id: 'shared',
+    name: 'SkillHubCore',
+    shortName: 'SHC',
+    tagline: 'Central Educational Platform',
+    theme: BRAND_TUTORIAL_THEMES.skillup,
+    isActive: true,
+  },
+};
+
+/**
+ * Register a complete configuration for a new or future tenant
+ */
+export function registerTenant(config: TenantConfig): void {
+  TENANT_REGISTRY[config.id] = config;
+  BRAND_THEME_REGISTRY[config.id] = config.theme;
+}
+
+/**
+ * Retrieve registered tenant configuration
+ */
+export function getTenantConfig(tenantId: string): TenantConfig | undefined {
+  return TENANT_REGISTRY[tenantId];
+}
+
+/**
+ * Check whether a tenant identifier is registered and active
+ */
+export function isRecognizedTenant(tenantId: string): boolean {
+  return !!TENANT_REGISTRY[tenantId]?.isActive;
+}
+
+/**
  * Single source of truth for tutorial theme colors across Composer and Learner runtimes.
  * Supports known brands (realtutorialhub, skillup) and extensible future tenants.
+ * Unknown tenants do not silently default to another brand.
  */
 export function themeForBrand(brandId: TutorialSidebarBrandId | 'rth' | string): BrandTutorialTheme {
+  const tenant = getTenantConfig(brandId);
+  if (tenant) {
+    return tenant.theme;
+  }
   if (BRAND_THEME_REGISTRY[brandId]) {
     return BRAND_THEME_REGISTRY[brandId];
   }
   if (brandId === 'realtutorialhub' || brandId === 'rth') {
     return BRAND_TUTORIAL_THEMES.realtutorialhub;
   }
-  return BRAND_TUTORIAL_THEMES.skillup;
+  if (brandId === 'skillup') {
+    return BRAND_TUTORIAL_THEMES.skillup;
+  }
+  throw new Error(`Unrecognized tenant for theme resolution: "${brandId}"`);
 }
 
 export interface TutorialNavigationTree {

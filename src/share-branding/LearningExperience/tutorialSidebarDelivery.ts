@@ -12,6 +12,7 @@ import {
 } from '@quiz/db-tutorial';
 import {
   themeForBrand,
+  getTenantConfig,
   type BrandTutorialTheme,
   type TutorialNavigationNode,
   type TutorialNavigationTree,
@@ -82,25 +83,20 @@ function canonicalSubtopicSlug(value: string | undefined) {
   return compactSlug(value);
 }
 
-function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'>): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
-  if (brandId === 'skillup') {
-    return {
-      brand: {
-        name: 'SkillUp IT Academy',
-        shortName: 'SUIA',
-        tagline: 'Build Skills That Move Careers',
-      },
-      theme: themeForBrand('skillup'),
-    };
+function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'> | string): Pick<TutorialNavigationTree, 'brand' | 'theme'> {
+  const tenant = getTenantConfig(brandId);
+  if (!tenant || !tenant.isActive) {
+    throw new Error(`Unauthorized or unrecognized tenant: "${brandId}". Unknown tenants cannot be delivered.`);
   }
 
   return {
     brand: {
-      name: 'RealTutorialHub',
-      shortName: 'RTH',
-      tagline: 'Learn Smarter, Not Harder',
+      name: tenant.name,
+      shortName: tenant.shortName,
+      tagline: tenant.tagline,
+      logoUrl: tenant.logoUrl,
     },
-    theme: themeForBrand('realtutorialhub'),
+    theme: tenant.theme,
   };
 }
 

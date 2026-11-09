@@ -11,7 +11,7 @@
  */
 
 import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
-import type { TutorialDocument } from '@quiz/types';
+import { VersionConflictError, type TutorialDocument } from '@quiz/types';
 import { db } from '../db';
 import { tutorialSections, type TutorialSection, type NewTutorialSection } from '../schema/tutorial-sections';
 import { tutorialSubtopics } from '../schema/tutorial-subtopics';
@@ -494,65 +494,93 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
 
   /**
    * Get latest published version snapshot from tutorial_content_versions
-   * Used to deliver frozen published content to learners while authors edit drafts
+   * Used to deliver frozen published content to learners while authors edit drafts.
+   * Deterministic tie-breaking on (version DESC, createdAt DESC).
+   * Does NOT silently swallow database read errors.
    */
   async getLatestPublishedVersion(
     sectionId: string
   ): Promise<{ content: any; version: number } | undefined> {
-    try {
-      const rows = await this.runRead(
-        this.dbInstance
-          .select({
-            content: tutorialContentVersions.content,
-            version: tutorialContentVersions.version,
-          })
-          .from(tutorialContentVersions)
-          .where(eq(tutorialContentVersions.contentId, sectionId))
-          .orderBy(desc(tutorialContentVersions.version))
-          .limit(1),
-        'TutorialSectionRepository.getLatestPublishedVersion'
-      );
-      return rows[0];
-    } catch {
-      return undefined;
-    }
+    const rows = await this.runRead(
+      this.dbInstance
+        .select({
+          content: tutorialContentVersions.content,
+          version: tutorialContentVersions.version,
+        })
+        .from(tutorialContentVersions)
+        .where(eq(tutorialContentVersions.contentId, sectionId))
+        .orderBy(
+          desc(tutorialContentVersions.version),
+          desc(tutorialContentVersions.createdAt)
+        )
+        .limit(1),
+      'TutorialSectionRepository.getLatestPublishedVersion'
+    );
+    return rows[0];
   }
 
   /**
    * V2: Publish tutorial (deploy status)
+   * ATOMIC TRANSACTION & OPTIMISTIC CONCURRENCY:
+   * 1. Validates authenticated publisher UUID (no fabricated UUID substitution).
+   * 2. Checks tutorial exists and is not soft-deleted.
+   * 3. Atomically snapshots content into tutorialContentVersions (if not already snapshotted).
+   * 4. Atomically transitions tutorial_sections.status = 'deployed', conditioned on exact version.
+   * 5. If snapshot or update fails, rolls back transaction and throws.
    */
   async publishTutorial(
     tutorialId: string,
     context?: { userId?: string }
   ): Promise<TutorialSection | undefined> {
-    const now = new Date();
-
-    // Load section to get current content and version for immutable snapshot
-    const section = await this.getTutorialById(tutorialId);
-    if (!section) return undefined;
-
-    // Snapshot published content to tutorialContentVersions
     const isUuid = (val?: string) =>
       typeof val === 'string' &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
-    const savedBy = isUuid(context?.userId)
-      ? context!.userId!
-      : '00000000-0000-0000-0000-000000000001';
 
-    try {
-      await this.dbInstance.insert(tutorialContentVersions).values({
-        contentId: section.id,
-        version: section.version,
-        content: section.content as any,
-        savedBy,
-        createdAt: now,
-      });
-    } catch (versionError) {
-      console.warn('[TutorialSectionRepository] Version snapshot notice:', versionError instanceof Error ? versionError.message : String(versionError));
+    if (!context || !context.userId || !isUuid(context.userId)) {
+      throw new Error('Publication requires a valid authenticated publisher user ID (UUID)');
     }
 
-    const [row] = await this.runRead(
-      this.dbInstance
+    const publisherId = context.userId;
+    const now = new Date();
+
+    const executeInTransaction = async (tx: any) => {
+      // 1. Load section to get current content and version inside transaction
+      const [section] = await tx
+        .select()
+        .from(tutorialSections)
+        .where(
+          and(
+            eq(tutorialSections.id, tutorialId),
+            isNull(tutorialSections.deletedAt)
+          )
+        );
+
+      if (!section) return undefined;
+
+      // 2. Snapshot published content into tutorialContentVersions (idempotent for same version)
+      const existingSnapshots = await tx
+        .select({ id: tutorialContentVersions.id })
+        .from(tutorialContentVersions)
+        .where(
+          and(
+            eq(tutorialContentVersions.contentId, section.id),
+            eq(tutorialContentVersions.version, section.version)
+          )
+        )
+        .limit(1);
+
+      if (existingSnapshots.length === 0) {
+        await tx.insert(tutorialContentVersions).values({
+          contentId: section.id,
+          version: section.version,
+          content: section.content as any,
+          savedBy: publisherId,
+          createdAt: now,
+        });
+      }
+
+      // 3. Atomically update status to 'deployed' conditioned on exact version
+      const [row] = await tx
         .update(tutorialSections)
         .set({
           status: 'deployed',
@@ -562,14 +590,24 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
         .where(
           and(
             eq(tutorialSections.id, tutorialId),
+            eq(tutorialSections.version, section.version),
             isNull(tutorialSections.deletedAt)
           )
         )
-        .returning(),
-      'TutorialSectionRepository.publishTutorial'
-    );
+        .returning();
 
-    return row;
+      if (!row) {
+        throw new VersionConflictError(section.version, section.version + 1);
+      }
+
+      return row;
+    };
+
+    if (typeof (this.dbInstance as any).transaction === 'function') {
+      return await (this.dbInstance as any).transaction(executeInTransaction);
+    } else {
+      return await executeInTransaction(this.dbInstance);
+    }
   }
 
   /**
