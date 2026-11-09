@@ -1,3 +1,8 @@
+/**
+ * @deprecated OBSOLETE LEGACY RENDERER — DO NOT USE IN NEW WORK
+ * Retired per Owner Architecture Directive 2026-11-09 (Block-Based Tutorial V2 Only).
+ * Canonical renderer is @quiz/ui/tutorial/TutorialBlockRenderer.
+ */
 import { BookOpen, Check, Code2, FileText, Lightbulb, Star, Table2 } from 'lucide-react';
 import type { BrandTutorialTheme, TutorialSummaryPayload } from '@quiz/types';
 

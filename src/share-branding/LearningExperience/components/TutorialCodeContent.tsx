@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @deprecated OBSOLETE LEGACY RENDERER — DO NOT USE IN NEW WORK
+ * Retired per Owner Architecture Directive 2026-11-09 (Block-Based Tutorial V2 Only).
+ * Canonical renderer is @quiz/ui/tutorial/TutorialBlockRenderer.
+ */
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Code2, Copy, Lightbulb, MessageCircle, Monitor, Star, Terminal, Check, Boxes } from 'lucide-react';
