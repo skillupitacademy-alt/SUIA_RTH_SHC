@@ -19,7 +19,7 @@ export * from './content-review-queue';
 export * from './content-deployments';
 export * from './ai-generation-metrics';
 export * from './tutorial-sidebar-v2';
-export * from './tutorial-page-content-v2';
+// REMOVED: tutorial-page-content-v2 (legacy - dropped)
 
 // ===== PHASE 1 P0: GAP REMEDIATION - ANALYTICS =====
 export * from './analytics-learning-metrics';
@@ -81,7 +81,7 @@ import * as contentReviewQueueModule from './content-review-queue';
 import * as contentDeploymentsModule from './content-deployments';
 import * as aiGenerationMetricsModule from './ai-generation-metrics';
 import * as tutorialSidebarV2Module from './tutorial-sidebar-v2';
-import * as tutorialPageContentV2Module from './tutorial-page-content-v2';
+// REMOVED: tutorialPageContentV2Module (legacy - dropped)
 
 // Phase 1 P0: Gap Remediation - Analytics Imports
 import * as analyticsLearningMetricsModule from './analytics-learning-metrics';
@@ -141,7 +141,7 @@ export const schema = {
   ...contentDeploymentsModule,
   ...aiGenerationMetricsModule,
   ...tutorialSidebarV2Module,
-  ...tutorialPageContentV2Module,
+  // REMOVED: tutorialPageContentV2Module (legacy - dropped)
   
   // Phase 1 P0: Gap Remediation - Analytics
   ...analyticsLearningMetricsModule,
