@@ -502,24 +502,8 @@ export function requireSubtopicAccess(
     return null;
   }
 
-  // If explicit subtopic restrictions are defined on the principal, enforce them
-  if (user.allowedSubtopics !== undefined) {
-    if (!Array.isArray(user.allowedSubtopics) || user.allowedSubtopics.length === 0) {
-      return {
-        type: 'FORBIDDEN',
-        message: 'Forbidden: author has no authorized subtopics assigned.',
-      };
-    }
-    if (!user.allowedSubtopics.includes(subtopicId) && !user.allowedSubtopics.includes('*')) {
-      return {
-        type: 'FORBIDDEN',
-        message: `Forbidden: user is not authorized to modify subtopic '${subtopicId}'.`,
-      };
-    }
-    return null;
-  }
-
-  // 🔒 R5-06: Authorized SHC administrators have central authoring authority
+  // 🔒 R6-11: Central authoring authority for standard SHC administrators across all valid subtopics.
+  // Optional allowedSubtopics claims do NOT restrict legitimate SHC administrators.
   return null;
 }
 
@@ -587,24 +571,7 @@ export function requireBrandAccess(
     return null;
   }
 
-  // If explicit brand restrictions are defined on the principal, enforce them
-  const allowedBrands = user.allowedBrands ?? user.adminScope;
-  if (allowedBrands !== undefined) {
-    if (!Array.isArray(allowedBrands) || allowedBrands.length === 0) {
-      return {
-        type: 'FORBIDDEN',
-        message: 'Forbidden: administrator has no authorized brands assigned.',
-      };
-    }
-    if (!allowedBrands.includes(normalizedBrandId) && !allowedBrands.includes('*')) {
-      return {
-        type: 'FORBIDDEN',
-        message: `Forbidden: administrator scope does not permit accessing content for brand '${brandId}'.`,
-      };
-    }
-    return null;
-  }
-
-  // 🔒 R5-06: Authorized SHC administrator has full central authoring authority across all valid distribution scopes
+  // 🔒 R6-11: Central authoring authority for standard SHC administrators across all valid distribution scopes.
+  // Optional allowedBrands / adminScope claims do NOT restrict legitimate SHC administrators.
   return null;
 }

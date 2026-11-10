@@ -18,7 +18,7 @@ import {
   VALID_TUTORIAL_BRAND_IDS,
   type AuthenticatedUser,
 } from '../auth-helpers';
-import { defaultShcAccountAuthority } from '../shc-account-authority';
+import { defaultShcAccountAuthority, evaluateAccountAdmission } from '../shc-account-authority';
 import { POST as sidebarPost } from '../../app/api/tutorial-left-sidebar/route';
 import { ConfigurationError, TokenService } from '@quiz/auth';
 import { NextRequest } from 'next/server';
@@ -382,7 +382,10 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
   // =========================================================================
   // P2 (R3-17 to R3-20): Object-Level Resource Grants & Sidebar Tree IDOR
   // =========================================================================
-  describe('P2: Object-Level Resource Grants & Tree Mutations (R3-17 to R3-20)', () => {
+  // =========================================================================
+  // R6-C (R6-10 to R6-13): Centralized SHC Admin Tutorial Authoring Compatibility
+  // =========================================================================
+  describe('R6-C: Centralized SHC Admin Tutorial Authoring Compatibility (R6-10 to R6-13)', () => {
     const baseEditor: AuthenticatedUser = {
       userId: 'editor-1',
       originalUserId: 'editor-1',
@@ -392,87 +395,56 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
       brand: 'skillhubcore',
     };
 
-    it('denies subtopic access when allowedSubtopics is an empty array (R3-18)', () => {
+    it('allows standard SHC admin to manage valid subtopics even when optional allowedSubtopics is empty or restrictive (R6-11)', () => {
+      // Empty, restrictive, or undefined allowedSubtopics claims must NOT restrict legitimate SHC admins
       const emptyScopedUser: AuthenticatedUser = {
         ...baseEditor,
-        allowedSubtopics: [], // Empty list must deny, not grant wildcard access
+        allowedSubtopics: [],
       };
-      const err = requireSubtopicAccess(emptyScopedUser, 'subtopic-1');
-      expect(err).not.toBeNull();
-      expect(err?.type).toBe('FORBIDDEN');
+      expect(requireSubtopicAccess(emptyScopedUser, 'subtopic-1')).toBeNull();
+
+      const restrictiveScopedUser: AuthenticatedUser = {
+        ...baseEditor,
+        allowedSubtopics: ['other-subtopic'],
+      };
+      expect(requireSubtopicAccess(restrictiveScopedUser, 'subtopic-1')).toBeNull();
     });
 
-    it('denies brand access when allowedBrands is an empty array (R3-18)', () => {
+    it('allows standard SHC admin to manage all 4 distribution brands even when optional allowedBrands is empty or restrictive (R6-11)', () => {
       const emptyScopedUser: AuthenticatedUser = {
         ...baseEditor,
-        allowedBrands: [], // Empty list must deny
+        allowedBrands: [],
       };
-      const err = requireBrandAccess(emptyScopedUser, 'realtutorialhub');
-      expect(err).not.toBeNull();
-      expect(err?.type).toBe('FORBIDDEN');
+      expect(requireBrandAccess(emptyScopedUser, 'realtutorialhub')).toBeNull();
+      expect(requireBrandAccess(emptyScopedUser, 'skillup')).toBeNull();
+      expect(requireBrandAccess(emptyScopedUser, 'shared')).toBeNull();
+      expect(requireBrandAccess(emptyScopedUser, 'skillhubcore')).toBeNull();
+
+      const restrictiveScopedUser: AuthenticatedUser = {
+        ...baseEditor,
+        allowedBrands: ['skillup'],
+        adminScope: ['skillup'],
+      };
+      expect(requireBrandAccess(restrictiveScopedUser, 'realtutorialhub')).toBeNull();
+      expect(requireBrandAccess(restrictiveScopedUser, 'shared')).toBeNull();
     });
 
-    it('sidebar POST rejects when unauthorized subtopic is nested anywhere in submitted tree (R3-20)', async () => {
-      setAccountAuthority({
-        async getCurrentAccount(input) {
-          return {
-            id: input.originalUserId,
-            email: 'scoped@skillhubcore.in',
-            role: 'admin',
-            platform: 'skillhubcore',
-            isActive: true,
-          };
-        },
-      });
+    it('denies brand and subtopic access when user lacks authoring permissions (student/faculty) (R6-12)', () => {
+      const studentUser: AuthenticatedUser = {
+        ...baseEditor,
+        roles: ['student'],
+        isAdmin: false,
+      };
+      const brandErr = requireBrandAccess(studentUser, 'shared');
+      expect(brandErr).not.toBeNull();
+      expect(brandErr?.type).toBe('FORBIDDEN');
 
-      // User permitted only for 'allowed-subtopic-1'
-      const token = await createToken({
-        allowedSubtopics: ['allowed-subtopic-1'],
-        brand: 'skillhubcore',
-      });
-
-      // Submit tree containing a nested unauthorized node
-      const req = new NextRequest('https://admin.skillhubcore.in/api/tutorial-left-sidebar', {
-        method: 'POST',
-        headers: {
-          cookie: `accessToken=${token}`,
-          origin: 'https://admin.skillhubcore.in',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          brandId: 'shared',
-          domainId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          subjectId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          topicId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          sourceFormat: 'json',
-          sourceContent: '{}',
-          status: 'draft',
-          tree: {
-            topics: [
-              {
-                id: 'allowed-subtopic-1',
-                name: 'Allowed Section',
-                type: 'group',
-                children: [
-                  {
-                    id: 'unauthorized-subtopic-999', // Nested unauthorized subtopic
-                    name: 'Privileged Hidden Section',
-                    type: 'page',
-                  },
-                ],
-              },
-            ],
-          },
-        }),
-      });
-
-      const response = await sidebarPost(req);
-      expect(response.status).toBe(403);
-      const data = await response.json();
-      expect(data.error).toContain('Forbidden');
+      const subtopicErr = requireSubtopicAccess(studentUser, 'subtopic-1');
+      expect(subtopicErr).not.toBeNull();
+      expect(subtopicErr?.type).toBe('FORBIDDEN');
     });
 
-    it('sidebar POST rejects cross-tenant brand IDOR attempt', async () => {
+    it('sidebar POST rejects non-SHC tenant caller attempt (R6-12)', async () => {
       setAccountAuthority({
         async getCurrentAccount(input) {
           return {
@@ -485,12 +457,11 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
         },
       });
 
+      // Tenant token with brand: 'skillup' must be rejected
       const token = await createToken({
-        brand: 'skillhubcore',
-        allowedBrands: ['skillup'],
+        brand: 'skillup',
       });
 
-      // Send brandId: 'realtutorialhub'
       const req = new NextRequest('https://admin.skillhubcore.in/api/tutorial-left-sidebar', {
         method: 'POST',
         headers: {
@@ -513,7 +484,7 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
       });
 
       const response = await sidebarPost(req);
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
     });
   });
 
@@ -720,6 +691,42 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
           token: 'invalid-or-revoked-token',
         });
         expect(account).toBeNull();
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+
+    it('maps upstream 403 to AccountIneligibleError and evaluates to FORBIDDEN (R6-05)', async () => {
+      vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'test-secret');
+      vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:8787');
+
+      const originalFetch = global.fetch;
+      global.fetch = vi.fn().mockImplementation(async () => {
+        return {
+          ok: false,
+          status: 403,
+          json: async () => ({ error: 'Account is not eligible for administrative access' }),
+        } as unknown as Response;
+      });
+
+      try {
+        await expect(
+          defaultShcAccountAuthority.getCurrentAccount({
+            originalUserId: 'test-user-uuid',
+            brand: 'skillhubcore',
+            token: 'ineligible-student-token',
+          })
+        ).rejects.toThrow('Account is not eligible for SHC Admin access');
+
+        const outcome = await evaluateAccountAdmission({
+          originalUserId: 'test-user-uuid',
+          brand: 'skillhubcore',
+          token: 'ineligible-student-token',
+        });
+        expect(outcome.status).toBe('FORBIDDEN');
+        if (outcome.status === 'FORBIDDEN') {
+          expect(outcome.reason).toBe('DEMOTED');
+        }
       } finally {
         global.fetch = originalFetch;
       }

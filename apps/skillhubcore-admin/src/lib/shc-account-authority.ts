@@ -31,6 +31,17 @@ export interface ShcAccountState {
   isRevoked?: boolean;
 }
 
+/**
+ * Typed domain error for ineligible account response (HTTP 403) from upstream identity service.
+ * 🔒 SECURITY (R6-05): Maps upstream 403 to FORBIDDEN rather than misclassifying as UNAVAILABLE.
+ */
+export class AccountIneligibleError extends Error {
+  constructor(message: string = 'Account is not eligible for SHC Admin access.') {
+    super(message);
+    this.name = 'AccountIneligibleError';
+  }
+}
+
 export type AccountAdmissionResult =
   | { status: 'AUTHORIZED'; account: ShcAccountState; effectiveRoles: Role[]; isAdmin: boolean }
   | { status: 'UNAUTHENTICATED'; reason: 'UNKNOWN_ACCOUNT' | 'REVOKED'; message: string }
@@ -200,6 +211,11 @@ export const defaultShcAccountAuthority: ShcAccountAuthority = {
       return null;
     }
 
+    // 🔒 R6-05: Handle 403 Forbidden with typed error so admission classifies as FORBIDDEN, not UNAVAILABLE
+    if (res.status === 403) {
+      throw new AccountIneligibleError('Account is not eligible for SHC Admin access.');
+    }
+
     if (!res.ok) {
       throw new Error(`Upstream identity service returned status ${res.status}`);
     }
@@ -329,6 +345,14 @@ export async function evaluateAccountAdmission(
     };
   } catch (error: unknown) {
     controller.abort();
+    // 🔒 R6-05: Map upstream 403 / AccountIneligibleError to FORBIDDEN (DEMOTED)
+    if (error instanceof AccountIneligibleError) {
+      return {
+        status: 'FORBIDDEN',
+        reason: 'DEMOTED',
+        message: error.message || 'Account is not eligible for SHC Admin access.',
+      };
+    }
     const message = error instanceof Error ? error.message : 'Identity service error';
     return {
       status: 'UNAVAILABLE',
