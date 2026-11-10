@@ -1,10 +1,13 @@
--- PROPOSAL ONLY - NOT A LIVE MIGRATION. NOT IN meta/_journal.json. NOT AUTHORIZED.
--- Do not move into ../migrations or re-add to the journal without explicit owner approval.
+-- APPLIED as an owner-authorized, single-table operation on 2026-11-09T18:55:59Z.
+-- Target: tutorial_prod; hostname/database fingerprint (SHA-256 prefix): d69fe9af7c33.
+-- Not registered in meta/_journal.json; no unrelated migrations were executed.
 --
 -- Purpose: retire obsolete table tutorial_page_content_v2.
 -- Read-only preflight (2026-11-09): 0 inbound FKs, 0 dependent views, 0 triggers,
--- 0 function references, 2 disposable legacy rows. Table STILL EXISTS in live DB;
--- this DROP has NEVER been applied.
+-- 0 function references, 2 disposable legacy rows.
+-- Execution: bounded transaction, lock_timeout 5s, statement_timeout 15s, no CASCADE.
+-- Post-commit to_regclass('public.tutorial_page_content_v2') returned NULL.
+-- Protected row counts unchanged: tutorial_sections=19; tutorial_content_versions=3.
 -- Rollback: none for data (owner declared the 2 rows disposable). Recreate DDL: see 0020_add_tutorial_page_content_v2.sql.
 
 DROP TABLE IF EXISTS "public"."tutorial_page_content_v2";

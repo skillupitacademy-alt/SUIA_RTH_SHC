@@ -75,22 +75,63 @@ export type AccessTokenRequestLike = {
   headers?: { get(name: string): string | null };
 };
 
+export class ConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConfigurationError';
+  }
+}
+
+/**
+ * 🔒 SECURITY: Resolves secrets safely without leaking values.
+ * - In production, missing secrets fail closed (throw ConfigurationError).
+ * - In explicitly controlled test environments, safe test fallbacks are permitted.
+ * - In development environments, secrets must be configured via environment or .env.
+ */
+function resolveSecret(
+  primaryEnv: string,
+  fallbackEnv?: string,
+  testDefault?: string
+): Uint8Array {
+  const primaryVal = readEnv(primaryEnv);
+  if (primaryVal) return new TextEncoder().encode(primaryVal);
+
+  if (fallbackEnv) {
+    const fallbackVal = readEnv(fallbackEnv);
+    if (fallbackVal) return new TextEncoder().encode(fallbackVal);
+  }
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (isProduction) {
+    throw new ConfigurationError(
+      `Missing required production authentication secret: ${primaryEnv}${fallbackEnv ? ` (or ${fallbackEnv})` : ''}`
+    );
+  }
+
+  const isTest = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST) || process.env.ALLOW_TEST_JWT_SECRET === '1';
+  if (isTest && testDefault) {
+    return new TextEncoder().encode(testDefault);
+  }
+
+  throw new ConfigurationError(
+    `Missing required authentication secret: ${primaryEnv}${fallbackEnv ? ` (or ${fallbackEnv})` : ''}. Please configure in environment.`
+  );
+}
+
 export class TokenService {
   private static singleton: TokenService | null = null;
 
-  static ACCESS_SECRET = new TextEncoder().encode(
-    readEnv('JWT_SECRET') ?? 'test-access-secret'
-  );
+  static get ACCESS_SECRET(): Uint8Array {
+    return resolveSecret('JWT_SECRET', undefined, 'test-access-secret');
+  }
 
-  static REFRESH_SECRET = new TextEncoder().encode(
-    readEnv('JWT_REFRESH_SECRET') ?? 'test-refresh-secret'
-  );
+  static get REFRESH_SECRET(): Uint8Array {
+    return resolveSecret('JWT_REFRESH_SECRET', undefined, 'test-refresh-secret');
+  }
 
-  static ADMIN_SECRET = new TextEncoder().encode(
-    readEnv('ADMIN_JWT_SECRET')
-      ?? readEnv('JWT_SECRET')
-      ?? 'test-admin-secret'
-  );
+  static get ADMIN_SECRET(): Uint8Array {
+    return resolveSecret('ADMIN_JWT_SECRET', 'JWT_SECRET', 'test-admin-secret');
+  }
 
   private static getInstance(): TokenService {
     if (this.singleton === null) {
@@ -404,8 +445,14 @@ export class TokenService {
     return typedPayload;
   }
 
-  async verifyAdminAccessToken(token: string, options?: { audience?: string }): Promise<AdminTokenPayload> {
-    const { payload } = await jwtVerify(token, this.ADMIN_SECRET);
+  async verifyAdminAccessToken(
+    token: string,
+    options?: { audience?: string; issuer?: string; algorithms?: string[] }
+  ): Promise<AdminTokenPayload> {
+    const { payload } = await jwtVerify(token, this.ADMIN_SECRET, {
+      algorithms: options?.algorithms,
+      issuer: options?.issuer,
+    });
     const tokenAud = payload.aud as string | string[] | undefined;
     const hasAud = tokenAud !== undefined && tokenAud !== null && tokenAud !== '';
     const audValues = Array.isArray(tokenAud)

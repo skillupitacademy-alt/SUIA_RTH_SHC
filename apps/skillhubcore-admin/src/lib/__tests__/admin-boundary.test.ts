@@ -3,12 +3,22 @@ import { NextRequest } from 'next/server';
 import { RBACService, PERMISSIONS } from '@quiz/auth/rbac';
 
 const mocks = vi.hoisted(() => ({ verify: vi.fn(), getDb: vi.fn(), upstream: vi.fn() }));
-vi.mock('@quiz/auth', () => ({ TokenService: { verifyAdminAccessToken: mocks.verify } }));
+vi.mock('@quiz/auth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@quiz/auth')>();
+  return {
+    ...actual,
+    TokenService: {
+      ...actual.TokenService,
+      verifyAdminAccessToken: mocks.verify,
+    },
+  };
+});
 vi.mock('@quiz/db', () => ({ getDb: mocks.getDb, domains: {}, subjects: {}, topics: {}, subtopics: {}, skills: {}, withTimeout: async (p: Promise<unknown>) => p }));
 vi.mock('@/share-branding/auth', () => ({ proxyUpstreamRequest: mocks.upstream, FALLBACK_API_BASE_SKILLHUBCORE: 'https://api.skillhubcore.in/api' }));
 
 import { requireAdminRequest } from '../admin-route-guard';
 import { hasAdminRole } from '../auth-helpers';
+import { setAccountAuthority } from '../shc-account-authority';
 import * as domains from '@/app/api/admin/domains/route';
 import * as subjects from '@/app/api/admin/subjects/route';
 import * as topics from '@/app/api/admin/topics/route';
@@ -19,7 +29,15 @@ import { POST as login } from '@/app/api/auth/login/route';
 import { POST as logout } from '@/app/api/auth/logout/route';
 import { proxy } from '@/proxy';
 
-const principal = { userId: 'admin-1', originalUserId: 'admin-1', shadowUserId: 'admin-1', brand: 'skillhubcore', roles: ['admin'] };
+const principal = {
+  userId: 'admin-1',
+  originalUserId: 'admin-1',
+  shadowUserId: 'admin-1',
+  brand: 'skillhubcore',
+  roles: ['admin'],
+  iss: 'skillhubcore.in',
+  exp: Math.floor(Date.now() / 1000) + 3600,
+};
 function request(path = '/api/admin/domains', method = 'GET', authenticated = true, origin: string | null = 'https://admin.skillhubcore.in') {
   const headers = new Headers();
   if (authenticated) headers.set('cookie', 'accessToken=signed-token');
@@ -30,8 +48,25 @@ function request(path = '/api/admin/domains', method = 'GET', authenticated = tr
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.verify.mockResolvedValue(principal);
+  setAccountAuthority({
+    async getCurrentAccount(input) {
+      if (input.originalUserId.includes('unknown') || input.originalUserId.includes('not-found')) return null;
+      const role = (input.tokenRoles && input.tokenRoles.includes('super_admin')) ? 'super_admin' : 'admin';
+      return {
+        id: input.originalUserId,
+        email: 'admin@skillhubcore.in',
+        role,
+        platform: 'skillhubcore',
+        isActive: true,
+      };
+    },
+  });
 });
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });
+afterEach(() => {
+  setAccountAuthority(null);
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 describe('SHC admin trust boundary', () => {
   it('requires authentication even when identity headers are supplied', async () => {

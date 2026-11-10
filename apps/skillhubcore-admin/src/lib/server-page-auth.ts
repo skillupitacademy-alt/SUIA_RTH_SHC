@@ -1,10 +1,25 @@
-import { TokenService } from '@quiz/auth';
+import { TokenService, ConfigurationError } from '@quiz/auth';
 import { RBACService } from '@quiz/auth/rbac';
 import { normalizeRoles } from '@quiz/auth/rbac/normalize-roles';
 import type { Role } from '@quiz/auth/rbac/roles';
 import { decodeProtectedHeader } from 'jose';
 import type { NextRequest } from 'next/server';
 import { getRequiredPagePermission } from './admin-page-policy';
+import {
+  evaluateAccountAdmission,
+  setAccountAuthority,
+  type ShcAccountAuthority,
+  type ShcAccountState,
+  type AccountAdmissionResult,
+} from './shc-account-authority';
+
+export {
+  evaluateAccountAdmission,
+  setAccountAuthority,
+  type ShcAccountAuthority,
+  type ShcAccountState,
+  type AccountAdmissionResult,
+};
 
 export const EXPECTED_JWT_ISSUER = 'skillhubcore.in';
 export const EXPECTED_JWT_ALGORITHM = 'HS256';
@@ -17,6 +32,30 @@ export interface AuthenticatedAdminPrincipal {
   email?: string;
   roles: Role[];
   isAdmin: boolean;
+  brand?: string;
+  adminScope?: string[];
+  allowedBrands?: string[];
+  allowedSubtopics?: string[];
+}
+
+export interface AdminTokenClaims {
+  sub?: string;
+  userId?: string;
+  originalUserId?: string;
+  shadowUserId?: string;
+  roles?: Role[] | string[];
+  brand?: string;
+  email?: string;
+  isActive?: boolean;
+  accountStatus?: string;
+  isRevoked?: boolean;
+  sessionRevoked?: boolean;
+  adminScope?: string[];
+  allowedBrands?: string[];
+  allowedSubtopics?: string[];
+  iss?: string;
+  exp?: number;
+  nbf?: number;
 }
 
 export type PageAuthOutcome =
@@ -24,6 +63,42 @@ export type PageAuthOutcome =
   | { status: 'UNAUTHENTICATED'; reason: 'MISSING_TOKEN' | 'INVALID_TOKEN' | 'EXPIRED_TOKEN'; message: string }
   | { status: 'FORBIDDEN'; reason: 'INSUFFICIENT_PERMISSIONS' | 'FORBIDDEN_ROLE'; message: string; user?: AuthenticatedAdminPrincipal }
   | { status: 'UNAVAILABLE'; reason: 'SERVICE_ERROR'; message: string };
+
+/**
+ * 🔒 G1: Authoritative current account and session state validator hook.
+ * Enables live session revocation, account deactivation, and role demotion verification.
+ */
+export type AccountStateValidator = (
+  userId: string,
+  context: { originalUserId: string; brand: string }
+) => Promise<{
+  isActive: boolean;
+  isDeleted: boolean;
+  isRevoked?: boolean;
+  currentRoles?: Role[];
+} | null>;
+
+export function setAccountStateValidator(validator: AccountStateValidator | null) {
+  if (!validator) {
+    setAccountAuthority(null);
+  } else {
+    setAccountAuthority({
+      async getCurrentAccount({ originalUserId, brand }) {
+        const res = await validator(originalUserId, { originalUserId, brand });
+        if (!res) return null;
+        return {
+          id: originalUserId,
+          email: 'admin@skillhubcore.in',
+          role: (res.currentRoles?.[0] as Role) || 'admin',
+          platform: 'skillhubcore',
+          isActive: res.isActive,
+          deletedAt: res.isDeleted ? new Date() : null,
+          isRevoked: res.isRevoked,
+        };
+      },
+    });
+  }
+}
 
 type CookieGetter = (name: string) => { value: string } | string | undefined | null;
 
@@ -93,19 +168,20 @@ export async function verifyAdminToken(token: string): Promise<AuthenticatedAdmi
   try {
     // 1. Verify protected header algorithm
     const header = decodeProtectedHeader(token);
-    if (header.alg !== EXPECTED_JWT_ALGORITHM) {
+    if (!header.alg || header.alg !== EXPECTED_JWT_ALGORITHM) {
       return null;
     }
 
     // 2. Cryptographic signature and audience verification
-    const payload = await TokenService.verifyAdminAccessToken(token, { audience: EXPECTED_JWT_AUDIENCE });
+    const rawPayload = await TokenService.verifyAdminAccessToken(token, { audience: EXPECTED_JWT_AUDIENCE });
+    const payload = rawPayload as unknown as AdminTokenClaims;
 
-    // 3. Pin trusted issuer
-    if (payload.iss !== EXPECTED_JWT_ISSUER) {
+    // 3. MANDATORY trusted issuer
+    if (!payload.iss || payload.iss !== EXPECTED_JWT_ISSUER) {
       return null;
     }
 
-    // 4. Require finite exp claim and verify expiration
+    // 4. MANDATORY finite exp claim and verify expiration
     if (typeof payload.exp !== 'number' || !Number.isFinite(payload.exp)) {
       return null;
     }
@@ -122,11 +198,20 @@ export async function verifyAdminToken(token: string): Promise<AuthenticatedAdmi
     }
 
     // 6. Enforce brand isolation
-    if (payload.brand !== 'skillhubcore') {
+    if (!payload.brand || payload.brand !== 'skillhubcore') {
       return null;
     }
 
-    // 7. Enforce non-empty identity claims
+    // 7. G1: Token-level account status check
+    if (
+      payload.isActive === false ||
+      payload.accountStatus === 'disabled' ||
+      payload.isRevoked === true
+    ) {
+      return null;
+    }
+
+    // 8. Enforce non-empty identity claims
     const originalUserId = payload.originalUserId ?? payload.sub ?? payload.userId;
     const shadowUserId = payload.shadowUserId ?? originalUserId;
 
@@ -139,16 +224,31 @@ export async function verifyAdminToken(token: string): Promise<AuthenticatedAdmi
       return null;
     }
 
-    const roles = normalizeRoles(payload.roles);
-    const isAdmin = RBACService.isAdminLevel(roles);
+    // 9. Authoritative live account state check
+    const accountAdmission = await evaluateAccountAdmission({
+      originalUserId,
+      brand: payload.brand,
+      token,
+      tokenRoles: normalizeRoles(payload.roles),
+    });
+    if (accountAdmission.status !== 'AUTHORIZED') {
+      return null;
+    }
+
+    const effectiveRoles = accountAdmission.effectiveRoles;
+    const effectiveIsAdmin = accountAdmission.isAdmin;
 
     return {
       userId: shadowUserId,
       originalUserId,
       shadowUserId,
       email: typeof payload.email === 'string' ? payload.email : undefined,
-      roles,
-      isAdmin,
+      roles: effectiveRoles,
+      isAdmin: effectiveIsAdmin,
+      brand: payload.brand,
+      adminScope: payload.adminScope,
+      allowedBrands: payload.allowedBrands ?? payload.adminScope,
+      allowedSubtopics: payload.allowedSubtopics,
     };
   } catch {
     return null;
@@ -192,12 +292,32 @@ export async function evaluatePageAccess(
   }
 
   // 2. Cryptographic signature and audience verification
-  let payload;
+  let payload: AdminTokenClaims;
   try {
-    payload = await TokenService.verifyAdminAccessToken(token, { audience: EXPECTED_JWT_AUDIENCE });
+    const rawPayload = await TokenService.verifyAdminAccessToken(token, { audience: EXPECTED_JWT_AUDIENCE });
+    payload = rawPayload as unknown as AdminTokenClaims;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Token verification failed';
     const errObj = err && typeof err === 'object' ? (err as { name?: string; code?: string }) : undefined;
+
+    // G4: Distinguish UNAVAILABLE (configuration or infrastructure errors)
+    const isConfigOrServiceError =
+      err instanceof ConfigurationError ||
+      errObj?.name === 'ConfigurationError' ||
+      message.toLowerCase().includes('configuration') ||
+      message.toLowerCase().includes('missing required production') ||
+      message.toLowerCase().includes('temporarily unavailable') ||
+      message.toLowerCase().includes('econnrefused') ||
+      message.toLowerCase().includes('etimedout');
+
+    if (isConfigOrServiceError) {
+      return {
+        status: 'UNAVAILABLE',
+        reason: 'SERVICE_ERROR',
+        message: 'Authentication service temporarily unavailable.',
+      };
+    }
+
     const isExpired =
       message.toLowerCase().includes('expired') ||
       errObj?.name === 'TokenExpiredError' ||
@@ -211,12 +331,12 @@ export async function evaluatePageAccess(
     };
   }
 
-  // 3. Pin trusted issuer
-  if (payload.iss !== EXPECTED_JWT_ISSUER) {
+  // 3. MANDATORY trusted issuer
+  if (!payload.iss || payload.iss !== EXPECTED_JWT_ISSUER) {
     return {
       status: 'UNAUTHENTICATED',
       reason: 'INVALID_TOKEN',
-      message: `Untrusted token issuer: ${String(payload.iss)}`,
+      message: `Untrusted token issuer: ${String(payload.iss ?? 'missing')}`,
     };
   }
 
@@ -284,33 +404,99 @@ export async function evaluatePageAccess(
     email: typeof payload.email === 'string' ? payload.email : undefined,
     roles,
     isAdmin,
+    brand: payload.brand,
+    adminScope: payload.adminScope,
+    allowedBrands: payload.allowedBrands ?? payload.adminScope,
+    allowedSubtopics: payload.allowedSubtopics,
   };
 
-  if (!isAdmin) {
+  // G1: Token-level account status & session revocation checks
+  if (
+    payload.isActive === false ||
+    payload.accountStatus === 'disabled' ||
+    payload.accountStatus === 'suspended'
+  ) {
     return {
       status: 'FORBIDDEN',
       reason: 'FORBIDDEN_ROLE',
-      message: 'Access restricted to SkillHubCore administrators.',
+      message: 'Administrator account is deactivated or suspended.',
       user: principal,
     };
   }
 
-  // 9. Enforce granular page-level permissions (e.g. ANALYTICS_VIEW for /marketing, USER_MANAGE for /users)
+  if (payload.isRevoked === true || payload.sessionRevoked === true) {
+    return {
+      status: 'UNAUTHENTICATED',
+      reason: 'EXPIRED_TOKEN',
+      message: 'Session has been revoked. Please log in again.',
+    };
+  }
+
+  // 9. G1: Authoritative live account state check (mandatory fail-closed)
+  const accountAdmission = await evaluateAccountAdmission({
+    originalUserId,
+    brand: payload.brand,
+    token,
+    tokenRoles: roles,
+  });
+
+  if (accountAdmission.status === 'UNAVAILABLE') {
+    return {
+      status: 'UNAVAILABLE',
+      reason: 'SERVICE_ERROR',
+      message: accountAdmission.message,
+    };
+  }
+  if (accountAdmission.status === 'UNAUTHENTICATED') {
+    return {
+      status: 'UNAUTHENTICATED',
+      reason: accountAdmission.reason === 'REVOKED' ? 'EXPIRED_TOKEN' : 'INVALID_TOKEN',
+      message: accountAdmission.message,
+    };
+  }
+  if (accountAdmission.status === 'FORBIDDEN') {
+    return {
+      status: 'FORBIDDEN',
+      reason: 'FORBIDDEN_ROLE',
+      message: accountAdmission.message,
+      user: principal,
+    };
+  }
+
+  // 🔒 Reconcile effective roles & privileges (P1: R3-14, R3-15)
+  const effectiveRoles = accountAdmission.effectiveRoles;
+  const effectiveIsAdmin = accountAdmission.isAdmin;
+  const effectivePrincipal: AuthenticatedAdminPrincipal = {
+    ...principal,
+    roles: effectiveRoles,
+    isAdmin: effectiveIsAdmin,
+  };
+
+  if (!effectiveIsAdmin) {
+    return {
+      status: 'FORBIDDEN',
+      reason: 'FORBIDDEN_ROLE',
+      message: 'Access restricted to SkillHubCore administrators.',
+      user: effectivePrincipal,
+    };
+  }
+
+  // 10. Enforce granular page-level permissions with effective reconciled roles
   const requiredPermission = getRequiredPagePermission(pathname);
-  const hasPermission = RBACService.hasPermission(roles, requiredPermission);
+  const hasPermission = RBACService.hasPermission(effectiveRoles, requiredPermission);
 
   if (!hasPermission) {
     return {
       status: 'FORBIDDEN',
       reason: 'INSUFFICIENT_PERMISSIONS',
       message: `Insufficient permissions: ${requiredPermission} is required to access ${pathname}.`,
-      user: principal,
+      user: effectivePrincipal,
     };
   }
 
   return {
     status: 'AUTHORIZED',
-    user: principal,
+    user: effectivePrincipal,
   };
 }
 

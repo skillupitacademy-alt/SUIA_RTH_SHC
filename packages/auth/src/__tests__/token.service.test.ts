@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { TokenService } from '../token.service';
+import { describe, expect, it, vi, afterEach } from 'vitest';
+import { TokenService, ConfigurationError } from '../token.service';
 import { SignJWT } from 'jose';
 
 vi.mock('jose', async (importOriginal) => {
@@ -425,6 +425,54 @@ describe('TokenService', () => {
       expect(() => TokenService.verifyRefreshToken('token')).toThrow('verifyRefreshToken not implemented');
 
       TokenService.setInstance(null as any); // resets singleton
+    });
+  });
+
+  // --- G5: Secret Configuration Safety Tests ---
+  describe('G5 Secret Configuration Safety', () => {
+    const originalEnv = { ...process.env };
+
+    afterEach(() => {
+      process.env = { ...originalEnv };
+    });
+
+    it('fails closed in production if JWT_SECRET is missing', () => {
+      delete process.env.JWT_SECRET;
+      delete process.env.ADMIN_JWT_SECRET;
+      process.env.NODE_ENV = 'production';
+
+      expect(() => TokenService.ACCESS_SECRET).toThrow(ConfigurationError);
+      expect(() => TokenService.ACCESS_SECRET).toThrow(/Missing required production authentication secret: JWT_SECRET/);
+      expect(() => TokenService.ADMIN_SECRET).toThrow(ConfigurationError);
+    });
+
+    it('fails closed in development if secrets are not configured', () => {
+      delete process.env.JWT_SECRET;
+      delete process.env.ADMIN_JWT_SECRET;
+      delete process.env.VITEST;
+      process.env.NODE_ENV = 'development';
+
+      expect(() => TokenService.ACCESS_SECRET).toThrow(ConfigurationError);
+      expect(() => TokenService.ACCESS_SECRET).toThrow(/Missing required authentication secret/);
+    });
+
+    it('permits safe test fallback in isolated test environment', () => {
+      delete process.env.JWT_SECRET;
+      delete process.env.ADMIN_JWT_SECRET;
+      process.env.NODE_ENV = 'test';
+
+      const secret = TokenService.ACCESS_SECRET;
+      expect(secret).toBeInstanceOf(Uint8Array);
+      expect(secret.length).toBeGreaterThan(0);
+    });
+
+    it('uses configured environment secrets over test fallbacks when present', () => {
+      process.env.JWT_SECRET = 'explicit-custom-configured-secret-key-123';
+      process.env.NODE_ENV = 'test';
+
+      const secret = TokenService.ACCESS_SECRET;
+      const expected = new TextEncoder().encode('explicit-custom-configured-secret-key-123');
+      expect(secret).toEqual(expected);
     });
   });
 });

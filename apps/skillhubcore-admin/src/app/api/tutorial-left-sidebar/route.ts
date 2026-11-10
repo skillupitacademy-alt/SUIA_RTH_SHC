@@ -1,4 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import {
+  authenticateRequest,
+  createAuthErrorResponse,
+  requireBrandAccess,
+  requireSubtopicAccess,
+} from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
@@ -760,9 +766,35 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/** Extract all subtopic IDs from authoring navigation nodes for scope authorization */
+function extractSidebarTreeSubtopicIds(nodes: unknown[]): string[] {
+  const ids: string[] = [];
+  function walk(items: unknown[]) {
+    for (const item of items) {
+      if (item && typeof item === 'object') {
+        const node = item as { id?: unknown; children?: unknown[] };
+        if (typeof node.id === 'string' && node.id.trim()) {
+          ids.push(node.id.trim());
+        }
+        if (Array.isArray(node.children)) {
+          walk(node.children);
+        }
+      }
+    }
+  }
+  walk(nodes);
+  return ids;
+}
+
 export async function POST(request: NextRequest) {
   const accessDenied = await requireAdminRequest(request);
   if (accessDenied) return accessDenied;
+
+  const auth = await authenticateRequest(request);
+  if ('type' in auth) {
+    return createAuthErrorResponse(auth);
+  }
+  const { user } = auth;
 
   try {
     const parsed = saveSchema.safeParse(await request.json());
@@ -771,6 +803,46 @@ export async function POST(request: NextRequest) {
     }
 
     const body = parsed.data;
+
+    // 🔒 G3: Object-level resource authorization — verify user can mutate target brand
+    const brandDenied = requireBrandAccess(user, body.brandId);
+    if (brandDenied) {
+      return createAuthErrorResponse(brandDenied);
+    }
+
+    // If activeSubtopicId is specified, verify subtopic access
+    if (body.activeSubtopicId) {
+      const subtopicDenied = requireSubtopicAccess(user, body.activeSubtopicId);
+      if (subtopicDenied) {
+        return createAuthErrorResponse(subtopicDenied);
+      }
+    }
+
+    // Parse input based on sourceFormat
+    // Both JSON and Markdown converge to AuthoringNavigationNode[]
+    let authoringTopics;
+    try {
+      if (body.sourceFormat === 'markdown') {
+        authoringTopics = parseMarkdownNavigation(body.sourceContent);
+      } else {
+        // JSON: Parse tree.topics
+        authoringTopics = body.tree.topics;
+      }
+    } catch (parseError) {
+      return NextResponse.json({
+        error: parseError instanceof Error ? parseError.message : 'Failed to parse navigation source.',
+      }, { status: 400 });
+    }
+
+    // 🔒 G3 / R3-20: Authorization must cover every subtopic referenced in submitted sidebar tree
+    const treeSubtopicIds = extractSidebarTreeSubtopicIds(authoringTopics);
+    for (const subtopicId of treeSubtopicIds) {
+      const subtopicDenied = requireSubtopicAccess(user, subtopicId);
+      if (subtopicDenied) {
+        return createAuthErrorResponse(subtopicDenied);
+      }
+    }
+
     const now = new Date();
     
     // Resolve and validate hierarchy relationships
@@ -786,22 +858,6 @@ export async function POST(request: NextRequest) {
     } catch (hierarchyError) {
       return NextResponse.json({ 
         error: hierarchyError instanceof Error ? hierarchyError.message : 'Invalid hierarchy relationships.' 
-      }, { status: 400 });
-    }
-    
-    // Parse input based on sourceFormat
-    // Both JSON and Markdown converge to AuthoringNavigationNode[]
-    let authoringTopics;
-    try {
-      if (body.sourceFormat === 'markdown') {
-        authoringTopics = parseMarkdownNavigation(body.sourceContent);
-      } else {
-        // JSON: Parse tree.topics
-        authoringTopics = body.tree.topics;
-      }
-    } catch (parseError) {
-      return NextResponse.json({ 
-        error: parseError instanceof Error ? parseError.message : 'Failed to parse navigation source.' 
       }, { status: 400 });
     }
     

@@ -28,6 +28,19 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect('/forbidden');
   }
 
+  if (outcome.status === 'UNAVAILABLE') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 text-center">
+        <div className="max-w-md rounded-lg border border-amber-200 bg-white p-8 shadow-sm">
+          <h1 className="text-xl font-bold text-gray-900">Service Temporarily Unavailable</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            The authentication service is temporarily unavailable. Please try again shortly.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AdminGuard>
       <ClientShell>{children}</ClientShell>

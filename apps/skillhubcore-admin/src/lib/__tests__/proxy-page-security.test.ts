@@ -1,10 +1,31 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { SignJWT } from 'jose';
 import { proxy } from '@/proxy';
 import { requireAdminMutationOrigin } from '@/lib/admin-route-guard';
+import { setAccountAuthority } from '@/lib/shc-account-authority';
 
 describe('Proxy Page Security — Direct HTTP, RSC, HEAD, Dynamic Routes & API Preservations', () => {
+  beforeEach(() => {
+    setAccountAuthority({
+      async getCurrentAccount(input) {
+        if (input.originalUserId.includes('unknown') || input.originalUserId.includes('not-found')) return null;
+        const role = (input.tokenRoles && input.tokenRoles.includes('super_admin')) ? 'super_admin' : 'admin';
+        return {
+          id: input.originalUserId,
+          email: 'admin@skillhubcore.in',
+          role,
+          platform: 'skillhubcore',
+          isActive: true,
+        };
+      },
+    });
+  });
+
+  afterEach(() => {
+    setAccountAuthority(null);
+  });
+
   const secretKey = new TextEncoder().encode(
     process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || 'test-admin-secret-at-least-32-chars-long!!'
   );
