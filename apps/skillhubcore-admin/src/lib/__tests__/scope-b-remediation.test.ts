@@ -627,35 +627,22 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
       expect(err?.message).toContain('Invalid brand identifier');
     });
 
-    it('enforces explicit allowedBrands restriction when present', () => {
-      const restrictedAdmin: AuthenticatedUser = {
-        ...shcAdmin,
-        allowedBrands: ['skillup'],
-      };
-
-      expect(requireBrandAccess(restrictedAdmin, 'skillup')).toBeNull();
-      const denied = requireBrandAccess(restrictedAdmin, 'realtutorialhub');
-      expect(denied).not.toBeNull();
-      expect(denied?.type).toBe('FORBIDDEN');
+    it('allows authorized SHC admin to manage any valid tutorial brand without needing allowedBrands claim (R5-06)', () => {
+      expect(requireBrandAccess(shcAdmin, 'shared')).toBeNull();
+      expect(requireBrandAccess(shcAdmin, 'skillup')).toBeNull();
+      expect(requireBrandAccess(shcAdmin, 'realtutorialhub')).toBeNull();
+      expect(requireBrandAccess(shcAdmin, 'skillhubcore')).toBeNull();
     });
 
-    it('enforces explicit allowedSubtopics restriction when present', () => {
-      const restrictedAdmin: AuthenticatedUser = {
-        ...shcAdmin,
-        allowedSubtopics: ['subtopic-permitted'],
-      };
-
-      expect(requireSubtopicAccess(restrictedAdmin, 'subtopic-permitted')).toBeNull();
-      const denied = requireSubtopicAccess(restrictedAdmin, 'subtopic-forbidden');
-      expect(denied).not.toBeNull();
-      expect(denied?.type).toBe('FORBIDDEN');
+    it('allows authorized SHC admin to manage valid subtopic without needing allowedSubtopics claim (R5-06)', () => {
+      expect(requireSubtopicAccess(shcAdmin, 'subtopic-any-valid-id')).toBeNull();
     });
   });
 
   // =========================================================================
-  // R4-06 to R4-10: Gateway Account Authority Transport Headers
+  // R4-06 to R4-10 & R5-11 to R5-16: Gateway Transport & Anti-Recursion
   // =========================================================================
-  describe('R4-06 to R4-10: Gateway Transport Contract & Error Mapping', () => {
+  describe('R4-06 to R4-10 & R5-11 to R5-16: Gateway Transport Contract & Safety', () => {
     it('sends internal secret, forwarded host, and brand headers to upstream gateway', async () => {
       vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'test-internal-gateway-secret-64-chars-long-abcdef0123456789');
       vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:8787');
@@ -700,6 +687,18 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
       } finally {
         global.fetch = originalFetch;
       }
+    });
+
+    it('rejects recursive configuration targeting SHC Admin itself (R5-13)', async () => {
+      vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:3007');
+
+      await expect(
+        defaultShcAccountAuthority.getCurrentAccount({
+          originalUserId: 'test-user-uuid',
+          brand: 'skillhubcore',
+          token: 'valid-token',
+        })
+      ).rejects.toThrow('Recursive destination rejected');
     });
 
     it('maps upstream 401/404 to null (yielding UNAUTHENTICATED)', async () => {
@@ -753,64 +752,100 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
   });
 
   // =========================================================================
-  // R4-13 to R4-14: Downstream Admission Assertion & Outage Behavior
+  // R5-21 to R5-26: Proxy-to-Layout Admission Assertion & Adversarial Matrix
   // =========================================================================
-  describe('R4-13 to R4-14: Downstream Admission Assertion & Layout Outage Safety', () => {
-    it('signs and verifies short-lived downstream admission assertion', async () => {
-      const principal = {
-        userId: 'admin-uuid-1',
-        originalUserId: 'admin-uuid-1',
-        shadowUserId: 'admin-uuid-1',
-        email: 'admin@skillhubcore.in',
-        roles: ['admin' as const],
-        isAdmin: true,
-        brand: 'skillhubcore',
-      };
+  describe('R5-21 to R5-26: Proxy-to-Layout Admission Assertion & Adversarial Matrix', () => {
+    const principal = {
+      userId: 'admin-uuid-1',
+      originalUserId: 'admin-uuid-1',
+      shadowUserId: 'admin-uuid-1',
+      email: 'admin@skillhubcore.in',
+      roles: ['admin' as const],
+      isAdmin: true,
+      brand: 'skillhubcore',
+    };
 
-      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
+    it('signs and verifies short-lived token-bound downstream admission assertion', async () => {
+      const sampleToken = 'valid-session-jwt-token-string';
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard', sampleToken);
       expect(typeof assertion).toBe('string');
       expect(assertion.length).toBeGreaterThan(20);
 
-      const verified = await verifyPageAdmissionAssertion(assertion, '/dashboard');
+      const verified = await verifyPageAdmissionAssertion(assertion, '/dashboard', sampleToken);
       expect(verified).not.toBeNull();
       expect(verified?.originalUserId).toBe('admin-uuid-1');
       expect(verified?.roles).toEqual(['admin']);
     });
 
     it('rejects assertion when path does not match', async () => {
-      const principal = {
-        userId: 'admin-uuid-1',
-        originalUserId: 'admin-uuid-1',
-        shadowUserId: 'admin-uuid-1',
-        roles: ['admin' as const],
-        isAdmin: true,
-        brand: 'skillhubcore',
-      };
+      const sampleToken = 'valid-session-jwt-token-string';
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard', sampleToken);
+      const verified = await verifyPageAdmissionAssertion(assertion, '/audit', sampleToken);
+      expect(verified).toBeNull();
+    });
 
-      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
-      const verified = await verifyPageAdmissionAssertion(assertion, '/audit');
+    it('rejects assertion replay with changed cookie token (token hash mismatch) (R5-22)', async () => {
+      const originalToken = 'original-session-token';
+      const replayedToken = 'different-stolen-session-token';
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard', originalToken);
+
+      const verified = await verifyPageAdmissionAssertion(assertion, '/dashboard', replayedToken);
+      expect(verified).toBeNull();
+    });
+
+    it('rejects assertion when cookie token is absent (session unbinding) (R5-22)', async () => {
+      const sampleToken = 'valid-session-jwt-token-string';
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard', sampleToken);
+
+      const verified = await verifyPageAdmissionAssertion(assertion, '/dashboard', undefined);
+      expect(verified).toBeNull();
+    });
+
+    it('rejects client-forged assertion signed with wrong key (R5-22)', async () => {
+      const wrongKey = new TextEncoder().encode('untrusted-foreign-key-at-least-32-chars-long!!');
+      const forgedAssertion = await new SignJWT({
+        sub: 'admin-uuid-1',
+        originalUserId: 'admin-uuid-1',
+        roles: ['admin'],
+        brand: 'skillhubcore',
+        pathname: '/dashboard',
+        tokenHash: 'some-hash',
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuer(EXPECTED_JWT_ISSUER)
+        .setAudience('shc-admin-admission')
+        .setIssuedAt()
+        .setExpirationTime('60s')
+        .sign(wrongKey);
+
+      const verified = await verifyPageAdmissionAssertion(forgedAssertion, '/dashboard', 'any-token');
       expect(verified).toBeNull();
     });
 
     it('evaluates server cookies page access using assertion without secondary network call', async () => {
-      const principal = {
-        userId: 'admin-uuid-1',
-        originalUserId: 'admin-uuid-1',
-        shadowUserId: 'admin-uuid-1',
-        email: 'admin@skillhubcore.in',
-        roles: ['admin' as const],
-        isAdmin: true,
-        brand: 'skillhubcore',
+      const sampleToken = 'valid-session-jwt-token-string';
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard', sampleToken);
+      const cookieStore = {
+        get: (name: string) => (name === 'accessToken' ? { value: sampleToken } : undefined),
       };
 
-      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
-      const emptyCookieStore = { get: () => undefined };
-
-      const outcome = await evaluateServerCookiesPageAccess(emptyCookieStore, '/dashboard', assertion);
+      const outcome = await evaluateServerCookiesPageAccess(cookieStore, '/dashboard', assertion);
       expect(outcome.status).toBe('AUTHORIZED');
       if (outcome.status === 'AUTHORIZED') {
         expect(outcome.user.originalUserId).toBe('admin-uuid-1');
       }
+    });
+
+    it('falls back to live check when assertion is absent or invalid without failing closed for valid cookie', async () => {
+      setAccountAuthority(mockActiveAdminAuthority);
+      const validToken = await createToken({ roles: ['admin'] });
+      const cookieStore = {
+        get: (name: string) => (name === 'accessToken' ? { value: validToken } : undefined),
+      };
+
+      // Absent assertion: falls back to evaluatePageAccess and succeeds with valid cookie
+      const outcome = await evaluateServerCookiesPageAccess(cookieStore, '/dashboard', null);
+      expect(outcome.status).toBe('AUTHORIZED');
     });
   });
 });

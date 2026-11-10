@@ -511,58 +511,116 @@ export async function evaluateRequestPageAccess(request: NextRequest): Promise<P
 export const ADMISSION_ASSERTION_AUDIENCE = 'shc-admin-admission';
 
 /**
- * 🔒 R4-13: Sign a per-request admission assertion downstream from proxy.
- * Prevents downstream layout double-checking and race conditions.
+ * 🔒 R5-22: Compute SHA-256 digest of the access token for session-assertion binding.
+ */
+export async function computeTokenHash(token: string): Promise<string> {
+  if (!token || typeof token !== 'string') return '';
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token.trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * 🔒 R5-21 to R5-23: Sign a per-request admission assertion downstream from proxy.
+ * Prevents downstream layout double-checking, cryptographically bound to verified session token and pathname.
  */
 export async function signPageAdmissionAssertion(
   user: AuthenticatedAdminPrincipal,
   pathname: string,
+  token: string,
 ): Promise<string> {
   const secret = TokenService.ADMIN_SECRET;
+  const tokenHash = await computeTokenHash(token);
+  const now = Math.floor(Date.now() / 1000);
+
   return new SignJWT({
     sub: user.originalUserId,
     userId: user.userId,
     originalUserId: user.originalUserId,
     shadowUserId: user.shadowUserId,
     roles: user.roles,
-    brand: user.brand ?? 'skillhubcore',
+    brand: 'skillhubcore',
     pathname,
+    tokenHash,
   })
     .setProtectedHeader({ alg: EXPECTED_JWT_ALGORITHM })
     .setIssuer(EXPECTED_JWT_ISSUER)
     .setAudience(ADMISSION_ASSERTION_AUDIENCE)
-    .setIssuedAt()
-    .setExpirationTime('60s')
+    .setIssuedAt(now)
+    .setExpirationTime(now + 60)
     .sign(secret);
 }
 
 /**
- * 🔒 R4-13: Verify a per-request admission assertion passed from proxy.
+ * 🔒 R5-21 to R5-23: Verify a per-request admission assertion passed from proxy.
+ * Enforces algorithm, pinned issuer, audience, exact pathname match, session token hash binding,
+ * non-empty identity claims, finite expiry, and administrative privileges.
  */
 export async function verifyPageAdmissionAssertion(
   assertion: string,
-  pathname: string,
+  expectedPathname: string,
+  cookieToken?: string,
 ): Promise<AuthenticatedAdminPrincipal | null> {
-  if (!assertion || assertion.trim() === '') return null;
+  if (!assertion || typeof assertion !== 'string' || assertion.trim() === '') {
+    return null;
+  }
+  // 🔒 R5-22: Mandatory token-binding: reject assertion if no cookie token is present
+  if (!cookieToken || typeof cookieToken !== 'string' || cookieToken.trim() === '') {
+    return null;
+  }
+
   try {
     const secret = TokenService.ADMIN_SECRET;
     const { payload } = await jwtVerify(assertion, secret, {
       issuer: EXPECTED_JWT_ISSUER,
       audience: ADMISSION_ASSERTION_AUDIENCE,
+      algorithms: [EXPECTED_JWT_ALGORITHM],
     });
 
-    if (payload.pathname && typeof payload.pathname === 'string' && payload.pathname !== pathname) {
+    // 1. Mandatory pathname check
+    if (
+      !payload.pathname ||
+      typeof payload.pathname !== 'string' ||
+      payload.pathname !== expectedPathname
+    ) {
       return null;
     }
 
+    // 2. Token-binding check (SHA-256 hash match against verified cookie)
+    const expectedHash = await computeTokenHash(cookieToken);
+    if (!payload.tokenHash || payload.tokenHash !== expectedHash) {
+      return null;
+    }
+
+    // 3. Mandatory brand check
+    if (payload.brand !== 'skillhubcore') {
+      return null;
+    }
+
+    // 4. Mandatory non-empty identity claims
+    const originalUserId = String(payload.originalUserId ?? payload.sub ?? '');
+    const shadowUserId = String(payload.shadowUserId ?? payload.userId ?? originalUserId);
+    if (!originalUserId || !shadowUserId) {
+      return null;
+    }
+
+    // 5. Mandatory finite exp and iat checks
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof payload.exp !== 'number' || payload.exp <= now || payload.exp > now + 120) {
+      return null;
+    }
+    if (typeof payload.iat !== 'number' || payload.iat > now + 5) {
+      return null;
+    }
+
+    // 6. Role check
     const roles = normalizeRoles((payload.roles as Role[]) ?? []);
     const isAdmin = RBACService.isAdminLevel(roles);
-    if (!isAdmin) return null;
-
-    const originalUserId = String(payload.originalUserId || payload.sub || '');
-    const shadowUserId = String(payload.shadowUserId || payload.userId || originalUserId);
-
-    if (!originalUserId || !shadowUserId) return null;
+    if (!isAdmin) {
+      return null;
+    }
 
     return {
       userId: shadowUserId,
@@ -570,7 +628,7 @@ export async function verifyPageAdmissionAssertion(
       shadowUserId,
       roles,
       isAdmin,
-      brand: typeof payload.brand === 'string' ? payload.brand : 'skillhubcore',
+      brand: 'skillhubcore',
     };
   } catch {
     return null;
@@ -586,8 +644,14 @@ export async function evaluateServerCookiesPageAccess(
   pathname: string,
   admissionAssertion?: string | null,
 ): Promise<PageAuthOutcome> {
+  const token = extractAccessToken((name) => cookieStore.get(name));
+
   if (admissionAssertion && typeof admissionAssertion === 'string') {
-    const assertionPrincipal = await verifyPageAdmissionAssertion(admissionAssertion, pathname);
+    const assertionPrincipal = await verifyPageAdmissionAssertion(
+      admissionAssertion,
+      pathname,
+      token
+    );
     if (assertionPrincipal) {
       const requiredPermission = getRequiredPagePermission(pathname);
       const hasPermission = RBACService.hasPermission(assertionPrincipal.roles, requiredPermission);
@@ -606,6 +670,5 @@ export async function evaluateServerCookiesPageAccess(
     }
   }
 
-  const token = extractAccessToken((name) => cookieStore.get(name));
   return evaluatePageAccess(token, pathname);
 }

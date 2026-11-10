@@ -9,6 +9,17 @@ import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
 /**
+ * Typed domain error for absent/deleted SHC administrator account.
+ * 🔒 SECURITY (R5-17): Enables typed 404 error classification without relying on exception text inspection.
+ */
+export class UserNotFoundError extends Error {
+  constructor(message: string = 'User not found') {
+    super(message);
+    this.name = 'UserNotFoundError';
+  }
+}
+
+/**
  * SkillHub Core Authentication Service
  * 
  * Handles authentication for SHC infrastructure admins who manage
@@ -177,7 +188,7 @@ export class SHCAuthService {
       .limit(1);
 
     if (userResult.length === 0) {
-      throw new Error('User not found');
+      throw new UserNotFoundError('User not found');
     }
 
     const user = userResult[0];

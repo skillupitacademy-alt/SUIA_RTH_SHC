@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdminMutationOrigin, requireAdminRequest } from '@/lib/admin-route-guard';
 import { isProtectedAdminPage, isPublicPath } from './lib/admin-page-policy';
 import { sanitizeRedirectUrl } from './lib/sanitize-redirect';
-import { evaluateRequestPageAccess, signPageAdmissionAssertion } from './lib/server-page-auth';
+import {
+  evaluateRequestPageAccess,
+  extractAccessToken,
+  signPageAdmissionAssertion,
+} from './lib/server-page-auth';
 
 /**
  * Next.js Edge Middleware for SkillHubCore Admin.
@@ -16,6 +20,11 @@ import { evaluateRequestPageAccess, signPageAdmissionAssertion } from './lib/ser
  */
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  // 🔒 SECURITY (R5-23): Inbound client headers MUST NOT forge internal admission assertion or pathname
+  const sanitizedRequestHeaders = new Headers(request.headers);
+  sanitizedRequestHeaders.delete('x-shc-admission-assertion');
+  sanitizedRequestHeaders.delete('x-shc-pathname');
 
   // 1. API Route Guards — explicit auth, origin check, health & login exceptions
   if (path.startsWith('/api/')) {
@@ -68,15 +77,15 @@ export async function proxy(request: NextRequest) {
     }
 
     // Outcome is AUTHORIZED:
-    // Sign downstream admission assertion to prevent duplicate live network checks in layouts.
-    const assertion = await signPageAdmissionAssertion(outcome.user, path);
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-shc-pathname', path);
-    requestHeaders.set('x-shc-admission-assertion', assertion);
+    // Sign downstream admission assertion bound to verified token and path (R5-21 to R5-23)
+    const token = extractAccessToken((name) => request.cookies.get(name)?.value) ?? '';
+    const assertion = await signPageAdmissionAssertion(outcome.user, path, token);
+    sanitizedRequestHeaders.set('x-shc-pathname', path);
+    sanitizedRequestHeaders.set('x-shc-admission-assertion', assertion);
 
     const response = NextResponse.next({
       request: {
-        headers: requestHeaders,
+        headers: sanitizedRequestHeaders,
       },
     });
     response.headers.set('Cache-Control', 'private, no-store');

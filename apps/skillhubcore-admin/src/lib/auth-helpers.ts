@@ -502,7 +502,7 @@ export function requireSubtopicAccess(
     return null;
   }
 
-  // If explicit subtopic restrictions are defined on the principal, enforce them (R3-18)
+  // If explicit subtopic restrictions are defined on the principal, enforce them
   if (user.allowedSubtopics !== undefined) {
     if (!Array.isArray(user.allowedSubtopics) || user.allowedSubtopics.length === 0) {
       return {
@@ -519,6 +519,7 @@ export function requireSubtopicAccess(
     return null;
   }
 
+  // 🔒 R5-06: Authorized SHC administrators have central authoring authority
   return null;
 }
 
@@ -530,15 +531,14 @@ export const VALID_TUTORIAL_BRAND_IDS = new Set([
 ]);
 
 /**
- * 🔒 G3 / R4-01 to R4-05: Verify user has permission for a specific tutorial brand.
+ * 🔒 G3 / R5-05 to R5-08: Verify user has permission for a specific tutorial brand.
  *
  * Central Authority Model:
- * - SHC Admin is the central authoring authority for all Tutorial V2 content.
+ * - SHC Admin is the sole central authoring authority for all Tutorial V2 content.
  * - Valid tutorial distribution scopes are: 'shared', 'skillup', 'realtutorialhub', 'skillhubcore'.
  * - An authorized SHC administrator (with tutorial.author.create or tutorial.author.edit)
- *   can manage all three distribution scopes ('shared', 'skillup', 'realtutorialhub') as well as 'skillhubcore'.
+ *   can manage all valid distribution scopes without artificial per-brand scope claims.
  * - Non-SHC tenant tokens (e.g. user.brand !== 'skillhubcore') are strictly forbidden from SHC tutorial authoring.
- * - Explicit allowedBrands or adminScope restrictions on the principal are respected if defined.
  * 
  * @param user - Authenticated user
  * @param brandId - Brand ID to check access for
@@ -605,6 +605,6 @@ export function requireBrandAccess(
     return null;
   }
 
-  // Authorized SHC administrator without restrictive brand-scope has full central authoring authority
+  // 🔒 R5-06: Authorized SHC administrator has full central authoring authority across all valid distribution scopes
   return null;
 }

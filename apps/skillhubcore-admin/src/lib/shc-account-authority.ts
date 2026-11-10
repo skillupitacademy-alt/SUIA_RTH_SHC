@@ -148,6 +148,31 @@ export const defaultShcAccountAuthority: ShcAccountAuthority = {
     const normalizedBase = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
     const targetUrl = `${normalizedBase}/shc/auth/me`;
 
+    // 🔒 R5-13: Guard against accidental recursion targeting SHC Admin itself
+    try {
+      const parsedUrl = new URL(targetUrl);
+      if (
+        parsedUrl.port === '3007' ||
+        (parsedUrl.hostname === 'admin.skillhubcore.in' && !parsedUrl.port && !process.env.SHC_IDENTITY_SERVICE_URL)
+      ) {
+        throw new ConfigurationError(
+          'Recursive destination rejected: SHC account authority cannot target SHC Admin itself.'
+        );
+      }
+    } catch (urlErr) {
+      if (urlErr instanceof ConfigurationError) throw urlErr;
+      throw new ConfigurationError(`Malformed SHC identity URL: ${targetUrl}`);
+    }
+
+    const internalSecret =
+      process.env.INTERNAL_GATEWAY_SECRET ||
+      process.env.INTERNAL_API_SECRET ||
+      process.env.GATEWAY_TRUST_SECRET;
+
+    if (process.env.NODE_ENV === 'production' && !internalSecret) {
+      throw new ConfigurationError('Missing required internal gateway secret in production.');
+    }
+
     const headers: Record<string, string> = {
       'Authorization': `Bearer ${input.token}`,
       'Cookie': `accessToken=${input.token}; admin_accessToken=${input.token}`,
@@ -159,10 +184,6 @@ export const defaultShcAccountAuthority: ShcAccountAuthority = {
       'x-brand': 'skillhubcore',
     };
 
-    const internalSecret =
-      process.env.INTERNAL_GATEWAY_SECRET ||
-      process.env.INTERNAL_API_SECRET ||
-      process.env.GATEWAY_TRUST_SECRET;
     if (internalSecret) {
       headers['x-internal-secret'] = internalSecret;
       headers['x-gateway-secret'] = internalSecret;
