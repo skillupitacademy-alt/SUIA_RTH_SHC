@@ -489,6 +489,14 @@ export function requireSubtopicAccess(
     };
   }
 
+  // Reject non-SHC tenant callers attempting to manage SHC tutorial subtopics
+  if (user.brand && user.brand !== 'skillhubcore') {
+    return {
+      type: 'FORBIDDEN',
+      message: `Forbidden: tenant token '${user.brand}' cannot manage SHC tutorial subtopics.`,
+    };
+  }
+
   // super_admin has platform-wide authorization
   if (user.roles.includes('super_admin')) {
     return null;
@@ -514,14 +522,23 @@ export function requireSubtopicAccess(
   return null;
 }
 
+export const VALID_TUTORIAL_BRAND_IDS = new Set([
+  'shared',
+  'skillup',
+  'realtutorialhub',
+  'skillhubcore',
+]);
+
 /**
- * 🔒 G3: Verify user has permission for a specific brand.
- * Enforces actual resource-scope authorization:
- * - Checks tutorial authoring role permissions.
- * - super_admin has platform-wide wildcard authorization across all brands.
- * - Preserves canonical shared content authoring ('shared') and native SHC admin ('skillhubcore').
- * - Denies unauthorized cross-brand access to private tenant content (e.g. 'skillup', 'realtutorialhub')
- *   when administrator scope does not permit it.
+ * 🔒 G3 / R4-01 to R4-05: Verify user has permission for a specific tutorial brand.
+ *
+ * Central Authority Model:
+ * - SHC Admin is the central authoring authority for all Tutorial V2 content.
+ * - Valid tutorial distribution scopes are: 'shared', 'skillup', 'realtutorialhub', 'skillhubcore'.
+ * - An authorized SHC administrator (with tutorial.author.create or tutorial.author.edit)
+ *   can manage all three distribution scopes ('shared', 'skillup', 'realtutorialhub') as well as 'skillhubcore'.
+ * - Non-SHC tenant tokens (e.g. user.brand !== 'skillhubcore') are strictly forbidden from SHC tutorial authoring.
+ * - Explicit allowedBrands or adminScope restrictions on the principal are respected if defined.
  * 
  * @param user - Authenticated user
  * @param brandId - Brand ID to check access for
@@ -549,25 +566,28 @@ export function requireBrandAccess(
     };
   }
 
+  const normalizedBrandId = brandId.trim().toLowerCase();
+  if (!VALID_TUTORIAL_BRAND_IDS.has(normalizedBrandId)) {
+    return {
+      type: 'FORBIDDEN',
+      message: `Invalid brand identifier '${brandId}'. Valid distribution brands are: ${Array.from(VALID_TUTORIAL_BRAND_IDS).join(', ')}.`,
+    };
+  }
+
+  // Deny cross-tenant or learner-facing tenant tokens from SHC tutorial authoring
+  if (user.brand && user.brand !== 'skillhubcore') {
+    return {
+      type: 'FORBIDDEN',
+      message: `Forbidden: tenant token '${user.brand}' cannot author or manage SHC tutorials. Only SHC administrators are authorized.`,
+    };
+  }
+
   // super_admin has platform-wide wildcard authorization across all brands
   if (user.roles.includes('super_admin')) {
     return null;
   }
 
-  // Tenant authors (e.g. skillup or realtutorialhub) cannot modify global shared content
-  if ((brandId === 'shared' || brandId === 'skillhubcore') && user.brand && user.brand !== 'skillhubcore') {
-    return {
-      type: 'FORBIDDEN',
-      message: `Tenant author '${user.brand}' cannot modify global '${brandId}' content.`,
-    };
-  }
-
-  // Canonical shared tutorials and native SHC tutorials are manageable by authorized SHC administrators
-  if (brandId === 'shared' || brandId === 'skillhubcore') {
-    return null;
-  }
-
-  // If explicit brand restrictions are defined on the principal, enforce them (R3-18)
+  // If explicit brand restrictions are defined on the principal, enforce them
   const allowedBrands = user.allowedBrands ?? user.adminScope;
   if (allowedBrands !== undefined) {
     if (!Array.isArray(allowedBrands) || allowedBrands.length === 0) {
@@ -576,26 +596,15 @@ export function requireBrandAccess(
         message: 'Forbidden: administrator has no authorized brands assigned.',
       };
     }
-    if (!allowedBrands.includes(brandId) && !allowedBrands.includes('*')) {
+    if (!allowedBrands.includes(normalizedBrandId) && !allowedBrands.includes('*')) {
       return {
         type: 'FORBIDDEN',
-        message: `Forbidden: administrator scope does not permit accessing private content for brand '${brandId}'.`,
+        message: `Forbidden: administrator scope does not permit accessing content for brand '${brandId}'.`,
       };
     }
     return null;
   }
 
-  // If user token carries a single brand that does not match the target brand, deny cross-tenant access
-  if (user.brand && user.brand !== 'skillhubcore' && user.brand !== brandId) {
-    return {
-      type: 'FORBIDDEN',
-      message: `Forbidden: cross-tenant access denied. Token brand '${user.brand}' cannot modify content for brand '${brandId}'.`,
-    };
-  }
-
-  // Private tenant content requires explicit tenant authorization scope
-  return {
-    type: 'FORBIDDEN',
-    message: `Forbidden: explicit brand authorization required to access private tenant brand '${brandId}'.`,
-  };
+  // Authorized SHC administrator without restrictive brand-scope has full central authoring authority
+  return null;
 }

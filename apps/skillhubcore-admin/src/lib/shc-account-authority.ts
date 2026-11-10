@@ -153,13 +153,19 @@ export const defaultShcAccountAuthority: ShcAccountAuthority = {
       'Cookie': `accessToken=${input.token}; admin_accessToken=${input.token}`,
       'Accept': 'application/json',
       'Host': 'admin.skillhubcore.in',
-      'X-Forwarded-Proto': 'https',
-      'X-Brand': 'skillhubcore',
+      'x-forwarded-host': 'admin.skillhubcore.in',
+      'x-original-host': 'admin.skillhubcore.in',
+      'x-forwarded-proto': 'https',
+      'x-brand': 'skillhubcore',
     };
 
-    const gatewaySecret = process.env.GATEWAY_TRUST_SECRET || process.env.INTERNAL_GATEWAY_SECRET;
-    if (gatewaySecret) {
-      headers['X-Gateway-Secret'] = gatewaySecret;
+    const internalSecret =
+      process.env.INTERNAL_GATEWAY_SECRET ||
+      process.env.INTERNAL_API_SECRET ||
+      process.env.GATEWAY_TRUST_SECRET;
+    if (internalSecret) {
+      headers['x-internal-secret'] = internalSecret;
+      headers['x-gateway-secret'] = internalSecret;
     }
 
     const res = await fetch(targetUrl, {

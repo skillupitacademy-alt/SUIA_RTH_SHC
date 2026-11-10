@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SignJWT } from 'jose';
 import {
   evaluatePageAccess,
+  evaluateServerCookiesPageAccess,
   setAccountAuthority,
+  signPageAdmissionAssertion,
+  verifyPageAdmissionAssertion,
   EXPECTED_JWT_AUDIENCE,
   EXPECTED_JWT_ISSUER,
   type ShcAccountAuthority,
@@ -12,8 +15,10 @@ import {
   createAuthErrorResponse,
   requireBrandAccess,
   requireSubtopicAccess,
+  VALID_TUTORIAL_BRAND_IDS,
   type AuthenticatedUser,
 } from '../auth-helpers';
+import { defaultShcAccountAuthority } from '../shc-account-authority';
 import { POST as sidebarPost } from '../../app/api/tutorial-left-sidebar/route';
 import { ConfigurationError, TokenService } from '@quiz/auth';
 import { NextRequest } from 'next/server';
@@ -568,6 +573,244 @@ describe('Scope B Remediation R3 Master Verification Suite', () => {
 
       expect(() => TokenService.ADMIN_SECRET).toThrow(ConfigurationError);
       expect(() => TokenService.ACCESS_SECRET).toThrow(ConfigurationError);
+    });
+  });
+
+  // =========================================================================
+  // R4-01 to R4-05: Centralized SHC Admin Tutorial Authoring Authority
+  // =========================================================================
+  describe('R4-01 to R4-05: Centralized SHC Admin Tutorial Authoring Authority', () => {
+    const shcAdmin: AuthenticatedUser = {
+      userId: 'shc-admin-1',
+      originalUserId: 'shc-admin-1',
+      shadowUserId: 'shc-admin-1',
+      roles: ['admin'],
+      isAdmin: true,
+      brand: 'skillhubcore',
+    };
+
+    it('allows authorized SHC admin to manage shared, skillup, realtutorialhub, and skillhubcore (R4-05)', () => {
+      for (const brand of VALID_TUTORIAL_BRAND_IDS) {
+        const error = requireBrandAccess(shcAdmin, brand);
+        expect(error).toBeNull();
+      }
+    });
+
+    it('allows authorized SHC admin to manage tutorial subtopics without explicit allowedSubtopics claim', () => {
+      const error = requireSubtopicAccess(shcAdmin, 'subtopic-advanced-react');
+      expect(error).toBeNull();
+    });
+
+    it('denies tenant tokens (user.brand !== skillhubcore) from SHC tutorial authoring', () => {
+      const tenantAuthors: AuthenticatedUser[] = [
+        { ...shcAdmin, brand: 'skillup' },
+        { ...shcAdmin, brand: 'realtutorialhub' },
+      ];
+
+      for (const author of tenantAuthors) {
+        const brandErr = requireBrandAccess(author, 'skillup');
+        expect(brandErr).not.toBeNull();
+        expect(brandErr?.type).toBe('FORBIDDEN');
+        expect(brandErr?.message).toContain('tenant token');
+
+        const subtopicErr = requireSubtopicAccess(author, 'subtopic-1');
+        expect(subtopicErr).not.toBeNull();
+        expect(subtopicErr?.type).toBe('FORBIDDEN');
+        expect(subtopicErr?.message).toContain('tenant token');
+      }
+    });
+
+    it('denies invalid brand identifier not in VALID_TUTORIAL_BRAND_IDS', () => {
+      const err = requireBrandAccess(shcAdmin, 'unknown-unsupported-brand');
+      expect(err).not.toBeNull();
+      expect(err?.type).toBe('FORBIDDEN');
+      expect(err?.message).toContain('Invalid brand identifier');
+    });
+
+    it('enforces explicit allowedBrands restriction when present', () => {
+      const restrictedAdmin: AuthenticatedUser = {
+        ...shcAdmin,
+        allowedBrands: ['skillup'],
+      };
+
+      expect(requireBrandAccess(restrictedAdmin, 'skillup')).toBeNull();
+      const denied = requireBrandAccess(restrictedAdmin, 'realtutorialhub');
+      expect(denied).not.toBeNull();
+      expect(denied?.type).toBe('FORBIDDEN');
+    });
+
+    it('enforces explicit allowedSubtopics restriction when present', () => {
+      const restrictedAdmin: AuthenticatedUser = {
+        ...shcAdmin,
+        allowedSubtopics: ['subtopic-permitted'],
+      };
+
+      expect(requireSubtopicAccess(restrictedAdmin, 'subtopic-permitted')).toBeNull();
+      const denied = requireSubtopicAccess(restrictedAdmin, 'subtopic-forbidden');
+      expect(denied).not.toBeNull();
+      expect(denied?.type).toBe('FORBIDDEN');
+    });
+  });
+
+  // =========================================================================
+  // R4-06 to R4-10: Gateway Account Authority Transport Headers
+  // =========================================================================
+  describe('R4-06 to R4-10: Gateway Transport Contract & Error Mapping', () => {
+    it('sends internal secret, forwarded host, and brand headers to upstream gateway', async () => {
+      vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'test-internal-gateway-secret-64-chars-long-abcdef0123456789');
+      vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:8787');
+
+      let capturedUrl = '';
+      let capturedHeaders: Record<string, string> = {};
+
+      const originalFetch = global.fetch;
+      global.fetch = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+        capturedUrl = url;
+        capturedHeaders = (init?.headers as Record<string, string>) || {};
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            user: {
+              id: 'test-user-uuid',
+              email: 'admin@skillhubcore.in',
+              role: 'admin',
+              platform: 'skillhubcore',
+              isActive: true,
+            },
+          }),
+        } as unknown as Response;
+      });
+
+      try {
+        const account = await defaultShcAccountAuthority.getCurrentAccount({
+          originalUserId: 'test-user-uuid',
+          brand: 'skillhubcore',
+          token: 'test-admin-bearer-token',
+        });
+
+        expect(account).not.toBeNull();
+        expect(account?.id).toBe('test-user-uuid');
+        expect(capturedUrl).toContain('/api/shc/auth/me');
+        expect(capturedHeaders['x-internal-secret']).toBe('test-internal-gateway-secret-64-chars-long-abcdef0123456789');
+        expect(capturedHeaders['x-forwarded-host']).toBe('admin.skillhubcore.in');
+        expect(capturedHeaders['x-original-host']).toBe('admin.skillhubcore.in');
+        expect(capturedHeaders['x-brand']).toBe('skillhubcore');
+        expect(capturedHeaders['Authorization']).toBe('Bearer test-admin-bearer-token');
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+
+    it('maps upstream 401/404 to null (yielding UNAUTHENTICATED)', async () => {
+      vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'test-secret');
+      vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:8787');
+
+      const originalFetch = global.fetch;
+      global.fetch = vi.fn().mockImplementation(async () => {
+        return {
+          ok: false,
+          status: 401,
+        } as unknown as Response;
+      });
+
+      try {
+        const account = await defaultShcAccountAuthority.getCurrentAccount({
+          originalUserId: 'test-user-uuid',
+          brand: 'skillhubcore',
+          token: 'invalid-or-revoked-token',
+        });
+        expect(account).toBeNull();
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+
+    it('maps upstream 500/503 to thrown error (yielding UNAVAILABLE)', async () => {
+      vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'test-secret');
+      vi.stubEnv('SHC_IDENTITY_SERVICE_URL', 'http://127.0.0.1:8787');
+
+      const originalFetch = global.fetch;
+      global.fetch = vi.fn().mockImplementation(async () => {
+        return {
+          ok: false,
+          status: 503,
+        } as unknown as Response;
+      });
+
+      try {
+        await expect(
+          defaultShcAccountAuthority.getCurrentAccount({
+            originalUserId: 'test-user-uuid',
+            brand: 'skillhubcore',
+            token: 'valid-token',
+          })
+        ).rejects.toThrow('Upstream identity service returned status 503');
+      } finally {
+        global.fetch = originalFetch;
+      }
+    });
+  });
+
+  // =========================================================================
+  // R4-13 to R4-14: Downstream Admission Assertion & Outage Behavior
+  // =========================================================================
+  describe('R4-13 to R4-14: Downstream Admission Assertion & Layout Outage Safety', () => {
+    it('signs and verifies short-lived downstream admission assertion', async () => {
+      const principal = {
+        userId: 'admin-uuid-1',
+        originalUserId: 'admin-uuid-1',
+        shadowUserId: 'admin-uuid-1',
+        email: 'admin@skillhubcore.in',
+        roles: ['admin' as const],
+        isAdmin: true,
+        brand: 'skillhubcore',
+      };
+
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
+      expect(typeof assertion).toBe('string');
+      expect(assertion.length).toBeGreaterThan(20);
+
+      const verified = await verifyPageAdmissionAssertion(assertion, '/dashboard');
+      expect(verified).not.toBeNull();
+      expect(verified?.originalUserId).toBe('admin-uuid-1');
+      expect(verified?.roles).toEqual(['admin']);
+    });
+
+    it('rejects assertion when path does not match', async () => {
+      const principal = {
+        userId: 'admin-uuid-1',
+        originalUserId: 'admin-uuid-1',
+        shadowUserId: 'admin-uuid-1',
+        roles: ['admin' as const],
+        isAdmin: true,
+        brand: 'skillhubcore',
+      };
+
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
+      const verified = await verifyPageAdmissionAssertion(assertion, '/audit');
+      expect(verified).toBeNull();
+    });
+
+    it('evaluates server cookies page access using assertion without secondary network call', async () => {
+      const principal = {
+        userId: 'admin-uuid-1',
+        originalUserId: 'admin-uuid-1',
+        shadowUserId: 'admin-uuid-1',
+        email: 'admin@skillhubcore.in',
+        roles: ['admin' as const],
+        isAdmin: true,
+        brand: 'skillhubcore',
+      };
+
+      const assertion = await signPageAdmissionAssertion(principal, '/dashboard');
+      const emptyCookieStore = { get: () => undefined };
+
+      const outcome = await evaluateServerCookiesPageAccess(emptyCookieStore, '/dashboard', assertion);
+      expect(outcome.status).toBe('AUTHORIZED');
+      if (outcome.status === 'AUTHORIZED') {
+        expect(outcome.user.originalUserId).toBe('admin-uuid-1');
+      }
     });
   });
 });

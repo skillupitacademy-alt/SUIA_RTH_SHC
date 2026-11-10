@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdminMutationOrigin, requireAdminRequest } from '@/lib/admin-route-guard';
 import { isProtectedAdminPage, isPublicPath } from './lib/admin-page-policy';
 import { sanitizeRedirectUrl } from './lib/sanitize-redirect';
-import { evaluateRequestPageAccess } from './lib/server-page-auth';
+import { evaluateRequestPageAccess, signPageAdmissionAssertion } from './lib/server-page-auth';
 
 /**
  * Next.js Edge Middleware for SkillHubCore Admin.
@@ -68,10 +68,11 @@ export async function proxy(request: NextRequest) {
     }
 
     // Outcome is AUTHORIZED:
-    // Pass downstream with x-shc-pathname request header so Server Component layouts
-    // can independently enforce route-specific permission policies.
+    // Sign downstream admission assertion to prevent duplicate live network checks in layouts.
+    const assertion = await signPageAdmissionAssertion(outcome.user, path);
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-shc-pathname', path);
+    requestHeaders.set('x-shc-admission-assertion', assertion);
 
     const response = NextResponse.next({
       request: {

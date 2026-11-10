@@ -2,7 +2,7 @@ import { TokenService, ConfigurationError } from '@quiz/auth';
 import { RBACService } from '@quiz/auth/rbac';
 import { normalizeRoles } from '@quiz/auth/rbac/normalize-roles';
 import type { Role } from '@quiz/auth/rbac/roles';
-import { decodeProtectedHeader } from 'jose';
+import { decodeProtectedHeader, jwtVerify, SignJWT } from 'jose';
 import type { NextRequest } from 'next/server';
 import { getRequiredPagePermission } from './admin-page-policy';
 import {
@@ -508,13 +508,104 @@ export async function evaluateRequestPageAccess(request: NextRequest): Promise<P
   return evaluatePageAccess(token, request.nextUrl.pathname);
 }
 
+export const ADMISSION_ASSERTION_AUDIENCE = 'shc-admin-admission';
+
+/**
+ * 🔒 R4-13: Sign a per-request admission assertion downstream from proxy.
+ * Prevents downstream layout double-checking and race conditions.
+ */
+export async function signPageAdmissionAssertion(
+  user: AuthenticatedAdminPrincipal,
+  pathname: string,
+): Promise<string> {
+  const secret = TokenService.ADMIN_SECRET;
+  return new SignJWT({
+    sub: user.originalUserId,
+    userId: user.userId,
+    originalUserId: user.originalUserId,
+    shadowUserId: user.shadowUserId,
+    roles: user.roles,
+    brand: user.brand ?? 'skillhubcore',
+    pathname,
+  })
+    .setProtectedHeader({ alg: EXPECTED_JWT_ALGORITHM })
+    .setIssuer(EXPECTED_JWT_ISSUER)
+    .setAudience(ADMISSION_ASSERTION_AUDIENCE)
+    .setIssuedAt()
+    .setExpirationTime('60s')
+    .sign(secret);
+}
+
+/**
+ * 🔒 R4-13: Verify a per-request admission assertion passed from proxy.
+ */
+export async function verifyPageAdmissionAssertion(
+  assertion: string,
+  pathname: string,
+): Promise<AuthenticatedAdminPrincipal | null> {
+  if (!assertion || assertion.trim() === '') return null;
+  try {
+    const secret = TokenService.ADMIN_SECRET;
+    const { payload } = await jwtVerify(assertion, secret, {
+      issuer: EXPECTED_JWT_ISSUER,
+      audience: ADMISSION_ASSERTION_AUDIENCE,
+    });
+
+    if (payload.pathname && typeof payload.pathname === 'string' && payload.pathname !== pathname) {
+      return null;
+    }
+
+    const roles = normalizeRoles((payload.roles as Role[]) ?? []);
+    const isAdmin = RBACService.isAdminLevel(roles);
+    if (!isAdmin) return null;
+
+    const originalUserId = String(payload.originalUserId || payload.sub || '');
+    const shadowUserId = String(payload.shadowUserId || payload.userId || originalUserId);
+
+    if (!originalUserId || !shadowUserId) return null;
+
+    return {
+      userId: shadowUserId,
+      originalUserId,
+      shadowUserId,
+      roles,
+      isAdmin,
+      brand: typeof payload.brand === 'string' ? payload.brand : 'skillhubcore',
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Adapter evaluating access from Server Component cookie store (used by layouts).
+ * Accepts an optional verified admission assertion passed downstream from proxy middleware.
  */
 export async function evaluateServerCookiesPageAccess(
   cookieStore: { get(name: string): { value: string } | undefined },
   pathname: string,
+  admissionAssertion?: string | null,
 ): Promise<PageAuthOutcome> {
+  if (admissionAssertion && typeof admissionAssertion === 'string') {
+    const assertionPrincipal = await verifyPageAdmissionAssertion(admissionAssertion, pathname);
+    if (assertionPrincipal) {
+      const requiredPermission = getRequiredPagePermission(pathname);
+      const hasPermission = RBACService.hasPermission(assertionPrincipal.roles, requiredPermission);
+      if (!hasPermission) {
+        return {
+          status: 'FORBIDDEN',
+          reason: 'INSUFFICIENT_PERMISSIONS',
+          message: `Insufficient permissions: ${requiredPermission} is required to access ${pathname}.`,
+          user: assertionPrincipal,
+        };
+      }
+      return {
+        status: 'AUTHORIZED',
+        user: assertionPrincipal,
+      };
+    }
+  }
+
   const token = extractAccessToken((name) => cookieStore.get(name));
   return evaluatePageAccess(token, pathname);
 }
