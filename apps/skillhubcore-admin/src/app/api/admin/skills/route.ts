@@ -1,9 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { skillSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, skills } from '@quiz/db';
-import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -127,17 +128,20 @@ export async function DELETE(request: NextRequest) {
 
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-    const db = getDb();
-
     if (ids) {
-      await db.delete(skills).where(inArray(skills.id, ids.split(',')));
-      return NextResponse.json({ message: 'Skills deleted' });
+      const idArray = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const result = await AcademicHierarchyService.batchDeleteSkills({ ids: idArray });
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
+    } else {
+      const result = await AcademicHierarchyService.deleteSkill(id!);
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     }
-
-    const [deleted] = await db.delete(skills).where(eq(skills.id, id!)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Skill deleted' });
   } catch (error) {
     console.error('Error deleting skill:', error);
     return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 });

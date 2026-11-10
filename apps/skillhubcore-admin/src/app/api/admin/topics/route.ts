@@ -1,9 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { TOPIC_COMPLEXITY_ENUM_TO_LEVEL, topicSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb, subjects, topics } from '@quiz/db';
-import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 function normalizeComplexity(value: unknown): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
@@ -69,17 +70,17 @@ export async function GET(request: NextRequest) {
       subject:
         subject !== null
           ? {
-              id: subject.id,
-              name: subject.name,
-              domainId: subject.domainId,
-              domain:
-                domain !== null
-                  ? {
-                      id: domain.id,
-                      name: domain.name,
-                    }
-                  : undefined,
-            }
+            id: subject.id,
+            name: subject.name,
+            domainId: subject.domainId,
+            domain:
+              domain !== null
+                ? {
+                  id: domain.id,
+                  name: domain.name,
+                }
+                : undefined,
+          }
           : undefined,
     }));
 
@@ -186,17 +187,20 @@ export async function DELETE(request: NextRequest) {
 
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-    const db = getDb();
-
     if (ids) {
-      await db.delete(topics).where(inArray(topics.id, ids.split(',')));
-      return NextResponse.json({ message: 'Topics deleted' });
+      const idArray = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const result = await AcademicHierarchyService.batchDeleteTopics({ ids: idArray });
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
+    } else {
+      const result = await AcademicHierarchyService.deleteTopic(id!);
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     }
-
-    const [deleted] = await db.delete(topics).where(eq(topics.id, id!)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Topic deleted' });
   } catch (error) {
     console.error('Error deleting topic:', error);
     return NextResponse.json({ error: 'Failed to delete topic' }, { status: 500 });

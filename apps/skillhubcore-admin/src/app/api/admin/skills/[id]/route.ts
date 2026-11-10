@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { skillSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, skills } from '@quiz/db';
@@ -50,11 +51,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   try {
     const { id } = await params;
-    const db = getDb();
-    const [deleted] = await db.delete(skills).where(eq(skills.id, id)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Skill deleted successfully' });
+    const result = await AcademicHierarchyService.deleteSkill(id);
+    return NextResponse.json(
+      result.status === 200 ? { message: result.message } : result,
+      { status: result.status }
+    );
   } catch (error) {
     console.error('Error deleting skill:', error);
     return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 });

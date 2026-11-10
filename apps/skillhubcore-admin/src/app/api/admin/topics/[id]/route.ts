@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { TOPIC_COMPLEXITY_ENUM_TO_LEVEL, topicSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, topics } from '@quiz/db';
@@ -96,11 +97,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   try {
     const { id } = await params;
-    const db = getDb();
-    const [deleted] = await db.delete(topics).where(eq(topics.id, id)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Topic deleted successfully' });
+    const result = await AcademicHierarchyService.deleteTopic(id);
+    return NextResponse.json(
+      result.status === 200 ? { message: result.message } : result,
+      { status: result.status }
+    );
   } catch (error) {
     console.error('Error deleting topic:', error);
     return NextResponse.json({ error: 'Failed to delete topic' }, { status: 500 });

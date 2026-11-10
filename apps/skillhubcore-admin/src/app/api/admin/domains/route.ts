@@ -1,9 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { domainSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb } from '@quiz/db';
-import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/admin/domains - List domains with pagination and search
@@ -184,33 +185,19 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const db = getDb();
-
     if (ids) {
-      const idArray = ids.split(',');
-      await db
-        .delete(domains)
-        .where(inArray(domains.id, idArray));
-
-      return NextResponse.json({
-        message: `${idArray.length} domains deleted successfully`,
-      });
+      const idArray = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const result = await AcademicHierarchyService.batchDeleteDomains({ ids: idArray });
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     } else {
-      const [deletedDomain] = await db
-        .delete(domains)
-        .where(eq(domains.id, id!))
-        .returning();
-
-      if (!deletedDomain) {
-        return NextResponse.json(
-          { error: 'Domain not found' },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        message: 'Domain deleted successfully',
-      });
+      const result = await AcademicHierarchyService.deleteDomain(id!);
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     }
   } catch (error) {
     console.error('Error deleting domain:', error);

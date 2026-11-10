@@ -1,4 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 import { getDb, subtopics } from '@quiz/db';
@@ -64,11 +65,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   try {
     const { id } = await params;
-    const db = getDb();
-    const [deleted] = await db.delete(subtopics).where(eq(subtopics.id, id)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Subtopic deleted successfully' });
+    const result = await AcademicHierarchyService.deleteSubtopic(id);
+    return NextResponse.json(
+      result.status === 200 ? { message: result.message } : result,
+      { status: result.status }
+    );
   } catch (error) {
     console.error('Error deleting subtopic:', error);
     return NextResponse.json({ error: 'Failed to delete subtopic' }, { status: 500 });

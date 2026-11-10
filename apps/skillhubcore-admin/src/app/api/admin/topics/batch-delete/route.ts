@@ -1,6 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-import { getDb, topics } from '@quiz/db';
-import { inArray } from 'drizzle-orm';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -8,13 +7,12 @@ export async function POST(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const { ids } = await request.json() as { ids?: string[] };
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json({ error: 'Topic IDs are required' }, { status: 400 });
-    }
-
-    await getDb().delete(topics).where(inArray(topics.id, ids));
-    return NextResponse.json({ message: `${ids.length} topics deleted successfully` });
+    const rawBody = await request.json();
+    const result = await AcademicHierarchyService.batchDeleteTopics(rawBody);
+    return NextResponse.json(
+      result.status === 200 ? { message: result.message } : result,
+      { status: result.status }
+    );
   } catch (error) {
     console.error('Error batch deleting topics:', error);
     return NextResponse.json({ error: 'Failed to delete topics' }, { status: 500 });

@@ -1,9 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb, subjects } from '@quiz/db';
-import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -161,18 +162,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Subject ID or IDs required' }, { status: 400 });
     }
 
-    const db = getDb();
-
     if (ids) {
-      const idArray = ids.split(',');
-      await db.delete(subjects).where(inArray(subjects.id, idArray));
-      return NextResponse.json({ message: `${idArray.length} subjects deleted` });
+      const idArray = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const result = await AcademicHierarchyService.batchDeleteSubjects({ ids: idArray });
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     } else {
-      const [deleted] = await db.delete(subjects).where(eq(subjects.id, id!)).returning();
-      if (!deleted) {
-        return NextResponse.json({ error: 'Subject not found' }, { status: 404 });
-      }
-      return NextResponse.json({ message: 'Subject deleted successfully' });
+      const result = await AcademicHierarchyService.deleteSubject(id!);
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     }
   } catch (error) {
     console.error('Error deleting subject:', error);

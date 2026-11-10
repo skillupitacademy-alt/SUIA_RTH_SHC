@@ -1,6 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-import { domains, getDb } from '@quiz/db';
-import { inArray } from 'drizzle-orm';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -8,13 +7,12 @@ export async function POST(request: NextRequest) {
   if (accessDenied) return accessDenied;
 
   try {
-    const { ids } = await request.json() as { ids?: string[] };
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json({ error: 'Domain IDs are required' }, { status: 400 });
-    }
-
-    await getDb().delete(domains).where(inArray(domains.id, ids));
-    return NextResponse.json({ message: `${ids.length} domains deleted successfully` });
+    const rawBody = await request.json();
+    const result = await AcademicHierarchyService.batchDeleteDomains(rawBody);
+    return NextResponse.json(
+      result.status === 200 ? { message: result.message } : result,
+      { status: result.status }
+    );
   } catch (error) {
     console.error('Error batch deleting domains:', error);
     return NextResponse.json({ error: 'Failed to delete domains' }, { status: 500 });

@@ -1,9 +1,10 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
+import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
 import { domains, getDb, subjects, subtopics, topics } from '@quiz/db';
-import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 function serializeSubtopic<T extends { depth?: number | null; order?: number | null }>(row: T) {
@@ -173,17 +174,20 @@ export async function DELETE(request: NextRequest) {
 
     if (!id && !ids) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-    const db = getDb();
-
     if (ids) {
-      await db.delete(subtopics).where(inArray(subtopics.id, ids.split(',')));
-      return NextResponse.json({ message: 'Subtopics deleted' });
+      const idArray = ids.split(',').map((s) => s.trim()).filter(Boolean);
+      const result = await AcademicHierarchyService.batchDeleteSubtopics({ ids: idArray });
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
+    } else {
+      const result = await AcademicHierarchyService.deleteSubtopic(id!);
+      return NextResponse.json(
+        result.status === 200 ? { message: result.message } : result,
+        { status: result.status }
+      );
     }
-
-    const [deleted] = await db.delete(subtopics).where(eq(subtopics.id, id!)).returning();
-    if (!deleted) return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
-
-    return NextResponse.json({ message: 'Subtopic deleted' });
   } catch (error) {
     console.error('Error deleting subtopic:', error);
     return NextResponse.json({ error: 'Failed to delete subtopic' }, { status: 500 });
