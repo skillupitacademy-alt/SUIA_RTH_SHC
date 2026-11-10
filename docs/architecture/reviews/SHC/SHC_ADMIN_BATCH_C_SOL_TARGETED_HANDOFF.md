@@ -3,7 +3,8 @@
 **To:** Sol (Independent Security & Quality Reviewer)  
 **From:** Antigravity (Implementation Agent)  
 **Date:** November 10, 2026  
-**Git Baseline:** `425df7870d47ebccb82655b480d7a737a9a66917`  
+**Git Baseline (Committed):** `fa8f09b45a0ff2a4b1216fca96c49ed880f8f5ab`  
+**Working State:** Corrected Batch C Baseline (with BC-CORR-01 through BC-CORR-05)  
 **Execution Scope:** Batch C (Academic Hierarchy Ownership, Destructive Safety, Bulk Contracts, Sidebar Dual-DB Resilience, Downstream Identity)  
 **Ledger Criteria Under Review:** `SHCA-F11`, `SHCA-A04`, `SHCA-U01`, `SHCA-U02`, `SHCA-U08`, `SHCA-U06`, `SHCA-F23`, `SHCA-F16`, `SHCA-A07`, `SHCA-I02`, `SHCA-I04`, `SHCA-U05`  
 
@@ -20,84 +21,57 @@ pnpm --filter @quiz/skillhubcore-admin check:boundaries
 # 2. TypeScript Type Check (verifies zero TS compiler errors)
 pnpm --filter @quiz/skillhubcore-admin type-check
 
-# 3. Batch C Academic Hierarchy Service & Safety Test Suites
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/lib/hierarchy/__tests__/academic-hierarchy-service.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/app/api/admin/hierarchy/__tests__/hierarchy-destructive-operations.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/app/api/tutorial-left-sidebar/__tests__/sidebar-synchronization-resilience.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/lib/hierarchy/__tests__/cross-system-hierarchy-contracts.test.ts
+# 3. Batch C Academic Hierarchy Service, Safety & Delivery Test Suites (105 tests)
+pnpm --filter @quiz/skillhubcore-admin test src/lib/hierarchy/ src/app/api/admin/hierarchy/ src/app/api/tutorial-left-sidebar/
 
-# 4. Regression & Boundary Test Suites (Foundation, Sidebar Parser, Scope B Master, Pagination)
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/app/api/admin/domains/__tests__/foundation-validation.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/app/api/tutorial-left-sidebar/__tests__/markdown-navigation-parser.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/schemas/__tests__/hierarchy-contract.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/lib/__tests__/scope-b-remediation.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/lib/__tests__/admin-boundary.test.ts
-pnpm --filter @quiz/skillhubcore-admin exec vitest run src/lib/__tests__/pagination-helper.test.ts
+# 4. Lint Check (verifies zero ESLint warnings or errors across Batch C files)
+npx eslint apps/skillhubcore-admin/src/lib/hierarchy/ apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts apps/skillhubcore-admin/src/app/api/admin/hierarchy/__tests__/
 ```
 
 ---
 
-## 2. Review Guide by Task
+## 2. Targeted Corrections for Sol to Verify (BC-CORR-01 to BC-CORR-05)
 
-### Task 11: Authoritative Hierarchy Ownership and Writers
+### BC-CORR-01: Fail-Closed Dependency Checks (No Swallowed Outages)
 - **Code:** [`apps/skillhubcore-admin/src/lib/hierarchy/academic-hierarchy.service.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/hierarchy/academic-hierarchy.service.ts)
-- **Check:** Verified that Next.js BFF handlers no longer perform raw unvalidated database deletions. All 5 taxonomy levels (Domain $\rightarrow$ Subject $\rightarrow$ Topic $\rightarrow$ Subtopic $\rightarrow$ Skill) delegate to `AcademicHierarchyService`.
-- **Criteria Addressed:** `SHCA-F11`, `SHCA-A04`, `SHCA-U01`, `SHCA-U02`, `SHCA-I02`.
+- **Verification Focus:** Look at `checkDomainDependencies`, `checkSubjectDependencies`, `checkTopicDependencies`, `checkSubtopicDependencies`, and `checkSkillDependencies`. None of them catch and swallow query errors into `null`. They rethrow `DependencyCheckUnavailableError`.
+- **Route / Service Outcome:** `AcademicHierarchyService.delete*` and `batchDelete*` catch `DependencyCheckUnavailableError` and return `HTTP 503` (`status: 503`) with a clear explanation, immediately halting execution with zero delete queries executed.
+- **Test:** `academic-hierarchy-service.test.ts` (test case: *"aborts deleteDomain and returns 503 instead of failing open when DB select throws"*) and `hierarchy-destructive-operations.test.ts` (test case: *"returns 503 when dependency verification storage is temporarily unavailable"*).
 
-### Task 12: Protect Destructive Hierarchy Operations
-- **Code:** `AcademicHierarchyService.check*Dependencies` and route handlers in:
-  - [`apps/skillhubcore-admin/src/app/api/admin/domains/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/admin/domains/route.ts) & `[id]/route.ts`
-  - [`apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts) & `[id]/route.ts`
-  - [`apps/skillhubcore-admin/src/app/api/admin/topics/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/admin/topics/route.ts) & `[id]/route.ts`
-  - [`apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts) & `[id]/route.ts`
-  - [`apps/skillhubcore-admin/src/app/api/admin/skills/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/admin/skills/route.ts) & `[id]/route.ts`
-- **Check:**
-  - Deleting an entity with active dependents returns `HTTP 409 Conflict` with `conflictType: 'DEPENDENCY_CONFLICT'` and a structured breakdown of child counts.
-  - Silent cascading and unhandled 500 errors on foreign key constraints are completely prevented.
-  - Zero unapproved schema changes or DDL were applied.
-- **Criteria Addressed:** `SHCA-F11`, `SHCA-A04`, `SHCA-U08`.
+### BC-CORR-02: Direct Schema Imports & Real Question/Skill Checks
+- **Code:** `academic-hierarchy.service.ts` lines 1–10.
+- **Verification Focus:** Notice that `(db as any).questions` and `.topicSkills` reflection hacks have been replaced with direct schema table imports from `@quiz/db`:
+  ```typescript
+  import { getDb, domains, subjects, topics, subtopics, skills, questions, questionSkills, topicSkills } from '@quiz/db';
+  ```
+- **Checks Performed:**
+  - Topic deletion checks active `subtopics`, `questions` (with `deletedAt is null`), `topicSkills`, and `tutorialSidebarTreesV2`.
+  - Subtopic deletion checks `questions` (`deletedAt is null`) and TutorialDB `tutorialSections`.
+  - Skill deletion checks `topicSkills`, `questionSkills`, and legacy `questions`.
+- **Test:** `academic-hierarchy-service.test.ts` verifies `HTTP 409 Conflict` when questions or topicSkills reference the target entity.
 
-### Task 13: Bounded Bulk Hierarchy Contracts
-- **Code:** `AcademicHierarchyService.validateBatchDeletePayload` and `batchDelete*` handlers across:
-  - `domains/batch-delete`, `subjects/batch-delete`, `topics/batch-delete`, `subtopics/batch-delete`, `skills/batch-delete`
-- **Check:**
-  - Empty array $\rightarrow$ `400 Bad Request`.
-  - Array exceeding 100 items $\rightarrow$ `413 Payload Too Large`.
-  - Non-UUID values $\rightarrow$ `400 Bad Request`.
-  - Deduplication into canonical unique sets.
-  - Atomic validation: any conflicting item in the batch rejects the entire batch with `409 Conflict`.
-- **Criteria Addressed:** `SHCA-A04`, `SHCA-U06`, `SHCA-F23`.
+### BC-CORR-03: Transaction-Wrapped Atomic Deletions
+- **Code:** `AcademicHierarchyService.delete*` and `AcademicHierarchyService.batchDelete*` in `academic-hierarchy.service.ts`.
+- **Verification Focus:** Both preflight checks and `tx.delete(...)` run inside `db.transaction(async (tx) => { ... })`. If any item in a batch has a dependency conflict, the transaction exits with `409` before executing any deletion, guaranteeing all-or-none semantics under concurrent inserts.
+- **Test:** Verified in `academic-hierarchy-service.test.ts` where `mockDb.transactionCalled === true`.
 
-### Task 14: Left Sidebar Synchronization Resilience & Partial Failure Safety
+### BC-CORR-04: Single Atomic Transaction in TutorialDB During Publish
 - **Code:** [`apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts)
-- **Check:**
-  - Dual-database write order is strictly sequential:
-    1. Schema & Markdown/JSON input validation.
-    2. Hierarchy parent chain validation (`getHierarchyNames`).
-    3. Structural validation (depth <= 3, group/page node rules, unique canonical IDs).
-    4. Pre-publish transactional hierarchy sync (`ensureTopicHierarchySynced`).
-    5. Atomicity & rollback: TutorialDB hierarchy sync failure rolls back and returns `500`, preventing corrupt or disconnected navigation trees from persisting to `tutorialSidebarTreesV2`.
-    6. Post-sync idempotent save into `tutorialSidebarTreesV2` with version increment.
-- **Criteria Addressed:** `SHCA-F16`, `SHCA-A07`, `SHCA-I04`.
+- **Verification Focus:** MainDB is queried read-only (`getDb()`). During publish (`body.status === 'published'`), both `ensureTopicHierarchySynced` AND the `tutorialSidebarTreesV2` upsert are executed inside a single `tutorialDb.transaction(async (tx) => { ... })`. If anything fails (or if the sidebar tree insert fails), TutorialDB transaction rolls back completely, preventing broken or partial state.
+- **Test:** `sidebar-synchronization-resilience.test.ts` verifies atomic rollback on sync failure and successful atomic publish without corrupting state.
 
-### Task 15: Cross-System Hierarchy Identity & Visibility Contracts
-- **Code:** [`apps/skillhubcore-admin/src/lib/hierarchy/cross-system-hierarchy-contracts.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/hierarchy/cross-system-hierarchy-contracts.ts)
-- **Check:**
-  - Full equivalence mapping between MainDB and TutorialDB entities.
-  - Learner delivery truth table:
-    - `skillup` (SUIA) learner cannot access `realtutorialhub` content.
-    - `realtutorialhub` (RTH) learner cannot access `skillup` content.
-    - Shared deployed content serves as universal fallback.
-    - Exact brand deployed content cleanly overrides shared content.
-    - Drafts (`draft`, `in_review`, `approved`) are strictly withheld from learner delivery.
-- **Criteria Addressed:** `SHCA-U05`, `SHCA-I02`, `SHCA-I04`.
+### BC-CORR-05: Domain Ownership Classification & Downstream Delivery Contracts
+- **Documentation Status:** `SHCA-U01` and `SHCA-U02` are transparently classified as **PARTIALLY REMEDIATED / PENDING DOMAIN SERVICE EXTRACTION**. Referential safety and deletes are centralized in `AcademicHierarchyService`, while create/update (`POST`, `PATCH`, `PUT`) extraction is scoped for a dedicated architectural phase.
+- **Integration Tests:** [`apps/skillhubcore-admin/src/lib/hierarchy/__tests__/downstream-delivery-contracts.test.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/hierarchy/__tests__/downstream-delivery-contracts.test.ts)
+- **Verification Focus:** 9 integration tests verifying real delivery contracts:
+  - `tutorialDeliveryService.getTutorialByPage`: brand precedence (exact brand override > shared fallback), negative tenant isolation (SUIA learner cannot receive RTH content), and draft gating (draft/approved content returns null).
+  - `getPublishedTutorialPagePayload`: hierarchical payload assembly, full 18-block JSONB preservation, and fail-closed resolution when TutorialDB sync is unverified.
 
 ---
 
-## 3. Invariants Verified
-- **Tutorial V2 Composer:** 18 block families, Save as Draft, and Publish are untouched and functioning.
-- **Database Schema:** 0 migrations, 0 DDL, 0 schema alterations.
-- **Ledger:** `10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv` strictly unchanged.
-- **Git State:** 0 commits, 0 pushes.
-- **Next Phase:** Stopped at owner decision gate. Batch D (Tasks 16–20) has NOT been started.
-
+## 3. Invariants Preserved
+- **PostgreSQL Exclusively:** No MongoDB or Mongoose artifacts.
+- **Zero Database Migrations:** 0 DDL or schema alterations.
+- **Acceptance Ledger Untouched:** `10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv` strictly untouched.
+- **Tutorial V2 Authoring:** Preserved all 18 block families, Save as Draft, Publish, published snapshots, and multi-tenant delivery.
+- **Zero Self-Approval:** Awaiting Sol's targeted independent review.

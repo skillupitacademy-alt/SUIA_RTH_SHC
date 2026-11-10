@@ -1,10 +1,43 @@
-import { getDb, domains, subjects, topics, subtopics, skills } from '@quiz/db';
-import { db as tutorialDb, tutorialSidebarTreesV2, tutorialSubtopics, tutorialSections } from '@quiz/db-tutorial';
+import {
+  getDb,
+  domains,
+  subjects,
+  topics,
+  subtopics,
+  skills,
+  questions,
+  questionSkills,
+  topicSkills,
+} from '@quiz/db';
+import {
+  db as tutorialDb,
+  tutorialSidebarTreesV2,
+  tutorialSubtopics,
+  tutorialSections,
+} from '@quiz/db-tutorial';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 
 export const MAX_BATCH_DELETE_SIZE = 100;
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Custom error thrown when dependency check storage (MainDB or TutorialDB) is unreachable.
+ * Fails closed to prevent unsafe deletion cascades when dependencies cannot be verified.
+ */
+export class DependencyCheckUnavailableError extends Error {
+  public readonly entityType: string;
+  public readonly entityId: string;
+  public readonly causeError?: unknown;
+
+  constructor(entityType: string, entityId: string, causeError?: unknown) {
+    super(`Dependency check storage is temporarily unavailable for ${entityType} ${entityId}`);
+    this.name = 'DependencyCheckUnavailableError';
+    this.entityType = entityType;
+    this.entityId = entityId;
+    this.causeError = causeError;
+  }
+}
 
 export interface DependencyConflict {
   entityType: 'domain' | 'subject' | 'topic' | 'subtopic' | 'skill';
@@ -21,7 +54,7 @@ export interface BatchValidationResult {
 }
 
 export interface HierarchyDeleteResult {
-  status: 200 | 400 | 404 | 409 | 413 | 500;
+  status: 200 | 400 | 404 | 409 | 413 | 500 | 503;
   message?: string;
   error?: string;
   conflictType?: 'DEPENDENCY_CONFLICT';
@@ -30,6 +63,10 @@ export interface HierarchyDeleteResult {
   dependencies?: Record<string, number>;
   conflictingIds?: string[];
 }
+
+type DbClient = ReturnType<typeof getDb>;
+type TransactionClient = Parameters<Parameters<DbClient['transaction']>[0]>[0];
+export type DbExecutor = DbClient | TransactionClient;
 
 /**
  * Validates batch delete payload from request body.
@@ -113,18 +150,24 @@ export function isValidUuid(id: string): boolean {
 /**
  * Checks dependencies for a domain before destructive operations.
  * Domain has child subjects in MainDB.
+ * Fails closed (throws DependencyCheckUnavailableError) on database error.
  */
-export async function checkDomainDependencies(domainId: string): Promise<DependencyConflict | null> {
-  const db = getDb();
+export async function checkDomainDependencies(
+  domainId: string,
+  executor?: DbExecutor
+): Promise<DependencyConflict | null> {
+  const client = executor ?? getDb();
   try {
-    const dependentSubjects = await db
+    const dependentSubjects = await client
       .select({ id: subjects.id, domainId: subjects.domainId })
       .from(subjects)
       .where(and(eq(subjects.domainId, domainId), isNull(subjects.deletedAt)))
-      .limit(10);
+      .limit(100);
 
     // Filter to ensure foreign key match
-    const matching = dependentSubjects.filter((s) => s.domainId === domainId);
+    const matching = (dependentSubjects as Array<{ id: string; domainId: string }>).filter(
+      (s) => s.domainId === domainId
+    );
 
     if (matching.length > 0) {
       return {
@@ -134,27 +177,33 @@ export async function checkDomainDependencies(domainId: string): Promise<Depende
         dependents: { subjects: matching.length },
       };
     }
+    return null;
   } catch (error) {
-    console.warn('[AcademicHierarchyService] Domain dependency check warning:', error);
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError('domain', domainId, error);
   }
-
-  return null;
 }
 
 /**
  * Checks dependencies for a subject before destructive operations.
  * Subject has child topics in MainDB.
+ * Fails closed (throws DependencyCheckUnavailableError) on database error.
  */
-export async function checkSubjectDependencies(subjectId: string): Promise<DependencyConflict | null> {
-  const db = getDb();
+export async function checkSubjectDependencies(
+  subjectId: string,
+  executor?: DbExecutor
+): Promise<DependencyConflict | null> {
+  const client = executor ?? getDb();
   try {
-    const dependentTopics = await db
+    const dependentTopics = await client
       .select({ id: topics.id, subjectId: topics.subjectId })
       .from(topics)
       .where(and(eq(topics.subjectId, subjectId), isNull(topics.deletedAt)))
-      .limit(10);
+      .limit(100);
 
-    const matching = dependentTopics.filter((t) => t.subjectId === subjectId);
+    const matching = (dependentTopics as Array<{ id: string; subjectId: string }>).filter(
+      (t) => t.subjectId === subjectId
+    );
 
     if (matching.length > 0) {
       return {
@@ -164,71 +213,89 @@ export async function checkSubjectDependencies(subjectId: string): Promise<Depen
         dependents: { topics: matching.length },
       };
     }
+    return null;
   } catch (error) {
-    console.warn('[AcademicHierarchyService] Subject dependency check warning:', error);
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError('subject', subjectId, error);
   }
-
-  return null;
 }
 
 /**
  * Checks dependencies for a topic before destructive operations.
- * Topic has child subtopics, questions in MainDB, and tutorial sidebars in TutorialDB.
+ * Topic has child subtopics, questions, topicSkills in MainDB, and tutorial sidebars in TutorialDB.
+ * Fails closed (throws DependencyCheckUnavailableError) on database error.
  */
-export async function checkTopicDependencies(topicId: string): Promise<DependencyConflict | null> {
-  const db = getDb();
+export async function checkTopicDependencies(
+  topicId: string,
+  executor?: DbExecutor
+): Promise<DependencyConflict | null> {
+  const client = executor ?? getDb();
   const dependents: Record<string, number> = {};
 
   try {
-    // 1. Check child subtopics
-    const dependentSubtopics = await db
+    // 1. Check child subtopics in MainDB
+    const dependentSubtopics = await client
       .select({ id: subtopics.id, topicId: subtopics.topicId })
       .from(subtopics)
       .where(and(eq(subtopics.topicId, topicId), isNull(subtopics.deletedAt)))
-      .limit(10);
+      .limit(100);
 
-    const matchingSubtopics = dependentSubtopics.filter((s) => s.topicId === topicId);
+    const matchingSubtopics = (dependentSubtopics as Array<{ id: string; topicId: string }>).filter(
+      (s) => s.topicId === topicId
+    );
     if (matchingSubtopics.length > 0) {
       dependents.subtopics = matchingSubtopics.length;
     }
-  } catch (error) {
-    console.warn('[AcademicHierarchyService] Topic subtopics dependency check warning:', error);
-  }
 
-  try {
-    // 2. Check dependent questions in MainDB
-    // Check if questions table is available in db schema
-    const dbAny = (db as unknown) as Record<string, unknown>;
-    const questionsTable = dbAny.questions as Parameters<typeof db.select>[0] | undefined;
-    if (questionsTable) {
-      const dependentQuestions = await db
-        .select()
-        .from(questionsTable as never)
-        .where(eq((questionsTable as Record<string, unknown>).topicId as never, topicId))
-        .limit(10);
-      if (Array.isArray(dependentQuestions) && dependentQuestions.length > 0) {
-        dependents.questions = dependentQuestions.length;
-      }
+    // 2. Check dependent questions in MainDB (direct exported table)
+    const dependentQuestions = await client
+      .select({ id: questions.id, topicId: questions.topicId })
+      .from(questions)
+      .where(and(eq(questions.topicId, topicId), isNull(questions.deletedAt)))
+      .limit(100);
+
+    const matchingQuestions = (dependentQuestions as Array<{ id: string; topicId: string }>).filter(
+      (q) => q.topicId === topicId
+    );
+    if (matchingQuestions.length > 0) {
+      dependents.questions = matchingQuestions.length;
     }
-  } catch {
-    // Ignore question check if table not accessible in test mocks
+
+    // 3. Check topicSkills mapping in MainDB (direct exported table)
+    const dependentTopicSkills = await client
+      .select({ topicId: topicSkills.topicId, skillId: topicSkills.skillId })
+      .from(topicSkills)
+      .where(eq(topicSkills.topicId, topicId))
+      .limit(100);
+
+    const matchingTopicSkills = (dependentTopicSkills as Array<{ topicId: string; skillId: string }>).filter(
+      (ts) => ts.topicId === topicId
+    );
+    if (matchingTopicSkills.length > 0) {
+      dependents.topicSkills = matchingTopicSkills.length;
+    }
+  } catch (error) {
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError('topic', topicId, error);
   }
 
   try {
-    // 3. Check tutorial sidebars in TutorialDB
+    // 4. Check tutorial sidebars in TutorialDB
     if (tutorialDb && tutorialSidebarTreesV2) {
       const sidebars = await tutorialDb
         .select({ topicId: tutorialSidebarTreesV2.topicId })
         .from(tutorialSidebarTreesV2)
         .where(eq(tutorialSidebarTreesV2.topicId, topicId))
-        .limit(10);
-      const matchingSidebars = sidebars.filter((s) => s.topicId === topicId);
+        .limit(100);
+      const matchingSidebars = (sidebars as Array<{ topicId: string }>).filter(
+        (s) => s.topicId === topicId
+      );
       if (matchingSidebars.length > 0) {
         dependents.sidebars = matchingSidebars.length;
       }
     }
-  } catch {
-    // Ignore tutorialDb sidebar check if db connection not configured in unit test mocks
+  } catch (error) {
+    throw new DependencyCheckUnavailableError('topic', topicId, error);
   }
 
   if (Object.keys(dependents).length > 0) {
@@ -246,27 +313,32 @@ export async function checkTopicDependencies(topicId: string): Promise<Dependenc
 /**
  * Checks dependencies for a subtopic before destructive operations.
  * Subtopic has child questions in MainDB and tutorial sections in TutorialDB.
+ * Fails closed (throws DependencyCheckUnavailableError) on database error.
  */
-export async function checkSubtopicDependencies(subtopicId: string): Promise<DependencyConflict | null> {
-  const db = getDb();
+export async function checkSubtopicDependencies(
+  subtopicId: string,
+  executor?: DbExecutor
+): Promise<DependencyConflict | null> {
+  const client = executor ?? getDb();
   const dependents: Record<string, number> = {};
 
   try {
-    // 1. Check questions referencing subtopic
-    const dbAny = (db as unknown) as Record<string, unknown>;
-    const questionsTable = dbAny.questions as Parameters<typeof db.select>[0] | undefined;
-    if (questionsTable) {
-      const dependentQuestions = await db
-        .select()
-        .from(questionsTable as never)
-        .where(eq((questionsTable as Record<string, unknown>).subtopicId as never, subtopicId))
-        .limit(10);
-      if (Array.isArray(dependentQuestions) && dependentQuestions.length > 0) {
-        dependents.questions = dependentQuestions.length;
-      }
+    // 1. Check questions referencing subtopic in MainDB (direct exported table)
+    const dependentQuestions = await client
+      .select({ id: questions.id, subtopicId: questions.subtopicId })
+      .from(questions)
+      .where(and(eq(questions.subtopicId, subtopicId), isNull(questions.deletedAt)))
+      .limit(100);
+
+    const matchingQuestions = (dependentQuestions as Array<{ id: string; subtopicId: string | null }>).filter(
+      (q) => q.subtopicId === subtopicId
+    );
+    if (matchingQuestions.length > 0) {
+      dependents.questions = matchingQuestions.length;
     }
-  } catch {
-    // Ignore if not present in test mock
+  } catch (error) {
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError('subtopic', subtopicId, error);
   }
 
   try {
@@ -283,14 +355,14 @@ export async function checkSubtopicDependencies(subtopicId: string): Promise<Dep
           .select({ id: tutorialSections.id })
           .from(tutorialSections)
           .where(and(eq(tutorialSections.subtopicId, tutSubtopic.id), isNull(tutorialSections.deletedAt)))
-          .limit(10);
+          .limit(100);
         if (sections.length > 0) {
           dependents.tutorials = sections.length;
         }
       }
     }
-  } catch {
-    // Ignore if db connection not configured in unit test mocks
+  } catch (error) {
+    throw new DependencyCheckUnavailableError('subtopic', subtopicId, error);
   }
 
   if (Object.keys(dependents).length > 0) {
@@ -307,34 +379,68 @@ export async function checkSubtopicDependencies(subtopicId: string): Promise<Dep
 
 /**
  * Checks dependencies for a skill before destructive operations.
- * Skill is referenced by topicSkills and questionSkills/questions in MainDB.
+ * Skill is referenced by topicSkills, questionSkills, and legacy questions in MainDB.
+ * Fails closed (throws DependencyCheckUnavailableError) on database error.
  */
-export async function checkSkillDependencies(skillId: string): Promise<DependencyConflict | null> {
-  const db = getDb();
+export async function checkSkillDependencies(
+  skillId: string,
+  executor?: DbExecutor
+): Promise<DependencyConflict | null> {
+  const client = executor ?? getDb();
   const dependents: Record<string, number> = {};
 
   try {
-    const dbAny = (db as unknown) as Record<string, unknown>;
-    const topicSkillsTable = dbAny.topicSkills as Parameters<typeof db.select>[0] | undefined;
-    if (topicSkillsTable) {
-      const mappedTopics = await db
-        .select()
-        .from(topicSkillsTable as never)
-        .where(eq((topicSkillsTable as Record<string, unknown>).skillId as never, skillId))
-        .limit(10);
-      if (Array.isArray(mappedTopics) && mappedTopics.length > 0) {
-        dependents.topicSkills = mappedTopics.length;
-      }
+    // 1. Check topicSkills referencing this skill (direct exported table)
+    const mappedTopics = await client
+      .select({ topicId: topicSkills.topicId, skillId: topicSkills.skillId })
+      .from(topicSkills)
+      .where(eq(topicSkills.skillId, skillId))
+      .limit(100);
+
+    const matchingTopics = (mappedTopics as Array<{ topicId: string; skillId: string }>).filter(
+      (ts) => ts.skillId === skillId
+    );
+    if (matchingTopics.length > 0) {
+      dependents.topicSkills = matchingTopics.length;
     }
-  } catch {
-    // Ignore if not present in test mock
+
+    // 2. Check questionSkills referencing this skill (direct exported table)
+    const mappedQuestionSkills = await client
+      .select({ questionId: questionSkills.questionId, skillId: questionSkills.skillId })
+      .from(questionSkills)
+      .where(eq(questionSkills.skillId, skillId))
+      .limit(100);
+
+    const matchingQuestionSkills = (mappedQuestionSkills as Array<{ questionId: string; skillId: string }>).filter(
+      (qs) => qs.skillId === skillId
+    );
+    if (matchingQuestionSkills.length > 0) {
+      dependents.questionSkills = matchingQuestionSkills.length;
+    }
+
+    // 3. Check legacy questions referencing this skill (direct exported table)
+    const legacyQuestions = await client
+      .select({ id: questions.id, skillId: questions.skillId })
+      .from(questions)
+      .where(and(eq(questions.skillId, skillId), isNull(questions.deletedAt)))
+      .limit(100);
+
+    const matchingLegacy = (legacyQuestions as Array<{ id: string; skillId: string | null }>).filter(
+      (q) => q.skillId === skillId
+    );
+    if (matchingLegacy.length > 0) {
+      dependents.questions = matchingLegacy.length;
+    }
+  } catch (error) {
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError('skill', skillId, error);
   }
 
   if (Object.keys(dependents).length > 0) {
     return {
       entityType: 'skill',
       entityId: skillId,
-      message: `Cannot delete skill because dependent topics reference it (${dependents.topicSkills})`,
+      message: `Cannot delete skill because dependent records exist: ${Object.entries(dependents).map(([k, v]) => `${v} ${k}`).join(', ')}`,
       dependents,
     };
   }
@@ -344,40 +450,60 @@ export async function checkSkillDependencies(skillId: string): Promise<Dependenc
 
 /**
  * Authoritative Hierarchy Service for SHC Admin
- * Centralizes taxonomy mutations, referential validation, and delete safety.
+ * Centralizes taxonomy mutations, referential validation, and atomic delete safety.
  */
 export class AcademicHierarchyService {
   /**
-   * Delete a domain with referential safety
+   * Delete a domain with referential safety wrapped in a transaction
    */
   static async deleteDomain(id: string): Promise<HierarchyDeleteResult> {
     if (!isValidUuid(id)) {
       return { status: 400, error: 'Invalid UUID format for Domain ID' };
     }
 
-    const conflict = await checkDomainDependencies(id);
-    if (conflict) {
+    const db = getDb();
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflict = await checkDomainDependencies(id, tx);
+      if (conflict) {
+        return {
+          status: 409,
+          error: conflict.message,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'domain',
+          entityId: id,
+          dependencies: conflict.dependents,
+        };
+      }
+
+      const [deleted] = await tx.delete(domains).where(eq(domains.id, id)).returning();
+      if (!deleted) {
+        return { status: 404, error: 'Domain not found' };
+      }
+
+      return { status: 200, message: 'Domain deleted successfully' };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: conflict.message,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'domain',
-        entityId: id,
-        dependencies: conflict.dependents,
+        status: 500,
+        error: `Unexpected error during domain deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    const [deleted] = await db.delete(domains).where(eq(domains.id, id)).returning();
-    if (!deleted) {
-      return { status: 404, error: 'Domain not found' };
-    }
-
-    return { status: 200, message: 'Domain deleted successfully' };
   }
 
   /**
-   * Batch delete domains with referential safety and bound enforcement
+   * Batch delete domains with referential safety and bound enforcement inside a transaction
    */
   static async batchDeleteDomains(rawIds: unknown): Promise<HierarchyDeleteResult> {
     const validation = validateBatchDeletePayload(rawIds, 'Domain');
@@ -389,66 +515,107 @@ export class AcademicHierarchyService {
     }
 
     const ids = validation.ids;
-    const conflictingIds: string[] = [];
-    const aggregatedDependencies: Record<string, number> = {};
+    const db = getDb();
 
-    for (const id of ids) {
-      const conflict = await checkDomainDependencies(id);
-      if (conflict) {
-        conflictingIds.push(id);
-        for (const [key, val] of Object.entries(conflict.dependents)) {
-          aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflictingIds: string[] = [];
+      const aggregatedDependencies: Record<string, number> = {};
+
+      for (const id of ids) {
+        const conflict = await checkDomainDependencies(id, tx);
+        if (conflict) {
+          conflictingIds.push(id);
+          for (const [key, val] of Object.entries(conflict.dependents)) {
+            aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+          }
         }
       }
-    }
 
-    if (conflictingIds.length > 0) {
+      if (conflictingIds.length > 0) {
+        return {
+          status: 409,
+          error: `Cannot delete domains because dependent subjects exist for ${conflictingIds.length} item(s)`,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'domain',
+          conflictingIds,
+          dependencies: aggregatedDependencies,
+        };
+      }
+
+      await tx.delete(domains).where(inArray(domains.id, ids));
+      return { status: 200, message: `${ids.length} domains deleted successfully` };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: `Cannot delete domains because dependent subjects exist for ${conflictingIds.length} item(s)`,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'domain',
-        conflictingIds,
-        dependencies: aggregatedDependencies,
+        status: 500,
+        error: `Unexpected error during batch domain deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    await db.delete(domains).where(inArray(domains.id, ids));
-    return { status: 200, message: `${ids.length} domains deleted successfully` };
   }
 
   /**
-   * Delete a subject with referential safety
+   * Delete a subject with referential safety wrapped in a transaction
    */
   static async deleteSubject(id: string): Promise<HierarchyDeleteResult> {
     if (!isValidUuid(id)) {
       return { status: 400, error: 'Invalid UUID format for Subject ID' };
     }
 
-    const conflict = await checkSubjectDependencies(id);
-    if (conflict) {
+    const db = getDb();
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflict = await checkSubjectDependencies(id, tx);
+      if (conflict) {
+        return {
+          status: 409,
+          error: conflict.message,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'subject',
+          entityId: id,
+          dependencies: conflict.dependents,
+        };
+      }
+
+      const [deleted] = await tx.delete(subjects).where(eq(subjects.id, id)).returning();
+      if (!deleted) {
+        return { status: 404, error: 'Subject not found' };
+      }
+
+      return { status: 200, message: 'Subject deleted successfully' };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: conflict.message,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'subject',
-        entityId: id,
-        dependencies: conflict.dependents,
+        status: 500,
+        error: `Unexpected error during subject deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    const [deleted] = await db.delete(subjects).where(eq(subjects.id, id)).returning();
-    if (!deleted) {
-      return { status: 404, error: 'Subject not found' };
-    }
-
-    return { status: 200, message: 'Subject deleted successfully' };
   }
 
   /**
-   * Batch delete subjects with referential safety
+   * Batch delete subjects with referential safety wrapped in a transaction
    */
   static async batchDeleteSubjects(rawIds: unknown): Promise<HierarchyDeleteResult> {
     const validation = validateBatchDeletePayload(rawIds, 'Subject');
@@ -460,66 +627,107 @@ export class AcademicHierarchyService {
     }
 
     const ids = validation.ids;
-    const conflictingIds: string[] = [];
-    const aggregatedDependencies: Record<string, number> = {};
+    const db = getDb();
 
-    for (const id of ids) {
-      const conflict = await checkSubjectDependencies(id);
-      if (conflict) {
-        conflictingIds.push(id);
-        for (const [key, val] of Object.entries(conflict.dependents)) {
-          aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflictingIds: string[] = [];
+      const aggregatedDependencies: Record<string, number> = {};
+
+      for (const id of ids) {
+        const conflict = await checkSubjectDependencies(id, tx);
+        if (conflict) {
+          conflictingIds.push(id);
+          for (const [key, val] of Object.entries(conflict.dependents)) {
+            aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+          }
         }
       }
-    }
 
-    if (conflictingIds.length > 0) {
+      if (conflictingIds.length > 0) {
+        return {
+          status: 409,
+          error: `Cannot delete subjects because dependent topics exist for ${conflictingIds.length} item(s)`,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'subject',
+          conflictingIds,
+          dependencies: aggregatedDependencies,
+        };
+      }
+
+      await tx.delete(subjects).where(inArray(subjects.id, ids));
+      return { status: 200, message: `${ids.length} subjects deleted successfully` };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: `Cannot delete subjects because dependent topics exist for ${conflictingIds.length} item(s)`,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'subject',
-        conflictingIds,
-        dependencies: aggregatedDependencies,
+        status: 500,
+        error: `Unexpected error during batch subject deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    await db.delete(subjects).where(inArray(subjects.id, ids));
-    return { status: 200, message: `${ids.length} subjects deleted successfully` };
   }
 
   /**
-   * Delete a topic with referential safety
+   * Delete a topic with referential safety wrapped in a transaction
    */
   static async deleteTopic(id: string): Promise<HierarchyDeleteResult> {
     if (!isValidUuid(id)) {
       return { status: 400, error: 'Invalid UUID format for Topic ID' };
     }
 
-    const conflict = await checkTopicDependencies(id);
-    if (conflict) {
+    const db = getDb();
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflict = await checkTopicDependencies(id, tx);
+      if (conflict) {
+        return {
+          status: 409,
+          error: conflict.message,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'topic',
+          entityId: id,
+          dependencies: conflict.dependents,
+        };
+      }
+
+      const [deleted] = await tx.delete(topics).where(eq(topics.id, id)).returning();
+      if (!deleted) {
+        return { status: 404, error: 'Topic not found' };
+      }
+
+      return { status: 200, message: 'Topic deleted successfully' };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: conflict.message,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'topic',
-        entityId: id,
-        dependencies: conflict.dependents,
+        status: 500,
+        error: `Unexpected error during topic deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    const [deleted] = await db.delete(topics).where(eq(topics.id, id)).returning();
-    if (!deleted) {
-      return { status: 404, error: 'Topic not found' };
-    }
-
-    return { status: 200, message: 'Topic deleted successfully' };
   }
 
   /**
-   * Batch delete topics with referential safety
+   * Batch delete topics with referential safety wrapped in a transaction
    */
   static async batchDeleteTopics(rawIds: unknown): Promise<HierarchyDeleteResult> {
     const validation = validateBatchDeletePayload(rawIds, 'Topic');
@@ -531,66 +739,107 @@ export class AcademicHierarchyService {
     }
 
     const ids = validation.ids;
-    const conflictingIds: string[] = [];
-    const aggregatedDependencies: Record<string, number> = {};
+    const db = getDb();
 
-    for (const id of ids) {
-      const conflict = await checkTopicDependencies(id);
-      if (conflict) {
-        conflictingIds.push(id);
-        for (const [key, val] of Object.entries(conflict.dependents)) {
-          aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflictingIds: string[] = [];
+      const aggregatedDependencies: Record<string, number> = {};
+
+      for (const id of ids) {
+        const conflict = await checkTopicDependencies(id, tx);
+        if (conflict) {
+          conflictingIds.push(id);
+          for (const [key, val] of Object.entries(conflict.dependents)) {
+            aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+          }
         }
       }
-    }
 
-    if (conflictingIds.length > 0) {
+      if (conflictingIds.length > 0) {
+        return {
+          status: 409,
+          error: `Cannot delete topics because dependent records exist for ${conflictingIds.length} item(s)`,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'topic',
+          conflictingIds,
+          dependencies: aggregatedDependencies,
+        };
+      }
+
+      await tx.delete(topics).where(inArray(topics.id, ids));
+      return { status: 200, message: `${ids.length} topics deleted successfully` };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: `Cannot delete topics because dependent records exist for ${conflictingIds.length} item(s)`,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'topic',
-        conflictingIds,
-        dependencies: aggregatedDependencies,
+        status: 500,
+        error: `Unexpected error during batch topic deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    await db.delete(topics).where(inArray(topics.id, ids));
-    return { status: 200, message: `${ids.length} topics deleted successfully` };
   }
 
   /**
-   * Delete a subtopic with referential safety
+   * Delete a subtopic with referential safety wrapped in a transaction
    */
   static async deleteSubtopic(id: string): Promise<HierarchyDeleteResult> {
     if (!isValidUuid(id)) {
       return { status: 400, error: 'Invalid UUID format for Subtopic ID' };
     }
 
-    const conflict = await checkSubtopicDependencies(id);
-    if (conflict) {
+    const db = getDb();
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflict = await checkSubtopicDependencies(id, tx);
+      if (conflict) {
+        return {
+          status: 409,
+          error: conflict.message,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'subtopic',
+          entityId: id,
+          dependencies: conflict.dependents,
+        };
+      }
+
+      const [deleted] = await tx.delete(subtopics).where(eq(subtopics.id, id)).returning();
+      if (!deleted) {
+        return { status: 404, error: 'Subtopic not found' };
+      }
+
+      return { status: 200, message: 'Subtopic deleted successfully' };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: conflict.message,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'subtopic',
-        entityId: id,
-        dependencies: conflict.dependents,
+        status: 500,
+        error: `Unexpected error during subtopic deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    const [deleted] = await db.delete(subtopics).where(eq(subtopics.id, id)).returning();
-    if (!deleted) {
-      return { status: 404, error: 'Subtopic not found' };
-    }
-
-    return { status: 200, message: 'Subtopic deleted successfully' };
   }
 
   /**
-   * Batch delete subtopics with referential safety
+   * Batch delete subtopics with referential safety wrapped in a transaction
    */
   static async batchDeleteSubtopics(rawIds: unknown): Promise<HierarchyDeleteResult> {
     const validation = validateBatchDeletePayload(rawIds, 'Subtopic');
@@ -602,66 +851,107 @@ export class AcademicHierarchyService {
     }
 
     const ids = validation.ids;
-    const conflictingIds: string[] = [];
-    const aggregatedDependencies: Record<string, number> = {};
+    const db = getDb();
 
-    for (const id of ids) {
-      const conflict = await checkSubtopicDependencies(id);
-      if (conflict) {
-        conflictingIds.push(id);
-        for (const [key, val] of Object.entries(conflict.dependents)) {
-          aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflictingIds: string[] = [];
+      const aggregatedDependencies: Record<string, number> = {};
+
+      for (const id of ids) {
+        const conflict = await checkSubtopicDependencies(id, tx);
+        if (conflict) {
+          conflictingIds.push(id);
+          for (const [key, val] of Object.entries(conflict.dependents)) {
+            aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+          }
         }
       }
-    }
 
-    if (conflictingIds.length > 0) {
+      if (conflictingIds.length > 0) {
+        return {
+          status: 409,
+          error: `Cannot delete subtopics because dependent records exist for ${conflictingIds.length} item(s)`,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'subtopic',
+          conflictingIds,
+          dependencies: aggregatedDependencies,
+        };
+      }
+
+      await tx.delete(subtopics).where(inArray(subtopics.id, ids));
+      return { status: 200, message: `${ids.length} subtopics deleted successfully` };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: `Cannot delete subtopics because dependent records exist for ${conflictingIds.length} item(s)`,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'subtopic',
-        conflictingIds,
-        dependencies: aggregatedDependencies,
+        status: 500,
+        error: `Unexpected error during batch subtopic deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    await db.delete(subtopics).where(inArray(subtopics.id, ids));
-    return { status: 200, message: `${ids.length} subtopics deleted successfully` };
   }
 
   /**
-   * Delete a skill with referential safety
+   * Delete a skill with referential safety wrapped in a transaction
    */
   static async deleteSkill(id: string): Promise<HierarchyDeleteResult> {
     if (!isValidUuid(id)) {
       return { status: 400, error: 'Invalid UUID format for Skill ID' };
     }
 
-    const conflict = await checkSkillDependencies(id);
-    if (conflict) {
+    const db = getDb();
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflict = await checkSkillDependencies(id, tx);
+      if (conflict) {
+        return {
+          status: 409,
+          error: conflict.message,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'skill',
+          entityId: id,
+          dependencies: conflict.dependents,
+        };
+      }
+
+      const [deleted] = await tx.delete(skills).where(eq(skills.id, id)).returning();
+      if (!deleted) {
+        return { status: 404, error: 'Skill not found' };
+      }
+
+      return { status: 200, message: 'Skill deleted successfully' };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: conflict.message,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'skill',
-        entityId: id,
-        dependencies: conflict.dependents,
+        status: 500,
+        error: `Unexpected error during skill deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    const [deleted] = await db.delete(skills).where(eq(skills.id, id)).returning();
-    if (!deleted) {
-      return { status: 404, error: 'Skill not found' };
-    }
-
-    return { status: 200, message: 'Skill deleted successfully' };
   }
 
   /**
-   * Batch delete skills with referential safety
+   * Batch delete skills with referential safety wrapped in a transaction
    */
   static async batchDeleteSkills(rawIds: unknown): Promise<HierarchyDeleteResult> {
     const validation = validateBatchDeletePayload(rawIds, 'Skill');
@@ -673,32 +963,53 @@ export class AcademicHierarchyService {
     }
 
     const ids = validation.ids;
-    const conflictingIds: string[] = [];
-    const aggregatedDependencies: Record<string, number> = {};
+    const db = getDb();
 
-    for (const id of ids) {
-      const conflict = await checkSkillDependencies(id);
-      if (conflict) {
-        conflictingIds.push(id);
-        for (const [key, val] of Object.entries(conflict.dependents)) {
-          aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+    const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      const conflictingIds: string[] = [];
+      const aggregatedDependencies: Record<string, number> = {};
+
+      for (const id of ids) {
+        const conflict = await checkSkillDependencies(id, tx);
+        if (conflict) {
+          conflictingIds.push(id);
+          for (const [key, val] of Object.entries(conflict.dependents)) {
+            aggregatedDependencies[key] = (aggregatedDependencies[key] ?? 0) + val;
+          }
         }
       }
-    }
 
-    if (conflictingIds.length > 0) {
+      if (conflictingIds.length > 0) {
+        return {
+          status: 409,
+          error: `Cannot delete skills because dependent topics or questions reference ${conflictingIds.length} item(s)`,
+          conflictType: 'DEPENDENCY_CONFLICT',
+          entityType: 'skill',
+          conflictingIds,
+          dependencies: aggregatedDependencies,
+        };
+      }
+
+      await tx.delete(skills).where(inArray(skills.id, ids));
+      return { status: 200, message: `${ids.length} skills deleted successfully` };
+    };
+
+    try {
+      if ('transaction' in db && typeof db.transaction === 'function') {
+        return await db.transaction(runInTx);
+      }
+      return await runInTx(db);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
       return {
-        status: 409,
-        error: `Cannot delete skills because dependent topics or questions reference ${conflictingIds.length} item(s)`,
-        conflictType: 'DEPENDENCY_CONFLICT',
-        entityType: 'skill',
-        conflictingIds,
-        dependencies: aggregatedDependencies,
+        status: 500,
+        error: `Unexpected error during batch skill deletion: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const db = getDb();
-    await db.delete(skills).where(inArray(skills.id, ids));
-    return { status: 200, message: `${ids.length} skills deleted successfully` };
   }
 }

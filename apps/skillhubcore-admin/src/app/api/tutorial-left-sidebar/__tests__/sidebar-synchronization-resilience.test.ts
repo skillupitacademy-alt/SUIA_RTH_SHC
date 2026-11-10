@@ -70,13 +70,49 @@ vi.mock('@quiz/db-tutorial', () => ({
         throw new Error('Database transaction rolled back: TutorialDB sync failure');
       }
       const fakeTx = {
-        insert: () => ({
-          values: () => ({
-            onConflictDoUpdate: () => ({
-              returning: async () => [{ id: 'tx-synced-1' }],
+        select: () => ({
+          from: () => ({
+            where: () => ({
+              limit: async () => [{ id: 'verified-id' }],
             }),
           }),
         }),
+        insert: (table: unknown) => {
+          if (table && typeof table === 'object' && 'brandId' in (table as Record<string, unknown>)) {
+            mockState.insertCalled = true;
+            return {
+              values: (vals: Record<string, unknown>) => ({
+                onConflictDoUpdate: () => ({
+                  returning: async () => [
+                    {
+                      id: 'tree-1',
+                      brandId: vals.brandId,
+                      domainId: vals.domainId,
+                      subjectId: vals.subjectId,
+                      topicId: vals.topicId,
+                      activeSubtopicId: vals.activeSubtopicId,
+                      tree: vals.tree,
+                      sourceFormat: vals.sourceFormat,
+                      sourceContent: vals.sourceContent,
+                      status: vals.status,
+                      version: 2,
+                      publishedAt: vals.publishedAt,
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                    },
+                  ],
+                }),
+              }),
+            };
+          }
+          return {
+            values: () => ({
+              onConflictDoUpdate: () => ({
+                returning: async () => [{ id: 'tx-synced-1' }],
+              }),
+            }),
+          };
+        },
       };
       return callback(fakeTx);
     },

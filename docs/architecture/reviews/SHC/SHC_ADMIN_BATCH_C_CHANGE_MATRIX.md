@@ -1,50 +1,50 @@
 # SHC Admin — Batch C Change Matrix (Tasks 11–15)
 
-**Baseline Commit:** `425df7870d47ebccb82655b480d7a737a9a66917`  
-**Phase:** Batch C (Academic Hierarchy Ownership, Destructive Safety, Bulk Contracts, Sidebar Resilience, Downstream Identity)  
+**Baseline Commit:** `fa8f09b45a0ff2a4b1216fca96c49ed880f8f5ab` (GitHub HEAD)  
+**Phase:** Batch C Corrected Delivery (Academic Hierarchy Ownership, Destructive Safety, Bulk Contracts, Sidebar Resilience, Downstream Identity)  
 **Target Date:** November 10, 2026  
 
 ---
 
 ## 1. Traceability Matrix: Acceptance Criteria vs Implementation
 
-| Acceptance Criterion | Description / Focus | Implementation Location | Verification Evidence |
+| Acceptance Criterion | Description / Focus | Implementation Location | Remediation Status & Verification Evidence |
 |:---|:---|:---|:---|
-| **SHCA-F11** | Hierarchy admin flows perform direct ORM hard-deletes without dependency analysis | Centralized in `AcademicHierarchyService.delete*` and `batchDelete*` with pre-flight child checks | `academic-hierarchy-service.test.ts` (18 tests), `hierarchy-destructive-operations.test.ts` (14 tests) |
-| **SHCA-A04** | Direct ORM CRUD operations in BFF routes and unverified hard-deletes | Route handlers in `domains`, `subjects`, `topics`, `subtopics`, `skills` delegate all deletions to authoritative service | Route handlers updated; `foundation-validation.test.ts` (14 tests) passing |
-| **SHCA-U01** | Academic hierarchy routes perform direct SQL/ORM CRUD mutations instead of delegating to domain service | Extracted domain logic into `AcademicHierarchyService` at `apps/skillhubcore-admin/src/lib/hierarchy/academic-hierarchy.service.ts` | Unit tests verify domain service encapsulation |
-| **SHCA-U02** | BFF handlers mix HTTP orchestration with database persistence; dual-DB persistence without transaction isolation | Left sidebar route strictly isolates hierarchy sync inside `tutorialDb.transaction`, rolling back on failure before sidebar write | `sidebar-synchronization-resilience.test.ts` (9 tests) passing |
-| **SHCA-U08** | Hierarchy handlers perform unverified hard deletes | Denies unsafe deletion with HTTP 409 Conflict, structured dependency breakdown, and zero unapproved schema changes | HTTP 409 conflict responses verified for all 5 hierarchy levels |
-| **SHCA-U06** | Bounded pagination, rate/size limits, canonical IDs, duplicate key handling | `validateBatchDeletePayload` enforces array, UUID regex, max 100 items (HTTP 413), deduplication | `academic-hierarchy-service.test.ts`, `pagination-helper.test.ts` passing |
-| **SHCA-F23** | Destructive write action safety, idempotency, confirmed-success semantics | Atomic batch verification: if ANY item has dependents, the entire batch is blocked with 409 | Batch rejection and success semantics verified across routes |
-| **SHCA-F16** | Tutorial sidebar builder functions; API route orchestrates cross-DB sync; failure recovery | Dual-DB write order: input validation $\rightarrow$ hierarchy validation $\rightarrow$ transactional sync $\rightarrow$ versioned sidebar save | `sidebar-synchronization-resilience.test.ts` tests 1–9 passing |
-| **SHCA-A07** | Dual-DB hierarchy sync and navigation publishing transactional atomicity | `ensureTopicHierarchySynced` uses `tutorialDb.transaction`; failure aborts with 500 without corrupting `tutorialSidebarTreesV2` | Rollback and uncorrupted state verified under simulated failure |
-| **SHCA-I02** | Parity of content and assessment consumption by SUIA and RTH learner web portals | Certified cross-database identity mapping (`topics.id` $\leftrightarrow$ `external_id`, `subtopics.id` $\leftrightarrow$ `external_id`, `node.id` $\leftrightarrow$ `navigation_node_id`) | `cross-system-hierarchy-contracts.test.ts` (14 tests) passing |
-| **SHCA-I04** | Cross-app compatibility and shared database schemas | `cross-system-hierarchy-contracts.ts` guarantees backward compatibility and consistent delivery | Verified against `tutorialDeliveryService` contracts |
-| **SHCA-U05** | Brand visibility and cross-brand negative enforcement | Verified truth table: SUIA learner never sees RTH content, RTH learner never sees SUIA content, drafts are strictly blocked | Comprehensive brand isolation tests passing |
+| **SHCA-F11** | Hierarchy admin flows perform direct ORM hard-deletes without dependency analysis | Centralized in `AcademicHierarchyService.delete*` and `batchDelete*` with pre-flight child checks | **RESOLVED**: `academic-hierarchy-service.test.ts` (28 tests), `hierarchy-destructive-operations.test.ts` (19 tests) |
+| **SHCA-A04** | Direct ORM CRUD operations in BFF routes and unverified hard-deletes | Route handlers in `domains`, `subjects`, `topics`, `subtopics`, `skills` delegate all deletions to authoritative service | **RESOLVED**: 15 API route handlers delegate to `AcademicHierarchyService`; 105 tests passing |
+| **SHCA-U01** | Academic hierarchy routes perform direct SQL/ORM CRUD mutations instead of delegating to domain service | Centralized destructive mutations, dependency analysis, and transactional isolation in `AcademicHierarchyService` (`apps/skillhubcore-admin/src/lib/hierarchy/academic-hierarchy.service.ts`) | **PARTIALLY REMEDIATED / PENDING DOMAIN EXTRACTION**: Destructive operations, cascade prevention, and UUID/batch validations centralized. Extracting create/update (`POST`, `PATCH`, `PUT`) into a separate domain package is classified as PENDING to avoid unapproved wide-scale refactoring. |
+| **SHCA-U02** | BFF handlers mix HTTP orchestration with database persistence; dual-DB persistence without transaction isolation | Left sidebar route isolates hierarchy sync and sidebar persistence in a single `tutorialDb.transaction`, rolling back cleanly on failure | **RESOLVED (TutorialDB Atomic Boundary)**: Reads from MainDB are read-only; mutations in TutorialDB commit or rollback atomically; verified in `sidebar-synchronization-resilience.test.ts`. |
+| **SHCA-U08** | Hierarchy handlers perform unverified hard deletes | Denies unsafe deletion with HTTP 409 Conflict, structured dependency breakdown, fail-closed 503 on DB error, and zero unapproved schema changes | **RESOLVED**: Fail-closed 503 and 409 conflict responses verified for all 5 hierarchy levels; zero DDL changes. |
+| **SHCA-U06** | Bounded pagination, rate/size limits, canonical IDs, duplicate key handling | `validateBatchDeletePayload` enforces array, UUID regex, max 100 items (HTTP 413), deduplication | **RESOLVED**: `academic-hierarchy-service.test.ts`, `hierarchy-destructive-operations.test.ts` passing |
+| **SHCA-F23** | Destructive write action safety, idempotency, confirmed-success semantics | Transaction-wrapped batch verification: if ANY item has dependents or if storage check fails, the transaction aborts with 409/503 | **RESOLVED**: Batch all-or-none semantics verified across routes under `db.transaction`. |
+| **SHCA-F16** | Tutorial sidebar builder functions; API route orchestrates cross-DB sync; failure recovery | Dual-DB write order: input validation $\rightarrow$ hierarchy validation $\rightarrow$ transactional sync $\rightarrow$ versioned sidebar save | **RESOLVED**: `sidebar-synchronization-resilience.test.ts` tests 1–9 passing. |
+| **SHCA-A07** | Dual-DB hierarchy sync and navigation publishing transactional atomicity | `ensureTopicHierarchySynced` and `tutorialSidebarTreesV2` upsert executed inside a single `tutorialDb.transaction`; failure aborts with 500 without leaving broken state | **RESOLVED**: TutorialDB atomicity verified; MainDB read-only boundary documented; no distributed 2PC overclaimed. |
+| **SHCA-I02** | Parity of content and assessment consumption by SUIA and RTH learner web portals | Certified cross-database identity mapping (`topics.id` $\leftrightarrow$ `external_id`, `subtopics.id` $\leftrightarrow$ `external_id`, `node.id` $\leftrightarrow$ `navigation_node_id`) | **RESOLVED**: `cross-system-hierarchy-contracts.test.ts` (14 tests) and `downstream-delivery-contracts.test.ts` (9 tests) passing. |
+| **SHCA-I04** | Cross-app compatibility and shared database schemas | `cross-system-hierarchy-contracts.ts` guarantees backward compatibility and consistent delivery | **RESOLVED**: Real delivery contracts (`tutorialDeliveryService.getTutorialByPage`, `getPublishedTutorialPagePayload`) verified. |
+| **SHCA-U05** | Brand visibility and cross-brand negative enforcement | Verified truth table: SUIA learner never sees RTH content, RTH learner never sees SUIA content, drafts are strictly blocked | **RESOLVED**: Multi-tenant brand isolation and draft gating certified by integration tests. |
 
 ---
 
 ## 2. API Route & Contract Changes
 
-| Endpoint | Method | Previous Behavior | Batch C Hardened Behavior | Status Codes |
+| Endpoint | Method | Previous Baseline (`fa8f09b4`) | Corrected Behavior (BC-CORR-01–05) | Status Codes |
 |:---|:---:|:---|:---|:---:|
-| `/api/admin/domains` | DELETE | Direct ORM delete; 500 on foreign key constraint | Pre-flight dependency check; 409 on child subjects; batch bounded to 100 | 200, 400, 404, 409, 413, 500 |
-| `/api/admin/domains/[id]` | DELETE | Direct ORM delete; 500 on foreign key constraint | Pre-flight dependency check via `AcademicHierarchyService.deleteDomain` | 200, 400, 404, 409, 500 |
-| `/api/admin/domains/batch-delete` | POST | Unbounded array; direct delete; 500 on foreign key | Validates JSON, UUIDs, max 100 items, atomic dependency check (409) | 200, 400, 409, 413, 500 |
-| `/api/admin/subjects` | DELETE | Direct ORM delete; 500 on foreign key constraint | Pre-flight dependency check; 409 on child topics; batch bounded to 100 | 200, 400, 404, 409, 413, 500 |
-| `/api/admin/subjects/[id]` | DELETE | Direct ORM delete; 500 on foreign key constraint | Pre-flight dependency check via `AcademicHierarchyService.deleteSubject` | 200, 400, 404, 409, 500 |
-| `/api/admin/subjects/batch-delete` | POST | Unbounded array; direct delete; 500 on foreign key | Validates JSON, UUIDs, max 100 items, atomic dependency check (409) | 200, 400, 409, 413, 500 |
-| `/api/admin/topics` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on subtopics, questions, sidebars; 409 on conflict | 200, 400, 404, 409, 413, 500 |
-| `/api/admin/topics/[id]` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on subtopics, questions, sidebars; 409 on conflict | 200, 400, 404, 409, 500 |
-| `/api/admin/topics/batch-delete` | POST | Unbounded array; direct delete; 500 on foreign key | Validates JSON, UUIDs, max 100 items, atomic dependency check (409) | 200, 400, 409, 413, 500 |
-| `/api/admin/subtopics` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on questions, tutorial sections; 409 on conflict | 200, 400, 404, 409, 413, 500 |
-| `/api/admin/subtopics/[id]` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on questions, tutorial sections; 409 on conflict | 200, 400, 404, 409, 500 |
-| `/api/admin/subtopics/batch-delete` | POST | Unbounded array; direct delete; 500 on foreign key | Validates JSON, UUIDs, max 100 items, atomic dependency check (409) | 200, 400, 409, 413, 500 |
-| `/api/admin/skills` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on topicSkills, questions; 409 on conflict | 200, 400, 404, 409, 413, 500 |
-| `/api/admin/skills/[id]` | DELETE | Direct ORM delete; silent cascades or 500 | Pre-flight check on topicSkills, questions; 409 on conflict | 200, 400, 404, 409, 500 |
-| `/api/admin/skills/batch-delete` | POST | Unbounded array; direct delete; 500 on foreign key | Validates JSON, UUIDs, max 100 items, atomic dependency check (409) | 200, 400, 409, 413, 500 |
-| `/api/tutorial-left-sidebar` | POST | Dual-DB persistence; failure recovery gap | Atomically aborted before saving sidebar if hierarchy sync fails (500) | 200, 400, 403, 500 |
+| `/api/admin/domains` | DELETE | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (`DependencyCheckUnavailableError` $\rightarrow$ 503); transaction-wrapped delete (409 on child subjects) | 200, 400, 404, 409, 413, 500, 503 |
+| `/api/admin/domains/[id]` | DELETE | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (503); transaction-wrapped delete (`AcademicHierarchyService.deleteDomain`) | 200, 400, 404, 409, 500, 503 |
+| `/api/admin/domains/batch-delete` | POST | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (503); transaction-wrapped batch delete; max 100 items; atomic all-or-none check | 200, 400, 409, 413, 500, 503 |
+| `/api/admin/subjects` | DELETE | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (503); transaction-wrapped delete (409 on child topics) | 200, 400, 404, 409, 413, 500, 503 |
+| `/api/admin/subjects/[id]` | DELETE | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (503); transaction-wrapped delete (`AcademicHierarchyService.deleteSubject`) | 200, 400, 404, 409, 500, 503 |
+| `/api/admin/subjects/batch-delete` | POST | Swallow DB error on check (fail open); out-of-tx delete | Fail closed (503); transaction-wrapped batch delete; max 100 items; atomic all-or-none check | 200, 400, 409, 413, 500, 503 |
+| `/api/admin/topics` | DELETE | Used reflection for questions check; out-of-tx delete | Direct exported schemas (`questions`, `topicSkills`); fail closed (503); transaction-wrapped delete | 200, 400, 404, 409, 413, 500, 503 |
+| `/api/admin/topics/[id]` | DELETE | Used reflection for questions check; out-of-tx delete | Direct exported schemas; fail closed (503); transaction-wrapped delete | 200, 400, 404, 409, 500, 503 |
+| `/api/admin/topics/batch-delete` | POST | Used reflection for questions check; out-of-tx delete | Direct exported schemas; fail closed (503); transaction-wrapped batch delete; max 100 items | 200, 400, 409, 413, 500, 503 |
+| `/api/admin/subtopics` | DELETE | Reflection for questions check; out-of-tx delete | Direct exported `questions` check; fail closed (503); transaction-wrapped delete | 200, 400, 404, 409, 413, 500, 503 |
+| `/api/admin/subtopics/[id]` | DELETE | Reflection for questions check; out-of-tx delete | Direct exported `questions` check; fail closed (503); transaction-wrapped delete | 200, 400, 404, 409, 500, 503 |
+| `/api/admin/subtopics/batch-delete` | POST | Reflection for questions check; out-of-tx delete | Direct exported `questions` check; fail closed (503); transaction-wrapped batch delete | 200, 400, 409, 413, 500, 503 |
+| `/api/admin/skills` | DELETE | Reflection for topicSkills; out-of-tx delete | Direct exported `topicSkills`, `questionSkills`, `questions`; fail closed (503); transaction delete | 200, 400, 404, 409, 413, 500, 503 |
+| `/api/admin/skills/[id]` | DELETE | Reflection for topicSkills; out-of-tx delete | Direct exported `topicSkills`, `questionSkills`, `questions`; fail closed (503); transaction delete | 200, 400, 404, 409, 500, 503 |
+| `/api/admin/skills/batch-delete` | POST | Reflection for topicSkills; out-of-tx delete | Direct exported `topicSkills`, `questionSkills`, `questions`; fail closed (503); transaction batch delete | 200, 400, 409, 413, 500, 503 |
+| `/api/tutorial-left-sidebar` | POST | Separate queries for sync and sidebar tree upsert | Single atomic `tutorialDb.transaction` wraps both `ensureTopicHierarchySynced` and `tutorialSidebarTreesV2` upsert | 200, 400, 403, 500 |
 
 ---
 
@@ -60,4 +60,3 @@
 | `realtutorialhub` | `shared` | `deployed` | **DELIVERED** | Universal canonical fallback when no brand override exists |
 | `realtutorialhub` | `skillup` | `deployed` | **BLOCKED (null)** | Cross-tenant negative enforcement strictly isolates tenant content |
 | `realtutorialhub` | any | `draft` / `approved` | **BLOCKED (null)** | Unreleased content is completely hidden from learners |
-

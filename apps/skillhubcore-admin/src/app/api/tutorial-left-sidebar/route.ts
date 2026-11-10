@@ -99,6 +99,8 @@ function hierarchySyncLog(
   console.log(`[PHASE_11_18E][${phase}] ${status}`, details ?? '');
 }
 
+type TutorialTransaction = Parameters<Parameters<typeof tutorialDb.transaction>[0]>[0];
+
 /**
  * Ensure complete hierarchy synchronization for a topic before sidebar publish.
  * 
@@ -109,7 +111,10 @@ function hierarchySyncLog(
  * 
  * @throws Error if any required synchronization or verification fails
  */
-async function ensureTopicHierarchySynced(topicId: string): Promise<{
+async function ensureTopicHierarchySynced(
+  topicId: string,
+  externalTx?: TutorialTransaction
+): Promise<{
   domain: { externalId: string; internalId: string };
   subject: { externalId: string; internalId: string };
   topic: { externalId: string; internalId: string };
@@ -247,12 +252,12 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
   // ============================================================
 
   hierarchySyncLog('SYNC-05', 'START', {
-    message: 'Starting TutorialDB transaction',
+    message: externalTx ? 'Using external TutorialDB transaction' : 'Starting TutorialDB transaction',
   });
 
   let result;
   try {
-    result = await tutorialDb.transaction(async (tx) => {
+    const runSyncTx = async (tx: TutorialTransaction) => {
       // Helper to generate unique slug
       const uniqueSlug = (name: string, entityId: string) => {
         const slugified = name
@@ -501,7 +506,13 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
         },
         subtopics: subtopicResults,
       };
-    });
+    };
+
+    if (externalTx) {
+      result = await runSyncTx(externalTx);
+    } else {
+      result = await tutorialDb.transaction(runSyncTx);
+    }
 
     hierarchySyncLog('SYNC-09', 'SUCCESS', {
       message: 'TutorialDB transaction committed successfully.',
@@ -518,13 +529,15 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
   // SYNC-10 — DOMAIN VERIFICATION
   // ============================================================
 
+  const checkDb = externalTx ?? tutorialDb;
+
   hierarchySyncLog('SYNC-10', 'START', {
     table: 'tutorial_domains',
     externalId: result.domain.externalId,
   });
 
   try {
-    const domainCheck = await tutorialDb.select({ id: tutorialDomains.id })
+    const domainCheck = await checkDb.select({ id: tutorialDomains.id })
       .from(tutorialDomains)
       .where(eq(tutorialDomains.externalId, result.domain.externalId))
       .limit(1);
@@ -550,7 +563,7 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
   });
 
   try {
-    const subjectCheck = await tutorialDb.select({ id: tutorialSubjects.id })
+    const subjectCheck = await checkDb.select({ id: tutorialSubjects.id })
       .from(tutorialSubjects)
       .where(eq(tutorialSubjects.externalId, result.subject.externalId))
       .limit(1);
@@ -576,7 +589,7 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
   });
 
   try {
-    const topicCheck = await tutorialDb.select({ id: tutorialTopics.id })
+    const topicCheck = await checkDb.select({ id: tutorialTopics.id })
       .from(tutorialTopics)
       .where(eq(tutorialTopics.externalId, result.topic.externalId))
       .limit(1);
@@ -603,7 +616,7 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
 
   try {
     for (const subtopic of result.subtopics) {
-      const subtopicCheck = await tutorialDb.select({ id: tutorialSubtopics.id })
+      const subtopicCheck = await checkDb.select({ id: tutorialSubtopics.id })
         .from(tutorialSubtopics)
         .where(eq(tutorialSubtopics.externalId, subtopic.externalId))
         .limit(1);
@@ -890,24 +903,6 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // CRITICAL: Ensure TutorialDB hierarchy foundation before publishing
-    let hierarchySyncResult: Awaited<ReturnType<typeof ensureTopicHierarchySynced>> | undefined;
-    if (body.status === 'published') {
-      try {
-        hierarchySyncResult = await ensureTopicHierarchySynced(body.topicId);
-        console.log('[Tutorial Left Sidebar API] Hierarchy synchronized before publish:', {
-          topic: body.topicId,
-          subtopicsCount: hierarchySyncResult.subtopics.length,
-        });
-      } catch (syncError) {
-        console.error('[Tutorial Left Sidebar API] Hierarchy sync failed, preventing publish:', syncError);
-        return NextResponse.json({
-          error: 'Tutorial hierarchy synchronization failed. Sidebar was not published.',
-          details: syncError instanceof Error ? syncError.message : 'Unknown sync error',
-        }, { status: 500 });
-      }
-    }
-    
     // Persist to database
     const values = {
       brandId: body.brandId,
@@ -923,20 +918,60 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    const [saved] = await tutorialDb
-      .insert(tutorialSidebarTreesV2)
-      .values(values)
-      .onConflictDoUpdate({
-        target: [
-          tutorialSidebarTreesV2.brandId,
-          tutorialSidebarTreesV2.topicId,
-        ],
-        set: {
-          ...values,
-          version: sql`${tutorialSidebarTreesV2.version} + 1`,
-        },
-      })
-      .returning();
+    // CRITICAL: Ensure atomic TutorialDB hierarchy synchronization and sidebar publication
+    let hierarchySyncResult: Awaited<ReturnType<typeof ensureTopicHierarchySynced>> | undefined;
+    let saved: typeof tutorialSidebarTreesV2.$inferSelect;
+
+    if (body.status === 'published') {
+      try {
+        const [savedRow, syncResult] = await tutorialDb.transaction(async (tx) => {
+          const syncRes = await ensureTopicHierarchySynced(body.topicId, tx);
+          const [publishedRow] = await tx
+            .insert(tutorialSidebarTreesV2)
+            .values(values)
+            .onConflictDoUpdate({
+              target: [
+                tutorialSidebarTreesV2.brandId,
+                tutorialSidebarTreesV2.topicId,
+              ],
+              set: {
+                ...values,
+                version: sql`${tutorialSidebarTreesV2.version} + 1`,
+              },
+            })
+            .returning();
+          return [publishedRow, syncRes];
+        });
+        saved = savedRow;
+        hierarchySyncResult = syncResult;
+        console.log('[Tutorial Left Sidebar API] Hierarchy synchronized and published atomically in TutorialDB:', {
+          topic: body.topicId,
+          subtopicsCount: hierarchySyncResult.subtopics.length,
+        });
+      } catch (syncError) {
+        console.error('[Tutorial Left Sidebar API] Hierarchy sync or publish failed, preventing publish:', syncError);
+        return NextResponse.json({
+          error: 'Tutorial hierarchy synchronization failed. Sidebar was not published.',
+          details: syncError instanceof Error ? syncError.message : 'Unknown sync error',
+        }, { status: 500 });
+      }
+    } else {
+      const [savedDraft] = await tutorialDb
+        .insert(tutorialSidebarTreesV2)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [
+            tutorialSidebarTreesV2.brandId,
+            tutorialSidebarTreesV2.topicId,
+          ],
+          set: {
+            ...values,
+            version: sql`${tutorialSidebarTreesV2.version} + 1`,
+          },
+        })
+        .returning();
+      saved = savedDraft;
+    }
 
     const sidebar = await responseFromRow(saved);
     const deliveryPath = sidebar.scope.activeSubtopicSlug

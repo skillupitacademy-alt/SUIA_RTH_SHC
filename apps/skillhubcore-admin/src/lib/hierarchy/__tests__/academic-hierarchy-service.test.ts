@@ -4,6 +4,8 @@ import {
   MAX_BATCH_DELETE_SIZE,
   validateBatchDeletePayload,
   isValidUuid,
+  DependencyCheckUnavailableError,
+  checkDomainDependencies,
 } from '../academic-hierarchy.service';
 
 const UUID_1 = '00000000-0000-4000-8000-000000000001';
@@ -13,34 +15,63 @@ const mockDb = vi.hoisted(() => ({
   selectResult: [] as unknown[],
   deleteResult: [] as unknown[],
   deleteCalls: [] as unknown[],
+  throwOnSelect: false,
+  transactionCalled: false,
 }));
 
-vi.mock('@quiz/db', () => ({
-  domains: { id: 'domains.id', name: 'domains.name', createdAt: 'domains.createdAt' },
-  subjects: { id: 'subjects.id', domainId: 'subjects.domainId', name: 'subjects.name', createdAt: 'subjects.createdAt' },
-  topics: { id: 'topics.id', subjectId: 'topics.subjectId', name: 'topics.name', createdAt: 'topics.createdAt' },
-  subtopics: { id: 'subtopics.id', topicId: 'subtopics.topicId', name: 'subtopics.name', createdAt: 'subtopics.createdAt' },
-  skills: { id: 'skills.id', name: 'skills.name', createdAt: 'skills.createdAt' },
-  getDb: () => {
-    const chain = {
-      from: () => chain,
-      where: () => chain,
-      orderBy: () => chain,
-      limit: async () => mockDb.selectResult,
-    };
-    return {
-      select: () => chain,
-      delete: () => ({
-        where: (cond: unknown) => {
-          mockDb.deleteCalls.push(cond);
-          return {
-            returning: async () => mockDb.deleteResult,
-          };
-        },
-      }),
-    };
-  },
-}));
+vi.mock('@quiz/db', () => {
+  const createChain = () => ({
+    from: () => createChain(),
+    where: () => createChain(),
+    orderBy: () => createChain(),
+    limit: async () => {
+      if (mockDb.throwOnSelect) {
+        throw new Error('Connection terminated unexpectedly');
+      }
+      return mockDb.selectResult;
+    },
+  });
+
+  const createClient = () => ({
+    select: () => createChain(),
+    delete: () => ({
+      where: (cond: unknown) => {
+        mockDb.deleteCalls.push(cond);
+        return {
+          returning: async () => mockDb.deleteResult,
+        };
+      },
+    }),
+    transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
+      mockDb.transactionCalled = true;
+      return callback(createClient());
+    },
+  });
+
+  return {
+    domains: { id: 'domains.id', name: 'domains.name', createdAt: 'domains.createdAt' },
+    subjects: { id: 'subjects.id', domainId: 'subjects.domainId', name: 'subjects.name', createdAt: 'subjects.createdAt' },
+    topics: { id: 'topics.id', subjectId: 'topics.subjectId', name: 'topics.name', createdAt: 'topics.createdAt' },
+    subtopics: { id: 'subtopics.id', topicId: 'subtopics.topicId', name: 'subtopics.name', createdAt: 'subtopics.createdAt' },
+    skills: { id: 'skills.id', name: 'skills.name', createdAt: 'skills.createdAt' },
+    questions: {
+      id: 'questions.id',
+      topicId: 'questions.topicId',
+      subtopicId: 'questions.subtopicId',
+      skillId: 'questions.skillId',
+      deletedAt: 'questions.deletedAt',
+    },
+    questionSkills: {
+      questionId: 'questionSkills.questionId',
+      skillId: 'questionSkills.skillId',
+    },
+    topicSkills: {
+      topicId: 'topicSkills.topicId',
+      skillId: 'topicSkills.skillId',
+    },
+    getDb: () => createClient(),
+  };
+});
 
 vi.mock('@quiz/db-tutorial', () => ({
   db: {
@@ -62,6 +93,8 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
     mockDb.selectResult = [];
     mockDb.deleteResult = [{ id: UUID_1 }];
     mockDb.deleteCalls = [];
+    mockDb.throwOnSelect = false;
+    mockDb.transactionCalled = false;
   });
 
   describe('validateBatchDeletePayload', () => {
@@ -101,19 +134,80 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(result.status).toBe(400);
       expect(result.error).toContain('Invalid UUID format');
     });
+
+    it('rejects deeply nested JSON payloads', () => {
+      let deepPayload: Record<string, unknown> = { ids: [UUID_1] };
+      for (let i = 0; i < 15; i++) {
+        deepPayload = { nested: deepPayload };
+      }
+      const result = validateBatchDeletePayload(deepPayload, 'Domain');
+      expect(result.success).toBe(false);
+      expect(result.status).toBe(400);
+    });
   });
 
   describe('isValidUuid', () => {
-    it('correctly validates UUID strings', () => {
+    it('returns true for canonical UUIDs', () => {
       expect(isValidUuid(UUID_1)).toBe(true);
+      expect(isValidUuid(UUID_2)).toBe(true);
+    });
+
+    it('returns false for malformed or injection strings', () => {
       expect(isValidUuid('not-a-uuid')).toBe(false);
+      expect(isValidUuid("00000000-0000-0000-0000-000000000001' OR '1'='1")).toBe(false);
       expect(isValidUuid('')).toBe(false);
+    });
+  });
+
+  describe('BC-CORR-01: Fail Closed on DB Read Outage', () => {
+    it('throws DependencyCheckUnavailableError when underlying database query fails', async () => {
+      mockDb.throwOnSelect = true;
+      await expect(checkDomainDependencies(UUID_1)).rejects.toThrow(DependencyCheckUnavailableError);
+    });
+
+    it('aborts deleteDomain and returns 503 instead of failing open when DB select throws', async () => {
+      mockDb.throwOnSelect = true;
+
+      const result = await AcademicHierarchyService.deleteDomain(UUID_1);
+      expect(result.status).toBe(503);
+      expect(result.error).toContain('temporarily unavailable');
+      // CRITICAL: delete must NOT have been called!
+      expect(mockDb.deleteCalls.length).toBe(0);
+    });
+
+    it('aborts batchDeleteDomains and returns 503 when DB select throws', async () => {
+      mockDb.throwOnSelect = true;
+
+      const result = await AcademicHierarchyService.batchDeleteDomains({ ids: [UUID_1, UUID_2] });
+      expect(result.status).toBe(503);
+      expect(result.error).toContain('temporarily unavailable');
+      expect(mockDb.deleteCalls.length).toBe(0);
+    });
+  });
+
+  describe('BC-CORR-03: Transaction-Wrapped Atomic Deletion', () => {
+    it('executes deleteDomain inside a database transaction', async () => {
+      mockDb.selectResult = [];
+      mockDb.deleteResult = [{ id: UUID_1 }];
+
+      const result = await AcademicHierarchyService.deleteDomain(UUID_1);
+      expect(result.status).toBe(200);
+      expect(mockDb.transactionCalled).toBe(true);
+      expect(mockDb.deleteCalls.length).toBe(1);
+    });
+
+    it('executes batchDeleteDomains inside a single database transaction', async () => {
+      mockDb.selectResult = [];
+
+      const result = await AcademicHierarchyService.batchDeleteDomains({ ids: [UUID_1, UUID_2] });
+      expect(result.status).toBe(200);
+      expect(mockDb.transactionCalled).toBe(true);
+      expect(mockDb.deleteCalls.length).toBe(1);
     });
   });
 
   describe('AcademicHierarchyService.deleteDomain', () => {
     it('blocks deletion with 409 Conflict when child subjects exist', async () => {
-      // Mock child subject exists
       mockDb.selectResult = [{ id: 'sub-1', domainId: UUID_1, name: 'Child Subject' }];
 
       const result = await AcademicHierarchyService.deleteDomain(UUID_1);
@@ -134,7 +228,7 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(mockDb.deleteCalls.length).toBe(1);
     });
 
-    it('returns 404 when domain record is not found', async () => {
+    it('returns 404 when domain does not exist', async () => {
       mockDb.selectResult = [];
       mockDb.deleteResult = []; // Not found
 
@@ -143,8 +237,8 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(result.error).toBe('Domain not found');
     });
 
-    it('returns 400 when domain ID is not a valid UUID', async () => {
-      const result = await AcademicHierarchyService.deleteDomain('not-a-uuid');
+    it('returns 400 for invalid UUID format', async () => {
+      const result = await AcademicHierarchyService.deleteDomain('invalid-id');
       expect(result.status).toBe(400);
       expect(result.error).toContain('Invalid UUID');
     });
@@ -152,7 +246,6 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
 
   describe('AcademicHierarchyService.batchDeleteDomains', () => {
     it('blocks batch deletion with 409 Conflict if any domain has child subjects', async () => {
-      // Mock: UUID_2 has a child subject
       mockDb.selectResult = [{ id: 'sub-2', domainId: UUID_2, name: 'Child Subject' }];
 
       const result = await AcademicHierarchyService.batchDeleteDomains({ ids: [UUID_1, UUID_2] });
@@ -201,7 +294,16 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(result.dependencies?.subtopics).toBe(1);
     });
 
-    it('deletes successfully with 200 when no child subtopics exist', async () => {
+    it('BC-CORR-02: blocks deletion with 409 Conflict when dependent questions exist', async () => {
+      mockDb.selectResult = [{ id: 'q-1', topicId: UUID_1 }];
+
+      const result = await AcademicHierarchyService.deleteTopic(UUID_1);
+      expect(result.status).toBe(409);
+      expect(result.conflictType).toBe('DEPENDENCY_CONFLICT');
+      expect(result.dependencies?.questions).toBe(1);
+    });
+
+    it('deletes successfully with 200 when no child subtopics or questions exist', async () => {
       mockDb.selectResult = [];
       mockDb.deleteResult = [{ id: UUID_1 }];
 
@@ -211,6 +313,15 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
   });
 
   describe('AcademicHierarchyService.deleteSubtopic', () => {
+    it('BC-CORR-02: blocks deletion with 409 Conflict when questions reference the subtopic', async () => {
+      mockDb.selectResult = [{ id: 'q-sub-1', subtopicId: UUID_1 }];
+
+      const result = await AcademicHierarchyService.deleteSubtopic(UUID_1);
+      expect(result.status).toBe(409);
+      expect(result.conflictType).toBe('DEPENDENCY_CONFLICT');
+      expect(result.dependencies?.questions).toBe(1);
+    });
+
     it('deletes successfully with 200 when no dependents exist', async () => {
       mockDb.selectResult = [];
       mockDb.deleteResult = [{ id: UUID_1 }];
@@ -221,6 +332,15 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
   });
 
   describe('AcademicHierarchyService.deleteSkill', () => {
+    it('BC-CORR-02: blocks deletion with 409 Conflict when topicSkills reference the skill', async () => {
+      mockDb.selectResult = [{ topicId: UUID_2, skillId: UUID_1 }];
+
+      const result = await AcademicHierarchyService.deleteSkill(UUID_1);
+      expect(result.status).toBe(409);
+      expect(result.conflictType).toBe('DEPENDENCY_CONFLICT');
+      expect(result.dependencies?.topicSkills).toBe(1);
+    });
+
     it('deletes successfully with 200 when no dependencies exist', async () => {
       mockDb.selectResult = [];
       mockDb.deleteResult = [{ id: UUID_1 }];

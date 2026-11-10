@@ -8,40 +8,63 @@ const testState = vi.hoisted(() => ({
   guardDenial: null as unknown,
   childFound: false,
   deleteSuccess: true,
+  throwOnSelect: false,
 }));
 
 vi.mock('@/lib/admin-route-guard', () => ({
   requireAdminRequest: vi.fn(async () => testState.guardDenial),
 }));
 
-vi.mock('@quiz/db', () => ({
-  domains: { id: 'domains.id', name: 'domains.name', createdAt: 'domains.createdAt' },
-  subjects: { id: 'subjects.id', domainId: 'subjects.domainId', name: 'subjects.name', createdAt: 'subjects.createdAt' },
-  topics: { id: 'topics.id', subjectId: 'topics.subjectId', name: 'topics.name', createdAt: 'topics.createdAt' },
-  subtopics: { id: 'subtopics.id', topicId: 'subtopics.topicId', name: 'subtopics.name', createdAt: 'subtopics.createdAt' },
-  skills: { id: 'skills.id', name: 'skills.name', createdAt: 'skills.createdAt' },
-  getDb: () => {
-    const chain = {
-      from: () => chain,
-      where: () => chain,
-      orderBy: () => chain,
-      limit: async () => {
-        if (testState.childFound) {
-          return [{ id: 'child-1', domainId: UUID_1, subjectId: UUID_1, topicId: UUID_1, name: 'Child Item' }];
-        }
-        return [];
-      },
-    };
-    return {
-      select: () => chain,
-      delete: () => ({
-        where: () => ({
-          returning: async () => (testState.deleteSuccess ? [{ id: UUID_1 }] : []),
-        }),
+vi.mock('@quiz/db', () => {
+  const createChain = () => ({
+    from: () => createChain(),
+    where: () => createChain(),
+    orderBy: () => createChain(),
+    limit: async () => {
+      if (testState.throwOnSelect) {
+        throw new Error('Database connection failed');
+      }
+      if (testState.childFound) {
+        return [{ id: 'child-1', domainId: UUID_1, subjectId: UUID_1, topicId: UUID_1, name: 'Child Item' }];
+      }
+      return [];
+    },
+  });
+
+  const createClient = () => ({
+    select: () => createChain(),
+    delete: () => ({
+      where: () => ({
+        returning: async () => (testState.deleteSuccess ? [{ id: UUID_1 }] : []),
       }),
-    };
-  },
-}));
+    }),
+    transaction: async (callback: (tx: unknown) => Promise<unknown>) => callback(createClient()),
+  });
+
+  return {
+    domains: { id: 'domains.id', name: 'domains.name', createdAt: 'domains.createdAt' },
+    subjects: { id: 'subjects.id', domainId: 'subjects.domainId', name: 'subjects.name', createdAt: 'subjects.createdAt' },
+    topics: { id: 'topics.id', subjectId: 'topics.subjectId', name: 'topics.name', createdAt: 'topics.createdAt' },
+    subtopics: { id: 'subtopics.id', topicId: 'subtopics.topicId', name: 'subtopics.name', createdAt: 'subtopics.createdAt' },
+    skills: { id: 'skills.id', name: 'skills.name', createdAt: 'skills.createdAt' },
+    questions: {
+      id: 'questions.id',
+      topicId: 'questions.topicId',
+      subtopicId: 'questions.subtopicId',
+      skillId: 'questions.skillId',
+      deletedAt: 'questions.deletedAt',
+    },
+    questionSkills: {
+      questionId: 'questionSkills.questionId',
+      skillId: 'questionSkills.skillId',
+    },
+    topicSkills: {
+      topicId: 'topicSkills.topicId',
+      skillId: 'topicSkills.skillId',
+    },
+    getDb: () => createClient(),
+  };
+});
 
 vi.mock('@quiz/db-tutorial', () => ({
   db: {
@@ -92,6 +115,7 @@ describe('Hierarchy Destructive Operations - Route Integration (Tasks 12 & 13)',
     testState.guardDenial = null;
     testState.childFound = false;
     testState.deleteSuccess = true;
+    testState.throwOnSelect = false;
   });
 
   describe('Single Entity DELETE Route Safety', () => {
@@ -282,6 +306,15 @@ describe('Hierarchy Destructive Operations - Route Integration (Tasks 12 & 13)',
       const reqById = makeRequest(`http://localhost/api/admin/skills/${UUID_1}`, 'DELETE');
       const resById = await deleteSkillByIdRoute(reqById, { params: Promise.resolve({ id: UUID_1 }) });
       expect(resById.status).toBe(200);
+    });
+
+    it('BC-CORR-01: returns 503 when dependency verification storage is temporarily unavailable', async () => {
+      testState.throwOnSelect = true;
+      const req = makeRequest(`http://localhost/api/admin/domains/${UUID_1}`, 'DELETE');
+      const res = await deleteDomainByIdRoute(req, { params: Promise.resolve({ id: UUID_1 }) });
+      expect(res.status).toBe(503);
+      const data = await res.json();
+      expect(data.error).toContain('temporarily unavailable');
     });
   });
 });
