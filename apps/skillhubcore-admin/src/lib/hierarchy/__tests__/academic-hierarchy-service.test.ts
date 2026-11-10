@@ -17,45 +17,57 @@ const mockDb = vi.hoisted(() => ({
   deleteCalls: [] as unknown[],
   throwOnSelect: false,
   transactionCalled: false,
+  omitTransaction: false,
+  omitRowLock: false,
 }));
 
 vi.mock('@quiz/db', () => {
-  const createChain = () => ({
-    from: () => createChain(),
-    where: () => createChain(),
-    orderBy: () => createChain(),
-    for: () => createChain(),
-    limit: async () => {
-      if (mockDb.throwOnSelect) {
-        throw new Error('Connection terminated unexpectedly');
-      }
-      return mockDb.selectResult;
-    },
-    then: (resolve: (val: unknown) => unknown, reject?: (err: unknown) => unknown) => {
-      if (mockDb.throwOnSelect) {
-        const err = new Error('Connection terminated unexpectedly');
-        if (reject) return reject(err);
-        throw err;
-      }
-      return Promise.resolve(mockDb.selectResult).then(resolve, reject);
-    },
-  });
-
-  const createClient = () => ({
-    select: () => createChain(),
-    delete: () => ({
-      where: (cond: unknown) => {
-        mockDb.deleteCalls.push(cond);
-        return {
-          returning: async () => mockDb.deleteResult,
-        };
+  const createChain = (hasFor = true) => {
+    const chain: Record<string, unknown> = {
+      from: () => createChain(hasFor),
+      where: () => createChain(hasFor),
+      orderBy: () => createChain(hasFor),
+      limit: async () => {
+        if (mockDb.throwOnSelect) {
+          throw new Error('Connection terminated unexpectedly');
+        }
+        return mockDb.selectResult;
       },
-    }),
-    transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
-      mockDb.transactionCalled = true;
-      return callback(createClient());
-    },
-  });
+      then: (resolve: (val: unknown) => unknown, reject?: (err: unknown) => unknown) => {
+        if (mockDb.throwOnSelect) {
+          const err = new Error('Connection terminated unexpectedly');
+          if (reject) return reject(err);
+          throw err;
+        }
+        return Promise.resolve(mockDb.selectResult).then(resolve, reject);
+      },
+    };
+    if (hasFor && !mockDb.omitRowLock) {
+      chain.for = () => createChain(hasFor);
+    }
+    return chain;
+  };
+
+  const createClient = () => {
+    const client: Record<string, unknown> = {
+      select: () => createChain(),
+      delete: () => ({
+        where: (cond: unknown) => {
+          mockDb.deleteCalls.push(cond);
+          return {
+            returning: async () => mockDb.deleteResult,
+          };
+        },
+      }),
+    };
+    if (!mockDb.omitTransaction) {
+      client.transaction = async (callback: (tx: unknown) => Promise<unknown>) => {
+        mockDb.transactionCalled = true;
+        return callback(createClient());
+      };
+    }
+    return client;
+  };
 
   return {
     domains: { id: 'domains.id', name: 'domains.name', createdAt: 'domains.createdAt' },
@@ -104,6 +116,8 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
     mockDb.deleteCalls = [];
     mockDb.throwOnSelect = false;
     mockDb.transactionCalled = false;
+    mockDb.omitTransaction = false;
+    mockDb.omitRowLock = false;
   });
 
   describe('validateBatchDeletePayload', () => {
@@ -205,6 +219,24 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(mockDb.deleteCalls.length).toBe(1);
     });
 
+    it('rejects deletion with 503 if database transaction support is unavailable', async () => {
+      mockDb.omitTransaction = true;
+
+      const result = await AcademicHierarchyService.deleteDomain(UUID_1);
+      expect(result.status).toBe(503);
+      expect(result.error).toContain('Database transaction support is unavailable');
+      expect(mockDb.deleteCalls.length).toBe(0);
+    });
+
+    it('fails closed with 503 if row lock query lacks .for() support', async () => {
+      mockDb.omitRowLock = true;
+
+      const result = await AcademicHierarchyService.deleteDomain(UUID_1);
+      expect(result.status).toBe(503);
+      expect(result.error).toContain('Dependency verification storage is temporarily unavailable');
+      expect(mockDb.deleteCalls.length).toBe(0);
+    });
+
     it('executes batchDeleteDomains inside a single database transaction', async () => {
       mockDb.selectResult = [];
 
@@ -212,6 +244,15 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(result.status).toBe(200);
       expect(mockDb.transactionCalled).toBe(true);
       expect(mockDb.deleteCalls.length).toBe(1);
+    });
+
+    it('deterministically sorts batch delete IDs to eliminate deadlock risk', async () => {
+      mockDb.selectResult = [];
+
+      // Pass IDs in reverse order [UUID_2, UUID_1]
+      const result = await AcademicHierarchyService.batchDeleteDomains({ ids: [UUID_2, UUID_1] });
+      expect(result.status).toBe(200);
+      expect(mockDb.transactionCalled).toBe(true);
     });
   });
 

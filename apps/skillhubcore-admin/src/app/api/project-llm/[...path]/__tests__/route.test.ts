@@ -51,7 +51,7 @@ describe('Project AI Worker: Error Sanitization & Trusted-Admin Model', () => {
   it('sanitizes backend connection failure into 502 PROJECT_AI_BACKEND_ERROR', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('ECONNREFUSED 127.0.0.1:8000'));
 
-    const req = new NextRequest('http://localhost/api/project-llm/workflows/execute', {
+    const req = new NextRequest('http://localhost/api/project-llm/workflows/jobs', {
       method: 'POST',
       headers: {
         cookie: 'accessToken=admin-jwt-token',
@@ -60,7 +60,7 @@ describe('Project AI Worker: Error Sanitization & Trusted-Admin Model', () => {
     });
 
     const context = {
-      params: Promise.resolve({ path: ['workflows', 'execute'] }),
+      params: Promise.resolve({ path: ['workflows', 'jobs'] }),
     };
 
     const res = await POST(req, context);

@@ -21,6 +21,22 @@ import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 export const MAX_BATCH_DELETE_SIZE = 100;
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * ARCHITECTURAL BOUNDARY & COORDINATION LIMITATION:
+ * ------------------------------------------------
+ * 1. MainDB row locks (`SELECT ... FOR UPDATE`) serialize concurrent transactions and prevent concurrent
+ *    child inserts within PostgreSQL MainDB (domains, subjects, topics, subtopics, skills, questions).
+ * 2. MainDB row locks DO NOT lock related records in TutorialDB (tutorialSidebarTreesV2, tutorialSections,
+ *    tutorialSubtopics). MainDB and TutorialDB are distinct physical PostgreSQL instances.
+ * 3. Cross-database distributed two-phase commit (2PC) is NOT supported without an external coordinator.
+ * 4. Consequently, checkTopicDependencies and checkSubtopicDependencies query TutorialDB read-only
+ *    to verify absence of dependent tutorial sections or sidebars. If TutorialDB is unreachable,
+ *    the check fails closed with DependencyCheckUnavailableError (503).
+ * 5. If concurrent creation occurs in TutorialDB during MainDB deletion, MainDB locks cannot block it.
+ *    Any future strict distributed synchronization requires an explicit outbox or two-phase commit
+ *    architecture, which is an OWNER DECISION REQUIRED item.
+ */
+
 interface LockableQuery {
   for: (strength: 'update' | 'no key update' | 'share' | 'key share') => Promise<unknown>;
 }
@@ -28,13 +44,15 @@ interface LockableQuery {
 /**
  * Acquires a row-level lock on selected rows to serialize concurrent transactions
  * and prevent concurrent child creation between pre-delete dependency checks and deletion.
- * Fails closed (throws DependencyCheckUnavailableError) on database connection outage.
+ * Fails closed (throws DependencyCheckUnavailableError) if the query does not support
+ * PostgreSQL FOR UPDATE locking or encounters a database connection outage.
  */
 async function acquireRowLock(entityType: string, entityId: string, query: unknown): Promise<void> {
   try {
-    if (query && typeof query === 'object' && 'for' in query && typeof (query as LockableQuery).for === 'function') {
-      await (query as LockableQuery).for('update');
+    if (!query || typeof query !== 'object' || !('for' in query) || typeof (query as LockableQuery).for !== 'function') {
+      throw new Error(`Row lock query does not support PostgreSQL FOR UPDATE locking for ${entityType} ${entityId}`);
     }
+    await (query as LockableQuery).for('update');
   } catch (error) {
     if (error instanceof DependencyCheckUnavailableError) throw error;
     throw new DependencyCheckUnavailableError(entityType, entityId, error);
@@ -151,8 +169,8 @@ export function validateBatchDeletePayload(
     validatedIds.push(trimmed);
   }
 
-  // Deduplicate IDs
-  const uniqueIds = Array.from(new Set(validatedIds));
+  // Deduplicate and sort IDs deterministically to prevent deadlocks across concurrent batch transactions
+  const uniqueIds = Array.from(new Set(validatedIds)).sort();
 
   return {
     success: true,
@@ -486,6 +504,40 @@ export async function checkSkillDependencies(
  */
 export class AcademicHierarchyService {
   /**
+   * Executes a destructive hierarchy operation strictly inside a database transaction.
+   * Fails closed with 503 if transaction support is unavailable or storage fails.
+   * Removes production-capable fallback that executes deletions directly without transaction support.
+   */
+  private static async executeDestructiveTransaction(
+    entityName: string,
+    operation: (tx: DbExecutor) => Promise<HierarchyDeleteResult>
+  ): Promise<HierarchyDeleteResult> {
+    const db = getDb();
+    if (!db || typeof db !== 'object' || !('transaction' in db) || typeof db.transaction !== 'function') {
+      return {
+        status: 503,
+        error: `Database transaction support is unavailable for ${entityName} deletion. Destructive operation rejected to guarantee isolation.`,
+      };
+    }
+
+    try {
+      return await db.transaction(operation);
+    } catch (error) {
+      if (error instanceof DependencyCheckUnavailableError) {
+        return {
+          status: 503,
+          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
+        };
+      }
+      console.error(`[AcademicHierarchyService] Error during ${entityName} deletion:`, error);
+      return {
+        status: 500,
+        error: `Internal server error during ${entityName} deletion`,
+      };
+    }
+  }
+
+  /**
    * Delete a domain with referential safety wrapped in a transaction
    */
   static async deleteDomain(id: string): Promise<HierarchyDeleteResult> {
@@ -493,7 +545,6 @@ export class AcademicHierarchyService {
       return { status: 400, error: 'Invalid UUID format for Domain ID' };
     }
 
-    const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
       // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
       await acquireRowLock('domain', id, tx.select({ id: domains.id }).from(domains).where(eq(domains.id, id)));
@@ -519,24 +570,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: 'Domain deleted successfully' };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during domain deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during domain deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('domain', runInTx);
   }
 
   /**
@@ -551,12 +585,16 @@ export class AcademicHierarchyService {
       };
     }
 
-    const ids = validation.ids;
-    const db = getDb();
+    // IDs are deterministically sorted to prevent deadlock under concurrent batch locks
+    const ids = [...validation.ids].sort();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
-      // 1. Acquire row locks on target batch entities
-      await acquireRowLock('domain', ids.join(','), tx.select({ id: domains.id }).from(domains).where(inArray(domains.id, ids)));
+      // 1. Acquire row locks in deterministic ascending ID order
+      await acquireRowLock(
+        'domain',
+        ids.join(','),
+        tx.select({ id: domains.id }).from(domains).where(inArray(domains.id, ids)).orderBy(domains.id)
+      );
 
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
@@ -586,24 +624,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: `${ids.length} domains deleted successfully` };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during batch domain deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during batch domain deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('batch domain', runInTx);
   }
 
   /**
@@ -614,7 +635,6 @@ export class AcademicHierarchyService {
       return { status: 400, error: 'Invalid UUID format for Subject ID' };
     }
 
-    const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
       // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
       await acquireRowLock('subject', id, tx.select({ id: subjects.id }).from(subjects).where(eq(subjects.id, id)));
@@ -640,24 +660,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: 'Subject deleted successfully' };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during subject deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during subject deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('subject', runInTx);
   }
 
   /**
@@ -672,12 +675,16 @@ export class AcademicHierarchyService {
       };
     }
 
-    const ids = validation.ids;
-    const db = getDb();
+    // IDs are deterministically sorted to prevent deadlock under concurrent batch locks
+    const ids = [...validation.ids].sort();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
-      // 1. Acquire row locks on target batch entities
-      await acquireRowLock('subject', ids.join(','), tx.select({ id: subjects.id }).from(subjects).where(inArray(subjects.id, ids)));
+      // 1. Acquire row locks in deterministic ascending ID order
+      await acquireRowLock(
+        'subject',
+        ids.join(','),
+        tx.select({ id: subjects.id }).from(subjects).where(inArray(subjects.id, ids)).orderBy(subjects.id)
+      );
 
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
@@ -707,24 +714,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: `${ids.length} subjects deleted successfully` };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during batch subject deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during batch subject deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('batch subject', runInTx);
   }
 
   /**
@@ -735,7 +725,6 @@ export class AcademicHierarchyService {
       return { status: 400, error: 'Invalid UUID format for Topic ID' };
     }
 
-    const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
       // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
       await acquireRowLock('topic', id, tx.select({ id: topics.id }).from(topics).where(eq(topics.id, id)));
@@ -761,24 +750,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: 'Topic deleted successfully' };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during topic deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during topic deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('topic', runInTx);
   }
 
   /**
@@ -793,12 +765,16 @@ export class AcademicHierarchyService {
       };
     }
 
-    const ids = validation.ids;
-    const db = getDb();
+    // IDs are deterministically sorted to prevent deadlock under concurrent batch locks
+    const ids = [...validation.ids].sort();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
-      // 1. Acquire row locks on target batch entities
-      await acquireRowLock('topic', ids.join(','), tx.select({ id: topics.id }).from(topics).where(inArray(topics.id, ids)));
+      // 1. Acquire row locks in deterministic ascending ID order
+      await acquireRowLock(
+        'topic',
+        ids.join(','),
+        tx.select({ id: topics.id }).from(topics).where(inArray(topics.id, ids)).orderBy(topics.id)
+      );
 
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
@@ -828,24 +804,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: `${ids.length} topics deleted successfully` };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during batch topic deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during batch topic deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('batch topic', runInTx);
   }
 
   /**
@@ -856,7 +815,6 @@ export class AcademicHierarchyService {
       return { status: 400, error: 'Invalid UUID format for Subtopic ID' };
     }
 
-    const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
       // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
       await acquireRowLock('subtopic', id, tx.select({ id: subtopics.id }).from(subtopics).where(eq(subtopics.id, id)));
@@ -882,24 +840,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: 'Subtopic deleted successfully' };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during subtopic deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during subtopic deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('subtopic', runInTx);
   }
 
   /**
@@ -914,12 +855,16 @@ export class AcademicHierarchyService {
       };
     }
 
-    const ids = validation.ids;
-    const db = getDb();
+    // IDs are deterministically sorted to prevent deadlock under concurrent batch locks
+    const ids = [...validation.ids].sort();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
-      // 1. Acquire row locks on target batch entities
-      await acquireRowLock('subtopic', ids.join(','), tx.select({ id: subtopics.id }).from(subtopics).where(inArray(subtopics.id, ids)));
+      // 1. Acquire row locks in deterministic ascending ID order
+      await acquireRowLock(
+        'subtopic',
+        ids.join(','),
+        tx.select({ id: subtopics.id }).from(subtopics).where(inArray(subtopics.id, ids)).orderBy(subtopics.id)
+      );
 
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
@@ -949,24 +894,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: `${ids.length} subtopics deleted successfully` };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during batch subtopic deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during batch subtopic deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('batch subtopic', runInTx);
   }
 
   /**
@@ -977,7 +905,6 @@ export class AcademicHierarchyService {
       return { status: 400, error: 'Invalid UUID format for Skill ID' };
     }
 
-    const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
       // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
       await acquireRowLock('skill', id, tx.select({ id: skills.id }).from(skills).where(eq(skills.id, id)));
@@ -1003,24 +930,7 @@ export class AcademicHierarchyService {
       return { status: 200, message: 'Skill deleted successfully' };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during skill deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during skill deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('skill', runInTx);
   }
 
   /**
@@ -1035,12 +945,16 @@ export class AcademicHierarchyService {
       };
     }
 
-    const ids = validation.ids;
-    const db = getDb();
+    // IDs are deterministically sorted to prevent deadlock under concurrent batch locks
+    const ids = [...validation.ids].sort();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
-      // 1. Acquire row locks on target batch entities
-      await acquireRowLock('skill', ids.join(','), tx.select({ id: skills.id }).from(skills).where(inArray(skills.id, ids)));
+      // 1. Acquire row locks in deterministic ascending ID order
+      await acquireRowLock(
+        'skill',
+        ids.join(','),
+        tx.select({ id: skills.id }).from(skills).where(inArray(skills.id, ids)).orderBy(skills.id)
+      );
 
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
@@ -1070,23 +984,6 @@ export class AcademicHierarchyService {
       return { status: 200, message: `${ids.length} skills deleted successfully` };
     };
 
-    try {
-      if ('transaction' in db && typeof db.transaction === 'function') {
-        return await db.transaction(runInTx);
-      }
-      return await runInTx(db);
-    } catch (error) {
-      if (error instanceof DependencyCheckUnavailableError) {
-        return {
-          status: 503,
-          error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
-        };
-      }
-      console.error('[AcademicHierarchyService] Error during batch skill deletion:', error);
-      return {
-        status: 500,
-        error: 'Internal server error during batch skill deletion',
-      };
-    }
+    return await this.executeDestructiveTransaction('batch skill', runInTx);
   }
 }
