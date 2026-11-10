@@ -20,6 +20,7 @@ vi.mock('@quiz/db', () => {
     from: () => createChain(),
     where: () => createChain(),
     orderBy: () => createChain(),
+    for: () => createChain(),
     limit: async () => {
       if (testState.throwOnSelect) {
         throw new Error('Database connection failed');
@@ -28,6 +29,14 @@ vi.mock('@quiz/db', () => {
         return [{ id: 'child-1', domainId: UUID_1, subjectId: UUID_1, topicId: UUID_1, name: 'Child Item' }];
       }
       return [];
+    },
+    then: (resolve: (val: unknown) => unknown, reject?: (err: unknown) => unknown) => {
+      if (testState.throwOnSelect) {
+        const err = new Error('Database connection failed');
+        if (reject) return reject(err);
+        throw err;
+      }
+      return Promise.resolve([]).then(resolve, reject);
     },
   });
 

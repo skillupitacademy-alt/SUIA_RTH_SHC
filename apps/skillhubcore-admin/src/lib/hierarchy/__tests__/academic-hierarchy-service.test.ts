@@ -24,11 +24,20 @@ vi.mock('@quiz/db', () => {
     from: () => createChain(),
     where: () => createChain(),
     orderBy: () => createChain(),
+    for: () => createChain(),
     limit: async () => {
       if (mockDb.throwOnSelect) {
         throw new Error('Connection terminated unexpectedly');
       }
       return mockDb.selectResult;
+    },
+    then: (resolve: (val: unknown) => unknown, reject?: (err: unknown) => unknown) => {
+      if (mockDb.throwOnSelect) {
+        const err = new Error('Connection terminated unexpectedly');
+        if (reject) return reject(err);
+        throw err;
+      }
+      return Promise.resolve(mockDb.selectResult).then(resolve, reject);
     },
   });
 
@@ -214,6 +223,18 @@ describe('AcademicHierarchyService - Validation and Delete Safety', () => {
       expect(result.status).toBe(409);
       expect(result.conflictType).toBe('DEPENDENCY_CONFLICT');
       expect(result.entityType).toBe('domain');
+      expect(result.dependencies?.subjects).toBe(1);
+      expect(mockDb.deleteCalls.length).toBe(0);
+    });
+
+    it('blocks deletion with 409 Conflict even if dependent child record has deletedAt set (physical retention check for CASCADE safety)', async () => {
+      // Physical row check: a soft-deleted child record in PostgreSQL still has foreign key
+      // and would be physically deleted or violate constraints on parent hard-delete
+      mockDb.selectResult = [{ id: 'sub-soft-deleted', domainId: UUID_1, deletedAt: new Date() }];
+
+      const result = await AcademicHierarchyService.deleteDomain(UUID_1);
+      expect(result.status).toBe(409);
+      expect(result.conflictType).toBe('DEPENDENCY_CONFLICT');
       expect(result.dependencies?.subjects).toBe(1);
       expect(mockDb.deleteCalls.length).toBe(0);
     });

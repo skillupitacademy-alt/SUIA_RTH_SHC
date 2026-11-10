@@ -15,11 +15,31 @@ import {
   tutorialSubtopics,
   tutorialSections,
 } from '@quiz/db-tutorial';
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 
 export const MAX_BATCH_DELETE_SIZE = 100;
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+interface LockableQuery {
+  for: (strength: 'update' | 'no key update' | 'share' | 'key share') => Promise<unknown>;
+}
+
+/**
+ * Acquires a row-level lock on selected rows to serialize concurrent transactions
+ * and prevent concurrent child creation between pre-delete dependency checks and deletion.
+ * Fails closed (throws DependencyCheckUnavailableError) on database connection outage.
+ */
+async function acquireRowLock(entityType: string, entityId: string, query: unknown): Promise<void> {
+  try {
+    if (query && typeof query === 'object' && 'for' in query && typeof (query as LockableQuery).for === 'function') {
+      await (query as LockableQuery).for('update');
+    }
+  } catch (error) {
+    if (error instanceof DependencyCheckUnavailableError) throw error;
+    throw new DependencyCheckUnavailableError(entityType, entityId, error);
+  }
+}
 
 /**
  * Custom error thrown when dependency check storage (MainDB or TutorialDB) is unreachable.
@@ -151,6 +171,9 @@ export function isValidUuid(id: string): boolean {
  * Checks dependencies for a domain before destructive operations.
  * Domain has child subjects in MainDB.
  * Fails closed (throws DependencyCheckUnavailableError) on database error.
+ *
+ * Physical row retention: checks ALL physical rows (without isNull(deletedAt))
+ * because PostgreSQL ON DELETE CASCADE / RESTRICT triggers operate at physical engine level.
  */
 export async function checkDomainDependencies(
   domainId: string,
@@ -161,7 +184,7 @@ export async function checkDomainDependencies(
     const dependentSubjects = await client
       .select({ id: subjects.id, domainId: subjects.domainId })
       .from(subjects)
-      .where(and(eq(subjects.domainId, domainId), isNull(subjects.deletedAt)))
+      .where(eq(subjects.domainId, domainId))
       .limit(100);
 
     // Filter to ensure foreign key match
@@ -188,6 +211,7 @@ export async function checkDomainDependencies(
  * Checks dependencies for a subject before destructive operations.
  * Subject has child topics in MainDB.
  * Fails closed (throws DependencyCheckUnavailableError) on database error.
+ * Physical row retention: inspects all physical rows regardless of soft-delete flags.
  */
 export async function checkSubjectDependencies(
   subjectId: string,
@@ -198,7 +222,7 @@ export async function checkSubjectDependencies(
     const dependentTopics = await client
       .select({ id: topics.id, subjectId: topics.subjectId })
       .from(topics)
-      .where(and(eq(topics.subjectId, subjectId), isNull(topics.deletedAt)))
+      .where(eq(topics.subjectId, subjectId))
       .limit(100);
 
     const matching = (dependentTopics as Array<{ id: string; subjectId: string }>).filter(
@@ -224,6 +248,8 @@ export async function checkSubjectDependencies(
  * Checks dependencies for a topic before destructive operations.
  * Topic has child subtopics, questions, topicSkills in MainDB, and tutorial sidebars in TutorialDB.
  * Fails closed (throws DependencyCheckUnavailableError) on database error.
+ * Cross-database dependencies: TutorialDB sidebars are pre-checked fail-closed.
+ * Physical row retention: inspects all physical rows regardless of soft-delete flags.
  */
 export async function checkTopicDependencies(
   topicId: string,
@@ -233,11 +259,11 @@ export async function checkTopicDependencies(
   const dependents: Record<string, number> = {};
 
   try {
-    // 1. Check child subtopics in MainDB
+    // 1. Check child subtopics in MainDB (physical rows)
     const dependentSubtopics = await client
       .select({ id: subtopics.id, topicId: subtopics.topicId })
       .from(subtopics)
-      .where(and(eq(subtopics.topicId, topicId), isNull(subtopics.deletedAt)))
+      .where(eq(subtopics.topicId, topicId))
       .limit(100);
 
     const matchingSubtopics = (dependentSubtopics as Array<{ id: string; topicId: string }>).filter(
@@ -247,11 +273,11 @@ export async function checkTopicDependencies(
       dependents.subtopics = matchingSubtopics.length;
     }
 
-    // 2. Check dependent questions in MainDB (direct exported table)
+    // 2. Check dependent questions in MainDB (physical rows)
     const dependentQuestions = await client
       .select({ id: questions.id, topicId: questions.topicId })
       .from(questions)
-      .where(and(eq(questions.topicId, topicId), isNull(questions.deletedAt)))
+      .where(eq(questions.topicId, topicId))
       .limit(100);
 
     const matchingQuestions = (dependentQuestions as Array<{ id: string; topicId: string }>).filter(
@@ -281,6 +307,8 @@ export async function checkTopicDependencies(
 
   try {
     // 4. Check tutorial sidebars in TutorialDB
+    // Cross-database note: MainDB and TutorialDB are separate database instances without 2PC.
+    // Preflight fail-closed check ensures cross-database referential integrity before MainDB deletion.
     if (tutorialDb && tutorialSidebarTreesV2) {
       const sidebars = await tutorialDb
         .select({ topicId: tutorialSidebarTreesV2.topicId })
@@ -314,6 +342,8 @@ export async function checkTopicDependencies(
  * Checks dependencies for a subtopic before destructive operations.
  * Subtopic has child questions in MainDB and tutorial sections in TutorialDB.
  * Fails closed (throws DependencyCheckUnavailableError) on database error.
+ * Cross-database dependencies: TutorialDB sections are pre-checked fail-closed.
+ * Physical row retention: inspects all physical rows regardless of soft-delete flags.
  */
 export async function checkSubtopicDependencies(
   subtopicId: string,
@@ -323,11 +353,11 @@ export async function checkSubtopicDependencies(
   const dependents: Record<string, number> = {};
 
   try {
-    // 1. Check questions referencing subtopic in MainDB (direct exported table)
+    // 1. Check questions referencing subtopic in MainDB (physical rows)
     const dependentQuestions = await client
       .select({ id: questions.id, subtopicId: questions.subtopicId })
       .from(questions)
-      .where(and(eq(questions.subtopicId, subtopicId), isNull(questions.deletedAt)))
+      .where(eq(questions.subtopicId, subtopicId))
       .limit(100);
 
     const matchingQuestions = (dependentQuestions as Array<{ id: string; subtopicId: string | null }>).filter(
@@ -343,6 +373,7 @@ export async function checkSubtopicDependencies(
 
   try {
     // 2. Check tutorial sections in TutorialDB (linked via tutorialSubtopics.externalId)
+    // Cross-database note: checks physical tutorial sections fail-closed.
     if (tutorialDb && tutorialSubtopics && tutorialSections) {
       const [tutSubtopic] = await tutorialDb
         .select({ id: tutorialSubtopics.id, externalId: tutorialSubtopics.externalId })
@@ -354,7 +385,7 @@ export async function checkSubtopicDependencies(
         const sections = await tutorialDb
           .select({ id: tutorialSections.id })
           .from(tutorialSections)
-          .where(and(eq(tutorialSections.subtopicId, tutSubtopic.id), isNull(tutorialSections.deletedAt)))
+          .where(eq(tutorialSections.subtopicId, tutSubtopic.id))
           .limit(100);
         if (sections.length > 0) {
           dependents.tutorials = sections.length;
@@ -381,6 +412,7 @@ export async function checkSubtopicDependencies(
  * Checks dependencies for a skill before destructive operations.
  * Skill is referenced by topicSkills, questionSkills, and legacy questions in MainDB.
  * Fails closed (throws DependencyCheckUnavailableError) on database error.
+ * Physical row retention: inspects all physical rows regardless of soft-delete flags.
  */
 export async function checkSkillDependencies(
   skillId: string,
@@ -418,11 +450,11 @@ export async function checkSkillDependencies(
       dependents.questionSkills = matchingQuestionSkills.length;
     }
 
-    // 3. Check legacy questions referencing this skill (direct exported table)
+    // 3. Check legacy questions referencing this skill (physical rows)
     const legacyQuestions = await client
       .select({ id: questions.id, skillId: questions.skillId })
       .from(questions)
-      .where(and(eq(questions.skillId, skillId), isNull(questions.deletedAt)))
+      .where(eq(questions.skillId, skillId))
       .limit(100);
 
     const matchingLegacy = (legacyQuestions as Array<{ id: string; skillId: string | null }>).filter(
@@ -463,6 +495,10 @@ export class AcademicHierarchyService {
 
     const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
+      await acquireRowLock('domain', id, tx.select({ id: domains.id }).from(domains).where(eq(domains.id, id)));
+
+      // 2. Verify dependencies within the transaction
       const conflict = await checkDomainDependencies(id, tx);
       if (conflict) {
         return {
@@ -495,9 +531,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during domain deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during domain deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during domain deletion',
       };
     }
   }
@@ -518,6 +555,9 @@ export class AcademicHierarchyService {
     const db = getDb();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row locks on target batch entities
+      await acquireRowLock('domain', ids.join(','), tx.select({ id: domains.id }).from(domains).where(inArray(domains.id, ids)));
+
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
 
@@ -558,9 +598,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during batch domain deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during batch domain deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during batch domain deletion',
       };
     }
   }
@@ -575,6 +616,10 @@ export class AcademicHierarchyService {
 
     const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
+      await acquireRowLock('subject', id, tx.select({ id: subjects.id }).from(subjects).where(eq(subjects.id, id)));
+
+      // 2. Verify dependencies within the transaction
       const conflict = await checkSubjectDependencies(id, tx);
       if (conflict) {
         return {
@@ -607,9 +652,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during subject deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during subject deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during subject deletion',
       };
     }
   }
@@ -630,6 +676,9 @@ export class AcademicHierarchyService {
     const db = getDb();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row locks on target batch entities
+      await acquireRowLock('subject', ids.join(','), tx.select({ id: subjects.id }).from(subjects).where(inArray(subjects.id, ids)));
+
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
 
@@ -670,9 +719,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during batch subject deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during batch subject deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during batch subject deletion',
       };
     }
   }
@@ -687,6 +737,10 @@ export class AcademicHierarchyService {
 
     const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
+      await acquireRowLock('topic', id, tx.select({ id: topics.id }).from(topics).where(eq(topics.id, id)));
+
+      // 2. Verify dependencies within the transaction
       const conflict = await checkTopicDependencies(id, tx);
       if (conflict) {
         return {
@@ -719,9 +773,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during topic deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during topic deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during topic deletion',
       };
     }
   }
@@ -742,6 +797,9 @@ export class AcademicHierarchyService {
     const db = getDb();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row locks on target batch entities
+      await acquireRowLock('topic', ids.join(','), tx.select({ id: topics.id }).from(topics).where(inArray(topics.id, ids)));
+
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
 
@@ -782,9 +840,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during batch topic deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during batch topic deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during batch topic deletion',
       };
     }
   }
@@ -799,6 +858,10 @@ export class AcademicHierarchyService {
 
     const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
+      await acquireRowLock('subtopic', id, tx.select({ id: subtopics.id }).from(subtopics).where(eq(subtopics.id, id)));
+
+      // 2. Verify dependencies within the transaction
       const conflict = await checkSubtopicDependencies(id, tx);
       if (conflict) {
         return {
@@ -831,9 +894,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during subtopic deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during subtopic deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during subtopic deletion',
       };
     }
   }
@@ -854,6 +918,9 @@ export class AcademicHierarchyService {
     const db = getDb();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row locks on target batch entities
+      await acquireRowLock('subtopic', ids.join(','), tx.select({ id: subtopics.id }).from(subtopics).where(inArray(subtopics.id, ids)));
+
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
 
@@ -894,9 +961,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during batch subtopic deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during batch subtopic deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during batch subtopic deletion',
       };
     }
   }
@@ -911,6 +979,10 @@ export class AcademicHierarchyService {
 
     const db = getDb();
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row lock to serialize concurrent transactions and prevent concurrent child creation
+      await acquireRowLock('skill', id, tx.select({ id: skills.id }).from(skills).where(eq(skills.id, id)));
+
+      // 2. Verify dependencies within the transaction
       const conflict = await checkSkillDependencies(id, tx);
       if (conflict) {
         return {
@@ -943,9 +1015,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during skill deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during skill deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during skill deletion',
       };
     }
   }
@@ -966,6 +1039,9 @@ export class AcademicHierarchyService {
     const db = getDb();
 
     const runInTx = async (tx: DbExecutor): Promise<HierarchyDeleteResult> => {
+      // 1. Acquire row locks on target batch entities
+      await acquireRowLock('skill', ids.join(','), tx.select({ id: skills.id }).from(skills).where(inArray(skills.id, ids)));
+
       const conflictingIds: string[] = [];
       const aggregatedDependencies: Record<string, number> = {};
 
@@ -1006,9 +1082,10 @@ export class AcademicHierarchyService {
           error: 'Dependency verification storage is temporarily unavailable. Deletion aborted to prevent unsafe cascade.',
         };
       }
+      console.error('[AcademicHierarchyService] Error during batch skill deletion:', error);
       return {
         status: 500,
-        error: `Unexpected error during batch skill deletion: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Internal server error during batch skill deletion',
       };
     }
   }

@@ -10,6 +10,7 @@ const mockState = vi.hoisted(() => ({
   authDenied: null as unknown,
   hierarchyValid: true,
   syncShouldFail: false,
+  sidebarInsertShouldFail: false,
   savedRows: [] as unknown[],
   insertCalled: false,
 }));
@@ -80,6 +81,9 @@ vi.mock('@quiz/db-tutorial', () => ({
         insert: (table: unknown) => {
           if (table && typeof table === 'object' && 'brandId' in (table as Record<string, unknown>)) {
             mockState.insertCalled = true;
+            if (mockState.sidebarInsertShouldFail) {
+              throw new Error('Database transaction rolled back: Sidebar upsert constraint failure');
+            }
             return {
               values: (vals: Record<string, unknown>) => ({
                 onConflictDoUpdate: () => ({
@@ -170,6 +174,7 @@ describe('Tutorial Left Sidebar Synchronization & Resilience (Task 14)', () => {
     mockState.authDenied = null;
     mockState.hierarchyValid = true;
     mockState.syncShouldFail = false;
+    mockState.sidebarInsertShouldFail = false;
     mockState.savedRows = [];
     mockState.insertCalled = false;
   });
@@ -329,6 +334,21 @@ random unformatted text
     const body = await res.json();
     expect(body.error).toContain('Tutorial hierarchy synchronization failed');
     expect(mockState.insertCalled).toBe(false);
+  });
+
+  it('BC-CORR-04: aborts with 500 and rolls back TutorialDB transaction if sidebar insert fails after hierarchy sync', async () => {
+    // Both hierarchy sync and sidebar insert run inside a single tutorialDb.transaction.
+    // If sidebar upsert fails after hierarchy sync succeeded, the whole transaction must abort and roll back.
+    mockState.syncShouldFail = false;
+    mockState.sidebarInsertShouldFail = true;
+
+    const req = makeRequest(validPayload);
+    const res = await postSidebarRoute(req);
+    expect(res.status).toBe(500);
+
+    const body = await res.json();
+    expect(body.error).toContain('Tutorial hierarchy synchronization failed');
+    expect(body.details).toContain('Sidebar upsert constraint failure');
   });
 
   it('successfully publishes and increments version when all validations and sync succeed', async () => {
