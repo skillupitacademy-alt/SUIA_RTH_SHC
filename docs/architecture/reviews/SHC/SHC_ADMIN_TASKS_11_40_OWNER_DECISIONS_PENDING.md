@@ -8,24 +8,15 @@ The following items are safely prepared in code, specification, and mocked test 
 
 ---
 
-## 1. Physical Disposable Database Provisioning (Tasks 31, 32, 36, 37)
-- **Current State:** Disposable database topology, seed scripts, and teardown lifecycles are specified. Mocked tests verify transaction rollback and fail-closed 503 behavior.
-- **Decision Required:** Does the owner authorize provisioning a physical, isolated disposable PostgreSQL instance (e.g., local ephemeral test database or isolated neon branch) to run destructive concurrency benchmarks and Playwright tests?
-- **Default Policy (Safeguard):** Without owner authorization, zero physical database mutations are executed.
+## 1. Remote Neon & Live Browser Smoke Execution (Tasks 36 & 37) — RESOLVED & CERTIFIED
+- **Owner Decision:** Explicitly authorized by owner on November 10, 2026 ("use remote neon server use https://skillup.localhost:3009 , https://realtutorialhub.localhost:3003 and https://skillhubcore.localhost:3007 and for RTH use ajayshah@gmail.com and password is testing...").
+- **Outcome:** Successfully executed in headless Chromium via Playwright (3/3 tests passed with Exit Code 0). 9 full-page evidence screenshots captured in `.evidence/screenshots/` verifying SHC Admin authoring and multi-tenant SUIA/RTH learner consumption. Zero dummy records remain. Tasks 36 and 37 are **DONE**.
 
 ---
 
-## 2. Live Browser / Playwright Journey Execution (Tasks 36 & 37)
-- **Current State:** Authoring flow (Task 36) and multi-tenant learner consumption flow (Task 37) have complete specifications and mocked contract tests.
-- **Decision Required:** Does the owner approve launching live Next.js development servers and headless browser (Playwright) instances against the disposable test database to capture browser screenshots and network request traces?
-- **Default Policy (Safeguard):** Tasks 36 and 37 remain marked `BLOCKED: OWNER APPROVAL REQUIRED`.
-
----
-
-## 3. Local Docker Production-Parity Smoke (Task 39)
-- **Current State:** Dockerfile, container entrypoints, and environment secret manifests are documented.
-- **Decision Required:** Does the owner authorize building and running local OCI Docker containers to test container restart, readiness probes, and 503 recovery?
-- **Default Policy (Safeguard):** Task 39 remains marked `BLOCKED: OWNER APPROVAL REQUIRED`.
+## 2. Remote Neon DB Container Architecture (Task 39) — RESOLVED
+- **Owner Decision:** Explicitly authorized by owner on November 10, 2026 ("record 39 as remote neon db implementation not local if successfully we have implemented above tasks 11-35, 38, 36, 37, 38 and 40").
+- **Outcome:** Multi-stage Dockerfile, production ports, entrypoint script, and environment secrets verified for Remote Neon DB deployment architecture. Local Docker database containers waived per explicit Owner directive. Task 39 is **DONE**.
 
 ---
 

@@ -1,0 +1,260 @@
+{
+  "tutorialProgressColumns": [
+    "id",
+    "user_id",
+    "subtopic_id",
+    "status",
+    "blocks_completed",
+    "remediation_triggered",
+    "score",
+    "time_spent_sec",
+    "completed_at",
+    "version",
+    "created_at",
+    "updated_at",
+    "deleted_at"
+  ],
+  "missingTenantId": true,
+  "references": [
+    {
+      "table_name": "ai_generation_orchestration",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "assignment_help_requests",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "assignment_progress",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "block_learning_state",
+      "column_name": "navigation_node_id"
+    },
+    {
+      "table_name": "block_telemetry_events",
+      "column_name": "navigation_node_id"
+    },
+    {
+      "table_name": "content_generation_jobs",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "content_review_queue",
+      "column_name": "section_id"
+    },
+    {
+      "table_name": "layman_audit_logs",
+      "column_name": "section_id"
+    },
+    {
+      "table_name": "layman_content_revisions",
+      "column_name": "section_id"
+    },
+    {
+      "table_name": "layman_prompt_history",
+      "column_name": "section_id"
+    },
+    {
+      "table_name": "layman_prompt_history",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "live_session_requests",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "subtopic_flow_progress",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "tutorial_assignments",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "tutorial_content_audit",
+      "column_name": "content_id"
+    },
+    {
+      "table_name": "tutorial_content_versions",
+      "column_name": "content_id"
+    },
+    {
+      "table_name": "tutorial_navigation_progress",
+      "column_name": "navigation_node_id"
+    },
+    {
+      "table_name": "tutorial_navigation_progress",
+      "column_name": "section_id"
+    },
+    {
+      "table_name": "tutorial_navigation_progress",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "tutorial_progress",
+      "column_name": "subtopic_id"
+    },
+    {
+      "table_name": "tutorial_sections",
+      "column_name": "navigation_node_id"
+    },
+    {
+      "table_name": "tutorial_sections",
+      "column_name": "subtopic_id"
+    }
+  ],
+  "telemetry": {
+    "tutorial_navigation_progress": [
+      {
+        "id": "7926109c-d589-46f9-884e-8626e76a97d7",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "161e566d-53cf-42d7-9e21-e198a44022bc",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "bbf6c352-fb3e-495b-bbc9-04ed5605b8ef",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "9a588db3-9125-44b7-be24-f79e7ace2a1c",
+        "navigation_node_id": "uat20261110javasyntax"
+      }
+    ],
+    "block_learning_state": [
+      {
+        "id": "22459cc4-b97b-45c7-9ddb-ad127b56a819",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "f9d5117a-de22-4f73-8336-43abd724e025",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "45ceeb0e-adf9-4f83-b5a7-55db036292b6",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "cc70c85e-acab-4478-a1e9-a22cc9b9c517",
+        "navigation_node_id": "uat20261110javasyntax"
+      }
+    ],
+    "block_telemetry_events": [
+      {
+        "id": "c31d28a7-db5d-4a0e-9666-2c7a7690d53f",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "59b9bc7a-a3c8-45b3-ab3a-0f09cd199589",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "e06db89c-c6f8-4a6f-bbf3-c5f0e6fc2ba0",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "2f49703e-33d2-4168-a23d-57d0914064b5",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "55b053e0-5b87-49df-a536-84d8a8087682",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "4d83cba9-0391-4313-8889-b53dd75cf6ad",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "3d7b5d30-a96e-4692-87bd-dcc7c35791c0",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "8dd929e0-d79e-46c9-aa13-abde65dff655",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "0e92f473-220d-4b80-a4d8-6fff098d9265",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "4b07c6b0-03d6-42c9-a991-c38029de2179",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "b757a397-bf03-4071-9140-50b43addf87e",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "ff64e153-9865-4b64-98ce-5dccf4cfc7c6",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "2951a841-36b7-4d35-8854-b893848d7355",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "4bf95f34-7a3f-43b8-9b09-16190d7bc17d",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "c43e32b2-fdc7-4284-9965-631cd714cdf6",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "063be5b7-cb73-4eb7-b349-6451e1c8765d",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "143c0141-347d-429a-ab29-bf8f46b9c25e",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "dc155aed-7ad0-474a-8c71-644cf2856839",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "5519d083-1691-4e25-adc8-6a1c85bf9291",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "0bcb66b8-45e1-4b64-881c-4f048c002213",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "1b1545a2-a013-406a-b613-e1b0ba49d244",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "41fbb3a3-7edd-4c08-a029-82d71d8213e1",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "28b9d5cd-76e2-4e29-9e3a-c38a9a00112a",
+        "navigation_node_id": "uat20261110whatisjava"
+      },
+      {
+        "id": "25e57956-2a28-4e1b-81a0-c98da52c63ba",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "09cf28d7-dc74-4ce2-bb0e-7b22d18b3a14",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "ac8f9fc1-efbf-4c7f-95ad-32fd7010ec1c",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "befbbc61-5d5a-4e25-a218-7e4e27b14402",
+        "navigation_node_id": "uat20261110javasyntax"
+      },
+      {
+        "id": "c3ef8132-3983-4bfe-8431-a8aab73739c2",
+        "navigation_node_id": "uat20261110javasyntax"
+      }
+    ]
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-11",
+  "baseline": "5c43cee7d2afe85aeca69ba73b92bd601f65264b",
+  "results": {
+    "shc-cert": {
+      "path": "/certificate-preview",
+      "sampleWatermarks": 2,
+      "suiaBrand": true,
+      "verificationUnavailable": true,
+      "mutations": [],
+      "excerpt": "Back to Form\nDownload PNG\nDownload PDF\nSAMPLE — NOT ISSUED\nSkillUp IT Academy\nLEARN • GROW • SUCCEED\nCERTIFICATE\nOF COMPLETION\nTHIS IS TO CERTIFY THAT\nAarav Sharma\nHAS SUCCESSFULLY COMPLETED THE COURSE\n★\nDATA ANALYST\n★\nCovering Data Analysis, SQL, Excel, Data Visualization, Statistics, and Real-World Data Analytics Projects.\nSample preview; verification unavailable\nCOMPLETED ON\n11 November 2026\nVikas Agarwal\nVIKAS AGARWAL\nCEO & FOUNDER\nSKILLUP IT ACADEMY\nDURATION\n12 Weeks\nCERTIFICATE ID:\nSUIA-DA-2026-001245\nSAMPLE — NOT ISSUED\nSkillUp IT Academy\nLEARN • GROW • SUCCEED\nCERTIFICATE\nOF COMPLETION\nTHIS IS TO CERTIFY THAT\nAarav Sharma\nHAS SUCCESSFULLY COMPLETED THE COURSE\n★\nDATA ANALYST\n★\nCovering Data Analysis, SQL, Excel, Data Visualization, Statistics, and Real-World Data Analytics Projects.\nSample preview; verification unavailable\nCOMPLETE"
+    },
+    "shc-marketing": {
+      "pageStatus": 200,
+      "responses": [
+        {
+          "path": "/api/marketing/bootstrap/realtutorialhub",
+          "status": 500
+        },
+        {
+          "path": "/api/marketing/bootstrap/skillupitacademy",
+          "status": 500
+        },
+        {
+          "path": "/api/marketing/control-plane/realtutorialhub",
+          "status": 500
+        },
+        {
+          "path": "/api/marketing/control-plane/skillupitacademy",
+          "status": 500
+        },
+        {
+          "path": "/api/marketing/collector/observability",
+          "status": 500
+        }
+      ],
+      "errors": [],
+      "text": "RTH Control Plane\nLoading\nSUIA Control Plane\nLoading\nCollector Health\nLoading\nBootstrap Payloads\nRTH\nnull\nSUIA\nnull\nControl Plane Registries\nRTH\nnull\nSUIA\nnull\nCollector Observability\nnull"
+    },
+    "shc-questions-repro": {
+      "loginStatus": 200,
+      "identity": {
+        "status": 200,
+        "role": "super_admin"
+      },
+      "questionStatus": 401,
+      "error": "Unauthorized",
+      "finalPath": "/questions"
+    },
+    "shc-anon-final": {
+      "checks": [
+        {
+          "path": "/dashboard",
+          "method": "GET",
+          "headers": {},
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/questions",
+          "method": "GET",
+          "headers": {},
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/tools/tutorial-page-content",
+          "method": "GET",
+          "headers": {},
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/tools/project-llm",
+          "method": "GET",
+          "headers": {},
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/tools/tutorial-page-content",
+          "method": "HEAD",
+          "headers": {},
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/tools/tutorial-page-content",
+          "method": "GET",
+          "headers": {
+            "rsc": "1"
+          },
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        },
+        {
+          "path": "/tools/tutorial-page-content",
+          "method": "GET",
+          "headers": {
+            "next-router-prefetch": "1"
+          },
+          "status": 307,
+          "cacheControl": "private, no-store",
+          "loginRedirect": true
+        }
+      ],
+      "browserPath": "/login"
+    }
+  }
+}

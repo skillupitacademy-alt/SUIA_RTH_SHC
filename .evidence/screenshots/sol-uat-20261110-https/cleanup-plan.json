@@ -1,0 +1,133 @@
+{
+  "run": "sol-uat-20261110-https",
+  "mode": "execute",
+  "tables": {
+    "main": {
+      "domains": [
+        "e96bf18d-1907-469b-b7a1-81d738dd0868"
+      ],
+      "subjects": [
+        "f51c0444-d7b6-420b-a8eb-67f0165f2834"
+      ],
+      "topics": [
+        "45fd7783-8b90-4abf-96fd-108e6f3cb968"
+      ],
+      "subtopics": [
+        "c4753c89-3e96-4351-85de-33ff43470864"
+      ]
+    },
+    "tutorial": {
+      "tutorial_domains": [
+        "f0380087-2c24-4792-ae98-bca996d8db70"
+      ],
+      "tutorial_subjects": [
+        "ea281e22-32e3-4441-9ecf-719d56e62db2"
+      ],
+      "tutorial_topics": [
+        "9a1ba353-e9d1-4fd1-a345-940dd638b0e2"
+      ],
+      "tutorial_subtopics": [
+        "18c06a7d-558b-4c99-a24e-7be1d9ead87e"
+      ],
+      "tutorial_sections": [
+        "6e943664-aec6-4296-92f3-2c3ab16c0919",
+        "5473f973-d29c-482d-846e-a2f534a4c2f9",
+        "137d231a-44b4-416b-9b93-13e850812e08"
+      ],
+      "tutorial_content_versions": [
+        "46b71fb3-e43c-414f-b2e5-8ff8b1f51c50",
+        "aa118361-04fe-4701-a743-b446ac7fc6b7",
+        "90376837-703b-4023-bef6-c66785bd1914"
+      ],
+      "tutorial_sidebar_trees_v2": [
+        "86209edf-6d12-47dc-b3b3-1ecf10e64217"
+      ],
+      "block_telemetry_events": [
+        "c31d28a7-db5d-4a0e-9666-2c7a7690d53f",
+        "59b9bc7a-a3c8-45b3-ab3a-0f09cd199589",
+        "e06db89c-c6f8-4a6f-bbf3-c5f0e6fc2ba0",
+        "2f49703e-33d2-4168-a23d-57d0914064b5",
+        "55b053e0-5b87-49df-a536-84d8a8087682",
+        "4d83cba9-0391-4313-8889-b53dd75cf6ad",
+        "3d7b5d30-a96e-4692-87bd-dcc7c35791c0",
+        "8dd929e0-d79e-46c9-aa13-abde65dff655",
+        "0e92f473-220d-4b80-a4d8-6fff098d9265",
+        "4b07c6b0-03d6-42c9-a991-c38029de2179",
+        "b757a397-bf03-4071-9140-50b43addf87e",
+        "ff64e153-9865-4b64-98ce-5dccf4cfc7c6",
+        "2951a841-36b7-4d35-8854-b893848d7355",
+        "4bf95f34-7a3f-43b8-9b09-16190d7bc17d",
+        "c43e32b2-fdc7-4284-9965-631cd714cdf6",
+        "063be5b7-cb73-4eb7-b349-6451e1c8765d",
+        "143c0141-347d-429a-ab29-bf8f46b9c25e",
+        "dc155aed-7ad0-474a-8c71-644cf2856839",
+        "5519d083-1691-4e25-adc8-6a1c85bf9291",
+        "0bcb66b8-45e1-4b64-881c-4f048c002213",
+        "1b1545a2-a013-406a-b613-e1b0ba49d244",
+        "41fbb3a3-7edd-4c08-a029-82d71d8213e1",
+        "28b9d5cd-76e2-4e29-9e3a-c38a9a00112a",
+        "25e57956-2a28-4e1b-81a0-c98da52c63ba",
+        "09cf28d7-dc74-4ce2-bb0e-7b22d18b3a14",
+        "ac8f9fc1-efbf-4c7f-95ad-32fd7010ec1c",
+        "befbbc61-5d5a-4e25-a218-7e4e27b14402",
+        "c3ef8132-3983-4bfe-8431-a8aab73739c2",
+        "356f9c20-afa5-4c45-b091-2a7b317610b7",
+        "800c71bc-5c30-478b-be31-e38557a367e1",
+        "a11fee42-60cc-490d-98a9-98b0a8abce85",
+        "ca0d339a-f4fb-4a1c-98b3-e0a354a80c90",
+        "4060a98c-ce79-4510-827e-0dfec0bfc888",
+        "55f722d5-dbd0-4f8b-8844-e1b4de82b484",
+        "ea90ba41-e35f-4398-a936-17ddc07b2505",
+        "5eefe0a5-5032-4631-b420-4c84c2c6ac4a",
+        "da50c140-cd69-494a-ba51-b706af765e62",
+        "eb00fb6b-8d77-4a93-b8c1-f7cc44fa341c",
+        "cc8c647e-7506-4f01-ae5d-5ea9ccf7d137",
+        "7c1a2e1a-4cdb-435c-ae65-8a3d2664555c",
+        "904c7ca2-7e6b-4d8c-b975-27e1acfa2734",
+        "b7fce5da-c4d5-48f8-bbc9-a88e3587b717",
+        "1d4b1c99-cf70-468a-939c-bb50af4e86cc",
+        "e4559235-e26b-46f1-b256-272e9b0032ed",
+        "1622a92c-7373-418c-8af9-12e234b54fa7",
+        "b4863984-1e1d-4ec4-ab94-52fc357749ca"
+      ],
+      "block_learning_state": [
+        "45ceeb0e-adf9-4f83-b5a7-55db036292b6",
+        "cc70c85e-acab-4478-a1e9-a22cc9b9c517",
+        "22459cc4-b97b-45c7-9ddb-ad127b56a819",
+        "f9d5117a-de22-4f73-8336-43abd724e025"
+      ],
+      "tutorial_navigation_progress": [
+        "bbf6c352-fb3e-495b-bbc9-04ed5605b8ef",
+        "9a588db3-9125-44b7-be24-f79e7ace2a1c",
+        "7926109c-d589-46f9-884e-8626e76a97d7",
+        "161e566d-53cf-42d7-9e21-e198a44022bc"
+      ]
+    }
+  },
+  "snapshots": [
+    {
+      "id": "46b71fb3-e43c-414f-b2e5-8ff8b1f51c50",
+      "content_id": "137d231a-44b4-416b-9b93-13e850812e08",
+      "version": 3,
+      "content_hash": "7de68f867de2010141648bfbda4d9d02"
+    },
+    {
+      "id": "aa118361-04fe-4701-a743-b446ac7fc6b7",
+      "content_id": "5473f973-d29c-482d-846e-a2f534a4c2f9",
+      "version": 2,
+      "content_hash": "911ba59ddf74491f9def5733fae5f2fd"
+    },
+    {
+      "id": "90376837-703b-4023-bef6-c66785bd1914",
+      "content_id": "137d231a-44b4-416b-9b93-13e850812e08",
+      "version": 5,
+      "content_hash": "21ea93731bee423b7ad011f7e0389b42"
+    }
+  ],
+  "checks": {
+    "fingerprintsMatch": true,
+    "noBaselineIdsSelected": true,
+    "runMarkersValidated": true,
+    "unownedDependencies": 0
+  }
+}

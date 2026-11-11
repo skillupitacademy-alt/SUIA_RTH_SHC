@@ -1,0 +1,116 @@
+{
+  "run": "sol-uat-20261110-https",
+  "sha": "5c43cee7d2afe85aeca69ba73b92bd601f65264b",
+  "time": "2026-11-10T17:26:03.922Z",
+  "databases": {
+    "main": {
+      "fingerprint": "619d0bfb36bd",
+      "tables": {
+        "domains": [
+          "30000000-0000-0000-0000-000000000001",
+          "30000000-0000-0000-0000-000000000002",
+          "30000000-0000-0000-0000-000000000003",
+          "30000000-0000-0000-0000-000000000004",
+          "30000000-0000-0000-0000-000000000005",
+          "30000000-0000-0000-0000-000000000006",
+          "30000000-0000-0000-0000-000000000007",
+          "30000000-0000-0000-0000-000000000008"
+        ],
+        "subjects": [
+          "0d844bb8-b294-4c1d-b24d-a294b703cbb6",
+          "303787de-45a3-46b5-80d6-a030c140feca",
+          "3a706051-9d9d-4bdf-af48-331a5acd557e",
+          "3fea62fd-cdba-4aae-9325-d61e3447ed62",
+          "40000000-0000-0000-0000-100000000001",
+          "669a258a-0d65-4301-91db-f34326226caa",
+          "92c04250-7465-420d-a7be-c6a0851bbe5e",
+          "9c7cb218-8535-4a4e-b779-849d0c774c36",
+          "ad0f155e-3842-46b3-aabc-050a4c82c115",
+          "c1297cee-3cf6-41fc-9828-ce867aed4dfc",
+          "edd7f496-a59f-427c-bff1-a158359be863",
+          "f142015a-a5eb-4e92-9a17-72f998773b10",
+          "fcdf956e-9980-4f82-8199-12190c4f6885"
+        ],
+        "topics": [
+          "029ebe1e-1b93-4efa-a638-9aefca24a3ed",
+          "04a1273e-f5e3-4737-8291-8c01a66fe758",
+          "24c60f3a-2433-4bc1-8ee6-d8b3f442d5e4",
+          "287931b9-f45d-4e2a-b7ae-cf299e6fc1be",
+          "4b21ddc0-123b-41e3-8ea1-280d37f7f035",
+          "6e72b208-8a96-4627-8eb8-65a72c6ce8f1",
+          "7202acb9-cae6-49f6-944f-9836e886b523",
+          "9681ba7a-8710-446a-b6c3-1e2c92c197ef",
+          "a4d80bff-f42e-4db1-ac9a-26759e6bd8cb",
+          "bfa5e614-57e2-4919-8f73-972feac502ef",
+          "d581a890-60df-402c-b691-e9d8be7a9a03"
+        ],
+        "subtopics": [
+          "01eadf6a-31c7-424c-a5e0-f8fb69e0bbee",
+          "12efacf1-b5ad-4b43-9fe4-17ba1cf249e4",
+          "442c006b-6456-4f72-91b8-6bd9e5a8be7c",
+          "5ace8e0e-cf02-476b-beaf-6c19847140bc",
+          "5b1cfc3d-8744-4ae6-903c-ea79aaf648a0",
+          "99f65aa1-f2c7-4bca-a8c8-df7f6cf985aa",
+          "9cd63786-505e-46e3-a9b2-d4b4ac8fd07b",
+          "9d312047-93d5-4633-ba58-ecc378c479a3"
+        ]
+      }
+    },
+    "tutorial": {
+      "fingerprint": "d69fe9af7c33",
+      "tables": {
+        "tutorial_domains": [
+          "5c6c0322-da9c-544d-bef1-02ae6475dae3",
+          "658b00bf-ae25-4f47-990a-58a573ee8240"
+        ],
+        "tutorial_subjects": [
+          "0073e936-0c29-578f-95dd-6bb50f7d6586",
+          "0facd94f-1b62-414c-8ded-921fb7e68086"
+        ],
+        "tutorial_topics": [
+          "39dcc45d-1184-51e7-9461-ccf7cfc6f66e",
+          "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+          "fb47747d-ac1c-4091-bd8e-a8a7d7378e07"
+        ],
+        "tutorial_subtopics": [
+          "414f63eb-cccf-4bd1-bcc0-b52df69ce499",
+          "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+          "708031ae-bcb4-5e86-a41d-f71b761ecc3e"
+        ],
+        "tutorial_sections": [
+          "05b5cfa0-e45b-4fb6-93de-d47545d6c02f",
+          "06063351-c8a0-4281-9fc4-99dd1b55042f",
+          "099f15e1-5829-4498-ac70-f362760aa125",
+          "32c17c2a-e7e7-57db-9d93-573fe606a696",
+          "368d54bf-5984-4cc0-ae7c-827fab61712d",
+          "3e39010f-29d8-49b4-a16e-8a91268d281a",
+          "5ca6b5c3-29fb-4892-850c-6d5f2a5fc53b",
+          "6c2e66a1-ab5d-4bef-a4cf-7e8f1ca21afb",
+          "7dd5ed5d-f05b-44cf-9bba-97e3294b75e4",
+          "9794a0ea-a6ef-4718-b44d-ba688938df86",
+          "9c540f58-4ba7-4a17-9168-0de03b1c6b96",
+          "a038ea25-bac3-4975-a3e1-28add4b6b657",
+          "aacb9c2e-3277-4f30-95e6-44e2a20cfe17",
+          "b18d3932-e7a6-41cc-9089-472f7741f83e",
+          "b19bef9a-d029-4858-adf2-2daa3c284a5a",
+          "b4b84f5d-a165-418c-a80d-55285248a7f6",
+          "b795432d-c67c-4bd7-b668-c159f785d2cc",
+          "d7702606-9383-4f18-a395-bd8a6a81d866",
+          "f418571f-97a9-42ac-aec8-86e867334f40",
+          "f6b0df1e-a50c-47e3-8b06-f88f56392fff"
+        ],
+        "tutorial_content_versions": [
+          "63f3652e-e3af-42b3-9907-68949ea6233e",
+          "ab0971df-f8bd-480d-8633-5ecec1440921",
+          "bfb4ac67-560d-4297-8231-f5280e90a90c",
+          "cc6aab6b-748d-4907-9aa7-99de22956857"
+        ],
+        "tutorial_sidebar_trees_v2": [
+          "6fc39d5c-4b65-49c7-96c2-66dec92b1ab8",
+          "79d37ee7-56c8-5c64-b334-8677db06d95e",
+          "a2e8fe91-5186-48f4-8ca4-aab66e70290f"
+        ]
+      }
+    }
+  }
+}

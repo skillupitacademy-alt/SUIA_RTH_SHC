@@ -1,0 +1,24 @@
+{
+  "run": "sol-uat-20261110-https",
+  "completed": true,
+  "deleted": {
+    "tutorial": {
+      "block_telemetry_events": 46,
+      "block_learning_state": 4,
+      "tutorial_navigation_progress": 4,
+      "tutorial_content_versions": 3,
+      "tutorial_sections": 3,
+      "tutorial_sidebar_trees_v2": 1,
+      "tutorial_subtopics": 1,
+      "tutorial_topics": 1,
+      "tutorial_subjects": 1,
+      "tutorial_domains": 1
+    },
+    "main": {
+      "subtopics": 1,
+      "topics": 1,
+      "subjects": 1,
+      "domains": 1
+    }
+  }
+}

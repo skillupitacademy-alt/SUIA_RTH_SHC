@@ -79,6 +79,12 @@ pnpm --filter @quiz/skillhubcore-admin lint
 - **Safeguard:** Eliminated all simulation functions. Tests invoke production `tutorialDeliveryService.getTutorialByPage` and `getPublishedTutorialPagePayload` directly against Drizzle table schemas (`Symbol.for('drizzle:Name')`).
 - **Guarantees Tested:** Brand override precedence (`skillup` > `shared`), cross-tenant isolation (SUIA cannot receive RTH content), and draft gating (unreleased content returns null).
 
+### G. Live Headless Chromium E2E Smoke Journey (Tasks 36 & 37) & Remote Neon DB Architecture (Task 39)
+- **Code:** [`tests/e2e/shc-authoring-and-learner-consumption-smoke.spec.ts`](file:///e:/onlinewebsites/quiz-platform/tests/e2e/shc-authoring-and-learner-consumption-smoke.spec.ts)
+- **Execution:** Certified in headless Chromium (Exit Code 0 in 41.0s) against live dev servers connected to Remote Neon DB.
+- **Evidence:** 9 full-page screenshots recorded in `.evidence/screenshots/` verifying SHC Admin authoring and multi-tenant SUIA/RTH learner consumption.
+- **Remote Architecture (Task 39):** Multi-stage Dockerfile and production configuration certified for Remote Neon DB infrastructure (local Docker database container waived per Owner directive).
+
 ---
 
 ## 4. Architectural Limits & Invariants

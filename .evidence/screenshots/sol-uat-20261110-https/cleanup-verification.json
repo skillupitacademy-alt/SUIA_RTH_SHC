@@ -1,0 +1,83 @@
+{
+  "run": "sol-uat-20261110-https",
+  "databases": {
+    "main": {
+      "domains": {
+        "before": 8,
+        "after": 8,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "subjects": {
+        "before": 13,
+        "after": 13,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "topics": {
+        "before": 11,
+        "after": 11,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "subtopics": {
+        "before": 8,
+        "after": 8,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      }
+    },
+    "tutorial": {
+      "tutorial_domains": {
+        "before": 2,
+        "after": 2,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_subjects": {
+        "before": 2,
+        "after": 2,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_topics": {
+        "before": 3,
+        "after": 3,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_subtopics": {
+        "before": 3,
+        "after": 3,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_sections": {
+        "before": 20,
+        "after": 20,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_content_versions": {
+        "before": 4,
+        "after": 4,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      },
+      "tutorial_sidebar_trees_v2": {
+        "before": 3,
+        "after": 3,
+        "missingBaselineIds": 0,
+        "extraRows": 0
+      }
+    }
+  },
+  "allBaselineIdsRetained": true,
+  "remainingOwnedRows": 0,
+  "existingProgressIdentityAndStatusUnchanged": true,
+  "remainingRunTelemetry": 0,
+  "progressSchemaProbe": {
+    "sqlstate": "42703",
+    "message": "column \"tenant_id\" does not exist"
+  }
+}

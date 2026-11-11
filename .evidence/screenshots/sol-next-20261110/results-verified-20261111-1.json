@@ -1,0 +1,71 @@
+[
+  {
+    "path": "/dashboard",
+    "status": 200,
+    "actualPath": "/dashboard",
+    "headings": [
+      "Core Engines & Services",
+      "Tutorial Engine",
+      "Exam Engine",
+      "Placement Engine",
+      "Faculty Engine",
+      "Internship Engine",
+      "Content Workflow",
+      "Content by Section",
+      "Recent Activities"
+    ],
+    "text": "SYSTEM BASELINE PREVIEW\nPlatform metrics displayed below reflect seed ecosystem baselines. Live telemetry connects via central observability collector.\nSource: Seed Snapshot / Governance Reference\n\nTotal Users\n\n128,540\n\n12.8%\nvs last month\n\nActive Learners\n\n98,765\n\n15.6%\nvs last month\n\nTotal Courses\n\n2,356\n\n10.3%\nvs last month\n\nExams Conducted\n\n1,245\n\n11.2%\nvs last month\n\nPlacements\n\n3,542\n\n14.7%\nvs last month\n\nInternships\n\n1,862\n\n13.9%\nvs last month\nCore Engines & Services\nTutorial Engine\n\nManage all learning content and educational structure\n\n2,356\n\nCourses\n\nManage\nExam Engine\n\nCreate, manage and evaluate exams & assessments\n\n1,245\n\nExams\n\nManage\nPlacement Engine\n\nManage placements, drives and recruiter activities\n\n3,542\n\nPlacements\n\nManage\nFaculty Engine\n\nManage faculty, approvals, workload & access\n\n428\n\nFaculty\n\nManage\nInternship Engine\n\nManage internships, offers and student applications\n\n1,862\n\nInternships\n\nManage\nContent Workflow\nPending Review\n156\nDraft Content\n320\nAI Generated\n1,248\nPublished\n48,562\nArchived\n74\nContent by Section\nTotal\n52,360\nLayman\n6,842\nNotes\n6,842\nVisual Explanation\n6,842\nReal-Life\n6,842\nTechnical\n6,842\nCode Examples\n6,842\nPractice Tasks\n6,842\nAssignments\n6,842\nProjects\n6,842\nQuiz\n6,842\nSummary\n6,842\nInterview\n6,842\nRecent Activities\n\nNew course 'React Advanced Topics'\n\ncreated under Frontend Development\n\n2 mins ago\n\nExam 'JavaScript Fundamentals'\n\npublished successfully\n\n15 mins ago\n\nNew placement drive by TCS\n\nadded for B.Tech 2025 batch\n\n1 hour ago\n\nFaculty member 'John Doe'\n\napproved and activated\n\n2 hours ago\n\nAI generated content for 'Python Loops'\n\nadded and pending review\n\n3 hours ago\nView All Activities\n© 2025 SkillHubCore. All rights reserved.\nVersion 1.0.0  |  Build 2025.05.15",
+    "errors": []
+  },
+  {
+    "path": "/users",
+    "status": 200,
+    "actualPath": "/users",
+    "headings": [
+      "Users"
+    ],
+    "text": "Users\n\nUser management data is currently unavailable.",
+    "errors": []
+  },
+  {
+    "path": "/subscriptions",
+    "status": 200,
+    "actualPath": "/subscriptions",
+    "headings": [
+      "Subscriptions"
+    ],
+    "text": "Subscriptions\n\nSubscription data is currently unavailable.",
+    "errors": []
+  },
+  {
+    "path": "/tools/project-llm/specification-review",
+    "status": 200,
+    "actualPath": "/tools/project-llm/specification-review",
+    "headings": [
+      "Specification review"
+    ],
+    "text": "AI Content Workspace\nProject LLM\nProject LLM\nAD\nAdmin User\nSpecification review\n\nVerified specification evidence and approval are currently unavailable.",
+    "errors": []
+  },
+  {
+    "path": "/tools/project-llm/workflow-details",
+    "status": 200,
+    "actualPath": "/tools/project-llm/workflow-details",
+    "headings": [
+      "Workflow and evidence details"
+    ],
+    "text": "AI Content Workspace\nProject LLM\nWorkflow Details\nAD\nAdmin User\nWorkflow and evidence details\n\nSelect a workflow to view its status.\n\nAudit history and verification evidence are currently unavailable.",
+    "errors": []
+  },
+  {
+    "path": "/factory/question-generator/review",
+    "status": 200,
+    "actualPath": "/factory/question-generator/review",
+    "headings": [
+      "ReviewConsole",
+      "No Questions Staged"
+    ],
+    "text": "REVIEW\nCONSOLE\n\nSTAGE MANAGEMENT & VERIFICATION\n\nFACTORY ENGINE READY\nBACK TO BLUEPRINT\n0 QUESTIONS STAGED\nEMPTY\nNO QUESTIONS STAGED\n\nGo back and ingest a JSON payload to populate this console.",
+    "errors": []
+  }
+]

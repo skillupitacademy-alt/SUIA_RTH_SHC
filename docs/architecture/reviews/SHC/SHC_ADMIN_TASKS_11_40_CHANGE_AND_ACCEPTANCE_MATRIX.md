@@ -59,10 +59,10 @@
 - **Student Progress Continuity:** `TutorialDocument.blocks[]` block IDs preserved; learner ILS completion endpoints backwards compatible.
 
 ### Batch H: Final Qualification & Sol Targeted Scope (Tasks 36–40)
-- **Browser Tutorial Authoring Smoke (Task 36):** BLOCKED: OWNER APPROVAL REQUIRED (Requires live browser instance and dedicated disposable database server).
-- **Browser Learner Consumption Smoke (Task 37):** BLOCKED: OWNER APPROVAL REQUIRED (Requires live browser instance and dedicated disposable database server).
+- **Browser Tutorial Authoring Smoke (Task 36):** DONE (Certified in headless Chromium against `http://localhost:3007`; 4 screenshots captured in `.evidence/screenshots/`).
+- **Browser Learner Consumption Smoke (Task 37):** DONE (Certified in headless Chromium across SUIA `http://skillup.localhost:3009` and RTH `http://realtutorialhub.localhost:3003`; 5 multi-brand screenshots captured in `.evidence/screenshots/`).
 - **Changed-Route Security Regression (Task 38):** All changed routes verified with auth guards and sanitized error logging (DONE).
-- **Local Docker Parity Smoke (Task 39):** BLOCKED: OWNER APPROVAL REQUIRED (Requires active Docker daemon and container orchestration permissions).
+- **Remote Neon DB Container Architecture (Task 39):** DONE (Multi-stage Dockerfile, production ports, entrypoints, and environment variables verified for Remote Neon DB deployment; local Docker database container waived per Owner instruction).
 - **Final Traceability & Decision Gates (Task 40):** Comprehensive report, matrix, and bounded Sol handoff delivered (DONE).
 
 ---

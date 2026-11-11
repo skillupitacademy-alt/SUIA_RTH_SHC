@@ -1,0 +1,30 @@
+[
+  {
+    "path": "/certificate-generator",
+    "status": 200,
+    "actualPath": "/certificate-generator",
+    "text": "Certificate Generator\nFill the certificate data and open the shared certificate preview on the next page. The preview branding changes from the selected brand.\nBrand\nCertificate Brand\nReal Tutorial Hub\nSkillUp IT Academy\nStudent Details\nStudent Name\nStudent ID\nEmail\nCourse Details\nCourse Name\nCourse Slug\nFor future admin and verification use.\nDuration\nCertificate Description\nCompletion Details\nCertificate ID\nCompleted On\nIssue Date\nInstructor Details\nInstructor Name\nInstructor Title\nOrganization Line\nVerification\nAuto-generate verification URL from certificate ID\nVerification URL\nOpen Certificate Preview",
+    "errors": []
+  },
+  {
+    "path": "/certificate-preview",
+    "status": 200,
+    "actualPath": "/certificate-preview",
+    "text": "Back to Form\nDownload PNG\nDownload PDF\nSAMPLE — NOT ISSUED\nRealTutorialHub\nLEARN • PRACTICE • SUCCEED\nCERTIFICATE\nOF COMPLETION\nTHIS IS TO CERTIFY THAT\nAarav Sharma\nHAS SUCCESSFULLY COMPLETED THE COURSE\n★\nDATA ANALYST\n★\nCovering Data Analysis, SQL, Excel, Data Visualization, Statistics, and Real-World Data Analytics Projects.\nSample preview; verification unavailable\nCOMPLETED ON\n25 May 2026\nVikas Agarwal\nVIKAS AGARWAL\nCEO & FOUNDER\nREAL TUTORIAL HUB\nDURATION\n12 Weeks\nCERTIFICATE ID:\nRTH-DA-2026-001245\nSAMPLE — NOT ISSUED\nRealTutorialHub\nLEARN • PRACTICE • SUCCEED\nCERTIFICATE\nOF COMPLETION\nTHIS IS TO CERTIFY THAT\nAarav Sharma\nHAS SUCCESSFULLY COMPLETED THE COURSE\n★\nDATA ANALYST\n★\nCovering Data Analysis, SQL, Excel, Data Visualization, Statistics, and Real-World Data Analytics Projects.\nSample preview; verification unavailable\nCOMPLETED ON\n25 May 2026\nVikas Agarwal\nVIKAS AGARWAL\nCEO & FOUNDER\nREAL TUTORIAL HUB\nDURATION\n12 Weeks\nCERTIFICATE ID:\nRTH-DA-2026-001245",
+    "errors": []
+  },
+  {
+    "path": "/factory/question-generator",
+    "status": 200,
+    "actualPath": "/factory/question-generator",
+    "text": "QUESTION\nFACTORY\n\nCONTEXT-AWARE GENERATOR\n\nFACTORY ENGINE READY\n1. TARGET CONTEXT (SURGICAL SCOPE)\nTarget Domain\nSelect Domain\nTarget Subject\nSelect Subject\nTarget Topic\nSelect Topic\nTarget Sub-Topic\nSelect Sub-Topic\nIDENTIFICATION REQUIRED: SELECT DOMAIN > SUBJECT > TOPIC TO CALIBRATE GENERATOR.\nRESET WORKSPACE\n2. QUANTUM DISTRIBUTION\nTOTAL: 10 ASSETS\nSIMPLE (VOLUME)\nINTERMEDIATE (VOLUME)\nEXPERT (VOLUME)\n3. SOURCE OF TRUTH (TECHNICAL CONTEXT)\nPURE DATA MODE\nSURGICAL SOURCE EDITOR\nMARKDOWN / PLAIN TEXT SUPPORTED\nPASTE SOURCE MATERIAL PAYLOAD\n\nCTRL + V TO INJECT CONTEXTUAL DATA\n\n4. SURGICAL INGESTION (AUTO-HEALING)\nCONTEXT MISSING: SELECT TOPIC FIRST\nHEALING ACTIVE\nPAYLOAD EDITOR\nTARGET CONTEXT (TOPIC) NOT SET\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n\nSURGICAL EXTRACTION & REPAIR\n\nFull-height IDE mode. Auto-healing fixes structural and content errors on the fly.\n\nPROCESS & REVIEW\nINTELLIGENCE PHASE\nSTRICT\nMOCK JOB\nGENERATE / COPY AI PROMPT\n\nGENERATE SURGICAL AI PROMPT",
+    "errors": []
+  },
+  {
+    "path": "/tools/project-llm",
+    "status": 200,
+    "actualPath": "/tools/project-llm",
+    "text": "AI Content Workspace\nProject LLM\nDashboard\nAD\nAdmin User\nProject LLM\n\nWorkflow status, certification evidence, repository snapshot and recent activity are currently unavailable.\n\nCreate\nRegistry\nExplorer\nUpload candidate\nWorkflow details\nIntegration and certification\nExternal AI handoff\nCompliance brief\nTutorial composer\nMix & match",
+    "errors": []
+  }
+]
