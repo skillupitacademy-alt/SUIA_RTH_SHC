@@ -21,6 +21,14 @@
       "oid": "b4ae3054bbf788d3ad5714125b4afce6c2f77c96",
       "filePath": "packages/db-tutorial/migrations/0026_complex_mandarin.sql",
       "format": "LF-trimmed"
+    },
+    {
+      "hash": "833cf27c73ba6de093f2e73e2ba0ac7dd77fe908bb190e91ea8cfd23aa4a3578",
+      "commit": "7b08ec232db95d6a8b6d7638c984890800a0b4e5",
+      "filePath": "packages/db-skillhubcore/migrations/0000_dark_skreet.sql",
+      "format": "raw",
+      "date": "2026-07-07 10:10:36 +0530",
+      "description": "Creation of educational hierarchy tables (domains, subjects, topics, subtopics, skills, topic_skills)"
     }
   ],
   "journalSnapshotsInGitHistory": [
