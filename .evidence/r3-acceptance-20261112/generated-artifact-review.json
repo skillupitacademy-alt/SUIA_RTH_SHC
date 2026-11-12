@@ -1,0 +1,24 @@
+{
+  "boundary": "Inspect committed/generated type glue and unpack embedded Playwright report ZIP. Search configured current authentication/trust secrets and JWT-shaped strings without exposing their values. Not exhaustive secret detection or image OCR; report is historical evidence, not R3 execution proof.",
+  "report": {
+    "bytes": 519495,
+    "sha256": "c025218a675d1eac4960511f37c57bb2ff629e048329ccdadd9c194c738d544e",
+    "embeddedZipFound": true,
+    "embeddedFiles": 2,
+    "violations": []
+  },
+  "nextEnv": [
+    {
+      "app": "skillhubcore-admin",
+      "routeReference": "import \"./.next/types/routes.d.ts\";"
+    },
+    {
+      "app": "skillup-web",
+      "routeReference": "import \"./.next/types/routes.d.ts\";"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "routeReference": "import \"./.next/types/routes.d.ts\";"
+    }
+  ]
+}

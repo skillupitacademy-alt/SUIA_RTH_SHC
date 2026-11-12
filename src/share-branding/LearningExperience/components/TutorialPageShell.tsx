@@ -94,7 +94,13 @@ interface TutorialPageShellProps {
   runtimeContext: TutorialRuntimeContext;
 }
 
-export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
+export function TutorialPageShell(props: TutorialPageShellProps) {
+  // Account changes on the same URL must discard the previous learner's progress,
+  // pending requests and telemetry state before rendering the new session.
+  return <TutorialPageSession key={JSON.stringify([props.runtimeContext.brandId, props.runtimeContext.learnerId])} {...props} />;
+}
+
+function TutorialPageSession({ payload, runtimeContext }: TutorialPageShellProps) {
   // Sidebar publication can precede content publication. Do not start learning
   // activity until delivery supplies both a section identity and published blocks.
   const hasPublishedContent = Boolean(runtimeContext.sectionId && payload.content.blocks?.length);

@@ -1,0 +1,7 @@
+{
+  "name": "skillhubcore-admin-typecheck",
+  "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+  "started": "2026-11-12T17:06:03.3399693Z",
+  "finished": "2026-11-12T17:10:09.9285609Z",
+  "exitCode": 0
+}

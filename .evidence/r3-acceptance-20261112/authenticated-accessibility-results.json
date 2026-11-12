@@ -1,0 +1,14 @@
+{
+  "boundary": "Actual headless Chromium, signed development sessions for current active accounts, read-only pages and axe/keyboard/viewport checks. Not password lifecycle or full accessibility certification.",
+  "results": [
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": false,
+      "status": 200,
+      "path": "/login",
+      "error": "Authenticated page must remain accessible\n+ actual - expected\n\n+ '/login'\n- '/dashboard'"
+    }
+  ]
+}

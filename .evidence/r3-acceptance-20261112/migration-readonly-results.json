@@ -1,0 +1,317 @@
+{
+  "head": "f78bd048e2192e0f744ffe3fca6218aa1d9aedd2",
+  "timestamp": "2026-11-12T17:11:09.825Z",
+  "boundary": "Fresh BEGIN READ ONLY PostgreSQL metadata/counts; exact local historical Git SQL blob fingerprints. No migration or ledger/data edits.",
+  "historyScanStatus": "Full local history traversal unavailable within 30 seconds; retain prior 79-object R2 scan and independent exact historical blob checks. Target remains unresolved.",
+  "historicalSqlBlobsChecked": 0,
+  "unresolvedTarget": "833cf27c73ba6de093f2e73e2ba0ac7dd77fe908bb190e91ea8cfd23aa4a3578",
+  "exactHistoricalMatches": [],
+  "currentSourceMatchedLedgerRows": 20,
+  "skippedJournalTags": [
+    "0012_futuristic_pepper_potts",
+    "0013_colorful_wong",
+    "0014_add_ai_tutor_section_type",
+    "0015_backfill_summary_interview_ai_tutor_sections",
+    "0016_add_overview_section_type",
+    "0017_tutorial_delivery_indexes",
+    "0018_amused_rockslide",
+    "0020_add_tutorial_page_content_v2",
+    "0026_complex_mandarin"
+  ],
+  "pendingJournalTags": [
+    "0030_event_outbox"
+  ],
+  "live": {
+    "ledger": [
+      {
+        "hash": "1e08929b904d46d5b944a624f2b3a3afa454afeec7465bb7013851c1871b5f1f",
+        "created_at": "1774000000000"
+      },
+      {
+        "hash": "96b490f2002e72270a8a7902699fd7e899fed1fc80bf7cd4ab76f3d99a5465bd",
+        "created_at": "1774000001000"
+      },
+      {
+        "hash": "9366320da662f003863620a63e758ff03c58e69427ecc67d116a2e114f6bdf89",
+        "created_at": "1774165551232"
+      },
+      {
+        "hash": "83f41950988bdca64280bf03a379615d8d250bdb6e0d57371ea9c8f2afe16cd3",
+        "created_at": "1774169829327"
+      },
+      {
+        "hash": "579e98db29b216405fd12fff03784fb64894871c1844ce72f9e598d6c17ac402",
+        "created_at": "1774175200154"
+      },
+      {
+        "hash": "a7db6a15c00968806e6fbc8eb9b42918d75d8e93090aaf3d90f7b4c14b74712d",
+        "created_at": "1774177951851"
+      },
+      {
+        "hash": "af41742cb06cc5ea3ecd4a06fd44dcf739e635b1774cfad64606e82fa937fb9e",
+        "created_at": "1774181525989"
+      },
+      {
+        "hash": "728fd95e0f07ecf40b4f5e4dbe1938e974285f00ad7426177e2b9e8eec953427",
+        "created_at": "1774183908666"
+      },
+      {
+        "hash": "4207b6cc9b8343abe4a7d9e87585cb0207090e557aebd0fd2b74add6488b4e9a",
+        "created_at": "1774217227063"
+      },
+      {
+        "hash": "e9908efc6f5949cac2638f881089647d6f7d5203603ccb2af41b1c9c4c0baadd",
+        "created_at": "1774551051336"
+      },
+      {
+        "hash": "df489f3c159f0e92eacf50a39994e179fed33ddbf7ebe46b6de1f7a5cbe37367",
+        "created_at": "1774551052336"
+      },
+      {
+        "hash": "705b2ffadf7fc4b99d8756eb0204a948d27a139a86db009e7455522a01637e6b",
+        "created_at": "1774551053336"
+      },
+      {
+        "hash": "833cf27c73ba6de093f2e73e2ba0ac7dd77fe908bb190e91ea8cfd23aa4a3578",
+        "created_at": "1783399129067"
+      },
+      {
+        "hash": "edd39c7ec3d8128f5351c56fa2992744fda0a3b00b8fc2fc4127d208354fd3e1",
+        "created_at": "1786995512007"
+      },
+      {
+        "hash": "dcfc6cc19e3a6230462048c0d3a201ed52a615fa78713c2c81488c0013f2ca0e",
+        "created_at": "1787341859253"
+      },
+      {
+        "hash": "693fdb515fdecc1b0db7681f32199ebed1064cd70eca20691f6e47328753ccef",
+        "created_at": "1788021759918"
+      },
+      {
+        "hash": "9401a04f177274dca5bc66fa02702d2ee029132e000f1513b7c9ee0dad654832",
+        "created_at": "1788587362377"
+      },
+      {
+        "hash": "252aa7c4c6679613fda5158a0380875fd6bd5727f49b3ce55aa9c8a9dc68eb98",
+        "created_at": "1788738165011"
+      },
+      {
+        "hash": "cf8128b379e1a3293ced8430e81a799f4f9074539d944ddc1f2a281261484a37",
+        "created_at": "1789092365992"
+      },
+      {
+        "hash": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783",
+        "created_at": "1791506086614"
+      },
+      {
+        "hash": "38ea712cb4367a364375df08015ed81a5a48301f1aa69cf119ace86213d823ce",
+        "created_at": "1791508489695"
+      },
+      {
+        "hash": "d2533a4af26d3d16f85463842815ef090bebff2d76334280aa32d8759ae009dd",
+        "created_at": "1791510064024"
+      }
+    ],
+    "enums": [
+      {
+        "typname": "brand",
+        "enumlabel": "realtutorialhub"
+      },
+      {
+        "typname": "brand",
+        "enumlabel": "skillup"
+      },
+      {
+        "typname": "brand",
+        "enumlabel": "skillhubcore"
+      },
+      {
+        "typname": "brand",
+        "enumlabel": "shared"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "overview"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "notes"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "layman"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "visual"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "real_life"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "technical"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "code"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "practice"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "assignment"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "project"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "quiz"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "summary"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "interview"
+      },
+      {
+        "typname": "section_type",
+        "enumlabel": "ai_tutor"
+      }
+    ],
+    "tables": [
+      "ai_generation_metrics",
+      "ai_generation_orchestration",
+      "assignment_help_requests",
+      "assignment_progress",
+      "badges",
+      "block_learning_state",
+      "block_telemetry_events",
+      "brand_performance_metrics",
+      "certificates",
+      "content_generation_jobs",
+      "content_review_queue",
+      "deployment_cohort_metrics",
+      "domain_content_config",
+      "domains",
+      "educational_architecture_performance",
+      "educational_architectures",
+      "layman_audit_logs",
+      "layman_content_revisions",
+      "layman_prompt_history",
+      "live_session_requests",
+      "project_ai_approvals",
+      "project_ai_candidates",
+      "project_ai_contracts",
+      "project_ai_manifests",
+      "project_ai_state_transitions",
+      "project_ai_workflows",
+      "prompt_template_performance",
+      "prompt_templates",
+      "remediation_triggers",
+      "revenue_attribution_metrics",
+      "skills",
+      "student_badges",
+      "student_streaks",
+      "subjects",
+      "subtopic_flow_progress",
+      "subtopics",
+      "topic_skills",
+      "topics",
+      "tutorial_assignments",
+      "tutorial_content_audit",
+      "tutorial_content_versions",
+      "tutorial_domains",
+      "tutorial_navigation_progress",
+      "tutorial_progress",
+      "tutorial_project_submissions",
+      "tutorial_projects",
+      "tutorial_sections",
+      "tutorial_sidebar_trees_v2",
+      "tutorial_subjects",
+      "tutorial_subtopics",
+      "tutorial_topics",
+      "ui_architecture_performance",
+      "ui_architectures"
+    ],
+    "indexes": [
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "idx_tutorial_progress_tenant",
+        "indexdef": "CREATE INDEX idx_tutorial_progress_tenant ON public.tutorial_progress USING btree (tenant_id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "idx_tutorial_progress_user",
+        "indexdef": "CREATE INDEX idx_tutorial_progress_user ON public.tutorial_progress USING btree (user_id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "tutorial_progress_pkey",
+        "indexdef": "CREATE UNIQUE INDEX tutorial_progress_pkey ON public.tutorial_progress USING btree (id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "uq_tutorial_progress_tenant_user_subtopic",
+        "indexdef": "CREATE UNIQUE INDEX uq_tutorial_progress_tenant_user_subtopic ON public.tutorial_progress USING btree (tenant_id, user_id, subtopic_id)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_architecture",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_architecture ON public.tutorial_sections USING btree (educational_architecture_id) WHERE (educational_architecture_id IS NOT NULL)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_brand",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_brand ON public.tutorial_sections USING btree (brand_id, status, updated_at DESC)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_status",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_status ON public.tutorial_sections USING btree (status, updated_at DESC) WHERE (status = ANY (ARRAY['draft'::section_status, 'pending_review'::section_status, 'in_review'::section_status, 'changes_requested'::section_status]))"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_delivery",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_delivery ON public.tutorial_sections USING btree (subtopic_id, navigation_node_id, brand_id, status)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_subtopic_status",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_subtopic_status ON public.tutorial_sections USING btree (subtopic_id, status)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "tutorial_sections_pkey",
+        "indexdef": "CREATE UNIQUE INDEX tutorial_sections_pkey ON public.tutorial_sections USING btree (id)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "uq_tutorial_v2_identity_active",
+        "indexdef": "CREATE UNIQUE INDEX uq_tutorial_v2_identity_active ON public.tutorial_sections USING btree (subtopic_id, navigation_node_id, brand_id) WHERE (deleted_at IS NULL)"
+      }
+    ],
+    "constraints": [
+      {
+        "conname": "tutorial_progress_pkey",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "conname": "tutorial_progress_tenant_allowed",
+        "definition": "CHECK ((tenant_id = ANY (ARRAY['skillup'::text, 'realtutorialhub'::text, 'skillhubcore'::text])))"
+      }
+    ],
+    "backfill": {
+      "total": 20,
+      "missing_architecture": 20,
+      "missing_ui_architecture": 20
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "boundary": "Actual AcademicHierarchyService with real PostgreSQL transactions, row locks and FK enforcement. Provider binding selects a real Neon connection. Fault injection occurs after the real transactional delete. Domain/subject scope only.",
+  "passedScenarios": [
+    "empty domain service deletion",
+    "retained dependency blocks service deletion",
+    "PostgreSQL FK rejects missing parent",
+    "post-delete failure restores row through transaction rollback",
+    "concurrent production service deletes serialize",
+    "FOR UPDATE waits for FK writer and retains parent plus child"
+  ],
+  "cleanupVerified": true
+}

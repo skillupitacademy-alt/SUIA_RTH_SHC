@@ -1,0 +1,619 @@
+{
+  "head": "f78bd048e2192e0f744ffe3fca6218aa1d9aedd2",
+  "timestamp": "2026-11-12T17:02:37.146Z",
+  "boundary": "Actual local HTTP via Playwright Chromium contexts. Existing active development learners verified through read-only PeopleDB lookup. Signed short-lived learner credentials held in memory. GET/HEAD only. No account or content mutations.",
+  "results": [
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": false,
+      "path": "/student/learn/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/api/tutorial/progress",
+      "request": "valid-session control",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "skillup",
+      "authenticated": true,
+      "path": "/student/learn/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/remediation",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/remediation",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/remediation",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/remediation/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": false,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/api/tutorial/progress",
+      "request": "valid-session control",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/remediation",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/remediation",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/remediation",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/learn/domain/subject/topic/subtopic/assignments",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/remediation/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "GET",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "HEAD",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "authenticated": true,
+      "path": "/tutorial/assignments/domain/subject/topic/subtopic",
+      "request": "GET RSC/prefetch",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    }
+  ]
+}

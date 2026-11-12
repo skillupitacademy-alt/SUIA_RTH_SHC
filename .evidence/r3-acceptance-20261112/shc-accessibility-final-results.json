@@ -1,0 +1,51 @@
+{
+  "boundary": "Actual headless Chromium, signed development sessions for current active accounts, read-only pages and axe/keyboard/viewport checks. Not password lifecycle or full accessibility certification.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": false,
+      "identityControlStatus": 200,
+      "error": "Error"
+    },
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": false,
+      "identityControlStatus": 200,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "button[aria-label=\"View notifications\"] > .top-1.right-1.h-4"
+            ],
+            [
+              ".font-mono"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(1) > .mt-4.gap-1\\.5.font-medium > .text-emerald-500.bg-emerald-50.px-1\\.5"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(2) > .mt-4.gap-1\\.5.font-medium > .text-emerald-500.bg-emerald-50.px-1\\.5"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(3) > .mt-4.gap-1\\.5.font-medium > .text-emerald-500.bg-emerald-50.px-1\\.5"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(4) > .mt-4.gap-1\\.5.font-medium > .text-emerald-500.bg-emerald-50.px-1\\.5"
+            ]
+          ]
+        }
+      ],
+      "error": "No serious/critical automated axe violations\n\n1 !== 0\n"
+    }
+  ]
+}

@@ -35,7 +35,7 @@ export default function DashboardPage() {
             Platform metrics displayed below reflect seed ecosystem baselines. Live telemetry connects via central observability collector.
           </span>
         </div>
-        <span className="text-slate-400 font-mono text-[11px]">Source: Seed Snapshot / Governance Reference</span>
+        <span className="text-slate-600 font-mono text-[11px]">Source: Seed Snapshot / Governance Reference</span>
       </div>
 
       {/* Stats Cards Row */}
@@ -59,7 +59,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-slate-500">
-              <span className="flex items-center text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">
+              <span className="flex items-center text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
                 <ArrowUp size={14} className="mr-0.5" />
                 {stat.increase}
               </span>
@@ -74,11 +74,11 @@ export default function DashboardPage() {
         <h2 className="text-lg font-bold text-slate-800 font-outfit">Core Engines & Services</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {[
-            { title: 'Tutorial Engine', desc: 'Manage all learning content and educational structure', metric: '2,356', metricLabel: 'Courses', btnColor: 'bg-pink-500 hover:bg-pink-600', icon: BookType, iconColor: 'text-pink-500' },
-            { title: 'Exam Engine', desc: 'Create, manage and evaluate exams & assessments', metric: '1,245', metricLabel: 'Exams', btnColor: 'bg-orange-500 hover:bg-orange-600', icon: ClipboardList, iconColor: 'text-orange-500' },
-            { title: 'Placement Engine', desc: 'Manage placements, drives and recruiter activities', metric: '3,542', metricLabel: 'Placements', btnColor: 'bg-pink-500 hover:bg-pink-600', icon: Briefcase, iconColor: 'text-pink-500' },
-            { title: 'Faculty Engine', desc: 'Manage faculty, approvals, workload & access', metric: '428', metricLabel: 'Faculty', btnColor: 'bg-orange-500 hover:bg-orange-600', icon: UserCog, iconColor: 'text-orange-500' },
-            { title: 'Internship Engine', desc: 'Manage internships, offers and student applications', metric: '1,862', metricLabel: 'Internships', btnColor: 'bg-pink-500 hover:bg-pink-600', icon: Briefcase, iconColor: 'text-pink-500' },
+            { title: 'Tutorial Engine', desc: 'Manage all learning content and educational structure', metric: '2,356', metricLabel: 'Courses', btnColor: 'bg-pink-700 hover:bg-pink-800', icon: BookType, iconColor: 'text-pink-500' },
+            { title: 'Exam Engine', desc: 'Create, manage and evaluate exams & assessments', metric: '1,245', metricLabel: 'Exams', btnColor: 'bg-orange-700 hover:bg-orange-800', icon: ClipboardList, iconColor: 'text-orange-500' },
+            { title: 'Placement Engine', desc: 'Manage placements, drives and recruiter activities', metric: '3,542', metricLabel: 'Placements', btnColor: 'bg-pink-700 hover:bg-pink-800', icon: Briefcase, iconColor: 'text-pink-500' },
+            { title: 'Faculty Engine', desc: 'Manage faculty, approvals, workload & access', metric: '428', metricLabel: 'Faculty', btnColor: 'bg-orange-700 hover:bg-orange-800', icon: UserCog, iconColor: 'text-orange-500' },
+            { title: 'Internship Engine', desc: 'Manage internships, offers and student applications', metric: '1,862', metricLabel: 'Internships', btnColor: 'bg-pink-700 hover:bg-pink-800', icon: Briefcase, iconColor: 'text-pink-500' },
           ].map((engine, i) => (
             <div key={i} className="bg-white/80 backdrop-blur rounded-xl p-5 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer flex flex-col items-center text-center">
               <engine.icon size={36} className={`mb-4 ${engine.iconColor}`} />
@@ -107,10 +107,10 @@ export default function DashboardPage() {
           <div className="bg-white/80 backdrop-blur rounded-xl p-6 shadow-2xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 transition-transform cursor-pointer h-[calc(100%-2rem)]">
             <div className="space-y-5">
               {[
-                { label: 'Pending Review', value: '156', icon: FileText, bg: 'bg-pink-100', text: 'text-pink-600' },
-                { label: 'Draft Content', value: '320', icon: FileEdit, bg: 'bg-orange-100', text: 'text-orange-600' },
-                { label: 'AI Generated', value: '1,248', icon: Bot, bg: 'bg-pink-100', text: 'text-pink-600' },
-                { label: 'Published', value: '48,562', icon: CheckCircle2, bg: 'bg-emerald-100', text: 'text-emerald-600' },
+                { label: 'Pending Review', value: '156', icon: FileText, bg: 'bg-pink-100', text: 'text-pink-800' },
+                { label: 'Draft Content', value: '320', icon: FileEdit, bg: 'bg-orange-100', text: 'text-orange-800' },
+                { label: 'AI Generated', value: '1,248', icon: Bot, bg: 'bg-pink-100', text: 'text-pink-800' },
+                { label: 'Published', value: '48,562', icon: CheckCircle2, bg: 'bg-emerald-100', text: 'text-emerald-800' },
                 { label: 'Archived', value: '74', icon: Archive, bg: 'bg-slate-100', text: 'text-slate-600' },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between">
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                     <p className="text-base font-semibold text-slate-800 leading-tight truncate">{activity.title}</p>
                     <p className="text-sm text-slate-500 mt-0.5 truncate">{activity.desc}</p>
                   </div>
-                  <div className="text-sm font-medium text-slate-400 shrink-0 whitespace-nowrap">{activity.time}</div>
+                  <div className="text-sm font-medium text-slate-600 shrink-0 whitespace-nowrap">{activity.time}</div>
                 </div>
               ))}
             </div>

@@ -1,0 +1,6 @@
+{
+  "command": "pnpm --filter @quiz/skillhubcore-admin exec next build --webpack",
+  "started": "2026-11-12T17:35:15.470Z",
+  "finished": "2026-11-12T17:37:57.179Z",
+  "exitCode": 0
+}

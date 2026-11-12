@@ -1,0 +1,76 @@
+{
+  "boundary": "Actual headless Chromium, signed development sessions for current active accounts, read-only pages and axe/keyboard/viewport checks. Not password lifecycle or full accessibility certification.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": false,
+      "identityControlStatus": 200,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(1) > .mt-auto.w-full.justify-between > .hover\\:bg-pink-600.py-1\\.5.bg-pink-500"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(2) > .mt-auto.w-full.justify-between > .hover\\:bg-orange-600.py-1\\.5.bg-orange-500"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(3) > .mt-auto.w-full.justify-between > .hover\\:bg-pink-600.py-1\\.5.bg-pink-500"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(4) > .mt-auto.w-full.justify-between > .hover\\:bg-orange-600.py-1\\.5.bg-orange-500"
+            ],
+            [
+              ".p-5.bg-white\\/80.backdrop-blur:nth-child(5) > .mt-auto.w-full.justify-between > .hover\\:bg-pink-600.py-1\\.5.bg-pink-500"
+            ],
+            [
+              ".justify-between.items-center.flex:nth-child(1) > .bg-pink-100.text-pink-600.px-2\\.5"
+            ],
+            [
+              ".bg-orange-100"
+            ],
+            [
+              ".justify-between.items-center.flex:nth-child(3) > .bg-pink-100.text-pink-600.px-2\\.5"
+            ],
+            [
+              ".text-emerald-600"
+            ],
+            [
+              ".gap-4.flex:nth-child(1) > .font-medium.text-slate-400.whitespace-nowrap"
+            ],
+            [
+              ".gap-4.flex:nth-child(2) > .font-medium.text-slate-400.whitespace-nowrap"
+            ],
+            [
+              ".gap-4.flex:nth-child(3) > .font-medium.text-slate-400.whitespace-nowrap"
+            ],
+            [
+              ".gap-4.flex:nth-child(4) > .font-medium.text-slate-400.whitespace-nowrap"
+            ]
+          ]
+        }
+      ],
+      "error": "No serious/critical automated axe violations\n\n1 !== 0\n"
+    },
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": true,
+      "identityControlStatus": 200,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    }
+  ]
+}

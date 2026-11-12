@@ -1,0 +1,20 @@
+[
+  {
+    "ref": "b4ae3054bbf788d3ad5714125b4afce6c2f77c96",
+    "file": null,
+    "bytes": 7292,
+    "sha256": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783"
+  },
+  {
+    "ref": "fe21b286",
+    "file": "packages/db-tutorial/migrations/0018_amused_rockslide.sql",
+    "bytes": 11280,
+    "sha256": "53c8b7b07b9a1a0feba1cf193e05675fe12a22043836b139bb303e8d1e5f2bd5"
+  },
+  {
+    "ref": "d03b4054",
+    "file": "packages/db-tutorial/migrations/0026_complex_mandarin.sql",
+    "bytes": 7292,
+    "sha256": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783"
+  }
+]

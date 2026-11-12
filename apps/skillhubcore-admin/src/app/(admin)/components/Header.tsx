@@ -77,14 +77,14 @@ export function Header({
           aria-label="View notifications"
         >
           <Bell size={20} />
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white border border-white">12</span>
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-700 text-xs font-bold text-white border border-white">12</span>
         </button>
         <button
           className="relative text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"
           aria-label="View messages"
         >
           <Mail size={20} />
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white border border-white">8</span>
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-700 text-xs font-bold text-white border border-white">8</span>
         </button>
         <button
           className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none"

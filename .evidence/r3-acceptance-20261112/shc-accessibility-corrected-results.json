@@ -1,0 +1,29 @@
+{
+  "boundary": "Actual headless Chromium, signed development sessions for current active accounts, read-only pages and axe/keyboard/viewport checks. Not password lifecycle or full accessibility certification.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": true,
+      "identityControlStatus": 200,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": true,
+      "identityControlStatus": 200,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    }
+  ]
+}

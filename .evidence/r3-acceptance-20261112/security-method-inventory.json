@@ -1,0 +1,1764 @@
+{
+  "boundary": "Mechanical TypeScript AST inventory of locally exported HTTP handlers at reviewed HEAD plus R3 changes. Not a security certification, does not resolve imported/re-exported handler internals or establish runtime coverage.",
+  "counts": {
+    "skillhubcore-admin": 80,
+    "skillup-web": 49,
+    "realtutorialhub-web": 66
+  },
+  "inventory": [
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/auth/me/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts",
+      "method": "GET",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts",
+      "method": "POST",
+      "line": 19,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "GET",
+      "line": 21,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "PATCH",
+      "line": 28,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "DELETE",
+      "line": 35,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/batch-delete/route.ts",
+      "method": "POST",
+      "line": 5,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "GET",
+      "line": 11,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "POST",
+      "line": 58,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "PUT",
+      "line": 95,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "DELETE",
+      "line": 147,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts",
+      "method": "PATCH",
+      "line": 7,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts",
+      "method": "DELETE",
+      "line": 50,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/batch-delete/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/bulk/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts",
+      "method": "GET",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts",
+      "method": "POST",
+      "line": 19,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "GET",
+      "line": 21,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "PATCH",
+      "line": 28,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "DELETE",
+      "line": 35,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/batch-delete/route.ts",
+      "method": "POST",
+      "line": 5,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "GET",
+      "line": 10,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "POST",
+      "line": 41,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "PUT",
+      "line": 68,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "DELETE",
+      "line": 100,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts",
+      "method": "PATCH",
+      "line": 7,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts",
+      "method": "DELETE",
+      "line": 36,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/batch-delete/route.ts",
+      "method": "POST",
+      "line": 5,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "GET",
+      "line": 10,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "POST",
+      "line": 68,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "PUT",
+      "line": 95,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "DELETE",
+      "line": 131,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts",
+      "method": "PATCH",
+      "line": 7,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts",
+      "method": "DELETE",
+      "line": 50,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/batch-delete/route.ts",
+      "method": "POST",
+      "line": 5,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "GET",
+      "line": 20,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "POST",
+      "line": 85,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "PUT",
+      "line": 112,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "DELETE",
+      "line": 144,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts",
+      "method": "PATCH",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts",
+      "method": "DELETE",
+      "line": 46,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/batch-delete/route.ts",
+      "method": "POST",
+      "line": 5,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "GET",
+      "line": 21,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "POST",
+      "line": 76,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "PUT",
+      "line": 103,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "DELETE",
+      "line": 135,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts",
+      "method": "PATCH",
+      "line": 18,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts",
+      "method": "DELETE",
+      "line": 61,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts",
+      "method": "GET",
+      "line": 21,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts",
+      "method": "POST",
+      "line": 28,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [
+        "requireAdminMutationOrigin",
+        "setAdminSessionCookies"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [
+        "requireAdminMutationOrigin",
+        "clearAdminSessionCookies"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/auth/me/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/factory/check-duplicates/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/factory/save/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/health/route.ts",
+      "method": "GET",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/logs/client/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/marketing/bootstrap/[brandId]/route.ts",
+      "method": "GET",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/marketing/collector/observability/route.ts",
+      "method": "GET",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/marketing/control-plane/[brandId]/route.ts",
+      "method": "GET",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "GET",
+      "line": 152,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "POST",
+      "line": 165,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "PUT",
+      "line": 178,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "DELETE",
+      "line": 191,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "method": "POST",
+      "line": 56,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireTutorialEditPermission",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "method": "POST",
+      "line": 47,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireTutorialEditPermission",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "method": "POST",
+      "line": 65,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "method": "POST",
+      "line": 50,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireTutorialEditPermission",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "method": "POST",
+      "line": 94,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "method": "GET",
+      "line": 206,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "method": "POST",
+      "line": 102,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "method": "POST",
+      "line": 99,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "GET",
+      "line": 96,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "PATCH",
+      "line": 169,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "DELETE",
+      "line": 280,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "method": "POST",
+      "line": 261,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireTutorialEditPermission",
+        "requireSubtopicAccess",
+        "requireBrandAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts",
+      "method": "GET",
+      "line": 26,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/navigation-nodes/route.ts",
+      "method": "GET",
+      "line": 20,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts",
+      "method": "GET",
+      "line": 742,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts",
+      "method": "POST",
+      "line": 802,
+      "observedCalls": [
+        "authenticateRequest",
+        "createAuthErrorResponse",
+        "requireBrandAccess",
+        "requireSubtopicAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/forgot-password/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/placement-handoff/route.ts",
+      "method": "POST",
+      "line": 34,
+      "observedCalls": [
+        "request.cookies.get('accessToken')?.value?.trim",
+        "fetchAuthUpstream",
+        "extractCookieValue(refreshedSetCookies, 'accessToken')?.trim"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/refresh/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/reset-password/route.ts",
+      "method": "GET",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/reset-password/route.ts",
+      "method": "POST",
+      "line": 11,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/sessions/route.ts",
+      "method": "GET",
+      "line": 10,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/sessions/route.ts",
+      "method": "DELETE",
+      "line": 21,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/sessions/[sessionId]/route.ts",
+      "method": "DELETE",
+      "line": 10,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/signup/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/test-fixture-session/route.ts",
+      "method": "POST",
+      "line": 16,
+      "observedCalls": [
+        "TokenService.generateAccessToken"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/auth/verify-email/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/batches/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/content-manager/add-section/route.ts",
+      "method": "POST",
+      "line": 4,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "method": "GET",
+      "line": 14,
+      "observedCalls": [
+        "extractAuthFromRequest",
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/healthz/route.ts",
+      "method": "GET",
+      "line": 3,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/onboarding/route.ts",
+      "method": "POST",
+      "line": 11,
+      "observedCalls": [
+        "requireBffAuth",
+        "BffAuthErrors.internalError",
+        "authResult.userId?.slice"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/onboarding/session/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [
+        "onboardingSessionInputSchema.parse",
+        "serializeOnboardingSessionCookie"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/profile/route.ts",
+      "method": "GET",
+      "line": 16,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/profile/route.ts",
+      "method": "PATCH",
+      "line": 20,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/programs/route.ts",
+      "method": "GET",
+      "line": 14,
+      "observedCalls": [
+        "extractAuthFromRequest",
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "method": "GET",
+      "line": 19,
+      "observedCalls": [
+        "extractAuthFromRequest",
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/active/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/answer/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/count/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/result/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/start/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/state/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/quiz/submit/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/student/attendance/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/student/payments/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "method": "GET",
+      "line": 6,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "method": "GET",
+      "line": 15,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "method": "GET",
+      "line": 13,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "method": "GET",
+      "line": 13,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "POST",
+      "line": 16,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "GET",
+      "line": 44,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "method": "GET",
+      "line": 141,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "method": "POST",
+      "line": 142,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "skillup-web",
+      "path": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "method": "GET",
+      "line": 12,
+      "observedCalls": [
+        "requireStudentAuth"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/ai-tutor/query/route.ts",
+      "method": "POST",
+      "line": 219,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/forgot-password/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/placement-handoff/route.ts",
+      "method": "POST",
+      "line": 34,
+      "observedCalls": [
+        "request.cookies.get('accessToken')?.value?.trim",
+        "fetchAuthUpstream",
+        "extractCookieValue(refreshedSetCookies, 'accessToken')?.trim"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/refresh/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "method": "GET",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "method": "POST",
+      "line": 11,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "method": "GET",
+      "line": 10,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "method": "DELETE",
+      "line": 21,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/sessions/[sessionId]/route.ts",
+      "method": "DELETE",
+      "line": 10,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/signup/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/auth/verify-email/route.ts",
+      "method": "POST",
+      "line": 7,
+      "observedCalls": [
+        "proxyAuthRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/certificates/verify/[verificationCode]/route.ts",
+      "method": "GET",
+      "line": 14,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/content-manager/add-section/route.ts",
+      "method": "POST",
+      "line": 4,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/healthz/route.ts",
+      "method": "GET",
+      "line": 3,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/onboarding/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [
+        "extractAuthFromRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/onboarding/session/route.ts",
+      "method": "POST",
+      "line": 9,
+      "observedCalls": [
+        "onboardingSessionInputSchema.parse",
+        "serializeOnboardingSessionCookie"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "method": "GET",
+      "line": 19,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "method": "PATCH",
+      "line": 29,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/active/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/answer/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/count/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/result/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/start/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/state/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/quiz/submit/route.ts",
+      "method": "POST",
+      "line": 8,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/test-deployment/route.ts",
+      "method": "GET",
+      "line": 3,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/route.ts",
+      "method": "POST",
+      "line": 45,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/complete/route.ts",
+      "method": "POST",
+      "line": 20,
+      "observedCalls": [
+        "requireAssignmentAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/route.ts",
+      "method": "GET",
+      "line": 49,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/start/route.ts",
+      "method": "POST",
+      "line": 20,
+      "observedCalls": [
+        "requireAssignmentAccess"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "method": "GET",
+      "line": 15,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "method": "POST",
+      "line": 13,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "method": "GET",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "method": "GET",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/ils/visit/route.ts",
+      "method": "POST",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "POST",
+      "line": 27,
+      "observedCalls": [
+        "authenticate"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "GET",
+      "line": 55,
+      "observedCalls": [
+        "authenticate"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/progress/mark-complete/route.ts",
+      "method": "POST",
+      "line": 14,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "method": "GET",
+      "line": 144,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "method": "POST",
+      "line": 145,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submissions/route.ts",
+      "method": "GET",
+      "line": 24,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submit/route.ts",
+      "method": "POST",
+      "line": 53,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/projects/[projectId]/route.ts",
+      "method": "GET",
+      "line": 15,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/route.ts",
+      "method": "GET",
+      "line": 15,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/[examResultId]/route.ts",
+      "method": "GET",
+      "line": 15,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "method": "GET",
+      "line": 12,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/my-requests/route.ts",
+      "method": "GET",
+      "line": 8,
+      "observedCalls": [
+        "liveSessionService.getMyRequests"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/request/route.ts",
+      "method": "POST",
+      "line": 49,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "method": "DELETE",
+      "line": 9,
+      "observedCalls": [
+        "liveSessionService.cancelMyRequest"
+      ],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts",
+      "method": "POST",
+      "line": 306,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/handle-exam-completed/route.ts",
+      "method": "POST",
+      "line": 50,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/route.ts",
+      "method": "POST",
+      "line": 86,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/issue-certificate/route.ts",
+      "method": "POST",
+      "line": 408,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/notify-session-accepted/route.ts",
+      "method": "POST",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/notify-session-requested/route.ts",
+      "method": "POST",
+      "line": 17,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/notify-session-scheduled/route.ts",
+      "method": "POST",
+      "line": 19,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/refresh-weak-areas-view/route.ts",
+      "method": "POST",
+      "line": 40,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/review-project/route.ts",
+      "method": "POST",
+      "line": 154,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/send-remediation-notification/route.ts",
+      "method": "POST",
+      "line": 65,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web/src/app/api/workers/sync-hierarchy/route.ts",
+      "method": "POST",
+      "line": 16,
+      "observedCalls": [],
+      "qualification": "NOT inferred from source guard names; method/role/object/runtime coverage still requires mapped evidence"
+    }
+  ]
+}

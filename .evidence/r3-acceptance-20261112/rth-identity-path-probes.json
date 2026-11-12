@@ -1,0 +1,10 @@
+[
+  {
+    "suffix": "/auth/me",
+    "status": 401
+  },
+  {
+    "suffix": "/api/auth/me",
+    "status": 401
+  }
+]

@@ -1,0 +1,64 @@
+{
+  "boundary": "Initial actual run retained without discarding cold-start or ineligible-session outcomes; keyboard probe subsequently strengthened.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": false,
+      "status": 503,
+      "error": "Expected values to be strictly equal:\n\n503 !== 200\n"
+    },
+    {
+      "brand": "skillhubcore",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": true,
+      "status": 200,
+      "path": "/dashboard",
+      "overflow": false,
+      "keyboardTarget": "NEXTJS-PORTAL",
+      "violations": []
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/exams",
+      "size": "desktop",
+      "pass": true,
+      "status": 200,
+      "path": "/student/exams",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/exams",
+      "size": "mobile",
+      "pass": true,
+      "status": 200,
+      "path": "/student/exams",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": false,
+      "status": 200,
+      "path": "/login",
+      "error": "Authenticated page must remain accessible\n+ actual - expected\n\n+ '/login'\n- '/dashboard'"
+    },
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": false,
+      "status": 200,
+      "path": "/login",
+      "error": "Authenticated page must remain accessible\n+ actual - expected\n\n+ '/login'\n- '/dashboard'"
+    }
+  ]
+}

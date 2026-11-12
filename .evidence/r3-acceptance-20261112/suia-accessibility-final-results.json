@@ -1,0 +1,23 @@
+{
+  "boundary": "Actual headless Chromium, signed development sessions for current active accounts, read-only pages and axe/keyboard/viewport checks. Not password lifecycle or full accessibility certification.",
+  "results": [
+    {
+      "brand": "skillup",
+      "route": "/student/exams",
+      "size": "desktop",
+      "pass": false,
+      "error": "Error"
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/exams",
+      "size": "mobile",
+      "pass": true,
+      "status": 200,
+      "path": "/student/exams",
+      "overflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    }
+  ]
+}

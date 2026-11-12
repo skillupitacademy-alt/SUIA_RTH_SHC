@@ -1,0 +1,94 @@
+{
+  "head": "f78bd048e2192e0f744ffe3fca6218aa1d9aedd2",
+  "boundary": "Actual local commands on R2 HEAD plus uncommitted R3 changes. No container images, deployment or Sentry publication. Previous PowerShell runner interrupted after SHC typecheck; these are the final native-process receipts.",
+  "results": [
+    {
+      "name": "skillhubcore-admin-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+      "started": "2026-11-12T17:15:24.054Z",
+      "finished": "2026-11-12T17:16:55.679Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "skillhubcore-admin-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "started": "2026-11-12T17:16:55.740Z",
+      "finished": "2026-11-12T17:17:05.498Z",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "name": "skillup-web-typecheck",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-12T17:17:05.546Z",
+      "finished": "2026-11-12T17:18:00.116Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "skillup-web-lint",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "started": "2026-11-12T17:18:00.181Z",
+      "finished": "2026-11-12T17:18:06.128Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "realtutorialhub-web-typecheck",
+      "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+      "started": "2026-11-12T17:18:06.170Z",
+      "finished": "2026-11-12T17:18:31.521Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "realtutorialhub-web-lint",
+      "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+      "started": "2026-11-12T17:18:31.568Z",
+      "finished": "2026-11-12T17:18:39.870Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "shc-security",
+      "command": "pnpm --filter @quiz/skillhubcore-admin test:security",
+      "started": "2026-11-12T17:18:39.912Z",
+      "finished": "2026-11-12T17:18:53.401Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "shc-boundaries",
+      "command": "pnpm --filter @quiz/skillhubcore-admin check:boundaries",
+      "started": "2026-11-12T17:18:53.468Z",
+      "finished": "2026-11-12T17:18:55.204Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "shc-build",
+      "command": "pnpm --filter @quiz/skillhubcore-admin exec next build --webpack",
+      "started": "2026-11-12T17:18:55.293Z",
+      "finished": "2026-11-12T17:22:24.615Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "suia-build",
+      "command": "pnpm --filter @quiz/skillup-web build",
+      "started": "2026-11-12T17:22:24.668Z",
+      "finished": "2026-11-12T17:24:09.592Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "rth-build",
+      "command": "pnpm --filter @quiz/realtutorialhub-web build",
+      "started": "2026-11-12T17:24:09.632Z",
+      "finished": "2026-11-12T17:28:49.400Z",
+      "exitCode": 0,
+      "signal": null
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "boundary": "Actual command completions returned by the execution tool; JSON Vitest report independently records test outcomes. Interrupted attempts are retained separately and are not these successful runs.",
+  "results": [
+    {
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "toolSession": 65686,
+      "exitCode": 0,
+      "scope": "Final dashboard and header contrast corrections"
+    },
+    {
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r3-acceptance-20261112/suia-tests-final.json",
+      "toolSession": 56324,
+      "exitCode": 0,
+      "testsPassed": 200,
+      "testFiles": 25,
+      "report": "suia-tests-final.json"
+    },
+    {
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "toolChunk": "5e0d00",
+      "exitCode": 0,
+      "reasonForRerun": "Initial native gate found unused neonConfig/WebSocket imports in the new remote test. Explicitly configuring its actual WebSocket transport fixed both warnings; no rule was disabled."
+    }
+  ]
+}
