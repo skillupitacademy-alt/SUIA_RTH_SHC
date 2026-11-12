@@ -518,7 +518,7 @@ export async function resolveWorkerOutboxRepository(
       typeof candidate.update === 'function' &&
       typeof EventOutboxRepository === 'function'
     ) {
-      return new EventOutboxRepository(dbOrRepo as any) as unknown as DurableWorkerOutboxRepositoryPort;
+      return new EventOutboxRepository(dbOrRepo as ConstructorParameters<typeof EventOutboxRepository>[0]) as unknown as DurableWorkerOutboxRepositoryPort;
     }
   }
 
@@ -629,7 +629,7 @@ export async function findAuthoritativeWorkerOutboxIntent(
       typeof candidate.update === 'function' &&
       typeof EventOutboxRepository === 'function'
     ) {
-      const repo = new EventOutboxRepository(dbOrRepo as any);
+      const repo = new EventOutboxRepository(dbOrRepo as ConstructorParameters<typeof EventOutboxRepository>[0]);
       const found = await repo.findIntent(tenantId, eventType, aggregateId);
       return found ? hydrateOutboxRecord(found as unknown as WorkerOutboxRecord) : undefined;
     }
@@ -730,17 +730,14 @@ export function upsertWorkerOutboxIntent(input: {
  * Executes a domain-plus-outbox database transaction (`db.transaction`).
  * Rejects nontransactional database objects and delegates atomicity strictly to `dbClient.transaction`.
  */
-export async function runInWorkerOutboxTransaction<
-  TDb extends { transaction: (...args: any[]) => Promise<any> },
-  TResult,
->(
-  dbClient: TDb,
-  callback: (tx: Parameters<Parameters<TDb['transaction']>[0]>[0]) => Promise<TResult>
+export async function runInWorkerOutboxTransaction<TTransaction, TResult>(
+  dbClient: { transaction<TValue>(callback: (tx: TTransaction) => Promise<TValue>): Promise<TValue> },
+  callback: (tx: TTransaction) => Promise<TResult>
 ): Promise<TResult> {
   if (dbClient === null || dbClient === undefined || typeof dbClient !== 'object' || typeof dbClient.transaction !== 'function') {
     throw new Error('Database client does not support required transactional execution (db.transaction)');
   }
-  return dbClient.transaction(async (tx: Parameters<Parameters<TDb['transaction']>[0]>[0]) =>
+  return dbClient.transaction<TResult>(async (tx: TTransaction) =>
     callback(tx)
   );
 }
@@ -768,9 +765,9 @@ export async function upsertTransactionalOutboxIntent(
 
   const candidate = tx as {
     upsertIntent?: (arg: typeof input) => Promise<WorkerOutboxRecord>;
-    select?: (...args: any[]) => any;
-    insert?: (...args: any[]) => any;
-    update?: (...args: any[]) => any;
+    select?: unknown;
+    insert?: unknown;
+    update?: unknown;
   };
 
   if (typeof candidate.upsertIntent === 'function') {
@@ -784,7 +781,7 @@ export async function upsertTransactionalOutboxIntent(
     typeof candidate.update === 'function' &&
     typeof EventOutboxRepository === 'function'
   ) {
-    const repo = new EventOutboxRepository(tx as any);
+    const repo = new EventOutboxRepository(tx as ConstructorParameters<typeof EventOutboxRepository>[0]);
     const dbRecord = await repo.upsertIntent(input);
     return hydrateOutboxRecord(dbRecord as unknown as WorkerOutboxRecord);
   }
@@ -827,7 +824,7 @@ export async function dispatchWorkerOutboxIntent(
     typeof candidate.update === 'function' &&
     typeof EventOutboxRepository === 'function'
   ) {
-    repoCandidate = new EventOutboxRepository(dbOrRepo as any) as unknown as DurableWorkerOutboxRepositoryPort;
+    repoCandidate = new EventOutboxRepository(dbOrRepo as ConstructorParameters<typeof EventOutboxRepository>[0]) as unknown as DurableWorkerOutboxRepositoryPort;
   }
 
   if (!repoCandidate) {

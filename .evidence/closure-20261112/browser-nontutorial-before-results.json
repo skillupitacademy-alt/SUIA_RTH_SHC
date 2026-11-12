@@ -1,0 +1,141 @@
+{
+  "boundary": "Real headless Chromium; public login pages only, automated axe/keyboard/mobile probes. No tutorial journeys, authenticated mutations or full WCAG certification.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "size": "desktop",
+      "pass": false,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".text-xs"
+            ]
+          ]
+        }
+      ],
+      "error": "Serious/critical automated accessibility violations\n\n1 !== 0\n"
+    },
+    {
+      "brand": "skillhubcore",
+      "size": "mobile",
+      "pass": false,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".text-xs"
+            ]
+          ]
+        }
+      ],
+      "error": "Serious/critical automated accessibility violations\n\n1 !== 0\n"
+    },
+    {
+      "brand": "skillup",
+      "size": "desktop",
+      "pass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "skillup",
+      "size": "mobile",
+      "pass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "size": "desktop",
+      "pass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "size": "mobile",
+      "pass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": []
+    }
+  ]
+}

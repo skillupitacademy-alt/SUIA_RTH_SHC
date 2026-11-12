@@ -72,7 +72,7 @@ async function getHandler(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     if (error instanceof AssignmentAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
@@ -130,7 +130,7 @@ async function postHandler(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     if (error instanceof AssignmentAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });

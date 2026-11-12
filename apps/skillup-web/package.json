@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx src",
-    "type-check": "tsc --noEmit -p tsconfig.json",
+    "type-check": "next typegen && tsc --noEmit -p tsconfig.json",
     "test": "vitest --config vitest.config.ts run"
   },
   "dependencies": {

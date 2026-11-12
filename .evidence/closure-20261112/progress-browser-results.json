@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-11-12T04:49:47.651Z",
+  "boundary": "Actual headless Chromium -> learner BFF -> backend -> remote PostgreSQL. Synthetic signed learner sessions in memory; no password-login or live account-status claim. Existing tutorial content/authoring journeys excluded.",
+  "cleanupVerified": true,
+  "results": [
+    {
+      "name": "skillup_persisted_reload",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "skillup_reissued_session_new_context",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "skillup_other_user",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "skillup_foreign_brand",
+      "expectedStatus": "401/403",
+      "actualStatus": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub_persisted_reload",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "realtutorialhub_reissued_session_new_context",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "realtutorialhub_other_user",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "name": "realtutorialhub_foreign_brand",
+      "expectedStatus": "401/403",
+      "actualStatus": 401,
+      "pass": true
+    }
+  ]
+}

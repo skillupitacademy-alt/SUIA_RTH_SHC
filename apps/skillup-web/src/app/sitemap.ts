@@ -1,5 +1,8 @@
 import { getSkillupPrograms } from '@/lib/skillup-data';
 
+// Catalog records are resolved using runtime database configuration.
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap() {
   const baseUrl = 'https://user.skillupitacademy.com';
   const { programs } = await getSkillupPrograms();

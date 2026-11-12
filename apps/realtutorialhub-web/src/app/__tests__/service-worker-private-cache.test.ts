@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+type WorkerEvent = {
+  request?: { method: string; url: string; mode?: RequestMode };
+  respondWith?: (response: Promise<Response>) => void;
+  waitUntil?: (operation: Promise<unknown>) => void;
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -9,7 +15,7 @@ async function setupRthServiceWorker(options: {
   fetchImpl: ReturnType<typeof vi.fn>;
   cachedResponse?: Response;
 }) {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const put = vi.fn().mockResolvedValue(undefined);
   const match = vi.fn().mockResolvedValue(options.cachedResponse);
   const open = vi.fn().mockResolvedValue({ match, put });
@@ -18,7 +24,7 @@ async function setupRthServiceWorker(options: {
 
   vi.stubGlobal('self', {
     location: { origin: 'https://realtutorialhub.fixture.invalid' },
-    addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler),
+    addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler),
     skipWaiting,
     clients: { claim },
   });

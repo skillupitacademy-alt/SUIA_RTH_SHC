@@ -26,30 +26,27 @@ class SkillupAuthorizationError extends Error {}
 
 export async function fetchSkillupApi<T>(path: string): Promise<T> {
   const forwardedHeaders = new Headers();
-  try {
-    const requestHeaders = await headers();
-    const xShadowUserId = requestHeaders.get('x-shadow-user-id');
-    const xOriginalUserId = requestHeaders.get('x-original-user-id');
-    const cookie = requestHeaders.get('cookie');
-    const portalIdentity = requestHeaders.get('x-portal-identity');
-    const brand = requestHeaders.get('x-brand');
+  // Preserve Next.js request-scope signalling during prerendering. Swallowing it
+  // would turn authenticated pages into credential-less build-time data reads.
+  const requestHeaders = await headers();
+  const xShadowUserId = requestHeaders.get('x-shadow-user-id');
+  const xOriginalUserId = requestHeaders.get('x-original-user-id');
+  const cookie = requestHeaders.get('cookie');
+  const portalIdentity = requestHeaders.get('x-portal-identity');
+  const brand = requestHeaders.get('x-brand');
 
-    if (xShadowUserId) forwardedHeaders.set('x-user-id', xShadowUserId);
-    if (xShadowUserId) forwardedHeaders.set('x-shadow-user-id', xShadowUserId);
-    if (xOriginalUserId) forwardedHeaders.set('x-original-user-id', xOriginalUserId);
-    if (cookie) forwardedHeaders.set('cookie', cookie);
-    if (portalIdentity) forwardedHeaders.set('x-portal-identity', portalIdentity);
-    if (brand) {
-      forwardedHeaders.set('x-brand', brand);
-      forwardedHeaders.set('x-platform', brand);
-    }
-    // u{1F512} SECURITY: Send gateway trust secret so API server can verify this BFF is trusted
-    const gatewaySecret = process.env.GATEWAY_TRUST_SECRET;
-    if (gatewaySecret) forwardedHeaders.set('x-gateway-secret', gatewaySecret);
-  } catch {
-    // Static build paths do not have a request scope. We keep the fetch attempt
-    // for runtime rendering and fall back to live DB helpers only when needed.
+  if (xShadowUserId) forwardedHeaders.set('x-user-id', xShadowUserId);
+  if (xShadowUserId) forwardedHeaders.set('x-shadow-user-id', xShadowUserId);
+  if (xOriginalUserId) forwardedHeaders.set('x-original-user-id', xOriginalUserId);
+  if (cookie) forwardedHeaders.set('cookie', cookie);
+  if (portalIdentity) forwardedHeaders.set('x-portal-identity', portalIdentity);
+  if (brand) {
+    forwardedHeaders.set('x-brand', brand);
+    forwardedHeaders.set('x-platform', brand);
   }
+  // u{1F512} SECURITY: Send gateway trust secret so API server can verify this BFF is trusted
+  const gatewaySecret = process.env.GATEWAY_TRUST_SECRET;
+  if (gatewaySecret) forwardedHeaders.set('x-gateway-secret', gatewaySecret);
 
   try {
     const response = await fetch(toAbsoluteUrl(path), {

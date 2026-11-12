@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({
-  profileRows: [] as any[][],
-  jobRows: [] as any[][],
+  profileRows: [] as Array<Array<Record<string, unknown>> | Error>,
+  jobRows: [] as Array<Array<Record<string, unknown>> | Error>,
   vectorMatch: vi.fn(),
   vectorError: null as Error | null,
 }));
@@ -66,7 +66,7 @@ beforeEach(() => {
 
 describe('FND13 placement truth controls', () => {
   it('propagates DB profile query failure', async () => {
-    state.profileRows = [new Error('Database connection timeout') as any];
+    state.profileRows = [new Error('Database connection timeout')];
     state.jobRows = [];
 
     await expect(getSkillupPlacement('student-fail')).rejects.toThrow('Database connection timeout');
@@ -83,7 +83,7 @@ describe('FND13 placement truth controls', () => {
       experienceSummary: 'Two years web development',
     }]];
 
-    state.jobRows = [new Error('Failed to fetch job listings') as any];
+    state.jobRows = [new Error('Failed to fetch job listings')];
 
     await expect(getSkillupPlacement('student-fixture')).rejects.toThrow('Failed to fetch job listings');
   });

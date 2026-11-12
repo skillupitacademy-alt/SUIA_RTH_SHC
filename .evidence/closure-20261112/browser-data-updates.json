@@ -1,0 +1,16 @@
+[
+  {
+    "name": "caniuse-lite",
+    "from": [
+      "1.0.30001778"
+    ],
+    "to": "1.0.30001826"
+  },
+  {
+    "name": "baseline-browser-mapping",
+    "from": [
+      "2.10.7"
+    ],
+    "to": "2.11.36"
+  }
+]

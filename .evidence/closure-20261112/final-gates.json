@@ -1,0 +1,114 @@
+[
+  {
+    "name": "final-progress-tests",
+    "command": "pnpm --filter @quiz/db-tutorial exec vitest run src/repositories/__tests__/tutorial-progress.repository.test.ts src/repositories/__tests__/batch-08-progress-isolation.test.ts src/repositories/__tests__/foundation-progress-concurrency.test.ts",
+    "started": "2026-11-12T05:04:30.7300439Z",
+    "finished": "2026-11-12T05:04:34.2665084Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-rth-tests",
+    "command": "pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/workers/ src/lib/__tests__/ src/app/__tests__/service-worker-private-cache.test.ts src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/assignments/__tests__/page.test.ts --environment=node",
+    "started": "2026-11-12T05:04:34.4671374Z",
+    "finished": "2026-11-12T05:04:49.1525224Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-suia-tests",
+    "command": "pnpm --filter @quiz/skillup-web test",
+    "started": "2026-11-12T05:04:49.1643609Z",
+    "finished": "2026-11-12T05:04:52.3077367Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-skillhubcore-admin-typecheck",
+    "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+    "started": "2026-11-12T05:04:52.3274387Z",
+    "finished": "2026-11-12T05:04:56.7877258Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-skillhubcore-admin-lint",
+    "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+    "started": "2026-11-12T05:05:57.7586201Z",
+    "finished": "2026-11-12T05:06:06.7235127Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-skillup-web-typecheck",
+    "command": "pnpm --filter @quiz/skillup-web type-check",
+    "started": "2026-11-12T05:08:14.7861463Z",
+    "finished": "2026-11-12T05:08:30.5906662Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-skillup-web-lint",
+    "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+    "started": "2026-11-12T05:08:30.6161239Z",
+    "finished": "2026-11-12T05:08:36.5546566Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-realtutorialhub-web-typecheck",
+    "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+    "started": "2026-11-12T05:08:36.5719345Z",
+    "finished": "2026-11-12T05:08:44.1103926Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-realtutorialhub-web-lint",
+    "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+    "started": "2026-11-12T05:08:44.1547755Z",
+    "finished": "2026-11-12T05:08:52.2112416Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-api-typecheck",
+    "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+    "started": "2026-11-12T05:08:52.2152919Z",
+    "finished": "2026-11-12T05:09:36.5550293Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-db-typecheck",
+    "command": "pnpm --filter @quiz/db-tutorial type-check",
+    "started": "2026-11-12T05:09:36.557689Z",
+    "finished": "2026-11-12T05:09:39.4160043Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-shc-boundaries",
+    "command": "pnpm --filter @quiz/skillhubcore-admin check:boundaries",
+    "started": "2026-11-12T05:09:39.4260883Z",
+    "finished": "2026-11-12T05:09:40.3915541Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-shc-build",
+    "command": "pnpm --filter @quiz/skillhubcore-admin exec next build --webpack",
+    "started": "2026-11-12T05:10:46.7728426Z",
+    "finished": "2026-11-12T05:13:23.1988744Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-suia-build",
+    "command": "pnpm --filter @quiz/skillup-web build",
+    "started": "2026-11-12T05:16:41.3108652Z",
+    "finished": "2026-11-12T05:17:28.2431669Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-rth-build",
+    "command": "pnpm --filter @quiz/realtutorialhub-web build",
+    "started": "2026-11-12T05:17:28.2594593Z",
+    "finished": "2026-11-12T05:19:23.8383958Z",
+    "exitCode": 0
+  },
+  {
+    "name": "final-rth-build",
+    "command": "pnpm --filter @quiz/realtutorialhub-web build",
+    "started": "2026-11-12T05:19:48.5169304Z",
+    "finished": "2026-11-12T05:21:16.5100998Z",
+    "exitCode": 0
+  }
+]

@@ -20,7 +20,7 @@ const fakeTx = {
       where: vi.fn(async () => undefined),
     })),
   })),
-  upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
+  upsertIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]) => testOutboxRepo.upsertIntent!(input),
 };
 
 const mocks = vi.hoisted(() => ({
@@ -64,7 +64,7 @@ vi.mock('@upstash/redis', () => ({
     get = mocks.redisGet;
     set = mocks.redisSet;
     del = vi.fn();
-    eval = vi.fn(async (_script: string, _keys: string[], _args: Array<string | number>) => 1);
+    eval = vi.fn<(script: string, keys: string[], args: Array<string | number>) => Promise<number>>(async () => 1);
     constructor() {}
   },
 }));
@@ -118,11 +118,11 @@ vi.mock('@quiz/db-tutorial', () => ({
         where: vi.fn(async () => undefined),
       })),
     })),
-    claimIntent: (input: any) => testOutboxRepo.claimIntent(input),
-    markPublished: (input: any) => testOutboxRepo.markPublished(input),
-    markFailed: (input: any) => testOutboxRepo.markFailed(input),
-    findIntent: (t: any, e: any, a: any) => testOutboxRepo.findIntent!(t, e, a),
-    upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
+    claimIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.claimIntent>>[0]) => testOutboxRepo.claimIntent(input),
+    markPublished: (input: Parameters<NonNullable<typeof testOutboxRepo.markPublished>>[0]) => testOutboxRepo.markPublished(input),
+    markFailed: (input: Parameters<NonNullable<typeof testOutboxRepo.markFailed>>[0]) => testOutboxRepo.markFailed(input),
+    findIntent: (t: string, e: string, a: string) => testOutboxRepo.findIntent!(t, e, a),
+    upsertIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]) => testOutboxRepo.upsertIntent!(input),
     transaction: mocks.dbTransaction,
   },
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),

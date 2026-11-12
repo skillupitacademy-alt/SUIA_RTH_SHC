@@ -2,16 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearWorkerOutboxLedgerForTests,
   createIsolatedTestOutboxRepository,
-  dispatchWorkerOutboxIntent,
   getWorkerOutboxIntent,
   upsertWorkerOutboxIntent,
 } from '../worker-lease';
 
-const storedCertificates: any[] = [];
+const storedCertificates: Array<Record<string, unknown>> = [];
 let publishEventShouldFail = false;
 let publishJSONShouldFail = false;
-const publishedEvents: any[] = [];
-const publishedQStashMessages: any[] = [];
+const publishedEvents: Array<{ type: string; payload: Record<string, unknown>; opts: Record<string, unknown> }> = [];
+const publishedQStashMessages: Array<Record<string, unknown>> = [];
 
 const testOutboxRepo = createIsolatedTestOutboxRepository();
 
@@ -22,7 +21,7 @@ const fakeTx = {
     })),
   })),
   insert: vi.fn(() => ({
-    values: vi.fn((vals: any) => ({
+    values: vi.fn((vals: Record<string, unknown>) => ({
       returning: vi.fn(async () => {
         const cert = {
           id: 'cert-crash-rec-1',
@@ -39,7 +38,7 @@ const fakeTx = {
     })),
   })),
   update: vi.fn(() => ({
-    set: vi.fn((vals: any) => ({
+    set: vi.fn((vals: Record<string, unknown>) => ({
       where: vi.fn(async () => {
         if (vals.badgeAwarded) {
           fakeSubmission.badgeAwarded = true;
@@ -47,7 +46,7 @@ const fakeTx = {
       }),
     })),
   })),
-  upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
+  upsertIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]) => testOutboxRepo.upsertIntent!(input),
 };
 
 const fakeSubmission: {
@@ -64,14 +63,14 @@ const fakeSubmission: {
 
 const mocks = vi.hoisted(() => ({
   redisStore: new Map<string, string>(),
-  publishEvent: vi.fn(async (type: string, payload: any, opts: any) => {
+  publishEvent: vi.fn(async (type: string, payload: Record<string, unknown>, opts: Record<string, unknown>) => {
     if (publishEventShouldFail) {
       throw new Error('Downstream publisher network error');
     }
     publishedEvents.push({ type, payload, opts });
     return { messageId: 'msg-pub-1', envelope: {} };
   }),
-  publishJSON: vi.fn(async (msg: any) => {
+  publishJSON: vi.fn(async (msg: Record<string, unknown>) => {
     if (publishJSONShouldFail) {
       throw new Error('QStash network drop');
     }
@@ -166,11 +165,11 @@ vi.mock('@quiz/db-tutorial', () => ({
         where: vi.fn(async () => undefined),
       })),
     })),
-    claimIntent: (input: any) => testOutboxRepo.claimIntent(input),
-    markPublished: (input: any) => testOutboxRepo.markPublished(input),
-    markFailed: (input: any) => testOutboxRepo.markFailed(input),
-    findIntent: (t: any, e: any, a: any) => testOutboxRepo.findIntent!(t, e, a),
-    upsertIntent: (input: any) => testOutboxRepo.upsertIntent!(input),
+    claimIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.claimIntent>>[0]) => testOutboxRepo.claimIntent(input),
+    markPublished: (input: Parameters<NonNullable<typeof testOutboxRepo.markPublished>>[0]) => testOutboxRepo.markPublished(input),
+    markFailed: (input: Parameters<NonNullable<typeof testOutboxRepo.markFailed>>[0]) => testOutboxRepo.markFailed(input),
+    findIntent: (t: string, e: string, a: string) => testOutboxRepo.findIntent!(t, e, a),
+    upsertIntent: (input: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]) => testOutboxRepo.upsertIntent!(input),
     transaction: mocks.dbTransaction,
   },
   withTimeout: vi.fn((promise: Promise<unknown>) => promise),
@@ -179,7 +178,7 @@ vi.mock('@quiz/db-tutorial', () => ({
     async getSubmission(id: string) {
       return fakeSubmission.id === id ? { ...fakeSubmission } : undefined;
     }
-    async getProject(_id: string) {
+    async getProject() {
       return {
         id: 'proj-rec-1',
         scope: 'topic' as const,
@@ -187,7 +186,7 @@ vi.mock('@quiz/db-tutorial', () => ({
         title: 'Topic Crash Rec',
       };
     }
-    withDb(_tx: any) {
+    withDb() {
       return {
         awardBadge: mocks.awardBadge,
       };

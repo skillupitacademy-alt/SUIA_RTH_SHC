@@ -108,7 +108,8 @@ export async function getHierarchyBySlugs(params: {
   };
 }
 
-export async function getPublishedTutorialContent(_subtopicId: string, _difficulty?: 'simple' | 'mixed' | 'intermediate' | 'expert'): Promise<PublishedTutorialContent | null> {
+export function getPublishedTutorialContent(subtopicId: string, difficulty?: 'simple' | 'mixed' | 'intermediate' | 'expert'): Promise<PublishedTutorialContent | null>;
+export async function getPublishedTutorialContent(): Promise<PublishedTutorialContent | null> {
   // Legacy monolithic content retrieval is retired (OD-01, OD-03, Task 12).
   // Canonical learning is exclusively block-based via TutorialDeliveryService and /tutorial-v2.
   return null;

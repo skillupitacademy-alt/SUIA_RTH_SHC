@@ -136,7 +136,7 @@ export class TutorialProgressRepository
     const initialExisting = await this.getProgress(userId, subtopicId, normalizedTenant);
 
     return this.withDbKeyWriteLock(lockKey, async (waitedForPriorWriter) => {
-      const existing = waitedForPriorWriter
+      let existing = waitedForPriorWriter
         ? ((await this.getProgress(userId, subtopicId, normalizedTenant)) ?? initialExisting)
         : initialExisting;
       const now = new Date();
@@ -159,11 +159,22 @@ export class TutorialProgressRepository
               version: 1,
               deletedAt: null,
             })
+            .onConflictDoNothing({
+              target: [tutorialProgress.tenantId, tutorialProgress.userId, tutorialProgress.subtopicId],
+            })
             .returning(),
           'TutorialProgressRepository.markBlockComplete.insert'
         );
 
-        return created as TutorialProgressRecord;
+        if (created) return created as TutorialProgressRecord;
+
+        // Another process may have created this exact tenant identity after our
+        // initial read. Merge through the existing versioned update path below.
+        // Retained soft-deleted rows remain inaccessible and are never revived here.
+        existing = await this.getProgress(userId, subtopicId, normalizedTenant);
+        if (!existing) {
+          throw new Error('Progress identity exists but no active tenant-scoped row is available');
+        }
       }
 
       let current: TutorialProgressRecord | undefined = existing;

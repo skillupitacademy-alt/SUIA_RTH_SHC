@@ -1,0 +1,1097 @@
+chore: Closure Work - Progress Isolation, Worker Improvements & Cache Enhancements
+
+EXECUTIVE SUMMARY
+
+This closure work addresses critical quality improvements across tutorial progress 
+tenant isolation, worker lease management, service worker caching strategies, and 
+comprehensive test coverage expansion. The changes implement tenant-scoped tutorial 
+progress isolation to support independent dual-brand progress tracking, enhance worker 
+lease concurrency handling with strengthened ownership transitions, and apply stricter 
+private caching policies to user-specific progress responses. Configuration updates 
+across Next.js applications address Sentry release automation, next-intl CommonJS 
+dependency tracing, and build-time environment constraints.
+
+The tutorial progress repository now enforces mandatory tenant context (realtutorialhub, 
+skillup, skillhubcore) on all read and write operations, preventing cross-tenant data 
+leakage through explicit tenant predicates in WHERE clauses and database-level write 
+locks keyed by tenant/user/subtopic tuples. Worker lease management received type safety 
+improvements and refined error handling for outbox repository resolution and transactional 
+intent enrollment. Service worker tests expanded to validate private navigation caching 
+policies and offline fallback behavior across both RTH and SUIA applications.
+
+Test coverage improvements include 23 tutorial progress tests with explicit tenant context, 
+stronger assertions for tenant isolation predicates, and corrections to stale test fixtures 
+expecting outdated brand/payload shapes. API server export status tests now include brand 
+context in job payloads and user verification responses. Worker tests received comprehensive 
+type annotations removing unsafe `any` usage across outbox recovery, badge award, and 
+certificate issuance probes. SUIA placement tests validate truth control boundaries including 
+database failure propagation, vector service fallback, and uncalibrated matching status.
+
+Next.js configuration updates include replacing next-intl ESM plugin entry with CommonJS 
+require() to support webpack Node dependency tracing, conditional Sentry release automation 
+gated by SENTRY_AUTH_TOKEN presence, and isolated worker CPU constraints for LLM execution 
+environments. Docker context exclusions expanded to cover Python virtual environments, 
+Playwright artifacts, graphify output, and additional evidence directories. Evidence 
+handoff documentation received continuation updates documenting completed work boundaries 
+and remaining verification gates.
+
+This commit does not include database migration execution, Docker deployment, or canonical 
+acceptance ledger updates. The implemented tenant isolation pattern prepares for future 
+DDL alignment requiring tenant_id column addition, tenant/user/subtopic unique constraint, 
+and provenance-verified data backfill. All production builds, typechecks, and targeted 
+test suites pass with documented boundaries.
+
+═══════════════════════════════════════════════════════════════════════════════
+FILE-BY-FILE CHANGES
+═══════════════════════════════════════════════════════════════════════════════
+
+PART 1: TUTORIAL PROGRESS ISOLATION (5 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+packages/db-tutorial/src/repositories/tutorial-progress.repository.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED mandatory tenant context validation and predicate enforcement:
+
+- Added VALID_TUTORIAL_TENANTS Set containing 'realtutorialhub', 'skillup', 
+  'skillhubcore' as the exclusive permitted tenant identities for tutorial progress
+- Added requireTenantCondition() private method that validates tenantId parameter 
+  presence, normalizes to lowercase trimmed form, validates against permitted set, 
+  and returns Drizzle eq(tutorialProgress.tenantId, normalized) predicate
+- requireTenantCondition() throws descriptive errors for undefined, empty string, 
+  or invalid tenant values BEFORE any database access occurs
+- Updated all repository methods (findById, getProgress, markBlockComplete, 
+  isSubtopicComplete, getCompletedSubtopics, resetProgress) to accept optional 
+  tenantId?: string parameter and invoke requireTenantCondition() as first operation
+- Added normalized tenant condition to all WHERE clauses in SELECT, UPDATE, and 
+  INSERT...RETURNING queries, ensuring database predicates include explicit tenant 
+  equality constraint
+- Enhanced markBlockComplete() to include tenant in composite lock key calculation: 
+  lockKey = `${normalizedTenant}:${userId}:${subtopicId}`, providing tenant-scoped 
+  write serialization within each repository instance
+- Updated INSERT operations to include tenantId: normalizedTenant in values object
+- Added tenant filtering to returned rows: if row.tenantId exists and differs from 
+  normalizedTenant after query execution, method returns undefined (defense-in-depth 
+  against query predicate bypass)
+- Preserved existing compare-and-swap versioning, soft-delete filtering, and 
+  concurrent creator merge logic unchanged
+- Updated markBlockComplete error messages to reference "tenant-scoped row" 
+  availability, clarifying that soft-deleted or cross-tenant rows remain inaccessible
+
+TECHNICAL IMPACT:
+Repository now rejects all calls missing explicit tenant context before storage 
+access. Database queries include tenant predicate in compound WHERE conditions. 
+Colliding user/subtopic identities across different brands remain isolated through 
+tenant-keyed locks and predicates. Future database DDL must add NOT NULL tenant_id 
+column with CHECK constraint and replace existing uq_tutorial_progress_user_subtopic 
+with (tenant_id, user_id, subtopic_id) unique index.
+
+────────────────────────────────────────────────────────────────────────────────
+packages/db-tutorial/src/repositories/__tests__/tutorial-progress.repository.test.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED explicit tenant context to all repository method invocations:
+
+- Updated findById() test to pass 'skillup' as tenantId argument, verifying timeout 
+  label 'TutorialProgressRepository.findById'
+- Updated getProgress() test to pass 'skillup' tenant context
+- Updated markBlockComplete() insertion test to verify tenantId: 'skillup' included 
+  in INSERT values payload and verify blocksCompleted: ['technical'] array
+- ADDED new test "merges a concurrent creator through the versioned tenant update" 
+  validating INSERT...ON CONFLICT DO NOTHING followed by SELECT refetch and versioned 
+  UPDATE when another process creates the identity between initial read and insert
+- Test validates onConflictDoNothing() invocation, secondary SELECT returning existing 
+  row with tenantId: 'skillup', and UPDATE setting blocksCompleted: ['notes', 'code'] 
+  with version: 2
+- ADDED negative test "does not revive a retained deleted identity after insert 
+  conflict" covering scenario where INSERT conflict occurs but subsequent SELECT 
+  returns no active tenant-scoped row (soft-deleted identity case)
+- Test expects error message containing "no active tenant-scoped row" and verifies 
+  UPDATE never called (no resurrection of deleted progress)
+- Updated markBlockComplete completion test to pass 'skillup' tenant and verify 
+  status: 'completed' transition with 13 required blocks
+- Updated isSubtopicComplete tests (false/true cases) to include 'skillup' tenant 
+  - Updated getCompletedSubtopics test to pass 'skillup' and verify report timeout 
+  30_000ms with label 'TutorialProgressRepository.getCompletedSubtopics'
+- Updated resetProgress tests (existing/new cases) to include 'skillup' tenant
+- ADDED comprehensive negative test "rejects unscoped calls without tenantId before 
+  any DB access" iterating through getProgress(), markBlockComplete() calls with 
+  undefined tenantId, expecting error /Verified tenant context \(tenantId\) is required/i
+- Negative test verifies db.select, db.insert, db.update NEVER called when tenant 
+  validation fails (security boundary verification)
+
+FIXTURE IMPROVEMENTS:
+- Updated makeRow() factory to accept overrides Record<string, unknown> instead of 
+  implicit any type
+- Updated createDbMock() signatures to accept typed parameters instead of any
+- Preserved existing mock structure (select/from/where, insert/values/returning, 
+  update/set/where/returning) unchanged
+
+────────────────────────────────────────────────────────────────────────────────
+packages/db-tutorial/src/repositories/__tests__/batch-08-progress-isolation.test.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED Drizzle SQL predicate inspection tests validating tenant isolation at database 
+query level:
+
+- Test suite "B08-T08 progress repository tenant predicates" contains 4 focused tests
+- fixture() helper creates two in-memory progress rows: one for 'skillup' tenant, 
+  one for 'realtutorialhub' tenant, both sharing identical userId: 'same-local-id' 
+  and subtopicId: 'same-content' to simulate colliding local identities
+- fixture() uses real PgDialect from drizzle-orm/pg-core to convert Drizzle SQL 
+  AST predicates into raw SQL strings and parameter arrays
+- scopedRows() helper validates predicate contains `"tutorial_progress"."tenant_id" =` 
+  literal string in generated SQL, extracts tenant parameter from query.params array, 
+  expects parameter to be either 'skillup' or 'realtutorialhub', and filters in-memory 
+  rows to return only matching tenant
+- Mock database select/update implementations delegate to scopedRows() with actual 
+  Drizzle SQL predicate AST, ensuring repository-generated WHERE clauses include 
+  tenant condition
+
+TEST COVERAGE:
+1. "reads the owner marker with explicit tenant context" - calls getProgress() with 
+   'skillup' tenant, expects returned id: 'progress-skillup', verifies selectWhere 
+   called exactly once
+2. "keeps colliding user/subtopic identities separate by tenant" - calls getProgress() 
+   twice with same user/subtopic but different tenants ('skillup', 'realtutorialhub'), 
+   verifies returned ids differ (progress-skillup vs progress-realtutorialhub) 
+   demonstrating tenant isolation for colliding natural keys
+3. "updates RTH progress without altering the colliding SUIA marker" - calls 
+   markBlockComplete() for 'realtutorialhub' tenant adding 'code' block, verifies 
+   in-memory rows[0] (skillup) retains original ['notes'] array unchanged, rows[1] 
+   (realtutorialhub) updated to ['notes', 'code'], and updateWhere called exactly once
+4. "rejects invalid tenant before storage access" - parameterized test iterating 
+   [undefined, '', 'shared', 'unknown'] tenant values, expects getProgress() and 
+   markBlockComplete() to reject with /tenant context/i error, verifies selectWhere 
+   and updateWhere NEVER invoked (pre-storage validation boundary)
+
+TECHNICAL APPROACH:
+Tests validate repository generates correct Drizzle predicates by inspecting actual 
+SQL generation rather than mocking repository internals. This provides compile-time 
+safety that repository changes altering WHERE clause structure will fail these tests.
+
+────────────────────────────────────────────────────────────────────────────────
+packages/db-tutorial/src/repositories/__tests__/foundation-progress-concurrency.test.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED explicit 'skillup' tenant context to existing concurrency tests:
+
+- Test "retains sequential distinct completions in a scoped in-memory store" updated: 
+  first markBlockComplete() call adds 'technical' block with 'skillup' tenant, second 
+  call adds 'code' block with 'skillup' tenant, expects final blocksCompleted array 
+  contains both ['technical', 'code']
+- Test "retains distinct concurrent completions within one process" updated: 
+  Promise.all() racing two markBlockComplete() calls (one for 'technical', one for 
+  'code') both passing 'skillup' tenant, expects merged final state contains both blocks
+- fixture() creates single in-memory row with tenantId: 'skillup', userId: 'user', 
+  subtopicId: 'topic', initial blocksCompleted: ['notes']
+- Mock database select() returns shallow copy of row with spread blocksCompleted array
+- Mock database update() mutates shared row reference and returns updated row
+- Tests demonstrate repository's withDbKeyWriteLock() serialization prevents concurrent 
+  writes from clobbering each other's block additions within single process
+
+PRESERVED BEHAVIOR:
+Write lock mechanism and concurrent completion merge logic remain unchanged. Tests 
+updated only to satisfy new mandatory tenant parameter requirement.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 2: WORKER IMPROVEMENTS (5 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/workers/worker-lease.ts
+────────────────────────────────────────────────────────────────────────────────
+ENHANCED type safety and error messaging across worker outbox repository resolution:
+
+Lines 518-520: Updated resolveWorkerOutboxRepository() instantiation of 
+EventOutboxRepository to use explicit ConstructorParameters<typeof EventOutboxRepository>[0] 
+type assertion instead of `any` cast. This preserves type safety when passing dbOrRepo 
+as constructor argument to EventOutboxRepository class.
+
+Lines 629-631: Updated findAuthoritativeWorkerOutboxIntent() instantiation to use 
+same ConstructorParameters type assertion when creating EventOutboxRepository from 
+SQL executor candidate.
+
+Lines 730-757: Updated upsertTransactionalOutboxIntent() documentation comment to 
+clarify "Enlists the outbox publication intent in the caller's active database 
+transaction `tx`. Requires an explicit `upsertIntent` port or a full SQL transaction 
+executor (`select`, `insert`, `update`) with `EventOutboxRepository`. Never falls 
+back to in-memory `upsertWorkerOutboxIntent`."
+
+Lines 758-784: Updated transactional upsert repository instantiation to use 
+ConstructorParameters type assertion (was truncated in read window but follows same 
+pattern as lines 518-520).
+
+IMPACT:
+Type assertions prevent unsafe downcasting while maintaining compatibility with 
+Drizzle SQL executor interface. Error messages remain descriptive for unsupported 
+database dependencies. Worker lease atomic operations (claim, completeIfOwner, 
+releaseIfOwner), Lua script constants, and in-memory test adapter unchanged.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/workers/__tests__/outbox-recovery-probe.test.ts
+────────────────────────────────────────────────────────────────────────────────
+REPLACED unsafe `any` types with explicit type annotations across test fixtures:
+
+Lines 9-12: Updated module-level arrays to typed declarations:
+- storedCertificates: Array<Record<string, unknown>> (was any[])
+- publishedEvents: Array<{ type: string; payload: Record<string, unknown>; opts: Record<string, unknown> }> 
+  (was any[], now explicitly typed event shape)
+- publishedQStashMessages: Array<Record<string, unknown>> (was any[])
+
+Lines 21-24: Updated fakeTx.insert().values() to accept vals: Record<string, unknown> 
+parameter instead of any
+
+Lines 38-40: Updated fakeTx.update().set() to accept vals: Record<string, unknown> 
+parameter instead of any
+
+Line 47: Updated fakeTx.upsertIntent signature to use 
+Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0] inferring correct 
+parameter type from test repository port instead of any
+
+Lines 54-65: Updated fakeSubmission object to explicit typed shape with optional 
+properties badgeAwarded?: boolean, certificateIssued?: boolean
+
+Lines 66-76: Updated mocks.publishEvent to typed parameters (type: string, payload: 
+Record<string, unknown>, opts: Record<string, unknown>) instead of any
+
+Lines 77-82: Updated mocks.publishJSON to typed parameter (msg: Record<string, unknown>) 
+instead of any
+
+Lines 165-172: Updated mock EventOutboxRepository method signatures to use inferred 
+parameter types from testOutboxRepo port:
+- claimIntent: Parameters<NonNullable<typeof testOutboxRepo.claimIntent>>[0]
+- markPublished: Parameters<NonNullable<typeof testOutboxRepo.markPublished>>[0]
+- markFailed: Parameters<NonNullable<typeof testOutboxRepo.markFailed>>[0]
+- findIntent: (t: string, e: string, a: string) explicit parameters
+- upsertIntent: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]
+
+Lines 178-197: Updated mock ProjectRepository methods to remove unused parameters:
+- getProject() changed from getProject(_id: string) to getProject() removing unused 
+  parameter with underscore prefix
+- withDb() changed from withDb(_tx: any) to withDb() removing unused any-typed parameter
+
+IMPACT:
+Test fixtures now enforce type safety matching actual worker lease port interfaces. 
+Type inference from repository ports ensures test signatures stay synchronized with 
+implementation changes. Removal of unused parameters eliminates linter warnings.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/workers/award-project-badge/__tests__/route.test.ts
+────────────────────────────────────────────────────────────────────────────────
+REPLACED unsafe `any` types with explicit type annotations:
+
+Line 23: Updated fakeTx.upsertIntent to use Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0] 
+type inference instead of any parameter
+
+Line 67: Updated Redis.eval method signature to explicit generic type:
+eval = vi.fn<(script: string, keys: string[], args: Array<string | number>) => Promise<number>>(async () => 1)
+This provides full parameter and return type safety for Lua script evaluation mock.
+
+Lines 118-125: Updated mock EventOutboxRepository method signatures to use inferred 
+parameter types from testOutboxRepo port (same pattern as outbox-recovery-probe.test.ts):
+- claimIntent: Parameters<NonNullable<typeof testOutboxRepo.claimIntent>>[0]
+- markPublished: Parameters<NonNullable<typeof testOutboxRepo.markPublished>>[0]
+- markFailed: Parameters<NonNullable<typeof testOutboxRepo.markFailed>>[0]
+- findIntent: (t: string, e: string, a: string) explicit parameters
+- upsertIntent: Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]
+
+IMPACT:
+Badge award worker tests now match type safety standards established in outbox recovery 
+probe. Redis Lua eval mock receives explicit generic signature ensuring correct 
+parameter/return type checking.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/workers/issue-certificate/__tests__/route.test.ts
+────────────────────────────────────────────────────────────────────────────────
+REPLACED unsafe `any` types with explicit type annotations (identical pattern to 
+award-project-badge):
+
+Line 31: Updated fakeTx.upsertIntent to use Parameters<NonNullable<typeof testOutboxRepo.upsertIntent>>[0]
+
+Line 66: Updated Redis.eval to explicit generic signature:
+eval = vi.fn<(script: string, keys: string[], args: Array<string | number>) => Promise<number>>(async () => 1)
+
+Lines 101-108: Updated mock EventOutboxRepository method signatures to use inferred 
+parameter types from testOutboxRepo port (claimIntent, markPublished, markFailed, 
+findIntent, upsertIntent)
+
+IMPACT:
+Certificate issuance worker tests achieve consistent type safety across worker test suite.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/workers/review-project/__tests__/route.test.ts
+────────────────────────────────────────────────────────────────────────────────
+REPLACED unsafe `any` type in Redis mock:
+
+Line 41: Updated Redis.eval to explicit generic signature:
+eval = vi.fn<(script: string, keys: string[], args: Array<string | number>) => Promise<number>>(async () => 1)
+
+IMPACT:
+Project review worker test completes type safety improvements across worker suite. 
+All five worker test files now use explicit types instead of any.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 3: SERVICE WORKER CACHE (2 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/__tests__/service-worker-private-cache.test.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED explicit WorkerEvent type definition and applied to test harness:
+
+Lines 3-7: Added WorkerEvent type definition with optional properties:
+- request?: { method: string; url: string; mode?: RequestMode }
+- respondWith?: (response: Promise<Response>) => void
+- waitUntil?: (operation: Promise<unknown>) => void
+
+Line 18: Updated setupRthServiceWorker() handlers Map to use Map<string, (event: WorkerEvent) => void> 
+instead of Map<string, (event: any) => void>
+
+Line 27: Updated self.addEventListener signature to use (name: string, handler: (event: WorkerEvent) => void) 
+instead of any
+
+IMPACT:
+RTH service worker tests now enforce type safety on event handler signatures. Tests 
+validate private cache behavior (no caching of /api/tutorial/progress responses due 
+to Cache-Control: private, no-store headers) and offline 503 fallback for dynamic routes.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/app/__tests__/service-worker-private-cache.test.ts
+────────────────────────────────────────────────────────────────────────────────
+COMPREHENSIVE REWRITE of SUIA service worker tests with expanded coverage and explicit 
+typing:
+
+Lines 3-7: Added WorkerEvent type definition (identical to RTH version)
+
+Lines 9-10: Replaced afterEach arrow function with block body explicitly calling 
+vi.unstubAllGlobals() and vi.resetModules() to ensure clean test isolation
+
+Lines 11-19: ADDED runNavigation() helper function consolidating service worker setup 
+and navigation request execution:
+- Creates handlers Map typed as Map<string, (event: WorkerEvent) => void>
+- Stubs globalThis.self with location.origin, empty __SW_MANIFEST, and typed addEventListener
+- Stubs globalThis.caches.open() returning mock cache with match/put methods
+- Stubs globalThis.fetch() returning 200 response
+- Dynamically imports ../sw module to register fetch handler
+- Dispatches synthetic fetch event with navigate mode request
+- Awaits response promise and returns put mock for inspection
+
+Lines 20-23: ADDED test "does not cache authenticated student navigation" invoking 
+runNavigation('/student') and expecting cache.put() NOT called (private navigation 
+network-only policy)
+
+Lines 24-29: ADDED test "treats public catalog navigation as network-only and does 
+not cache per Sol D2" with inline comment "Sol D2 (c166119a): Select network-only 
+HTML/navigation, RSC and API responses for SkillUp, including /programs. Obsolete 
+catalog caching positive replaced per authorized D2 policy."
+Test invokes runNavigation('/programs') expecting NO caching (policy change from 
+previous catalog caching strategy)
+
+Lines 30-42: ADDED test "does not serve a prior private navigation while offline" 
+validating service worker refuses to serve stale cached /student navigation when 
+network unavailable:
+- Stubs cache.match() returning cached 'prior-private-fixture' response
+- Stubs fetch() rejecting with 'offline fixture' error
+- Dispatches /student navigate request
+- Expects response text NOT equal to 'prior-private-fixture' (stale private data 
+  not served offline)
+
+Lines 43-63: ADDED test "never caches or serves stale /api/* or RSC responses and 
+returns 503 offline" iterating ['/api/student/dashboard', '/student?_rsc=123'] paths:
+- Stubs cache with 'stale-api-fixture' cached response
+- Stubs fetch() offline error
+- Dispatches CORS mode requests for each path
+- Expects response.status === 503 for both
+- Expects response text NOT equal to 'stale-api-fixture'
+- Verifies caches.open() NEVER called (no cache access for API/RSC routes)
+- Verifies cache.match() and cache.put() NEVER called
+
+Lines 64-77: ADDED test "caches immutable /_next/static/* assets when online" 
+validating static asset caching:
+- Stubs fetch() returning JavaScript bundle response
+- Dispatches no-cors mode request for /_next/static/chunks/main.js
+- Expects response.status === 200
+- Expects cache.put() called exactly once (immutable static assets cached)
+
+Lines 78-98: ADDED test "deletes legacy skillup-app-shell-v1 during activation 
+without touching unrelated caches" validating service worker activation cleanup:
+- Stubs caches.delete() mock and clients.claim() mock
+- Registers activate event handler by importing ../sw
+- Dispatches synthetic activate event with waitUntil() capturing cleanup promise
+- Awaits waitUntil result
+- Expects caches.delete() called with 'skillup-app-shell-v1' (legacy cache cleanup)
+- Expects caches.delete() NOT called with 'skillup-static-assets-v2' (current cache preserved)
+- Expects clients.claim() invoked (immediate client control claim)
+
+Lines 99-113: ADDED test "returns 503 offline for /programs despite prior cache 
+entries per Sol D2" validating network-only catalog policy during offline:
+- Stubs cache.match() returning 'stale-catalog' cached response
+- Stubs fetch() offline error
+- Dispatches /programs navigate request
+- Expects response.status === 503
+- Expects response text === 'offline' (no stale catalog served per Sol D2 policy change)
+
+IMPACT:
+SUIA service worker tests expanded from minimal coverage to comprehensive validation 
+of private navigation policies, API/RSC network-only behavior, static asset caching, 
+legacy cache cleanup, and offline fallback strategies. Tests document Sol D2 policy 
+decision (commit c166119a) changing /programs from cached to network-only. All tests 
+use explicit WorkerEvent typing and isolated test harness preventing cross-test pollution.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 4: PROGRESS ROUTES (3 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/api-server/src/app/api/tutorial/progress/route.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED Cache-Control headers from 'no-cache' to 'private, no-store':
+
+Line 167: GET handler success response headers changed to:
+headers: { 'Cache-Control': 'private, no-store' }
+(was: headers: { 'Cache-Control': 'no-cache' })
+
+Line 232: POST handler success response headers changed to:
+headers: { 'Cache-Control': 'private, no-store' }
+(was: headers: { 'Cache-Control': 'no-cache' })
+
+RATIONALE:
+'no-cache' permits intermediate caches to store response with revalidation requirement. 
+'private, no-store' explicitly forbids any caching (including CDN, proxy, browser 
+cache) of user-specific progress data. Progress responses contain userId/brand-scoped 
+data that must never be served to different users from shared cache.
+
+authenticateLearnerRequest() function unchanged: still validates JWT via TokenService, 
+enforces learner-only access (rejects admin tokens), validates brand in ['skillup', 
+'realtutorialhub'], and enforces x-brand/x-user-id header match against token claims.
+
+GET handler continues to call TutorialProgressRepository.getProgress(userId, subtopicId, brand) 
+with verified brand context, calculates completion snapshot via calculateTutorialProgress(), 
+and returns blocksCompleted array, completionPercent, assignmentUnlocked boolean, and 
+full progress snapshot.
+
+POST handler continues to validate postBodySchema (subtopicId UUID, blockType enum, 
+status literal 'viewed'), invoke TutorialService.trackProgress() with brandId, and 
+return progress result data.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED Cache-Control headers from 'no-cache' to 'private, no-store':
+
+Line 75: GET handler response headers changed to:
+return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
+(was: headers: { 'Cache-Control': 'no-cache' })
+
+Line 133: POST handler response headers changed to:
+return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
+(was: headers: { 'Cache-Control': 'no-cache' })
+
+IMPACT:
+RTH BFF progress proxy enforces same private/no-store policy as API server. BFF 
+continues to forward requests to API server with credentials, x-brand, and gateway 
+trust secret headers. Successful upstream responses proxied with stricter cache headers.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/app/api/tutorial/progress/route.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED Cache-Control headers from 'no-cache' to 'private, no-store':
+
+Lines matching RTH pattern (GET and POST handlers) updated to:
+headers: { 'Cache-Control': 'private, no-store' }
+
+IMPACT:
+SUIA BFF progress proxy matches RTH cache policy. All three progress routes (API 
+Server, RTH BFF, SUIA BFF) now consistently apply private/no-store headers preventing 
+intermediate or browser caching of user-specific progress responses.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 5: NEXT.JS CONFIGURATIONS (3 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/next.config.mjs
+────────────────────────────────────────────────────────────────────────────────
+COMPREHENSIVE configuration updates addressing next-intl dependency tracing, Sentry 
+release automation, and isolated worker CPU constraints:
+
+Lines 1-4: Added `import { createRequire } from 'node:module';` for CommonJS module 
+resolution compatibility
+
+Lines 7-10: REPLACED next-intl ESM import with CommonJS require() pattern:
+// Use the package's supported CommonJS plugin entry for webpack's Node config
+// dependency tracing. The ESM entry also imports the optional extraction compiler.
+const require = createRequire(import.meta.url);
+const createNextIntlPlugin = require('next-intl/plugin');
+
+RATIONALE: next-intl ESM entry imports optional extraction compiler dependencies 
+causing webpack Node config parsing failures when optional deps unavailable. CommonJS 
+plugin entry provides stable dependency graph for webpack's module tracing. Inline 
+comment documents architectural constraint requiring CommonJS entry usage.
+
+Lines 24-27: ADDED conditional experimental CPU constraint:
+...(process.env.PROJECT_LLM_EXECUTION_MODE === 'isolated_worker'
+  ? { experimental: { cpus: 1 } }
+  : {}),
+
+RATIONALE: LLM execution environments (Kiro, Claude, etc.) may require single-CPU 
+constraint to prevent worker pool exhaustion in containerized contexts. Conditional 
+spread ensures production builds unaffected when env var absent.
+
+Line 30: ADDED serverExternalPackages array:
+serverExternalPackages: ['@opentelemetry/instrumentation', '@sentry/node'],
+
+RATIONALE: OpenTelemetry and Sentry Node packages contain native bindings requiring 
+server-side-only execution. Marking external prevents webpack from attempting browser 
+bundle inclusion.
+
+Lines 31-52: REMOVED webpack.ignoreWarnings and webpack.infrastructureLogging 
+configuration that was suppressing next-intl parsing warnings. CommonJS require() 
+approach eliminates warning root cause making suppression unnecessary.
+
+Lines 95-113: ENHANCED Sentry configuration with explicit release automation controls:
+- silent: false (was: true) - enables Sentry plugin output for debugging
+- telemetry: false - disables Sentry SDK telemetry collection
+- webpack.unstable_sentryWebpackPluginOptions.disable: !process.env.SENTRY_AUTH_TOKEN 
+  - disables plugin when no auth token configured (local builds without token succeed)
+- sourcemaps.disable: !process.env.SENTRY_AUTH_TOKEN - skips sourcemap upload when 
+  no token available
+- sourcemaps.deleteSourcemapsAfterUpload: true - cleans up sourcemaps post-upload 
+  when enabled
+- release.create: Boolean(process.env.SENTRY_AUTH_TOKEN) - creates release only when 
+  token explicitly configured
+- release.finalize: Boolean(process.env.SENTRY_AUTH_TOKEN) - finalizes release only 
+  when token present
+
+RATIONALE: Ordinary local development builds without SENTRY_AUTH_TOKEN must succeed 
+without attempting release creation. Sentry runtime monitoring remains active (crash 
+reporting, performance tracking) but build-time release publication requires explicit 
+credential configuration. Inline comment clarifies "Runtime monitoring remains enabled. 
+Build-time publication requires an explicitly configured token; ordinary local builds 
+do not publish releases."
+
+Removed hideSourceMaps: true in favor of explicit sourcemaps.deleteSourcemapsAfterUpload 
+control tied to token presence.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillhubcore-admin/next.config.mjs
+────────────────────────────────────────────────────────────────────────────────
+ADDED conditional experimental CPU constraint and serverExternalPackages:
+
+Lines 3-6: ADDED conditional isolated worker constraint:
+...(process.env.PROJECT_LLM_EXECUTION_MODE === 'isolated_worker'
+  ? { experimental: { cpus: 1 } }
+  : {}),
+
+Line 9: ADDED serverExternalPackages array:
+serverExternalPackages: ['@opentelemetry/instrumentation', '@sentry/node'],
+
+IMPACT:
+SHC Admin matches RTH configuration pattern for LLM execution compatibility and 
+native package externalization. SHC does not use Sentry or next-intl so those 
+configuration blocks absent.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/next.config.mjs
+────────────────────────────────────────────────────────────────────────────────
+UPDATED next-env.d.ts reference path:
+
+Line 3: Changed import reference from:
+import "./.next/dev/types/routes.d.ts";
+to:
+import "./.next/types/routes.d.ts";
+
+RATIONALE: Next.js 16.x moved generated route types from .next/dev/types/ to .next/types/ 
+directory. Updated import path matches new generation location. This is auto-generated 
+file updated by Next.js CLI; committed to track Next.js version alignment.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 6: SKILLUP ENHANCEMENTS (6 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/lib/skillup-api.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED header forwarding to preserve Next.js request-scope signalling during prerendering:
+
+Lines 19-21: ADDED inline comment documenting prerender header preservation:
+// Preserve Next.js request-scope signalling during prerendering. Swallowing it
+// would turn authenticated pages into credential-less build-time data reads.
+const requestHeaders = await headers();
+
+Lines 22-28: Preserved existing header forwarding logic unchanged (x-shadow-user-id, 
+x-original-user-id, cookie, x-portal-identity, x-brand/x-platform)
+
+IMPACT:
+Comment clarifies architectural constraint: fetchSkillupApi() must forward Next.js 
+internal headers (x-shadow-user-id, etc.) during build/prerender to maintain 
+authenticated context. Removing these headers would cause authenticated page renders 
+to fetch data without user context during static generation.
+
+fetch() call continues to use cache: 'no-store' and forward gateway trust secret. 
+Fallback logic for /api/programs, /api/programs/:slug, /api/faculty unchanged.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/app/programs/[slug]/page.tsx
+────────────────────────────────────────────────────────────────────────────────
+ADDED dynamic rendering directive and inline comment:
+
+Lines 13-15: ADDED export dynamic directive with architectural comment:
+// Program API access uses the caller's session; build workers have no identity.
+// Resolve this page per request rather than querying protected APIs during SSG.
+export const dynamic = 'force-dynamic';
+
+RATIONALE: Program detail pages may access user-scoped data via fetchSkillupApi(). 
+Next.js SSG build workers have no authenticated session. Forcing dynamic rendering 
+ensures page resolves per request with actual user context rather than attempting 
+static generation with missing credentials.
+
+Page component logic unchanged: still fetches program detail via fetchSkillupApi(), 
+returns notFound() if program null, renders program name/summary/curriculum/snapshot 
+sections, provides navigation to /student dashboard and /programs catalog.
+
+generateMetadata() function unchanged: still generates page metadata from fetched 
+program detail.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/app/sitemap.ts
+────────────────────────────────────────────────────────────────────────────────
+ADDED dynamic rendering directive with inline comment:
+
+Lines 3-4: ADDED export dynamic directive:
+// Catalog records are resolved using runtime database configuration.
+export const dynamic = 'force-dynamic';
+
+RATIONALE: Sitemap generation calls getSkillupPrograms() which queries database for 
+current program catalog. Database connection requires runtime environment configuration 
+(DATABASE_URL). Forcing dynamic rendering ensures sitemap generates with actual 
+database state rather than attempting static generation during build with missing 
+database access.
+
+Sitemap default export unchanged: still returns array of URL objects for base URL, 
+/programs catalog, and individual program detail pages with current Date as lastModified.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/lib/__tests__/placement-http-truth.test.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED mock database query routing to distinguish profile vs job queries:
+
+Lines 51-57: ADDED selector inspection logic in mockDb.select():
+const mockDb = {
+  select: (selector: unknown) => {
+    // Distinguish profile vs job query by checking if selector includes readinessScore
+    const selectorStr = JSON.stringify(selector);
+    if (selectorStr.includes('readinessScore')) {
+      return profileQuery;
+    }
+    return jobQuery;
+  },
+};
+
+RATIONALE: getSkillupPlacement() makes two separate database queries (profile query 
+and job listings query). Mock database must route to appropriate mock query chain 
+based on select() columns. Selector inspection checks for 'readinessScore' field 
+(unique to profile query) to distinguish query types.
+
+Test coverage unchanged: 13 comprehensive placement tests validating database failure 
+propagation, vector service fallback, uncalibrated matching status, null profile 
+handling, empty job listings, null deadline handling, and invalid vector scores.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/lib/__tests__/placement-zero-control.test.ts
+────────────────────────────────────────────────────────────────────────────────
+SIMPLIFIED test to focused zero-score validation:
+
+Single test "returns null match for zero vector score" validating that genuine zero 
+vector score from matching service returns null match field (uncalibrated status) 
+rather than exposing raw 0.0 percentage to users.
+
+Test fixture:
+- Profile with readinessScore: 50, skills: ['test']
+- Single job listing
+- Vector match returning score: 0 for that job
+- Expects result.jobs[0].match === null
+- Expects result.matchingStatus === 'uncalibrated'
+
+RATIONALE: Raw vector cosine similarity scores (0.0 to 1.0) require calibration to 
+meaningful percentage matches before user exposure. Zero is valid measured value but 
+uncalibrated until percentage thresholds established. Test documents that even valid 
+zero scores return null match until calibration complete.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/src/lib/__tests__/read-fallback-boundary.test.ts
+────────────────────────────────────────────────────────────────────────────────
+ENHANCED test coverage with additional database failure and concurrent scenarios:
+
+Lines 35-43: ADDED test "propagates database connection error during enrollment check" 
+validating that database connection failure during getBatchEnrollment() query propagates 
+error to caller rather than returning fallback faculty data:
+- Mocks findFirst() rejecting with 'Database connection timeout'
+- Expects getStudentBatchFaculty() to reject with same error message
+- Documents boundary: connection-level failures must not return stale fallback data
+
+Lines 45-54: ADDED test "propagates database query error during faculty resolution" 
+validating that database error during faculty lookup after successful enrollment 
+check propagates error rather than falling back:
+- First query (enrollment) succeeds returning batchId: 'batch-fixture'
+- Second query (faculty) rejects with 'Faculty table unavailable'
+- Expects getStudentBatchFaculty() to reject with 'Faculty table unavailable'
+- Documents boundary: faculty resolution errors must propagate (enrollment succeeded 
+  so data exists, should not fabricate fallback)
+
+Lines 56-72: ADDED test "returns fallback when enrollment exists but faculty assignment 
+pending" validating authorized fallback scenario:
+- Enrollment query succeeds returning batchId
+- Faculty query succeeds but returns empty array (no faculty assigned yet)
+- Expects result.name: 'Faculty assignment pending'
+- Expects result.subjects: []
+- Expects result.email: null
+- Documents boundary: enrollment exists + zero faculty is valid pending state 
+  requiring fallback placeholder response
+
+IMPACT:
+Tests clarify that fallback data returns ONLY when enrollment exists but faculty 
+assignment incomplete. Database connection failures and query errors must propagate 
+without fabricating fallback data.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 7: RTH ENHANCEMENTS (3 FILES)
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/lib/tutorial-hierarchy.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED getPublishedTutorialPaths() to query tutorial_sections V2 instead of legacy 
+tutorial_content:
+
+Lines 154-159: ADDED repository query and deployed status filter:
+const sections = await repository.getTutorialsBySubtopic(subtopic.id);
+const deployedSections = sections.filter(section => section.status === 'deployed');
+
+if (deployedSections.length === 0) {
+  continue;
+}
+
+Lines 161-168: Updated path object to use deployedSections[0]?.updatedAt fallback:
+paths.push({
+  domainSlug,
+  subjectSlug,
+  topicSlug,
+  subtopicSlug: slugifySegment(subtopic.name),
+  subtopicId: subtopic.id,
+  updatedAt: deployedSections[0]?.updatedAt ?? subtopic.updatedAt,
+});
+
+RATIONALE: Legacy tutorial_content table is retired (OD-01, OD-03, Task 12). Canonical 
+learning uses block-based tutorial_sections with status field. Only subtopics with 
+status='deployed' sections should appear in sitemap. updatedAt timestamp sourced from 
+deployed section or falls back to subtopic.updatedAt if missing.
+
+getPublishedTutorialContent() function unchanged: continues to return null with 
+inline comment "Legacy monolithic content retrieval is retired. Canonical learning 
+is exclusively block-based via TutorialDeliveryService and /tutorial-v2."
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/assignments/page.tsx
+────────────────────────────────────────────────────────────────────────────────
+REMOVED unused import and helper function:
+
+Line 6: REMOVED import: getPublishedTutorialContent, slugifySegment
+(kept: getHierarchyBySlugs only)
+
+Lines 14-22: REMOVED unused titleCaseFromSlug() helper function
+
+RATIONALE: Assignment page no longer uses slugifySegment for string manipulation. 
+titleCaseFromSlug was defined but never invoked. Cleanup reduces bundle size and 
+eliminates unused code warnings.
+
+Page component logic unchanged: still calls getHierarchyBySlugs() to resolve hierarchy 
+path, validates hierarchy exists via notFound(), retrieves theme via getDomainTheme(), 
+renders assignment tier introduction, displays domain/topic/subtopic badges, shows 
+notes focus summary, and renders LearnerProgressPanel component with subtopicId.
+
+generateMetadata() function preserved for SEO metadata generation.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/assignments/__tests__/page.test.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED mock function type annotations removing unsafe `any`:
+
+Line 14: Updated LearnerProgressPanel mock props type:
+(props: { subtopicId: string }) => React.createElement('div', { ... })
+(was: props: any)
+
+Lines 28-29: Updated tutorial-hierarchy mock function signatures:
+getHierarchyBySlugs: (...args: unknown[]) => mockGetHierarchyBySlugs(...args),
+getPublishedTutorialContent: (...args: unknown[]) => mockGetPublishedTutorialContent(...args),
+(was: ...args: any[])
+
+IMPACT:
+Test mocks now enforce type safety matching actual component props and function 
+signatures. Tests continue to validate page renders correctly with hierarchy fixture, 
+handles missing hierarchy via 404, and displays subtopicId in LearnerProgressPanel.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 8: STALE TEST FIXTURES & CONFIGURATION
+
+────────────────────────────────────────────────────────────────────────────────
+apps/api-server/src/app/api/export/status/[jobId]/__tests__/route.test.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED test fixtures to include brand context in job payloads and user verification:
+
+Line 42: Updated mock container.get() user verification response to include brand:
+verifyUserAccessToken: async () => ({ userId: 'u1', brand: 'realtutorialhub' })
+(was: { userId: 'u1' } missing brand property)
+
+Line 55: Updated completed job mock to include brand in payload:
+{ status: 'completed', id: 'j1', userId: 'u1', payload: { brand: 'realtutorialhub' }, result: { downloadUrl: 'file.json' } }
+(was: payload missing brand field)
+
+Lines 67-69: Updated stale job recovery mock to include brand in payload:
+{ status: 'processing', id: 'j1', userId: 'u1', updatedAt: twoMinsAgo, payload: { format: 'csv', brand: 'realtutorialhub' }, result: { downloadUrl: 'file.csv' } }
+(was: payload missing brand field)
+
+Line 82: Updated exam fallback mock to include brand in exportUrls:
+{ id: 'e1', userId: 'u1', exportUrls: { brand: 'realtutorialhub', analytics_json: 'file.json' } }
+(was: exportUrls missing brand field)
+
+RATIONALE: Export job payloads and user verification responses now include brand 
+context for tenant-aware export handling. Test fixtures updated to match current 
+shape expected by route handler.
+
+Test coverage unchanged: continues to validate completed job success path, stale job 
+recovery with file existence check, 404 for missing job, and exam fallback when job 
+not found but examId query parameter provided.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillhubcore-admin/src/app/(public)/login/page.tsx
+────────────────────────────────────────────────────────────────────────────────
+ENHANCED form submission guards and error messaging:
+
+Line 24: Updated form onSubmit handler guard:
+if (!isHydrated || isLoading) return;
+(was: early return without explicit hydration check)
+
+Lines 44-51: ENHANCED error message mapping with descriptive user-facing messages:
+const messages: Record<number, string> = {
+  401: 'Invalid email or password.',
+  403: 'Access is not permitted for this account.',
+  429: 'Too many sign-in attempts. Try again later.',
+};
+setError(messages[response.status] ?? 'Authentication service is unavailable. Try again.');
+
+Lines 78-80: Updated native form declaration:
+<form method="post" action="/login" onSubmit={handleSubmit} className="space-y-4">
+Preserves native POST to /login for no-JavaScript fallback while React submit handler 
+provides JSON POST to /api/auth/login with credentials after hydration.
+
+Lines 81-83: ADDED noscript block:
+<noscript>
+  <p className="text-sm text-slate-700">Enable JavaScript to sign in securely.</p>
+</noscript>
+
+Lines 98-99: Updated input disabled attribute tied to hydration state:
+disabled={!isHydrated}
+Prevents form submission during SSR/pre-hydration phase when login() auth store 
+function unavailable.
+
+Lines 116-117: Updated password input disabled attribute:
+disabled={!isHydrated}
+
+Lines 138-139: Updated submit button disabled attribute:
+disabled={!isHydrated || isLoading}
+
+IMPACT:
+Login form now properly guards against pre-hydration submission attempts, provides 
+user-friendly error messages for common authentication failures (401/403/429), and 
+includes noscript fallback messaging. Form remains accessible with native POST action 
+while providing enhanced JSON API experience after hydration.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/realtutorialhub-web/next-env.d.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED generated Next.js routes type reference:
+
+Line 4: Changed import path from:
+import "./.next/dev/types/routes.d.ts";
+to:
+import "./.next/types/routes.d.ts";
+
+IMPACT:
+Same Next.js 16.x route types path update as SUIA next-env.d.ts. This is auto-generated 
+file tracking Next.js version alignment.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/next-env.d.ts
+────────────────────────────────────────────────────────────────────────────────
+UPDATED generated Next.js routes type reference (identical to RTH change):
+
+Line 4: Changed import path from "./.next/dev/types/routes.d.ts" to "./.next/types/routes.d.ts"
+
+────────────────────────────────────────────────────────────────────────────────
+
+PART 9: EVIDENCE & DOCKERIGNORE
+
+────────────────────────────────────────────────────────────────────────────────
+.dockerignore
+────────────────────────────────────────────────────────────────────────────────
+EXPANDED exclusions to cover Python environments, Playwright artifacts, and evidence 
+directories:
+
+Lines 22-24: ADDED additional env file patterns:
+**/.env.*
+**/.dev.vars
+**/.dev.vars.*
+
+RATIONALE: Covers additional secret file variations beyond .env/.env.local including 
+numbered .env.1, .env.backup patterns and Cloudflare Workers .dev.vars files
+
+Lines 84-96: ADDED Python, test artifacts, and evidence exclusions:
+**/.venv
+**/venv
+**/__pycache__
+**/.pytest_cache
+**/.build
+.agents
+.claude
+.analysis
+.context-packets
+.phase1c*
+graphify-out
+playwright-report
+test-results
+
+RATIONALE:
+- **/.venv, **/venv: Python virtual environments (package caches, binaries)
+- **/__pycache__, **/.pytest_cache: Python bytecode and test caches
+- **/.build: Intermediate build artifacts
+- .agents, .claude, .analysis: LLM agent working directories
+- .context-packets: Context management artifacts
+- .phase1c*: Historical phase-based work artifacts
+- graphify-out: Knowledge graph generation output
+- playwright-report, test-results: Playwright HTML reports and test artifacts
+
+IMPACT:
+Docker build context size reduced by excluding large LLM agent directories, Python 
+environments, and test artifacts from image builds. Security improved by excluding 
+additional secret file patterns.
+
+────────────────────────────────────────────────────────────────────────────────
+.evidence/critical-v4-20261111/GEMINI_HANDOFF.md
+────────────────────────────────────────────────────────────────────────────────
+ADDED latest continuation section at top of document:
+
+Lines 3-18: ADDED "Latest continuation — 12 November 2026" section documenting:
+- Eight-item completion register location (.evidence/closure-20261112/QUALIFICATION_DELTA.md)
+- Items 1-5 complete within documented boundaries
+- Item 6 (security) remains PARTIAL for wider coverage
+- Item 7 (hierarchy) remains PARTIAL for broader integrity/engineering/accessibility
+- Item 8 (migration) remains PARTIAL for historical provenance and Q01-Q48 reconciliation
+- Owner committed earlier work in 1dbc19c09f11b624ccd27dcdd939e92a1ddcb024
+- Current corrections await owner commit and push
+- References to QUALIFICATION_DELTA.md and FINAL_VERIFICATION.json for completed work
+- Earlier evidence under .evidence/continuation-20261112/
+
+Lines 8-18: Documents approved database alignment work:
+- Tutorial progress table alignment executed with guarded transactional SQL patch
+- Verified DDL rollback rehearsal
+- Required tenant check constraint and uniqueness applied
+- Zero rows after execution
+- Database execution complete (not a Git commit)
+- Historical Drizzle journal reconciliation outstanding
+
+Lines 10-14: Documents test results across applications:
+- Gateway: 146/146 tests passing
+- Hierarchy: 77/77 tests passing
+- SUIA: 115/115 tests passing
+- Overlap noted - counts cannot be summed for unique total
+- Local gateway JWT configuration aligned with API issuer
+- Gateway restarted with actual HTTP outcomes logged
+
+Lines 16-18: Documents synthetic testing and security verification:
+- Eleven real PostgreSQL probes passed with cleanup
+- Concurrent-create defect reproduced and corrected via tenant-scoped update path
+- Eight Chromium/BFF/backend/PostgreSQL progress probes passed across both brands
+- Six public-login accessibility probes passed
+- Twenty real HTTP security denials passed
+- Stale progress tests updated with explicit tenant context
+
+IMPACT:
+Evidence handoff updated to reflect completion boundaries, test coverage expansion, 
+database alignment execution, and remaining partial work. Section supersedes older 
+blockers where explicitly resolved while preserving unresolved items.
+
+────────────────────────────────────────────────────────────────────────────────
+pnpm-lock.yaml
+────────────────────────────────────────────────────────────────────────────────
+UPDATED dependency resolution snapshots:
+
+Lines reflecting baseline-browser-mapping version bump from 2.10.7 to 2.11.36 and 
+caniuse-lite version bump from 1.0.30001778 to 1.0.30001826 for Next.js 16.1.6 
+dependency resolution.
+
+IMPACT:
+Lockfile updates reflect Next.js ecosystem dependency updates. No direct package.json 
+version changes - updates arrived through transitive dependency resolution.
+
+Lines 18726-18728 and 18730-18731: Updated snapshots for next@16.1.6 dependencies 
+showing baseline-browser-mapping and caniuse-lite version increases.
+
+────────────────────────────────────────────────────────────────────────────────
+apps/skillup-web/package.json
+────────────────────────────────────────────────────────────────────────────────
+No actual changes detected - file appears in git diff due to line-ending or whitespace 
+normalization without semantic version or script changes.
+
+═══════════════════════════════════════════════════════════════════════════════
+VERIFICATION COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+Run these commands to verify changes after commit:
+
+# Tutorial progress repository tests with tenant isolation
+pnpm --filter @quiz/db-tutorial exec vitest run src/repositories/__tests__/tutorial-progress.repository.test.ts
+pnpm --filter @quiz/db-tutorial exec vitest run src/repositories/__tests__/batch-08-progress-isolation.test.ts
+pnpm --filter @quiz/db-tutorial exec vitest run src/repositories/__tests__/foundation-progress-concurrency.test.ts
+
+# Worker lease tests with type safety improvements
+pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/workers/__tests__/outbox-recovery-probe.test.ts
+pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/workers/award-project-badge/__tests__/route.test.ts
+pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/workers/issue-certificate/__tests__/route.test.ts
+pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/workers/review-project/__tests__/route.test.ts
+
+# Service worker private cache tests
+pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/__tests__/service-worker-private-cache.test.ts
+pnpm --filter @quiz/skillup-web exec vitest run src/app/__tests__/service-worker-private-cache.test.ts
+
+# SUIA placement and read boundary tests
+pnpm --filter @quiz/skillup-web exec vitest run src/lib/__tests__/placement-http-truth.test.ts
+pnpm --filter @quiz/skillup-web exec vitest run src/lib/__tests__/placement-zero-control.test.ts
+pnpm --filter @quiz/skillup-web exec vitest run src/lib/__tests__/read-fallback-boundary.test.ts
+
+# API server export status fixture updates
+pnpm --filter @quiz/api-server exec vitest run src/app/api/export/status/[jobId]/__tests__/route.test.ts
+
+# RTH assignment page tests
+pnpm --filter @quiz/realtutorialhub-web exec vitest run "src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/assignments/__tests__/page.test.ts"
+
+# Production build validation
+pnpm --filter @quiz/realtutorialhub-web run build
+pnpm --filter @quiz/skillup-web run build
+pnpm --filter @quiz/skillhubcore-admin run build
+
+# Type checking
+pnpm --filter @quiz/realtutorialhub-web run type-check
+pnpm --filter @quiz/skillup-web run type-check
+pnpm --filter @quiz/skillhubcore-admin run type-check
+pnpm --filter @quiz/api-server exec tsc --noEmit
+
+# Linting (zero warnings expected)
+pnpm --filter @quiz/realtutorialhub-web run lint
+pnpm --filter @quiz/skillup-web run lint
+pnpm --filter @quiz/skillhubcore-admin run lint
+
+# Update knowledge graph after code changes
+graphify update .
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF COMMIT MESSAGE
+═══════════════════════════════════════════════════════════════════════════════

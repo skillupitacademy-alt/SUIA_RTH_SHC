@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { LearnerProgressPanel } from '@/components/content/LearnerProgressPanel';
 import { getDomainTheme } from '@/lib/domain-themes';
-import { getHierarchyBySlugs, getPublishedTutorialContent, slugifySegment } from '@/lib/tutorial-hierarchy';
+import { getHierarchyBySlugs, getPublishedTutorialContent } from '@/lib/tutorial-hierarchy';
 
 interface PageProps {
   params: Promise<{
@@ -12,14 +12,6 @@ interface PageProps {
     topicSlug: string;
     subtopicSlug: string;
   }>;
-}
-
-function titleCaseFromSlug(value: string) {
-  return value
-    .split('-')
-    .filter((part) => part.trim().length > 0)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
 }
 
 function getNotesSummary(content: unknown): string {

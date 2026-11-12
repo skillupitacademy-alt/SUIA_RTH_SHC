@@ -1,5 +1,21 @@
 # Critical V4 implementation handoff
 
+## Latest continuation — 12 November 2026
+
+The owner's eight-item completion register is now recorded in `.evidence/closure-20261112/QUALIFICATION_DELTA.md`. Items 1–5 are complete within their documented boundaries. The targeted critical security checks passed, while the wider security coverage under item 6 remains PARTIAL. Item 7 remains PARTIAL for broader hierarchy integrity/engineering/accessibility requirements. Item 8 remains PARTIAL for historical migration provenance and full Q01–Q48 reconciliation. Use that register when reporting completion or assigning remaining work.
+
+This section supersedes older blockers below where explicitly resolved. The owner committed the earlier work in `1dbc19c09f11b624ccd27dcdd939e92a1ddcb024`. Current corrections await the owner's commit and push. Read `.evidence/closure-20261112/QUALIFICATION_DELTA.md` and `FINAL_VERIFICATION.json` for the completed continuation. Earlier evidence is under `.evidence/continuation-20261112/`.
+
+The owner approved direct remote UAT alignment of the empty `tutorial_progress` table. The guarded transactional SQL patch has been committed to the database, with verified DDL rollback rehearsal, required tenant/check constraint, tenant/user/subtopic uniqueness and zero rows after execution. This was not a Git commit. See `PROGRESS_TENANT_APPLIED.md` and its execution receipt. Database execution is no longer blocked for this completed patch. Historical Drizzle journal reconciliation remains outstanding; do not run generic pending migrations blindly.
+
+The hierarchy create/update service extraction, route contract/typecheck fixes and stale test fixture corrections are implemented. Gateway unit tests now pass 146/146; hierarchy tests pass 77/77; SUIA tests pass 115/115; targeted non-tutorial RTH tests pass as recorded in the continuation logs. The SHC webpack production build and knowledge-graph refresh completed. These counts overlap other targeted runs and must not be added into a unique-test total. Saved local gateway JWT configuration was aligned with the existing API issuer and the gateway restarted; see actual HTTP outcomes in `questions-normal-runtime.log`.
+
+The owner approved synthetic testing on the existing remote development Neon database. Eleven real PostgreSQL probes passed with run-specific cleanup and zero final progress rows. A concurrent-create defect was reproduced and corrected through the existing tenant-scoped versioned update path. Eight Chromium/BFF/backend/PostgreSQL progress probes passed across both brands, covering reload, reissued synthetic sessions, cross-user and wrong-brand cases. Six public-login desktop/mobile accessibility probes and twenty real HTTP security denials passed. The stale progress tests now use explicit tenant context and stronger assertions.
+
+All three apps passed production build, typecheck and zero-warning lint. The API server and database package typechecks passed. SHC boundary checking passed. Final mocked suites include 23 progress tests, 110 selected RTH tests and 116 SUIA tests. Successful progress responses now use private/no-store caching. SUIA request-dependent program/faculty rendering and runtime sitemap generation were corrected. Warning filters were removed and dependency/configuration causes were addressed. See the final report for the optional Sentry release-plugin credential configuration.
+
+Migration provenance now matches 20 of 22 applied hashes, with LF/CRLF differences accounting for three earlier mismatches. Two historical hashes still require their original artifacts. Their history was preserved. Docker image creation, container tests and deployment are assigned to the owner. A started local build was cancelled on request and its qualification image was absent. Source Docker-context secret exclusions were corrected. Marketing Q22 remains HOLD and broader Q01–Q48 acceptance follows its original criteria and owner gates.
+
 ## Critical items 5 and 6 follow-up
 
 Read CRITICAL_5_6_SECURITY_RESULTS.md and PROGRESS_TENANT_ALIGNMENT_DESIGN.md beside this handoff. The owner-requested progress design is ready for review and database execution remains unapproved. A fresh read-only check still shows zero rows and no tenant_id. A required RTH remediation tenant/upsert source correction is implemented.

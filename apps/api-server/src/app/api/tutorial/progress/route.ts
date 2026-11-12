@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
       },
       {
         status: 200,
-        headers: { 'Cache-Control': 'no-cache' }
+        headers: { 'Cache-Control': 'private, no-store' }
       }
     );
   } catch (error) {
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
       { data: result.data },
       {
         status: 200,
-        headers: { 'Cache-Control': 'no-cache' }
+        headers: { 'Cache-Control': 'private, no-store' }
       }
     );
   } catch (error) {

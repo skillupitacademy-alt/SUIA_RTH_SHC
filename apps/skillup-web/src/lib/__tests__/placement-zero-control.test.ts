@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-const f = vi.hoisted(() => ({ rows: [] as any[][], match: vi.fn() }));
+const f = vi.hoisted(() => ({ rows: [] as Array<Array<Record<string, unknown>>>, match: vi.fn() }));
 vi.mock('@quiz/db-people', () => { const c = new Proxy({}, { get: () => ({}) }); return { db: {}, faculty: c, users: c, userProfiles: c, attendanceRecords: c, batchEnrollments: c, batchSessions: c, batches: c, paymentInstallments: c, subjects: c, domains: c }; });
 vi.mock('@quiz/db-placement', () => { const c = new Proxy({}, { get: () => ({}) }); const q = { from: () => q, where: () => q, limit: async () => f.rows.shift(), orderBy: async () => f.rows.shift() }; return { db: { select: () => q }, findJobsForStudent: f.match, jobListings: c, studentPlacementProfiles: c }; });
 import { getSkillupPlacement } from '../skillup-data';

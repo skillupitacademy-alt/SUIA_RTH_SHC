@@ -1,0 +1,119 @@
+{
+  "boundary": "Real headless Chromium; public login pages only, automated axe/keyboard/mobile probes. No tutorial journeys, authenticated mutations or full WCAG certification.",
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "size": "desktop",
+      "pass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "skillhubcore",
+      "size": "mobile",
+      "pass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "INPUT",
+        "type": "email"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "skillup",
+      "size": "desktop",
+      "pass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "skillup",
+      "size": "mobile",
+      "pass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "size": "desktop",
+      "pass": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "formMethod": "post",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "size": "mobile",
+      "pass": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "keyboardFocus": {
+        "tag": "BUTTON",
+        "type": "button"
+      },
+      "layout": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "formMethod": "post",
+      "violations": []
+    }
+  ]
+}

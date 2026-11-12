@@ -1,7 +1,8 @@
 import { afterEach, expect, it, vi } from 'vitest';
 const calls = vi.hoisted(() => ({ programs: vi.fn(async () => ({ programs: ['private-fixture'] })), faculty: vi.fn(async () => ({ faculty: ['private-fixture'] })), detail: vi.fn() }));
 vi.mock('../skillup-data', () => ({ getSkillupPrograms: calls.programs, getSkillupFaculty: calls.faculty, getSkillupProgramDetail: calls.detail }));
-vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
+vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }));
+import { headers } from 'next/headers';
 import { fetchSkillupApi } from '../skillup-api';
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 it('returns successful upstream data without direct fallback', async () => {
@@ -28,5 +29,15 @@ it('does not use direct fallback for protected student paths', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline fixture')));
   await expect(fetchSkillupApi('/api/student/dashboard')).rejects.toThrow();
   expect(calls.programs).not.toHaveBeenCalled();
+  expect(calls.faculty).not.toHaveBeenCalled();
+});
+
+it('propagates missing request context before network or database access', async () => {
+  const requestScopeError = new Error('Request context unavailable');
+  vi.mocked(headers).mockRejectedValueOnce(requestScopeError);
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  await expect(fetchSkillupApi('/api/faculty')).rejects.toBe(requestScopeError);
+  expect(fetch).not.toHaveBeenCalled();
   expect(calls.faculty).not.toHaveBeenCalled();
 });

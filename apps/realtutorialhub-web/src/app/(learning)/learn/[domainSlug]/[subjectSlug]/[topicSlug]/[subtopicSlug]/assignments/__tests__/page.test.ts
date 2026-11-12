@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/components/content/LearnerProgressPanel', () => ({
-  LearnerProgressPanel: (props: any) => React.createElement('div', {
+  LearnerProgressPanel: (props: { subtopicId: string }) => React.createElement('div', {
     'data-testid': 'learner-progress-panel',
     'data-subtopic-id': props.subtopicId,
   }),
@@ -25,8 +25,8 @@ const mockGetHierarchyBySlugs = vi.fn();
 const mockGetPublishedTutorialContent = vi.fn();
 
 vi.mock('@/lib/tutorial-hierarchy', () => ({
-  getHierarchyBySlugs: (...args: any[]) => mockGetHierarchyBySlugs(...args),
-  getPublishedTutorialContent: (...args: any[]) => mockGetPublishedTutorialContent(...args),
+  getHierarchyBySlugs: (...args: unknown[]) => mockGetHierarchyBySlugs(...args),
+  getPublishedTutorialContent: (...args: unknown[]) => mockGetPublishedTutorialContent(...args),
   slugifySegment: (value: string) => value.toLowerCase().replace(/\s+/g, '-'),
 }));
 

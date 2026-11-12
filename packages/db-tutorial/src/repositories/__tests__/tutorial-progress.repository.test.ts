@@ -46,7 +46,8 @@ const createDbMock = ({
   }));
 
   const returningInsert = vi.fn(async () => [insertRow]);
-  const values = vi.fn(() => ({ returning: returningInsert }));
+  const onConflictDoNothing = vi.fn(() => ({ returning: returningInsert }));
+  const values = vi.fn(() => ({ returning: returningInsert, onConflictDoNothing }));
   const insert = vi.fn(() => ({ values }));
 
   const returningUpdate = vi.fn(async () => [updateRow]);
@@ -59,6 +60,7 @@ const createDbMock = ({
     insert,
     values,
     returningInsert,
+    onConflictDoNothing,
     update,
     set,
     returningUpdate,
@@ -122,6 +124,25 @@ describe('TutorialProgressRepository', () => {
         deletedAt: null,
       })
     );
+  });
+
+  it('merges a concurrent creator through the versioned tenant update', async () => {
+    const merged = makeRow({ tenantId: 'skillup', blocksCompleted: ['notes', 'code'], version: 2 });
+    const db = createDbMock({ updateRow: merged });
+    db.where.mockResolvedValueOnce([]).mockResolvedValueOnce([makeRow({ tenantId: 'skillup', blocksCompleted: ['notes'] })]);
+    db.returningInsert.mockResolvedValueOnce([]);
+    const repo = new TutorialProgressRepository(db as never);
+    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'code', 'skillup')).resolves.toEqual(merged);
+    expect(db.onConflictDoNothing).toHaveBeenCalledOnce();
+    expect(db.set).toHaveBeenCalledWith(expect.objectContaining({ blocksCompleted: ['notes', 'code'], version: 2 }));
+  });
+
+  it('does not revive a retained deleted identity after insert conflict', async () => {
+    const db = createDbMock({ selectRows: [] });
+    db.returningInsert.mockResolvedValueOnce([]);
+    const repo = new TutorialProgressRepository(db as never);
+    await expect(repo.markBlockComplete('user-1', 'subtopic-1', 'code', 'skillup')).rejects.toThrow(/no active tenant-scoped row/);
+    expect(db.update).not.toHaveBeenCalled();
   });
 
   it('markBlockComplete completes the subtopic once all blocks are present', async () => {

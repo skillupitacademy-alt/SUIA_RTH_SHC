@@ -1,0 +1,167 @@
+{
+  "timestamp": "2026-11-12T04:49:44.984Z",
+  "boundary": "Actual local HTTP denial probes only. No valid queue signatures or authenticated mutations are sent.",
+  "results": [
+    {
+      "name": "skillup_forged_identity_headers",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup_cross_origin_cookie_mutation",
+      "expected": [
+        403
+      ],
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "skillup_same_origin_invalid_token",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub_forged_identity_headers",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub_cross_origin_cookie_mutation",
+      "expected": [
+        403
+      ],
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub_same_origin_invalid_token",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "backend_csrf_spoofed_host_substring",
+      "expected": [
+        403
+      ],
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "shc_cross_origin_mutation",
+      "expected": [
+        403
+      ],
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "fixture_without_authorization",
+      "expected": [
+        403,
+        503
+      ],
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "worker_notify-session-requested_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_notify-session-accepted_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_notify-session-scheduled_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_sync-hierarchy_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_refresh-weak-areas-view_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_review-project_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_issue-certificate_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_award-project-badge_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_handle-exam-completed_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_send-remediation-notification_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "worker_index-content-vector_missing_signature",
+      "expected": [
+        401
+      ],
+      "actual": 401,
+      "pass": true
+    }
+  ]
+}

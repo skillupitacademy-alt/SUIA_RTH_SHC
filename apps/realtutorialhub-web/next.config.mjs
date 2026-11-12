@@ -1,9 +1,14 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
 import withSerwist from '@serwist/next';
-import createNextIntlPlugin from 'next-intl/plugin';
+import { createRequire } from 'node:module';
 
 import { standardSecurityHeaders, getCSPHeader } from '../../packages/config/security-headers.mjs';
+
+// Use the package's supported CommonJS plugin entry for webpack's Node config
+// dependency tracing. The ESM entry also imports the optional extraction compiler.
+const require = createRequire(import.meta.url);
+const createNextIntlPlugin = require('next-intl/plugin');
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -16,25 +21,12 @@ const apiUrlBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api.realtutorial
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: true,
+  ...(process.env.PROJECT_LLM_EXECUTION_MODE === 'isolated_worker'
+    ? { experimental: { cpus: 1 } }
+    : {}),
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/api-client', '@quiz/auth', '@quiz/db', '@quiz/db-tutorial', '@quiz/events', '@quiz/types', '@quiz/validation', '@quiz/ui', 'lucide-react'],
-  webpack: (config) => {
-    config.ignoreWarnings = [
-      ...(config.ignoreWarnings ?? []),
-      {
-        module: /next-intl/,
-        message: /Parsing of .*next-intl.*failed at 'import\(t\)'/,
-      },
-    ];
-
-    // Suppress the specific infrastructure logging warnings from webpack cache related to next-intl
-    config.infrastructureLogging = {
-      ...config.infrastructureLogging,
-      level: 'error',
-    };
-
-    return config;
-  },
+  serverExternalPackages: ['@opentelemetry/instrumentation', '@sentry/node'],
   images: {
     remotePatterns: [
       {
@@ -101,8 +93,23 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 export default withSentryConfig(withTutorialSerwist(withNextIntl(withBundleAnalyzer(nextConfig))), {
   org: 'real-tutorial-hub',
   project: process.env.SENTRY_PROJECT || 'quiz-platform',
-  silent: true,
+  silent: false,
+  telemetry: false,
+  webpack: {
+    unstable_sentryWebpackPluginOptions: {
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+    },
+  },
+  // Runtime monitoring remains enabled. Build-time publication requires an
+  // explicitly configured token; ordinary local builds do not publish releases.
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+    deleteSourcemapsAfterUpload: true,
+  },
+  release: {
+    create: Boolean(process.env.SENTRY_AUTH_TOKEN),
+    finalize: Boolean(process.env.SENTRY_AUTH_TOKEN),
+  },
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
-  hideSourceMaps: true,
 });

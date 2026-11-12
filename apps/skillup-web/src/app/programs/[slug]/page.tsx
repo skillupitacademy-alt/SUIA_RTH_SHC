@@ -5,6 +5,10 @@ import { notFound } from 'next/navigation';
 import { fetchSkillupApi } from '@/lib/skillup-api';
 import type { SkillupProgramDetail } from '@/lib/skillup-types';
 
+// Program API access uses the caller's session; build workers have no identity.
+// Resolve this page per request rather than querying protected APIs during SSG.
+export const dynamic = 'force-dynamic';
+
 type ProgramDetailResponse = {
   program: SkillupProgramDetail | null;
 };
@@ -12,11 +16,6 @@ type ProgramDetailResponse = {
 type ProgramPageProps = {
   params: Promise<{ slug: string }>;
 };
-
-export async function generateStaticParams() {
-  const { programs } = await fetchSkillupApi<{ programs: Array<{ slug: string }> }>('/api/programs');
-  return programs.map((program) => ({ slug: program.slug }));
-}
 
 export async function generateMetadata({ params }: ProgramPageProps): Promise<Metadata> {
   const { slug } = await params;

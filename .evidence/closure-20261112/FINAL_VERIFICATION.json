@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-11-12T05:22:39.805Z",
+  "sourceHead": "1dbc19c09f11b624ccd27dcdd939e92a1ddcb024",
+  "workingTreeChanges": true,
+  "results": [
+    {
+      "app": "SHC Admin",
+      "build": "PASS",
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "app": "SUIA Web",
+      "build": "PASS",
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "app": "RTH Web",
+      "build": "PASS",
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "runtime": {
+    "progress-remote-results": {
+      "passed": 11,
+      "cleanupVerified": true
+    },
+    "progress-browser-results": {
+      "passed": 8,
+      "cleanupVerified": true
+    },
+    "browser-nontutorial-results": {
+      "passed": 6
+    },
+    "security-http-negative": {
+      "passed": 20
+    }
+  },
+  "ledgerHash": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+  "remainingMigrationProvenanceHashes": [
+    "833cf27c73ba6de093f2e73e2ba0ac7dd77fe908bb190e91ea8cfd23aa4a3578",
+    "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783"
+  ],
+  "dockerRuntime": "Owner assigned",
+  "marketing": "HOLD"
+}

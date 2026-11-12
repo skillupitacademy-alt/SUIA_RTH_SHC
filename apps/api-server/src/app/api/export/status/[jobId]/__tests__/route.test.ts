@@ -39,7 +39,7 @@ vi.mock('@/lib/redis', () => ({
 }));
 
 vi.mock('@/modules/core/container', () => ({
-    container: { get: () => ({ getAccessToken: () => 'token', verifyUserAccessToken: async () => ({ userId: 'u1' }) }) }
+    container: { get: () => ({ getAccessToken: () => 'token', verifyUserAccessToken: async () => ({ userId: 'u1', brand: 'realtutorialhub' }) }) }
 }));
 
 describe('Export Status Final Resolution', () => {
@@ -52,7 +52,7 @@ describe('Export Status Final Resolution', () => {
     const createReq = (jobId: string) => new NextRequest(`http://localhost/api/export/status/${jobId}`);
 
     it('covers all success paths', async () => {
-        vi.mocked(JobsService.getJobStatus).mockResolvedValue({ status: 'completed', id: 'j1', userId: 'u1', result: { downloadUrl: 'file.json' } });
+        vi.mocked(JobsService.getJobStatus).mockResolvedValue({ status: 'completed', id: 'j1', userId: 'u1', payload: { brand: 'realtutorialhub' }, result: { downloadUrl: 'file.json' } });
         vi.mocked(storage.exists).mockResolvedValue(true);
         
         const res = await GET(createReq('j1'), { params: Promise.resolve({ jobId: 'j1' }) });
@@ -64,7 +64,7 @@ describe('Export Status Final Resolution', () => {
     it('covers stale job recovery', async () => {
         const twoMinsAgo = new Date(Date.now() - 3 * 60 * 1000);
         vi.mocked(JobsService.getJobStatus).mockResolvedValue({ 
-            status: 'processing', id: 'j1', userId: 'u1', updatedAt: twoMinsAgo, payload: { format: 'csv' }, result: { downloadUrl: 'file.csv' } 
+            status: 'processing', id: 'j1', userId: 'u1', updatedAt: twoMinsAgo, payload: { format: 'csv', brand: 'realtutorialhub' }, result: { downloadUrl: 'file.csv' }
         });
         vi.mocked(storage.exists).mockResolvedValue(true);
         
@@ -79,7 +79,7 @@ describe('Export Status Final Resolution', () => {
         expect(res.status).toBe(404);
 
         const req = new NextRequest('http://localhost/api/export/status/none?examId=e1');
-        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ id: 'e1', userId: 'u1', exportUrls: { analytics_json: 'file.json' } });
+        vi.mocked(db.query.exams.findFirst).mockResolvedValue({ id: 'e1', userId: 'u1', exportUrls: { brand: 'realtutorialhub', analytics_json: 'file.json' } });
         vi.mocked(storage.exists).mockResolvedValue(true);
         res = await GET(req, { params: Promise.resolve({ jobId: 'none' }) });
         expect(res.status).toBe(200);

@@ -6,6 +6,7 @@ const nextConfig = {
     : {}),
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/auth', '@quiz/types', '@quiz/validation', '@quiz/db-tutorial', '@quiz/observability', '@quiz/ui', '@quiz/api-client', '@quiz/marketing-site'],
+  serverExternalPackages: ['@opentelemetry/instrumentation', '@sentry/node'],
   images: {
     remotePatterns: [
       {

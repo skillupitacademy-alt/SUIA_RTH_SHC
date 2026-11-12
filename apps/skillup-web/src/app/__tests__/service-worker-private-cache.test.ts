@@ -1,11 +1,17 @@
 import { afterEach, expect, it, vi } from 'vitest';
 
+type WorkerEvent = {
+  request?: { method: string; url: string; mode?: RequestMode };
+  respondWith?: (response: Promise<Response>) => void;
+  waitUntil?: (operation: Promise<unknown>) => void;
+};
+
 afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
 async function runNavigation(path: string) {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const put = vi.fn().mockResolvedValue(undefined);
   const cache = { match: vi.fn().mockResolvedValue(undefined), put };
-  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler) });
   vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('fixture', { status: 200 })));
   await import('../sw');
@@ -23,9 +29,9 @@ it('treats public catalog navigation as network-only and does not cache per Sol 
   expect(await runNavigation('/programs')).not.toHaveBeenCalled();
 });
 it('does not serve a prior private navigation while offline', async () => {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const cache = { match: vi.fn().mockResolvedValue(new Response('prior-private-fixture', { status: 200 })), put: vi.fn() };
-  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler) });
   vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline fixture')));
   await import('../sw');
@@ -35,10 +41,10 @@ it('does not serve a prior private navigation while offline', async () => {
   expect(await result.text()).not.toBe('prior-private-fixture');
 });
 it('never caches or serves stale /api/* or RSC responses and returns 503 offline', async () => {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const cache = { match: vi.fn().mockResolvedValue(new Response('stale-api-fixture', { status: 200 })), put: vi.fn() };
   const open = vi.fn().mockResolvedValue(cache);
-  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler) });
   vi.stubGlobal('caches', { open });
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline fixture')));
   await import('../sw');
@@ -55,10 +61,10 @@ it('never caches or serves stale /api/* or RSC responses and returns 503 offline
   expect(cache.put).not.toHaveBeenCalled();
 });
 it('caches immutable /_next/static/* assets when online', async () => {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const put = vi.fn().mockResolvedValue(undefined);
   const cache = { match: vi.fn().mockResolvedValue(undefined), put };
-  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler) });
   vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('console.log(1);', { status: 200 })));
   await import('../sw');
@@ -69,14 +75,14 @@ it('caches immutable /_next/static/* assets when online', async () => {
   expect(put).toHaveBeenCalledTimes(1);
 });
 it('deletes legacy skillup-app-shell-v1 during activation without touching unrelated caches', async () => {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const deleteMock = vi.fn().mockResolvedValue(true);
   const claimMock = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal('self', {
     location: { origin: 'https://fixture.invalid' },
     __SW_MANIFEST: [],
     clients: { claim: claimMock },
-    addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler)
+    addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler)
   });
   vi.stubGlobal('caches', { delete: deleteMock });
   await import('../sw');
@@ -90,9 +96,9 @@ it('deletes legacy skillup-app-shell-v1 during activation without touching unrel
   expect(claimMock).toHaveBeenCalled();
 });
 it('returns 503 offline for /programs despite prior cache entries per Sol D2', async () => {
-  const handlers = new Map<string, (event: any) => void>();
+  const handlers = new Map<string, (event: WorkerEvent) => void>();
   const cache = { match: vi.fn().mockResolvedValue(new Response('stale-catalog', { status: 200 })), put: vi.fn() };
-  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: any) => void) => handlers.set(name, handler) });
+  vi.stubGlobal('self', { location: { origin: 'https://fixture.invalid' }, __SW_MANIFEST: [], addEventListener: (name: string, handler: (event: WorkerEvent) => void) => handlers.set(name, handler) });
   vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline fixture')));
   await import('../sw');

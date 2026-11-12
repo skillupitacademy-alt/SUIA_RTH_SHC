@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-11-12T04:37:47.736Z",
+  "boundary": "Owner-approved remote development DB; real repository, real PostgreSQL, independent Node processes. Synthetic progress rows only; no browser/session claim.",
+  "initialCount": "0",
+  "finalCount": "0",
+  "cleanupVerified": true,
+  "results": [
+    {
+      "name": "concurrent_create_independent_processes",
+      "pass": false,
+      "code": "ERR_ASSERTION",
+      "error": "[{\"code\":1,\"result\":\"{\\\"pass\\\":false,\\\"code\\\":\\\"23505\\\",\\\"error\\\":\\\"Error\\\"}\"},{\"code\":0,\"result\":\"{\\\"pass\\\":true}\"}]"
+    },
+    {
+      "name": "independent_tenant_rows_and_fresh_connection",
+      "pass": true
+    },
+    {
+      "name": "concurrent_update_cas_independent_processes",
+      "pass": true
+    },
+    {
+      "name": "rth_reset_does_not_clear_suia",
+      "pass": true
+    },
+    {
+      "name": "wrong_tenant_and_missing_tenant_fail_closed",
+      "pass": true
+    },
+    {
+      "name": "database_rejects_null_tenant",
+      "pass": true
+    },
+    {
+      "name": "database_rejects_shared_tenant",
+      "pass": true
+    },
+    {
+      "name": "database_rejects_duplicate_identity",
+      "pass": true
+    },
+    {
+      "name": "database_transaction_rolls_back_update",
+      "pass": true
+    }
+  ]
+}

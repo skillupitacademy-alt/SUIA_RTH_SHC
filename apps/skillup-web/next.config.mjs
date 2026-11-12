@@ -10,7 +10,7 @@ const nextConfig = {
   transpilePackages: ['@quiz/auth', '@quiz/db-tutorial', '@quiz/types', '@quiz/validation', '@quiz/ui', '@quiz/observability', '@quiz/api-client'],
   turbopack: {},
   // Externalize Node.js-only database dependencies for Server Components
-  serverExternalPackages: ['@neondatabase/serverless', 'ws', 'bufferutil', 'utf-8-validate'],
+  serverExternalPackages: ['@neondatabase/serverless', 'ws', 'bufferutil', 'utf-8-validate', '@opentelemetry/instrumentation', '@sentry/node'],
 };
 
 const withSkillupSerwist = withSerwist({

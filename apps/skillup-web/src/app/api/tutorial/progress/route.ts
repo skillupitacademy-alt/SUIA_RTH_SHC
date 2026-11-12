@@ -73,7 +73,7 @@ async function getHandler(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('[SkillUp Tutorial Progress] GET Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -130,7 +130,7 @@ async function postHandler(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('[SkillUp Tutorial Progress] POST Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
