@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
 const mocks = vi.hoisted(() => ({
   getSkillupPrograms: vi.fn(),
@@ -176,7 +177,7 @@ describe('SkillUp BFF routes', () => {
   });
 
   it('returns program catalog data', async () => {
-    const response = await getPrograms();
+    const response = await getPrograms(new NextRequest('https://user.skillupitacademy.com/api/programs'));
     const payload = await readJson<{ programs: Array<{ slug: string }> }>(response);
     expect(response.status).toBe(200);
     expect(payload.programs.length).toBeGreaterThan(0);
@@ -284,7 +285,7 @@ describe('SkillUp BFF routes', () => {
   });
 
   it('returns faculty data', async () => {
-    const response = await getFaculty();
+    const response = await getFaculty(new NextRequest('https://user.skillupitacademy.com/api/faculty'));
     const payload = await readJson<{ faculty: Array<{ name: string }>; heroStats: Array<{ label: string }> }>(response);
     expect(response.status).toBe(200);
     expect(payload.faculty.length).toBeGreaterThan(0);

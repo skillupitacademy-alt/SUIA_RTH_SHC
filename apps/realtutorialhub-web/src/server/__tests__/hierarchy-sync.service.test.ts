@@ -33,6 +33,8 @@ const mocks = vi.hoisted(() => {
     get: vi.fn(),
     set: vi.fn(),
     del: vi.fn(),
+    completeIfOwner: vi.fn(),
+    releaseIfOwner: vi.fn(),
   };
 
   return {
@@ -90,6 +92,15 @@ describe('HierarchySyncService', () => {
     mocks.redis.get.mockResolvedValue(null);
     mocks.redis.set.mockResolvedValue('OK');
     mocks.redis.del.mockResolvedValue(1);
+    mocks.redis.completeIfOwner.mockImplementation(async (input: { key: string; completedValue: string; retentionSeconds: number }) => {
+      await mocks.redis.set(input.key, input.completedValue, { ex: input.retentionSeconds });
+      return 'applied';
+    });
+    mocks.redis.releaseIfOwner.mockImplementation(async (input: { key: string }) => {
+      await mocks.redis.del(input.key);
+      return 'applied';
+    });
+    mocks.upsertCalls.length = 0;
   });
 
   it('upserts all hierarchy tables inside a transaction', async () => {
@@ -111,7 +122,7 @@ describe('HierarchySyncService', () => {
       'tutorial_topics',
       'tutorial_subtopics',
     ]);
-    expect(mocks.redis.set).toHaveBeenNthCalledWith(1, 'sync-hierarchy:11111111-1111-1111-1111-111111111111', 'processing', { ex: 86_400, nx: true });
+    expect(mocks.redis.set).toHaveBeenNthCalledWith(1, 'sync-hierarchy:11111111-1111-1111-1111-111111111111', expect.stringMatching(/^processing:/), { ex: 86_400, nx: true });
     expect(mocks.redis.set).toHaveBeenNthCalledWith(2, 'sync-hierarchy:11111111-1111-1111-1111-111111111111', 'processed', { ex: 86_400 });
     expect(mocks.redis.del).toHaveBeenCalledWith('hierarchy:domains');
     expect(mocks.redis.del).toHaveBeenCalledWith('hierarchy:subjects:44444444-4444-4444-4444-444444444444');

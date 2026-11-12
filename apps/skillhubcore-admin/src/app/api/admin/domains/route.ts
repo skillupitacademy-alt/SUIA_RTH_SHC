@@ -79,19 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = parsed.data;
-    const db = getDb();
-
-    const [newDomain] = await db
-      .insert(domains)
-      .values({
-        name: body.name,
-        description: body.description,
-        category: body.category,
-        order: body.order ?? 0,
-        status: body.status ?? 'active',
-      })
-      .returning();
+    const newDomain = await AcademicHierarchyService.createDomain(parsed.data);
 
     return NextResponse.json(newDomain, { status: 201 });
   } catch (error) {
@@ -136,20 +124,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { name, description, category, status, order } = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (category !== undefined) updateData.category = category;
-    if (status !== undefined) updateData.status = status;
-    if (order !== undefined) updateData.order = order;
-
-    const db = getDb();
-    const [updatedDomain] = await db
-      .update(domains)
-      .set(updateData)
-      .where(eq(domains.id, id))
-      .returning();
+    const updatedDomain = await AcademicHierarchyService.updateDomain(id, parsed.data);
 
     if (!updatedDomain) {
       return NextResponse.json(

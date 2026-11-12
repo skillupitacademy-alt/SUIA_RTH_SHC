@@ -147,18 +147,20 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(fixture.updateSet).toHaveBeenCalledWith(expect.objectContaining({ name: 'Patched', order: 6 }));
     });
 
-    it('lists domains on GET and deletes domain on DELETE', async () => {
+    it('lists domains on GET and rejects DELETE without transaction support', async () => {
       const getRes = await getDomains(makeRequest('http://localhost/api/admin/domains?limit=10', 'GET'));
       expect(getRes.status).toBe(200);
 
       const delRes = await deleteDomain(makeRequest(`http://localhost/api/admin/domains?id=${UUID_1}`, 'DELETE'));
-      expect(delRes.status).toBe(200);
+      expect(delRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
 
       const delByIdRes = await deleteDomainById(
         makeRequest(`http://localhost/api/admin/domains/${UUID_1}`, 'DELETE'),
         { params: Promise.resolve({ id: UUID_1 }) }
       );
-      expect(delByIdRes.status).toBe(200);
+      expect(delByIdRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
     });
   });
 
@@ -177,7 +179,7 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(fixture.getDb).not.toHaveBeenCalled();
     });
 
-    it('creates, updates, patches, lists, and deletes subjects with valid payloads', async () => {
+    it('creates, updates, patches, lists, and denies untransactional deletion of subjects with valid payloads', async () => {
       const postRes = await postSubject(
         makeRequest('http://localhost/api/admin/subjects', 'POST', { domainId: UUID_1, name: 'Algorithms', order: 2 })
       );
@@ -194,13 +196,15 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(getRes.status).toBe(200);
 
       const delRes = await deleteSubject(makeRequest(`http://localhost/api/admin/subjects?id=${UUID_1}`, 'DELETE'));
-      expect(delRes.status).toBe(200);
+      expect(delRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
 
       const delByIdRes = await deleteSubjectById(
         makeRequest(`http://localhost/api/admin/subjects/${UUID_1}`, 'DELETE'),
         { params: Promise.resolve({ id: UUID_1 }) }
       );
-      expect(delByIdRes.status).toBe(200);
+      expect(delByIdRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
     });
   });
 
@@ -271,13 +275,15 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(getRes.status).toBe(200);
 
       const delRes = await deleteTopic(makeRequest(`http://localhost/api/admin/topics?id=${UUID_1}`, 'DELETE'));
-      expect(delRes.status).toBe(200);
+      expect(delRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
 
       const delByIdRes = await deleteTopicById(
         makeRequest(`http://localhost/api/admin/topics/${UUID_1}`, 'DELETE'),
         { params: Promise.resolve({ id: UUID_1 }) }
       );
-      expect(delByIdRes.status).toBe(200);
+      expect(delByIdRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
     });
   });
 
@@ -348,13 +354,15 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(getRes.status).toBe(200);
 
       const delRes = await deleteSubtopic(makeRequest(`http://localhost/api/admin/subtopics?id=${UUID_1}`, 'DELETE'));
-      expect(delRes.status).toBe(200);
+      expect(delRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
 
       const delByIdRes = await deleteSubtopicById(
         makeRequest(`http://localhost/api/admin/subtopics/${UUID_1}`, 'DELETE'),
         { params: Promise.resolve({ id: UUID_1 }) }
       );
-      expect(delByIdRes.status).toBe(200);
+      expect(delByIdRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
     });
   });
 
@@ -374,7 +382,7 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(fixture.getDb).not.toHaveBeenCalled();
     });
 
-    it('creates, updates, patches, lists, and deletes skills with valid payloads', async () => {
+    it('creates, updates, patches, lists, and denies untransactional deletion of skills with valid payloads', async () => {
       const postRes = await postSkill(
         makeRequest('http://localhost/api/admin/skills', 'POST', {
           name: 'System Design',
@@ -407,13 +415,15 @@ describe('SHC taxonomy CRUD route validation, authorization, and persistence (FN
       expect(getRes.status).toBe(200);
 
       const delRes = await deleteSkill(makeRequest(`http://localhost/api/admin/skills?id=${UUID_1}`, 'DELETE'));
-      expect(delRes.status).toBe(200);
+      expect(delRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
 
       const delByIdRes = await deleteSkillById(
         makeRequest(`http://localhost/api/admin/skills/${UUID_1}`, 'DELETE'),
         { params: Promise.resolve({ id: UUID_1 }) }
       );
-      expect(delByIdRes.status).toBe(200);
+      expect(delByIdRes.status).toBe(503);
+      expect(fixture.deleteWhere).not.toHaveBeenCalled();
     });
   });
 });

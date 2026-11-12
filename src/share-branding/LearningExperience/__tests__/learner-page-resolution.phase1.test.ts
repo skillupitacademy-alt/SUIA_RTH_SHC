@@ -112,7 +112,7 @@ describe('Learner Page Resolution - Phase 1 Identity', () => {
       mockContext
     );
     tutorialAId = tutorialA.id;
-    await composer.publishTutorial(tutorialAId, mockContext);
+    await composer.publishTutorial(tutorialAId, mockContext, tutorialA.version);
 
     const tutorialB = await composer.createTutorial(
       {
@@ -124,7 +124,7 @@ describe('Learner Page Resolution - Phase 1 Identity', () => {
       mockContext
     );
     tutorialBId = tutorialB.id;
-    await composer.publishTutorial(tutorialBId, mockContext);
+    await composer.publishTutorial(tutorialBId, mockContext, tutorialB.version);
 
     const tutorialC = await composer.createTutorial(
       {
@@ -136,7 +136,7 @@ describe('Learner Page Resolution - Phase 1 Identity', () => {
       mockContext
     );
     tutorialCId = tutorialC.id;
-    await composer.publishTutorial(tutorialCId, mockContext);
+    await composer.publishTutorial(tutorialCId, mockContext, tutorialC.version);
   });
 
   afterAll(async () => {

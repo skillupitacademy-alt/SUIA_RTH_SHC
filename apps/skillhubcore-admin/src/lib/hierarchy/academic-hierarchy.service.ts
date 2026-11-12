@@ -1,4 +1,8 @@
 import {
+  domainSchema, subjectSchema, topicSchema, subtopicSchema, skillSchema,
+  type DomainInput, type SubjectInput, type TopicInput, type SubtopicInput, type SkillInput,
+} from '@/schemas/hierarchy.schemas';
+import {
   getDb,
   domains,
   subjects,
@@ -17,6 +21,26 @@ import {
 } from '@quiz/db-tutorial';
 import { eq, inArray } from 'drizzle-orm';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
+
+export function normalizeComplexity(value: unknown): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value >= 4) return 'expert';
+    if (value === 3) return 'advanced';
+    if (value === 2) return 'intermediate';
+    return 'beginner';
+  }
+  if (typeof value === 'string') {
+    const normalized = value.toLowerCase();
+    if (normalized === 'expert') return 'expert';
+    if (normalized === 'advanced') return 'advanced';
+    if (normalized === 'intermediate') return 'intermediate';
+    if (normalized === 'beginner') return 'beginner';
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return normalizeComplexity(numeric);
+  }
+  return 'beginner';
+}
+
 
 export const MAX_BATCH_DELETE_SIZE = 100;
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -503,6 +527,180 @@ export async function checkSkillDependencies(
  * Centralizes taxonomy mutations, referential validation, and atomic delete safety.
  */
 export class AcademicHierarchyService {
+  static async createDomain(input: DomainInput) {
+    const body = domainSchema.parse(input);
+    const db = getDb();
+
+    const [newDomain] = await db
+      .insert(domains)
+      .values({
+        name: body.name,
+        description: body.description,
+        category: body.category,
+        order: body.order ?? 0,
+        status: body.status ?? 'active',
+      })
+      .returning();
+
+    return newDomain;
+  }
+
+  static async updateDomain(id: string, input: Partial<DomainInput>) {
+    const { name, description, category, status, order } = domainSchema.partial().parse(input);
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    if (status !== undefined) updateData.status = status;
+    if (order !== undefined) updateData.order = order;
+
+    const db = getDb();
+    const [updatedDomain] = await db
+      .update(domains)
+      .set(updateData)
+      .where(eq(domains.id, id))
+      .returning();
+
+    return updatedDomain;
+  }
+
+  static async createSubject(input: SubjectInput) {
+    const body = subjectSchema.parse(input);
+    const db = getDb();
+
+    const [newSubject] = await db
+      .insert(subjects)
+      .values({
+        name: body.name,
+        description: body.description,
+        domainId: body.domainId,
+        status: body.status ?? 'active',
+        order: body.order ?? 0,
+      })
+      .returning();
+
+    return newSubject;
+  }
+
+  static async updateSubject(id: string, input: Partial<SubjectInput>) {
+    const { name, description, domainId, status, order } = subjectSchema.partial().parse(input);
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (domainId !== undefined) updateData.domainId = domainId;
+    if (status !== undefined) updateData.status = status;
+    if (order !== undefined) updateData.order = order;
+
+    const db = getDb();
+    const [updated] = await db.update(subjects).set(updateData).where(eq(subjects.id, id)).returning();
+
+    return updated;
+  }
+
+  static async createTopic(input: TopicInput) {
+    const body = topicSchema.parse(input);
+    const db = getDb();
+
+    const [newTopic] = await db
+      .insert(topics)
+      .values({
+        name: body.name,
+        description: body.description,
+        subjectId: body.subjectId,
+        complexity: normalizeComplexity(body.complexity ?? body.complexityLevel),
+        weight: body.weight ?? 1,
+        order: body.order ?? 0,
+        status: body.status ?? 'active',
+      })
+      .returning();
+
+    return newTopic;
+  }
+
+  static async updateTopic(id: string, input: Partial<TopicInput>) {
+    const { name, description, subjectId, complexity, complexityLevel, weight, status, order } = topicSchema.partial().parse(input);
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (subjectId !== undefined) updateData.subjectId = subjectId;
+    if (complexity !== undefined || complexityLevel !== undefined) {
+      updateData.complexity = normalizeComplexity(complexity ?? complexityLevel);
+    }
+    if (weight !== undefined) updateData.weight = weight;
+    if (status !== undefined) updateData.status = status;
+    if (order !== undefined) updateData.order = order;
+
+    const db = getDb();
+    const [updated] = await db.update(topics).set(updateData).where(eq(topics.id, id)).returning();
+    return updated;
+  }
+
+  static async createSubtopic(input: SubtopicInput) {
+    const body = subtopicSchema.parse(input);
+    const db = getDb();
+
+    const [newSubtopic] = await db
+      .insert(subtopics)
+      .values({
+        name: body.name,
+        description: body.description,
+        topicId: body.topicId,
+        depth: body.depth ?? body.depthLevel ?? 1,
+        status: body.status ?? 'active',
+        order: body.order ?? body.orderIndex ?? 0,
+      })
+      .returning();
+
+    return newSubtopic;
+  }
+
+  static async updateSubtopic(id: string, input: Partial<SubtopicInput>) {
+    const { name, description, topicId, depth, depthLevel, status, order, orderIndex } = subtopicSchema.partial().parse(input);
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (topicId !== undefined) updateData.topicId = topicId;
+    if (depth !== undefined || depthLevel !== undefined) updateData.depth = depth ?? depthLevel;
+    if (status !== undefined) updateData.status = status;
+    if (order !== undefined || orderIndex !== undefined) updateData.order = order ?? orderIndex;
+
+    const db = getDb();
+    const [updated] = await db.update(subtopics).set(updateData).where(eq(subtopics.id, id)).returning();
+    return updated;
+  }
+
+  static async createSkill(input: SkillInput) {
+    const body = skillSchema.parse(input);
+    const db = getDb();
+
+    const [newSkill] = await db
+      .insert(skills)
+      .values({
+        name: body.name,
+        description: body.description,
+        category: body.category,
+        weight: body.weight ?? 1,
+        status: body.status ?? 'active',
+      })
+      .returning();
+    return newSkill;
+  }
+
+  static async updateSkill(id: string, input: Partial<SkillInput>) {
+    const { name, description, category, mappingType, weight, status } = skillSchema.partial().parse(input);
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    void mappingType;
+    if (weight !== undefined) updateData.weight = weight;
+    if (status !== undefined) updateData.status = status;
+
+    const db = getDb();
+    const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
+    return updated;
+  }
+
   /**
    * Executes a destructive hierarchy operation strictly inside a database transaction.
    * Fails closed with 503 if transaction support is unavailable or storage fails.

@@ -11,7 +11,7 @@ import { requireStudentAuth } from '@/lib/student-auth';
  * SECURITY: Requires authentication + brand validation
  * RBAC: Any authenticated user can view programs
  */
-export async function GET(req?: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const effectiveReq = req ?? (new Request('https://user.skillupitacademy.com/api/programs') as unknown as NextRequest);
 

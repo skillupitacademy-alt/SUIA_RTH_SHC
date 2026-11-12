@@ -56,19 +56,17 @@ describe('RTH learner boundary', () => {
     expect(await requireStudent(request())).toEqual(principal);
     expect(mocks.verify).toHaveBeenCalledWith('token', { audience: 'user', isAdmin: false });
   });
-  it('does not cache personalized content publicly', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ progress: { completed: true } }));
+  it('returns the retired contract without fetching legacy content', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const response = await content(request(), { params: Promise.resolve({ subtopicId: 'topic-1' }) });
-    expect(response.status).toBe(200);
-    expect(response.headers.get('cache-control')).toBe('private, no-store');
-    expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
-      cache: 'no-store', headers: expect.objectContaining({ 'X-Brand': 'realtutorialhub', 'X-User-ID': 'rth-1' }),
-    }));
+    expect(response.status).toBe(410);
+    expect(await response.json()).toMatchObject({ error: 'Gone', statusCode: 410 });
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
-  it('returns 403 and does not fetch content for the wrong brand', async () => {
+  it('keeps the legacy route retired for foreign-brand callers', async () => {
     mocks.verify.mockResolvedValue({ ...principal, brand: 'skillup' });
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
-    expect((await content(request(), { params: Promise.resolve({ subtopicId: 'topic-1' }) })).status).toBe(403);
+    expect((await content(request(), { params: Promise.resolve({ subtopicId: 'topic-1' }) })).status).toBe(410);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
   it('retires the source-file writer', async () => {

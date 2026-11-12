@@ -2,8 +2,6 @@ import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { subjectSchema } from '@/schemas/hierarchy.schemas';
-import { getDb, subjects } from '@quiz/db';
-import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -39,16 +37,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.domainId !== undefined) updateData.domainId = body.domainId;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.order !== undefined) updateData.order = body.order;
-
-    const db = getDb();
-    const [updated] = await db.update(subjects).set(updateData).where(eq(subjects.id, id)).returning();
+    const updated = await AcademicHierarchyService.updateSubject(id, parsed.data);
     if (!updated) return NextResponse.json({ error: 'Subject not found' }, { status: 404 });
 
     return NextResponse.json(updated);

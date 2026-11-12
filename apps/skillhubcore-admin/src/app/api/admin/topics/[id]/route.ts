@@ -1,29 +1,9 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
+import { AcademicHierarchyService, normalizeComplexity } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { TOPIC_COMPLEXITY_ENUM_TO_LEVEL, topicSchema } from '@/schemas/hierarchy.schemas';
-import { getDb, topics } from '@quiz/db';
-import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-function normalizeComplexity(value: unknown): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    if (value >= 4) return 'expert';
-    if (value === 3) return 'advanced';
-    if (value === 2) return 'intermediate';
-    return 'beginner';
-  }
-  if (typeof value === 'string') {
-    const normalized = value.toLowerCase();
-    if (normalized === 'expert') return 'expert';
-    if (normalized === 'advanced') return 'advanced';
-    if (normalized === 'intermediate') return 'intermediate';
-    if (normalized === 'beginner') return 'beginner';
-    const numeric = Number(value);
-    if (Number.isFinite(numeric)) return normalizeComplexity(numeric);
-  }
-  return 'beginner';
-}
 
 function serializeTopic<T extends { complexity?: string | null; order?: number | null }>(row: T) {
   const normalizedComplexity = normalizeComplexity(row.complexity ?? 'beginner');
@@ -68,20 +48,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.subjectId !== undefined) updateData.subjectId = body.subjectId;
-    if (body.complexity !== undefined || body.complexityLevel !== undefined) {
-      updateData.complexity = normalizeComplexity(body.complexity ?? body.complexityLevel);
-    }
-    if (body.weight !== undefined) updateData.weight = body.weight;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.order !== undefined) updateData.order = body.order;
-
-    const db = getDb();
-    const [updated] = await db.update(topics).set(updateData).where(eq(topics.id, id)).returning();
+    const updated = await AcademicHierarchyService.updateTopic(id, parsed.data);
     if (!updated) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
 
     return NextResponse.json(serializeTopic(updated));

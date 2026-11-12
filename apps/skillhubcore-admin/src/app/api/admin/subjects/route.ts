@@ -83,19 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const db = getDb();
-
-    const [newSubject] = await db
-      .insert(subjects)
-      .values({
-        name: body.name,
-        description: body.description,
-        domainId: body.domainId,
-        status: body.status ?? 'active',
-        order: body.order ?? 0,
-      })
-      .returning();
+    const newSubject = await AcademicHierarchyService.createSubject(parsed.data);
 
     return NextResponse.json(newSubject, { status: 201 });
   } catch (error) {
@@ -127,16 +115,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const { name, description, domainId, status, order } = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (domainId !== undefined) updateData.domainId = domainId;
-    if (status !== undefined) updateData.status = status;
-    if (order !== undefined) updateData.order = order;
-
-    const db = getDb();
-    const [updated] = await db.update(subjects).set(updateData).where(eq(subjects.id, id)).returning();
+    const updated = await AcademicHierarchyService.updateSubject(id, parsed.data);
 
     if (!updated) {
       return NextResponse.json({ error: 'Subject not found' }, { status: 404 });

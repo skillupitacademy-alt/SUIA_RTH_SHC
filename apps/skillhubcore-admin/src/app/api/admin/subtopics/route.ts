@@ -100,20 +100,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const db = getDb();
-
-    const [newSubtopic] = await db
-      .insert(subtopics)
-      .values({
-        name: body.name,
-        description: body.description,
-        topicId: body.topicId,
-        depth: body.depth ?? body.depthLevel ?? 1,
-        status: body.status ?? 'active',
-        order: body.order ?? body.orderIndex ?? 0,
-      })
-      .returning();
+    const newSubtopic = await AcademicHierarchyService.createSubtopic(parsed.data);
 
     return NextResponse.json(newSubtopic ? serializeSubtopic(newSubtopic) : newSubtopic, { status: 201 });
   } catch (error) {
@@ -143,17 +130,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const { name, description, topicId, depth, depthLevel, status, order, orderIndex } = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (topicId !== undefined) updateData.topicId = topicId;
-    if (depth !== undefined || depthLevel !== undefined) updateData.depth = depth ?? depthLevel;
-    if (status !== undefined) updateData.status = status;
-    if (order !== undefined || orderIndex !== undefined) updateData.order = order ?? orderIndex;
+    const updated = await AcademicHierarchyService.updateSubtopic(id, parsed.data);
 
-    const db = getDb();
-    const [updated] = await db.update(subtopics).set(updateData).where(eq(subtopics.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
 
     return NextResponse.json(serializeSubtopic(updated));

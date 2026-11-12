@@ -2,8 +2,6 @@ import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { subtopicSchema } from '@/schemas/hierarchy.schemas';
-import { getDb, subtopics } from '@quiz/db';
-import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 function serializeSubtopic<T extends { depth?: number | null; order?: number | null }>(row: T) {
@@ -35,21 +33,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.topicId !== undefined) updateData.topicId = body.topicId;
-    if (body.depth !== undefined || body.depthLevel !== undefined) {
-      updateData.depth = body.depth ?? body.depthLevel;
-    }
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.order !== undefined || body.orderIndex !== undefined) {
-      updateData.order = body.order ?? body.orderIndex;
-    }
-
-    const db = getDb();
-    const [updated] = await db.update(subtopics).set(updateData).where(eq(subtopics.id, id)).returning();
+    const updated = await AcademicHierarchyService.updateSubtopic(id, parsed.data);
     if (!updated) return NextResponse.json({ error: 'Subtopic not found' }, { status: 404 });
 
     return NextResponse.json(serializeSubtopic(updated));

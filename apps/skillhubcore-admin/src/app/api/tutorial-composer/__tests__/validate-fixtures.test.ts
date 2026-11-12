@@ -41,17 +41,7 @@ describe('Fixture Validation Diagnostics', () => {
   });
 
   it('createEmptyTestDocument() must FAIL TutorialDocumentSchema (by design)', () => {
-    const document = createEmptyTestDocument();
-    const result = TutorialDocumentSchema.safeParse(document);
-    
-    // ✅ EXPECTED: Empty documents are architecturally invalid
-    // Schema requires estimatedReadTime > 0 (positive())
-    expect(result.success).toBe(false);
-    
-    if (!result.success) {
-      const errors = result.error.flatten();
-      // Verify the specific validation error
-      expect(errors.fieldErrors.metadata).toBeDefined();
-    }
+    // The builder validates immediately, before returning a document.
+    expect(createEmptyTestDocument).toThrow();
   });
 });

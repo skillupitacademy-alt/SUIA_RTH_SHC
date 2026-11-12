@@ -1,0 +1,17 @@
+{
+  "readOnly": true,
+  "results": [
+    {
+      "tenant": "skillup",
+      "rows": "0"
+    },
+    {
+      "tenant": "realtutorialhub",
+      "rows": "0"
+    },
+    {
+      "tenant": "skillhubcore",
+      "rows": "0"
+    }
+  ]
+}

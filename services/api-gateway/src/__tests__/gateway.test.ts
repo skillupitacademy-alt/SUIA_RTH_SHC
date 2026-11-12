@@ -101,13 +101,13 @@ describe('api-gateway', () => {
   });
 
   it('returns healthz without auth', async () => {
-    const response = await app.request('https://api.example.com/healthz', undefined, env);
+    const response = await app.request('https://api.realtutorialhub.com/healthz', undefined, env);
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ status: 'ok' });
   });
 
   it('returns an internal health snapshot', async () => {
-    const response = await app.request('https://api.example.com/internal/health', undefined, env);
+    const response = await app.request('https://api.realtutorialhub.com/internal/health', undefined, env);
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
@@ -126,13 +126,13 @@ describe('api-gateway', () => {
   });
 
   it('rejects missing jwt on protected routes', async () => {
-    const response = await app.request('https://api.example.com/tutorial/lesson-1', undefined, env);
+    const response = await app.request('https://api.realtutorialhub.com/tutorial/lesson-1', undefined, env);
     expect(response.status).toBe(401);
   });
 
   it('proxies public auth routes without jwt', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/auth/login', {
+    const response = await app.request('https://api.realtutorialhub.com/auth/login', {
       headers: {
         Origin: 'https://quiz.skillhubcore.in',
       },
@@ -142,13 +142,13 @@ describe('api-gateway', () => {
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
     expect(headers.get('X-Internal-Secret')).toBe(env.INTERNAL_GATEWAY_SECRET);
-    expect(headers.get('X-Original-Host')).toBe('quiz.skillhubcore.in');
-    expect(headers.get('X-Forwarded-Host')).toBe('api.example.com');
+    expect(headers.get('X-Original-Host')).toBe('api.realtutorialhub.com');
+    expect(headers.get('X-Forwarded-Host')).toBe('api.realtutorialhub.com');
   });
 
   it('proxies public admin login routes without jwt', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/admin/auth/login', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/auth/login', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -243,7 +243,7 @@ describe('api-gateway', () => {
   it('routes admin api traffic to the exam service upstream', async () => {
     const token = await makeToken(['admin']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/admin/auth/me', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/auth/me', {
       headers: {
         cookie: `admin_accessToken=${encodeURIComponent(token)}`,
       },
@@ -257,7 +257,7 @@ describe('api-gateway', () => {
   it('bypasses rate limiting for admin auth heartbeat routes', async () => {
     const token = await makeToken(['admin']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/admin/auth/heartbeat', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/auth/heartbeat', {
       method: 'POST',
       headers: {
         cookie: `admin_accessToken=${encodeURIComponent(token)}`,
@@ -270,7 +270,7 @@ describe('api-gateway', () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(`${env.EXAM_SERVICE_URL}/api/admin/auth/heartbeat`);
   });
 
-  it('routes skillhubcore api host traffic to the skillhubcore upstream', async () => {
+  it('rejects a tenant learner token on the skillhubcore api host', async () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 })); 
     const response = await app.request('https://api.skillhubcore.in/api/hierarchy/domains', {
@@ -279,19 +279,13 @@ describe('api-gateway', () => {
       },
     }, env);
 
-    expect(response.status).toBe(200);
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(String(fetchSpy.mock.calls[0]?.[0])).toContain(env.SKILLHUBCORE_URL);
-    const [, init] = fetchSpy.mock.calls[0] ?? [];
-    const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Brand')).toBe('realtutorialhub');
-    expect(headers.get('X-Platform')).toBe('realtutorialhub');
-    expect(headers.get('X-Portal-Identity')).toBe('user');
+    expect(response.status).toBe(403);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('routes public telemetry without jwt', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/telemetry', {
+    const response = await app.request('https://api.realtutorialhub.com/telemetry', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -305,33 +299,33 @@ describe('api-gateway', () => {
   });
 
   it.each([
-    ['exam list', 'GET', 'https://api.example.com/exam?range=7d&page=1&limit=3', '/api/exams?range=7d&page=1&limit=3'],
-    ['exam metadata', 'GET', 'https://api.example.com/exam/metadata', '/api/exams/metadata'],
-    ['exam breakdown', 'GET', 'https://api.example.com/exam/breakdown?range=28d', '/api/exams/breakdown?range=28d'],
-    ['exam trend', 'GET', 'https://api.example.com/exam/trend?range=7d', '/api/exams/trend?range=7d'],
-    ['telemetry', 'POST', 'https://api.example.com/telemetry', '/api/telemetry'],
-    ['reports list', 'GET', 'https://api.example.com/reports', '/api/reports'],
-    ['analytics score history', 'GET', 'https://api.example.com/analytics/user/score-history', '/api/analytics/user/score-history'],
-    ['analytics mastery trend', 'GET', 'https://api.example.com/analytics/user/mastery-trend', '/api/analytics/user/mastery-trend'],
-    ['recommendations explain', 'GET', 'https://api.example.com/recommendations/explain', '/api/recommendations/explain'],
-    ['search', 'GET', 'https://api.example.com/search?q=algebra&type=all', '/api/search?q=algebra&type=all'],
-    ['export urls', 'GET', 'https://api.example.com/export/urls?examId=exam-1&format=json', '/api/export/urls?examId=exam-1&format=json'],
-    ['export status', 'GET', 'https://api.example.com/export/status/job-1?examId=exam-1&format=json', '/api/export/status/job-1?examId=exam-1&format=json'],
-    ['export trigger', 'POST', 'https://api.example.com/export/trigger', '/api/export/trigger'],
-    ['report status', 'GET', 'https://api.example.com/report-status?attemptId=attempt-1', '/api/report-status?attemptId=attempt-1'],
-    ['queue report', 'POST', 'https://api.example.com/queue-report', '/api/queue-report'],
-    ['notifications unread count', 'GET', 'https://api.example.com/notifications/unread-count', '/api/notifications/unread-count'],
-    ['factory duplicate check', 'POST', 'https://api.example.com/factory/check-duplicates', '/api/factory/check-duplicates'],
-    ['factory save', 'POST', 'https://api.example.com/factory/save', '/api/factory/save'],
-    ['system flags', 'GET', 'https://api.example.com/system/flags', '/api/system/flags'],
-    ['tutor help request', 'POST', 'https://api.example.com/tutor/help/request', '/api/tutor/help/request'],
-    ['tutor notes request', 'POST', 'https://api.example.com/tutor/notes/request', '/api/tutor/notes/request'],
-    ['adaptive exam start', 'POST', 'https://api.example.com/exams/adaptive/start', '/api/exams/adaptive/start'],
-    ['domains', 'GET', 'https://api.example.com/domains?domainId=d1', '/api/domains?domainId=d1'],
-    ['subjects', 'GET', 'https://api.example.com/subjects?domainId=d1', '/api/subjects?domainId=d1'],
-    ['topics', 'GET', 'https://api.example.com/topics?subjectId=s1', '/api/topics?subjectId=s1'],
-    ['subtopics', 'GET', 'https://api.example.com/subtopics?topicId=t1', '/api/subtopics?topicId=t1'],
-    ['quiz count', 'POST', 'https://api.example.com/quiz/count', '/api/quiz/count'],
+    ['exam list', 'GET', 'https://api.realtutorialhub.com/exam?range=7d&page=1&limit=3', '/api/exams?range=7d&page=1&limit=3'],
+    ['exam metadata', 'GET', 'https://api.realtutorialhub.com/exam/metadata', '/api/exams/metadata'],
+    ['exam breakdown', 'GET', 'https://api.realtutorialhub.com/exam/breakdown?range=28d', '/api/exams/breakdown?range=28d'],
+    ['exam trend', 'GET', 'https://api.realtutorialhub.com/exam/trend?range=7d', '/api/exams/trend?range=7d'],
+    ['telemetry', 'POST', 'https://api.realtutorialhub.com/telemetry', '/api/telemetry'],
+    ['reports list', 'GET', 'https://api.realtutorialhub.com/reports', '/api/reports'],
+    ['analytics score history', 'GET', 'https://api.realtutorialhub.com/analytics/user/score-history', '/api/analytics/user/score-history'],
+    ['analytics mastery trend', 'GET', 'https://api.realtutorialhub.com/analytics/user/mastery-trend', '/api/analytics/user/mastery-trend'],
+    ['recommendations explain', 'GET', 'https://api.realtutorialhub.com/recommendations/explain', '/api/recommendations/explain'],
+    ['search', 'GET', 'https://api.realtutorialhub.com/search?q=algebra&type=all', '/api/search?q=algebra&type=all'],
+    ['export urls', 'GET', 'https://api.realtutorialhub.com/export/urls?examId=exam-1&format=json', '/api/export/urls?examId=exam-1&format=json'],
+    ['export status', 'GET', 'https://api.realtutorialhub.com/export/status/job-1?examId=exam-1&format=json', '/api/export/status/job-1?examId=exam-1&format=json'],
+    ['export trigger', 'POST', 'https://api.realtutorialhub.com/export/trigger', '/api/export/trigger'],
+    ['report status', 'GET', 'https://api.realtutorialhub.com/report-status?attemptId=attempt-1', '/api/report-status?attemptId=attempt-1'],
+    ['queue report', 'POST', 'https://api.realtutorialhub.com/queue-report', '/api/queue-report'],
+    ['notifications unread count', 'GET', 'https://api.realtutorialhub.com/notifications/unread-count', '/api/notifications/unread-count'],
+    ['factory duplicate check', 'POST', 'https://api.realtutorialhub.com/factory/check-duplicates', '/api/factory/check-duplicates'],
+    ['factory save', 'POST', 'https://api.realtutorialhub.com/factory/save', '/api/factory/save'],
+    ['system flags', 'GET', 'https://api.realtutorialhub.com/system/flags', '/api/system/flags'],
+    ['tutor help request', 'POST', 'https://api.realtutorialhub.com/tutor/help/request', '/api/tutor/help/request'],
+    ['tutor notes request', 'POST', 'https://api.realtutorialhub.com/tutor/notes/request', '/api/tutor/notes/request'],
+    ['adaptive exam start', 'POST', 'https://api.realtutorialhub.com/exams/adaptive/start', '/api/exams/adaptive/start'],
+    ['domains', 'GET', 'https://api.realtutorialhub.com/domains?domainId=d1', '/api/domains?domainId=d1'],
+    ['subjects', 'GET', 'https://api.realtutorialhub.com/subjects?domainId=d1', '/api/subjects?domainId=d1'],
+    ['topics', 'GET', 'https://api.realtutorialhub.com/topics?subjectId=s1', '/api/topics?subjectId=s1'],
+    ['subtopics', 'GET', 'https://api.realtutorialhub.com/subtopics?topicId=t1', '/api/subtopics?topicId=t1'],
+    ['quiz count', 'POST', 'https://api.realtutorialhub.com/quiz/count', '/api/quiz/count'],
   ] as const)('rewrites quiz hierarchy route: %s', async (label, method, url, expectedPath) => {
     const token = await makeToken(label.includes('factory') || label.includes('system') ? ['admin'] : ['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
@@ -363,7 +357,7 @@ describe('api-gateway', () => {
 
   it('routes public search without jwt', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
-    const response = await app.request('https://api.example.com/search?q=algebra&type=all', undefined, env);
+    const response = await app.request('https://api.realtutorialhub.com/search?q=algebra&type=all', undefined, env);
 
     expect(response.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -374,7 +368,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/tutorial/lessons/1', {
+    const response = await app.request('https://api.realtutorialhub.com/tutorial/lessons/1', {
       headers: {
         authorization: `Bearer ${token}`,
         'x-request-id': 'request-123',
@@ -394,7 +388,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/exam', {
+    const response = await app.request('https://api.realtutorialhub.com/exam', {
       headers: {
         cookie: `accessToken=${encodeURIComponent(token)}`,
       },
@@ -411,7 +405,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['admin']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/admin/users', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/users', {
       headers: {
         cookie: `admin_accessToken=${encodeURIComponent(token)}`,
       },
@@ -426,7 +420,7 @@ describe('api-gateway', () => {
 
   it('rejects admin routes without admin_accessToken cookies', async () => {
     const token = await makeToken(['admin']);
-    const response = await app.request('https://api.example.com/admin/users', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/users', {
       headers: {
         cookie: `accessToken=${encodeURIComponent(token)}`,
       },
@@ -439,7 +433,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/tutorial/lessons/1', {
+    const response = await app.request('https://api.realtutorialhub.com/tutorial/lessons/1', {
       headers: {
         authorization: `Bearer ${token}`,
         cookie: 'theme=dark; session_hint=jwt-cookie-token',
@@ -455,7 +449,7 @@ describe('api-gateway', () => {
 
   it('forbids admin route for non-admin roles', async () => {
     const token = await makeToken(['student']);
-    const response = await app.request('https://api.example.com/admin/users', {
+    const response = await app.request('https://api.realtutorialhub.com/admin/users', {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -468,7 +462,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/tutorial/lessons/1', {
+    const response = await app.request('https://api.realtutorialhub.com/tutorial/lessons/1', {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -479,7 +473,7 @@ describe('api-gateway', () => {
   });
 
   it('blocks disallowed cors origins', async () => {
-    const response = await app.request('https://api.example.com/healthz', {
+    const response = await app.request('https://api.realtutorialhub.com/healthz', {
       method: 'OPTIONS',
       headers: {
         Origin: 'https://evil.example.com',
@@ -491,7 +485,7 @@ describe('api-gateway', () => {
   });
 
   it('allows configured cors origins', async () => {
-    const response = await app.request('https://api.example.com/healthz', {
+    const response = await app.request('https://api.realtutorialhub.com/healthz', {
       method: 'OPTIONS',
       headers: {
         Origin: 'https://tutorial.skillhubcore.in',
@@ -503,7 +497,7 @@ describe('api-gateway', () => {
   });
 
   it('allows X-Brand in gateway preflight responses', async () => {
-    const response = await app.request('https://api.example.com/auth/login', {
+    const response = await app.request('https://api.realtutorialhub.com/auth/login', {
       method: 'OPTIONS',
       headers: {
         Origin: 'https://admin.skillupitacademy.com',
@@ -521,7 +515,7 @@ describe('api-gateway', () => {
     const token = await makeToken(['student']);
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
-    const response = await app.request('https://api.example.com/exam', {
+    const response = await app.request('https://api.realtutorialhub.com/exam', {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -531,6 +525,6 @@ describe('api-gateway', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [, init] = fetchSpy.mock.calls[0] ?? [];
     const headers = new Headers((init as RequestInit | undefined)?.headers);
-    expect(headers.get('X-Original-Host')).toBe('api.example.com');
+    expect(headers.get('X-Original-Host')).toBe('api.realtutorialhub.com');
   });
 });

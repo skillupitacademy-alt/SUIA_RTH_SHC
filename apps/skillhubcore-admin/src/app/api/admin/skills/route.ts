@@ -56,19 +56,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const db = getDb();
+    const newSkill = await AcademicHierarchyService.createSkill(parsed.data);
 
-    const [newSkill] = await db
-      .insert(skills)
-      .values({
-        name: body.name,
-        description: body.description,
-        category: body.category,
-        weight: body.weight ?? 1,
-        status: body.status ?? 'active',
-      })
-      .returning();
     return NextResponse.json(newSkill, { status: 201 });
   } catch (error) {
     console.error('Error creating skill:', error);
@@ -97,17 +86,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const { name, description, category, mappingType, weight, status } = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (category !== undefined) updateData.category = category;
-    void mappingType;
-    if (weight !== undefined) updateData.weight = weight;
-    if (status !== undefined) updateData.status = status;
+    const updated = await AcademicHierarchyService.updateSkill(id, parsed.data);
 
-    const db = getDb();
-    const [updated] = await db.update(skills).set(updateData).where(eq(skills.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
 
     return NextResponse.json(updated);

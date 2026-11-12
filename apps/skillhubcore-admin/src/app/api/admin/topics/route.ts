@@ -1,5 +1,5 @@
 import { requireAdminRequest } from '@/lib/admin-route-guard';
-import { AcademicHierarchyService } from '@/lib/hierarchy/academic-hierarchy.service';
+import { AcademicHierarchyService, normalizeComplexity } from '@/lib/hierarchy/academic-hierarchy.service';
 import { parsePaginationLimit } from '@/lib/pagination-helper';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { TOPIC_COMPLEXITY_ENUM_TO_LEVEL, topicSchema } from '@/schemas/hierarchy.schemas';
@@ -7,24 +7,6 @@ import { domains, getDb, subjects, topics } from '@quiz/db';
 import { and, desc, eq, ilike } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-function normalizeComplexity(value: unknown): 'beginner' | 'intermediate' | 'advanced' | 'expert' {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    if (value >= 4) return 'expert';
-    if (value === 3) return 'advanced';
-    if (value === 2) return 'intermediate';
-    return 'beginner';
-  }
-  if (typeof value === 'string') {
-    const normalized = value.toLowerCase();
-    if (normalized === 'expert') return 'expert';
-    if (normalized === 'advanced') return 'advanced';
-    if (normalized === 'intermediate') return 'intermediate';
-    if (normalized === 'beginner') return 'beginner';
-    const numeric = Number(value);
-    if (Number.isFinite(numeric)) return normalizeComplexity(numeric);
-  }
-  return 'beginner';
-}
 
 function serializeTopic<T extends { complexity?: string | null; order?: number | null }>(row: T) {
   const normalizedComplexity = normalizeComplexity(row.complexity ?? 'beginner');
@@ -109,21 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const body = parsed.data;
-    const db = getDb();
-
-    const [newTopic] = await db
-      .insert(topics)
-      .values({
-        name: body.name,
-        description: body.description,
-        subjectId: body.subjectId,
-        complexity: normalizeComplexity(body.complexity ?? body.complexityLevel),
-        weight: body.weight ?? 1,
-        order: body.order ?? 0,
-        status: body.status ?? 'active',
-      })
-      .returning();
+    const newTopic = await AcademicHierarchyService.createTopic(parsed.data);
 
     return NextResponse.json(newTopic ? serializeTopic(newTopic) : newTopic, { status: 201 });
   } catch (error) {
@@ -153,20 +121,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
     }
 
-    const { name, description, subjectId, complexity, complexityLevel, weight, status, order } = parsed.data;
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (subjectId !== undefined) updateData.subjectId = subjectId;
-    if (complexity !== undefined || complexityLevel !== undefined) {
-      updateData.complexity = normalizeComplexity(complexity ?? complexityLevel);
-    }
-    if (weight !== undefined) updateData.weight = weight;
-    if (status !== undefined) updateData.status = status;
-    if (order !== undefined) updateData.order = order;
+    const updated = await AcademicHierarchyService.updateTopic(id, parsed.data);
 
-    const db = getDb();
-    const [updated] = await db.update(topics).set(updateData).where(eq(topics.id, id)).returning();
     if (!updated) return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
 
     return NextResponse.json(serializeTopic(updated));
