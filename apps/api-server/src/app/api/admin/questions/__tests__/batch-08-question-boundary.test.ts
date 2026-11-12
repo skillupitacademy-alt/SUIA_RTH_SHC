@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { createServer } from 'node:http';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryBus } from '@/lib/cqrs';
 import { TokenService } from '@/modules/auth/token.service';
@@ -24,6 +25,40 @@ describe('admin question CQRS handler effect boundary', () => {
   it('allows SHC admin to dispatch one question query', async () => {
     const response = await GET(await request('admin'), undefined);
     expect(response.status).toBe(200); expect(queryBus.dispatch).toHaveBeenCalledTimes(1);
+  });
+  it('reproduces the missing portal header 401 over HTTP with a real signed SHC token', async () => {
+    const server = createServer(async (incoming, outgoing) => {
+      const headers = new Headers();
+      for (const [name, value] of Object.entries(incoming.headers)) {
+        if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(',') : value);
+      }
+      const response = await GET(new NextRequest(`http://localhost${incoming.url}`, { headers }), undefined);
+      outgoing.writeHead(response.status, Object.fromEntries(response.headers));
+      outgoing.end(await response.text());
+    });
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const address = server.address();
+      if (address === null || typeof address === 'string') throw new Error('HTTP listener unavailable');
+      const url = `http://127.0.0.1:${address.port}/api/admin/questions`;
+      const valid = await request('admin');
+      const authorization = valid.headers.get('authorization')!;
+      const missing = await fetch(url, { headers: { authorization } });
+      expect(missing.status).toBe(401);
+      expect(queryBus.dispatch).not.toHaveBeenCalled();
+      const admitted = await fetch(url, { headers: { authorization, 'x-portal-identity': 'shc-admin' } });
+      expect(admitted.status).toBe(200);
+      expect(queryBus.dispatch).toHaveBeenCalledTimes(1);
+      const learner = await request('user');
+      const rejected = await fetch(url, { headers: learner.headers });
+      expect(rejected.status).toBe(401);
+      expect(queryBus.dispatch).toHaveBeenCalledTimes(1);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close(error => error ? reject(error) : resolve());
+        server.closeAllConnections();
+      });
+    }
   });
   it('denies learner mutation and propagates the verified SHC actor on valid create', async () => {
     const createQuestion = vi.fn(async () => ({ id: 'question' }));

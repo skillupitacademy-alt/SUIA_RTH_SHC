@@ -2,14 +2,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-const mocks = vi.hoisted(() => ({ token: vi.fn(), verify: vi.fn() }));
+const mocks = vi.hoisted(() => ({ token: vi.fn(), verify: vi.fn(), isComplete: vi.fn() }));
 vi.mock('@quiz/auth', () => ({ TokenService: class {
   getAccessToken = mocks.token;
   static verifyAccessToken = mocks.verify;
 } }));
-vi.mock('@quiz/db-tutorial', () => ({ TutorialProgressRepository: class {} }));
+vi.mock('@quiz/db-tutorial', () => ({ TutorialProgressRepository: class { isSubtopicComplete = mocks.isComplete; } }));
 
-import { requireStudent } from '../assignment-auth';
+import { requireAssignmentAccess, requireStudent } from '../assignment-auth';
 import { GET as content } from '@/app/api/tutorial/content/[subtopicId]/route';
 import { POST as retiredWriter } from '@/app/api/content-manager/add-section/route';
 const principal = { userId: 'rth-1', originalUserId: 'global-1', shadowUserId: 'rth-1', brand: 'realtutorialhub', roles: ['student'] };
@@ -18,6 +18,20 @@ beforeEach(() => { vi.clearAllMocks(); mocks.token.mockReturnValue('token'); moc
 afterEach(() => vi.restoreAllMocks());
 
 describe('RTH learner boundary', () => {
+  it('uses the authenticated RTH tenant for assignment eligibility', async () => {
+    mocks.isComplete.mockResolvedValue(true);
+    expect(await requireAssignmentAccess(request(), 'topic-1')).toEqual(principal);
+    expect(mocks.isComplete).toHaveBeenCalledWith('rth-1', 'topic-1', 'realtutorialhub');
+  });
+  it('rejects incomplete assignment prerequisites', async () => {
+    mocks.isComplete.mockResolvedValue(false);
+    await expect(requireAssignmentAccess(request(), 'topic-1')).rejects.toMatchObject({ statusCode: 403 });
+  });
+  it('never reads assignment progress for a foreign tenant', async () => {
+    mocks.verify.mockResolvedValue({ ...principal, brand: 'skillup' });
+    await expect(requireAssignmentAccess(request(), 'topic-1')).rejects.toMatchObject({ statusCode: 403 });
+    expect(mocks.isComplete).not.toHaveBeenCalled();
+  });
   it.each([null, '  '])('rejects a missing or empty token', async token => {
     mocks.token.mockReturnValue(token);
     await expect(requireStudent(request())).rejects.toMatchObject({ statusCode: 401 });

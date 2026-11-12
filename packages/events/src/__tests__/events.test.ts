@@ -1,3 +1,4 @@
+import { queueSignatureFixture } from './queue-signature-fixture';
 import { describe, expect, it, vi } from 'vitest';
 import type { Receiver } from '@upstash/qstash';
 
@@ -81,7 +82,7 @@ describe('events package', () => {
 
     const firstResponse = await handler(new Request('https://example.com', {
       method: 'POST',
-      headers: { 'upstash-signature': 'valid' },
+      headers: { 'upstash-signature': queueSignatureFixture },
       body: JSON.stringify(eventPayload),
     }));
     expect(firstResponse.status).toBe(200);
@@ -89,7 +90,7 @@ describe('events package', () => {
 
     const duplicateResponse = await handler(new Request('https://example.com', {
       method: 'POST',
-      headers: { 'upstash-signature': 'valid' },
+      headers: { 'upstash-signature': queueSignatureFixture },
       body: JSON.stringify(eventPayload),
     }));
 
@@ -155,7 +156,7 @@ describe('events package', () => {
     vi.stubEnv('QSTASH_CURRENT_SIGNING_KEY', '');
     vi.stubEnv('QSTASH_NEXT_SIGNING_KEY', '');
     const handler = createQStashHandler(PlatformEventTypes.PAYMENT_RECEIVED, vi.fn());
-    const req = new Request('https://example.com', { method: 'POST', headers: { 'upstash-signature': 'sig' } });
+    const req = new Request('https://example.com', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture } });
     await expect(handler(req)).rejects.toThrow('QStash signing keys are required');
   });
 
@@ -163,7 +164,7 @@ describe('events package', () => {
     vi.stubEnv('QSTASH_CURRENT_SIGNING_KEY', 'current');
     vi.stubEnv('QSTASH_NEXT_SIGNING_KEY', '');
     const handler = createQStashHandler(PlatformEventTypes.PAYMENT_RECEIVED, vi.fn());
-    const req = new Request('https://example.com', { method: 'POST', headers: { 'upstash-signature': 'sig' } });
+    const req = new Request('https://example.com', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture } });
     await expect(handler(req)).rejects.toThrow('QStash signing keys are required');
   });
 
@@ -176,7 +177,7 @@ describe('events package', () => {
       { idempotencyStore, receiver }
     );
     const req = new Request('https://example.com', {
-      method: 'POST', headers: { 'upstash-signature': 'sig' },
+      method: 'POST', headers: { 'upstash-signature': queueSignatureFixture },
       body: JSON.stringify({
         id: crypto.randomUUID(), type: PlatformEventTypes.PAYMENT_RECEIVED, correlationId: crypto.randomUUID(), source: 'src', occurredAt: new Date().toISOString(), version: 1,
         data: { userId: crypto.randomUUID(), installmentId: crypto.randomUUID(), amount: 100, paidAt: new Date().toISOString() },
@@ -192,7 +193,7 @@ describe('events package', () => {
     const receiver = { verify: vi.fn().mockResolvedValue(undefined) } as unknown as Receiver;
     const voidHandler = createQStashHandler(PlatformEventTypes.PAYMENT_RECEIVED, () => {}, { receiver });
     const req = new Request('https://example.com', {
-      method: 'POST', headers: { 'upstash-signature': 'sig' },
+      method: 'POST', headers: { 'upstash-signature': queueSignatureFixture },
       body: JSON.stringify({
         id: crypto.randomUUID(), type: PlatformEventTypes.PAYMENT_RECEIVED, correlationId: crypto.randomUUID(), source: 'src', occurredAt: new Date().toISOString(), version: 1,
         data: { userId: crypto.randomUUID(), installmentId: crypto.randomUUID(), amount: 100, paidAt: new Date().toISOString() },

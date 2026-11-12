@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Receiver } from '@upstash/qstash';
+import { assertWorkerDestination } from './worker-destination';
 import type { ZodTypeAny } from 'zod';
 
 import { PlatformEventEnvelopeSchemas, type EventEnvelope, type PlatformEventType } from './types';
@@ -462,6 +463,7 @@ export function createQStashHandler<TType extends PlatformEventType>(
       body,
       clockTolerance: 60,
     });
+    assertWorkerDestination(signature.trim(), request.url);
 
     const rawJson: unknown = JSON.parse(body);
     const parsed = (options.schema ?? PlatformEventEnvelopeSchemas[type]).parse(rawJson) as EventEnvelope<TType, unknown>;

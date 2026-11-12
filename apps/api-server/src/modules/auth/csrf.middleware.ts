@@ -13,10 +13,11 @@ export async function csrfProtection(_request: NextRequest) {
   if (isMutation === false) return null;
 
   const origin = _request.headers.get('origin');
-  const host = _request.headers.get('host');
   const path = _request.nextUrl.pathname;
   const internalKey = _request.headers.get('x-internal-key');
-  const isValidInternal = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
+  const configuredInternalKey = process.env.INTERNAL_API_KEY;
+  const isValidInternal = typeof configuredInternalKey === 'string' && configuredInternalKey.length > 0 &&
+    internalKey !== null && internalKey.length > 0 && internalKey === configuredInternalKey;
   
   // EXEMPTION: Public/Telemetry Endpoints
   // Browser-automated POSTs for CSP violations and telemetry do not carry CSRF tokens.
@@ -29,8 +30,9 @@ export async function csrfProtection(_request: NextRequest) {
   }
   
   // Check if origin is allowed
-  const isAllowed = config.csrf.allowedOrigins.includes(origin ?? '') || 
-    (origin !== null && origin.includes(host ?? ''));
+  const isAllowed = origin !== null && (
+    config.csrf.allowedOrigins.includes(origin) || origin === _request.nextUrl.origin
+  );
   
 
   if (origin !== null && isAllowed === false) {

@@ -1,3 +1,4 @@
+import { queueSignatureFixture } from './queue-signature-fixture';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { createInMemoryEventLeaseStore, createQStashHandler } from '../consumer';
@@ -6,7 +7,7 @@ beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpec
 afterEach(() => { vi.unstubAllGlobals(); });
 const body = JSON.stringify({ type: 'project.submitted', correlationId: 'correlation', id: 'event' });
 const schema = z.object({ type: z.literal('project.submitted'), correlationId: z.string(), id: z.string() });
-const request = () => new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body });
+const request = () => new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture }, body });
 function store() {
   return createInMemoryEventLeaseStore();
 }

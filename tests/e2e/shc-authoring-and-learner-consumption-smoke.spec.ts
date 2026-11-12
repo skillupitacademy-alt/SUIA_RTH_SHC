@@ -5,18 +5,24 @@ import * as path from 'path';
 // ============================================================
 // CONFIGURATION & CREDENTIALS
 // ============================================================
-const SHC_ADMIN_URL = process.env.SHC_ADMIN_URL || 'http://skillhubcore.localhost:3007';
-const SUIA_URL = process.env.SUIA_URL || 'http://skillup.localhost:3009';
-const RTH_URL = process.env.RTH_URL || 'http://realtutorialhub.localhost:3003';
+function requiredFixture(name: string): string {
+  const value = process.env[name];
+  if (!value?.trim()) throw new Error(`Missing explicit UAT fixture configuration: ${name}`);
+  return value;
+}
 
-const SHC_ADMIN_EMAIL = process.env.SHC_ADMIN_EMAIL || 'admin@skillhubcore.in';
-const SHC_ADMIN_PASSWORD = process.env.SHC_ADMIN_PASSWORD || 'testing';
+const SHC_ADMIN_URL = requiredFixture('SHC_ADMIN_URL');
+const SUIA_URL = requiredFixture('SUIA_URL');
+const RTH_URL = requiredFixture('RTH_URL');
 
-const SUIA_STUDENT_EMAIL = process.env.SUIA_STUDENT_EMAIL || 'student@skillupitacademy.com';
-const SUIA_STUDENT_PASSWORD = process.env.SUIA_STUDENT_PASSWORD || 'testing';
+const SHC_ADMIN_EMAIL = requiredFixture('SHC_ADMIN_EMAIL');
+const SHC_ADMIN_PASSWORD = requiredFixture('SHC_ADMIN_PASSWORD');
 
-const RTH_STUDENT_EMAIL = process.env.RTH_STUDENT_EMAIL || 'ajayshah@gmail.com';
-const RTH_STUDENT_PASSWORD = process.env.RTH_STUDENT_PASSWORD || 'testing';
+const SUIA_STUDENT_EMAIL = requiredFixture('SUIA_STUDENT_EMAIL');
+const SUIA_STUDENT_PASSWORD = requiredFixture('SUIA_STUDENT_PASSWORD');
+
+const RTH_STUDENT_EMAIL = requiredFixture('RTH_STUDENT_EMAIL');
+const RTH_STUDENT_PASSWORD = requiredFixture('RTH_STUDENT_PASSWORD');
 
 const SCREENSHOTS_DIR = path.join(process.cwd(), '.evidence', 'screenshots');
 if (!fs.existsSync(SCREENSHOTS_DIR)) {
@@ -39,7 +45,6 @@ test.describe('Task 36: SHC Admin Tutorial Authoring Journey', () => {
     console.log('TASK 36: SHC ADMIN TUTORIAL AUTHORING SMOKE');
     console.log('======================================================');
     console.log(`Target: ${SHC_ADMIN_URL}`);
-    console.log(`Admin User: ${SHC_ADMIN_EMAIL}`);
 
     // 1. Visit Login & Warmup
     console.log('📍 Step 1: Navigating to SHC Admin login and warming up route...');
@@ -127,7 +132,6 @@ test.describe('Task 37: Multi-Tenant Learner Consumption & Branding Smoke', () =
     console.log('TASK 37: SUIA LEARNER PORTAL CONSUMPTION');
     console.log('======================================================');
     console.log(`Target: ${SUIA_URL}`);
-    console.log(`Student: ${SUIA_STUDENT_EMAIL}`);
 
     // 1. Visit Login
     console.log('📍 Step 1: Navigating to SUIA Login...');
@@ -196,7 +200,6 @@ test.describe('Task 37: Multi-Tenant Learner Consumption & Branding Smoke', () =
     console.log('TASK 37: RTH LEARNER PORTAL CONSUMPTION & BRANDING');
     console.log('======================================================');
     console.log(`Target: ${RTH_URL}`);
-    console.log(`Student: ${RTH_STUDENT_EMAIL}`);
 
     // 1. Visit Login
     console.log('📍 Step 1: Navigating to RTH Login...');

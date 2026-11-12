@@ -37,6 +37,9 @@ export async function proxyUpstreamRequest(request: NextRequest, options: ProxyO
       if (denied && !logout) return createAuthErrorResponse(denied);
       if (!denied) {
         const { user } = auth;
+        if (/^api\/admin\/questions(?:\/|$)/.test(options.upstreamPath)) {
+          headers.set('x-portal-identity', 'shc-admin');
+        }
         headers.set('x-user-id', user.userId);
         headers.set('x-original-user-id', user.originalUserId);
         headers.set('x-shadow-user-id', user.shadowUserId);

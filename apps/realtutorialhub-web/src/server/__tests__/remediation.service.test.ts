@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { PgDialect } from 'drizzle-orm/pg-core'
+import type { SQL } from 'drizzle-orm'
 
 const mocks = vi.hoisted(() => {
   const state = {
@@ -7,12 +9,14 @@ const mocks = vi.hoisted(() => {
     updateRows: [] as Array<Array<Record<string, unknown>>>,
     insertValues: [] as Array<unknown>,
     updateValues: [] as Array<unknown>,
+    conditions: [] as Array<unknown>,
+    conflicts: [] as Array<{ target: unknown[] }>,
   }
 
   const createThenable = (queue: Array<Array<Record<string, unknown>>>) => {
     const query: Record<string, unknown> = {
       from: vi.fn(() => query),
-      where: vi.fn(() => query),
+      where: vi.fn((condition: unknown) => { state.conditions.push(condition); return query }),
       orderBy: vi.fn(() => query),
       limit: vi.fn(() => query),
       returning: vi.fn(() => query),
@@ -24,7 +28,7 @@ const mocks = vi.hoisted(() => {
         state.updateValues.push(values)
         return query
       }),
-      onConflictDoUpdate: vi.fn(() => query),
+      onConflictDoUpdate: vi.fn((options: { target: unknown[] }) => { state.conflicts.push(options); return query }),
       then: (resolve: (value: Array<Record<string, unknown>>) => void, reject: (reason: unknown) => void) =>
         Promise.resolve(queue.shift() ?? []).then(resolve, reject),
     }
@@ -49,13 +53,14 @@ const mocks = vi.hoisted(() => {
     redisGet: vi.fn(),
     redisSet: vi.fn(),
     redisDel: vi.fn(),
+    leases: new Map<string, string>(),
   }
 })
 
-vi.mock('@quiz/db-tutorial', () => ({
+vi.mock('@quiz/db-tutorial', async () => ({
   db: mocks.dbClient,
   remediationTriggers: { name: 'remediation_triggers' },
-  tutorialProgress: { name: 'tutorial_progress' },
+  tutorialProgress: (await import('../../../../../packages/db-tutorial/src/schema/tutorial-progress')).tutorialProgress,
   STANDARD_QUERY_TIMEOUT: 15_000,
   withTimeout: (promise: Promise<unknown>) => promise,
 }))
@@ -87,6 +92,26 @@ describe('RemediationService', () => {
         get: mocks.redisGet,
         set: mocks.redisSet,
         del: mocks.redisDel,
+        claim: async (input: { key: string; pendingValue: string; ownerToken: string; leaseSeconds: number }) => {
+          const existing = await mocks.redisGet(input.key) || mocks.leases.get(input.key)
+          if (existing === 'processed') return { kind: 'already-completed' as const, existingValue: existing }
+          if (existing) return { kind: 'busy' as const }
+          mocks.leases.set(input.key, input.pendingValue)
+          await mocks.redisSet(input.key, input.pendingValue, { ex: input.leaseSeconds, nx: true })
+          return { kind: 'acquired' as const, ownerToken: input.ownerToken, pendingValue: input.pendingValue }
+        },
+        completeIfOwner: async (input: { key: string; expectedPending: string; completedValue: string; retentionSeconds: number }) => {
+          if (mocks.leases.get(input.key) !== input.expectedPending) return 'owner-lost' as const
+          mocks.leases.set(input.key, input.completedValue)
+          await mocks.redisSet(input.key, input.completedValue, { ex: input.retentionSeconds })
+          return 'applied' as const
+        },
+        releaseIfOwner: async (input: { key: string; expectedPending: string }) => {
+          if (mocks.leases.get(input.key) !== input.expectedPending) return 'owner-lost' as const
+          mocks.leases.delete(input.key)
+          await mocks.redisDel(input.key)
+          return 'applied' as const
+        },
       }),
       now: () => new Date('2026-03-22T12:00:00.000Z'),
     })
@@ -128,6 +153,9 @@ describe('RemediationService', () => {
     mocks.state.updateRows.length = 0
     mocks.state.insertValues.length = 0
     mocks.state.updateValues.length = 0
+    mocks.state.conditions.length = 0
+    mocks.state.conflicts.length = 0
+    mocks.leases.clear()
     mocks.redisGet.mockResolvedValue(null)
     mocks.redisSet.mockResolvedValue('OK')
     mocks.redisDel.mockResolvedValue(1)
@@ -141,7 +169,7 @@ describe('RemediationService', () => {
     const plan = await service.createPlan(userId, examResultId, weakSubtopics)
 
     expect(mocks.dbClient.transaction).toHaveBeenCalledTimes(1)
-    expect(mocks.redisSet).toHaveBeenNthCalledWith(1, `remediation:${examResultId}`, 'processing', { ex: 86_400, nx: true })
+    expect(mocks.redisSet).toHaveBeenNthCalledWith(1, `remediation:${examResultId}`, expect.stringMatching(/^processing:/), { ex: 86_400, nx: true })
     expect(mocks.redisSet).toHaveBeenNthCalledWith(2, `remediation:${examResultId}`, 'processed', { ex: 86_400 })
     expect(mocks.state.insertValues[0]).toEqual(expect.objectContaining({
       examResultId,
@@ -150,9 +178,24 @@ describe('RemediationService', () => {
       weakSubtopicIds: weakSubtopics.map((item) => item.subtopicId),
       status: 'pending',
     }))
+    expect(mocks.state.insertValues[1]).toEqual(expect.arrayContaining([
+      expect.objectContaining({ tenantId: 'realtutorialhub', userId }),
+    ]))
+    expect(mocks.state.conflicts[0].target.map(column => (column as { name: string }).name))
+      .toEqual(['tenant_id', 'user_id', 'subtopic_id'])
     expect(plan.examResultId).toBe(examResultId)
     expect(plan.weakSubtopics).toHaveLength(2)
     expect(plan.status).toBe('pending')
+  })
+
+  afterEach(() => {
+    const dialect = new PgDialect()
+    const progressConditions = mocks.state.conditions.map(condition => dialect.sqlToQuery(condition as SQL))
+      .filter(query => query.sql.includes('tutorial_progress'))
+    for (const query of progressConditions) {
+      expect(query.sql).toContain('tenant_id')
+      expect(query.params).toContain('realtutorialhub')
+    }
   })
 
   it('returns the existing plan when the idempotency key already exists', async () => {

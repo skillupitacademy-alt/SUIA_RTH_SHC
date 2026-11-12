@@ -10,6 +10,7 @@ export const proxy = await createAuthProxy({
 
 export const config = {
   matcher: [
+    '/api/:path*',
     // 🔒 SECURITY: Match ALL application routes including RSC requests
     // RSC requests MUST pass through authentication boundary
     // Previous config excluded RSC requests, creating security bypass

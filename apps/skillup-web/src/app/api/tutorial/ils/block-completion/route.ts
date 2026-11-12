@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStudentAuth } from '@/lib/student-auth';
+import { serverErrorResponse } from '@/share-branding/api/server-error';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,16 +41,15 @@ export async function POST(request: NextRequest) {
     });
     
     if (!response.ok) {
+      if (response.status >= 500) {
+        return serverErrorResponse(request, response.status, 'Block completion service unavailable');
+      }
       const error = await response.json().catch(() => ({ error: 'Failed to track block completion' }));
       return NextResponse.json(error, { status: response.status });
     }
     
     return NextResponse.json(await response.json());
   } catch (error) {
-    console.error('[SkillUp ILS] trackBlockCompletion error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse(request, 500, 'Internal server error', error);
   }
 }

@@ -13,6 +13,7 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      { find: /^@\/share-branding\/(.*)$/, replacement: path.resolve(__dirname, '../../src/share-branding/$1') },
       { find: /^@\/(.*)$/, replacement: path.resolve(__dirname, './src/$1') },
       { find: '@', replacement: path.resolve(__dirname, './src') },
       { find: /^@quiz\/auth\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/auth/src/$1') },

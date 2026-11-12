@@ -70,6 +70,38 @@ describe('csrfProtection', () => {
     expect(body.message).toBe('Origin mismatch');
   });
 
+  it.each(['http://localhost.evil.example', 'http://evil.example/localhost', 'null'])('rejects spoofed origin %s even with matching CSRF tokens', async origin => {
+    const req = new NextRequest('http://localhost/api/tutorial/progress', {
+      method: 'POST', headers: { origin, host: 'localhost', 'x-csrf-token': 'matching' },
+    });
+    req.cookies.set('csrfToken', 'matching');
+    expect((await csrfProtection(req))?.status).toBe(403);
+  });
+
+  it('rejects an arbitrary origin when the host header is missing', async () => {
+    const req = new NextRequest('http://localhost/api/tutorial/progress', {
+      method: 'POST', headers: { origin: 'https://evil.example', 'x-csrf-token': 'matching' },
+    });
+    req.cookies.set('csrfToken', 'matching');
+    expect((await csrfProtection(req))?.status).toBe(403);
+  });
+
+  it('does not trust an empty internal key', async () => {
+    process.env.INTERNAL_API_KEY = '';
+    const req = new NextRequest('http://localhost/api/tutorial/progress', {
+      method: 'POST', headers: { 'x-internal-key': '' },
+    });
+    expect((await csrfProtection(req))?.status).toBe(403);
+  });
+
+  it.each(['http://localhost', 'http://trusted.com'])('allows exact approved origin %s with matching tokens', async origin => {
+    const req = new NextRequest('http://localhost/api/tutorial/progress', {
+      method: 'POST', headers: { origin, host: 'localhost', 'x-csrf-token': 'matching' },
+    });
+    req.cookies.set('csrfToken', 'matching');
+    expect(await csrfProtection(req)).toBeNull();
+  });
+
   it('exempts security report and telemetry routes', async () => {
     const exemptPaths = ['/api/security/report', '/api/logs/client', '/api/workflows/foo', '/api/export/trigger'];
     for (const path of exemptPaths) {

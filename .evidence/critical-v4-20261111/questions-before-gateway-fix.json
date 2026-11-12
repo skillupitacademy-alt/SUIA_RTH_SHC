@@ -1,0 +1,147 @@
+{
+  "head": "f245e11ee5584018a0f751080595192325e74ee6",
+  "generatedAt": "2026-11-11T06:54:42.589Z",
+  "boundary": "Actual local HTTP BFF, gateway, identity and backend. Existing owner-designated administrator. Short-lived signed probes held in memory. Read-only identity SELECT. No login or resource mutation calls.",
+  "results": [
+    {
+      "name": "backend_current_admin",
+      "requestId": "8a36f7ca-52e8-48ff-b7d2-79b636107673",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "responseRequestId": "8a36f7ca-52e8-48ff-b7d2-79b636107673",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true
+    },
+    {
+      "name": "gateway_current_admin",
+      "requestId": "e66eb6f6-4991-4ca5-ba2a-435f228fbba5",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "responseRequestId": "e66eb6f6-4991-4ca5-ba2a-435f228fbba5",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true
+    },
+    {
+      "name": "questions_current_admin",
+      "requestId": "735a5c9d-f45a-4011-a27b-f788d21b0d73",
+      "expectedStatus": 200,
+      "actualStatus": 401,
+      "pass": false,
+      "responseRequestId": "735a5c9d-f45a-4011-a27b-f788d21b0d73",
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_admin_role",
+      "requestId": "3c0c46c7-0247-4ccb-a08d-368b149a12f2",
+      "expectedStatus": 200,
+      "actualStatus": 401,
+      "pass": false,
+      "responseRequestId": "3c0c46c7-0247-4ccb-a08d-368b149a12f2",
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_anonymous",
+      "requestId": "7bb081d4-6625-45d3-a975-e5ae386cb79d",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_forged_headers_without_cookie",
+      "requestId": "d0a35c08-7c5f-4759-98e3-101d5b4a5bf2",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_signed_student_role",
+      "requestId": "bf6b16cc-96ac-49d8-8657-ce866b2331f5",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_audience",
+      "requestId": "42ebf0f9-2fbf-41b0-aa4a-5958d432ed8c",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_brand",
+      "requestId": "c4d7bdd6-88cc-48d8-ad5e-bf5b8c2cf29a",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_token_class",
+      "requestId": "04833a00-eb87-4a95-ad35-7226d07d2ede",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_expired",
+      "requestId": "7cd0aab9-b06f-4285-b43a-cf323d590920",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_inactive_token",
+      "requestId": "a12eff55-05b3-487c-9136-ccf89598f466",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_unknown_account",
+      "requestId": "06600c20-9699-44dd-85cf-72296b24b755",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_invalid_signature",
+      "requestId": "fd5419ea-96d3-4ef6-a684-8dfd6549e247",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    }
+  ]
+}

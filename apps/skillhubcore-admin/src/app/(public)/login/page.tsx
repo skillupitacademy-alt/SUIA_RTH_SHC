@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Loader2, Network } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
@@ -12,10 +12,16 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isHydrated, setIsHydrated] = useState(false);
   const { login } = useAuthStore();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isHydrated || isLoading) return;
     setError('');
     setIsLoading(true);
 
@@ -42,8 +48,13 @@ function LoginForm() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-        throw new Error(errorData.message || 'Login failed');
+        const messages: Record<number, string> = {
+          401: 'Invalid email or password.',
+          403: 'Access is not permitted for this account.',
+          429: 'Too many sign-in attempts. Try again later.',
+        };
+        setError(messages[response.status] ?? 'Authentication service is unavailable. Try again.');
+        return;
       }
 
       const data = await response.json();
@@ -64,9 +75,9 @@ function LoginForm() {
       // Redirect to dashboard or validated internal redirect target
       const redirectTarget = sanitizeRedirectUrl(searchParams.get('redirect') ?? searchParams.get('returnTo'));
       router.push(redirectTarget);
-    } catch (err) {
-      console.error('[SHC_LOGIN] Login failed:', err);
-      setError(err instanceof Error ? err.message : 'Login failed');
+    } catch {
+      console.error('[SHC_LOGIN] Authentication request failed');
+      setError('Unable to sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +105,10 @@ function LoginForm() {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form method="post" action="/login" onSubmit={handleSubmit} className="space-y-4">
+            <noscript>
+              <p className="text-sm text-slate-700">Enable JavaScript to sign in securely.</p>
+            </noscript>
             {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="ml-1 text-sm font-bold text-slate-900">
@@ -105,6 +119,7 @@ function LoginForm() {
                 <input
                   id="email"
                   name="email"
+                  disabled={!isHydrated}
                   type="email"
                   placeholder="admin@skillhubcore.in"
                   autoComplete="email"
@@ -124,6 +139,7 @@ function LoginForm() {
                 <input
                   id="password"
                   name="password"
+                  disabled={!isHydrated}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   autoComplete="current-password"
@@ -151,7 +167,7 @@ function LoginForm() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={!isHydrated || isLoading}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
             >
               {isLoading ? (

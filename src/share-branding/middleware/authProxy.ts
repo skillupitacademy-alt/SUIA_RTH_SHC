@@ -100,7 +100,7 @@ function getLoginUrl(request: NextRequest, redirectPath: string, brandLoginUrl?:
 
 function hasValidGatewaySecret(request: NextRequest): boolean {
   if (typeof INTERNAL_GATEWAY_SECRET !== 'string' || INTERNAL_GATEWAY_SECRET.length === 0) {
-    return true;
+    return false;
   }
 
   const gatewaySecret = request.headers.get('x-gateway-secret');
@@ -268,6 +268,37 @@ export interface AuthProxyOptions {
 
 export async function createAuthProxy(options: AuthProxyOptions = {}) {
   return async function authProxy(request: NextRequest) {
+    const path = request.nextUrl.pathname;
+    // Queue authentication belongs to the worker's signature boundary.
+    if (path.startsWith('/api/workers/')) return NextResponse.next();
+    if (path.startsWith('/api/') && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+      const origin = request.headers.get('origin');
+      const referer = request.headers.get('referer');
+      let browserOrigin = origin;
+      if (!browserOrigin && referer) {
+        try { browserOrigin = new URL(referer).origin; } catch { browserOrigin = 'invalid'; }
+      }
+      const cookieAuthenticated = request.cookies.has('accessToken') || request.cookies.has('admin_accessToken');
+      const trustedInternal = typeof INTERNAL_GATEWAY_SECRET === 'string' && INTERNAL_GATEWAY_SECRET.length > 0 &&
+        request.headers.get('x-gateway-secret') === INTERNAL_GATEWAY_SECRET;
+      // Next's local proxy URL can use localhost even when the browser-facing
+      // Host is a brand subdomain. Only the actual Host selects this origin.
+      let requestOrigin = request.nextUrl.origin;
+      const host = request.headers.get('host');
+      if (host) {
+        try {
+          const publicUrl = new URL(`${request.nextUrl.protocol}//${host}`);
+          if (publicUrl.host.toLowerCase() !== host.toLowerCase()) throw new Error('Invalid host');
+          requestOrigin = publicUrl.origin;
+        } catch { requestOrigin = 'invalid'; }
+      }
+      if ((browserOrigin && browserOrigin !== requestOrigin) ||
+          (!browserOrigin && cookieAuthenticated && !trustedInternal)) {
+        return NextResponse.json({ error: 'Untrusted request origin' }, {
+          status: 403, headers: { 'Cache-Control': 'private, no-store' },
+        });
+      }
+    }
     // 🔒 SECURITY: RSC requests MUST NOT bypass authentication
     // RSC is a transport/rendering mechanism, not an authorization class
     // Protected routes must be authenticated regardless of request type (HTML/RSC/API)

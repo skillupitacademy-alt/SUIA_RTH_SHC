@@ -1,6 +1,6 @@
 import { Hono, type Context } from 'hono';
 
-import { authenticateRequest } from '@/middleware/auth';
+import { authenticateRequest, type AuthResolution } from '@/middleware/auth';
 import { createCorsMiddleware } from '@/middleware/cors';
 import { createTraceDebugMiddleware } from '@/middleware/trace-debug';
 import { proxyRequest } from '@/lib/proxy';
@@ -174,7 +174,7 @@ export const createApp = () => {
     let userId: string | undefined;
     let shadowUserId: string | undefined;
     let originalUserId: string | undefined;
-    let portal: 'admin' | 'user' | undefined;
+    let portal: AuthResolution['portal'] | undefined;
     let roles: string[] | undefined; // 🔥 ADD: Extract roles from JWT
     if (route.auth === true) {
       const authStart = Date.now();

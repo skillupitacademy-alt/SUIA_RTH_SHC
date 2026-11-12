@@ -1,3 +1,4 @@
+const validWorkerSignature = `header.${Buffer.from(JSON.stringify({ sub: 'https://realtutorialhub.test/api/workers/index-content-vector' })).toString('base64url')}.signature`;
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlatformEventTypes } from '@quiz/events';
 import { SignatureError } from '@upstash/qstash';
@@ -98,7 +99,7 @@ const createEnvelope = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const createRequest = (body: unknown, signature = 'valid-signature') =>
+const createRequest = (body: unknown, signature = validWorkerSignature) =>
   new Request('https://realtutorialhub.test/api/workers/index-content-vector', {
     method: 'POST',
     headers: {

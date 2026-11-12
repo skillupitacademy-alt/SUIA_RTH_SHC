@@ -1,0 +1,187 @@
+{
+  "head": "f245e11ee5584018a0f751080595192325e74ee6",
+  "generatedAt": "2026-11-11T13:38:26.131Z",
+  "boundary": "Actual local HTTP BFF, gateway, identity and backend. Existing owner-designated administrator. Short-lived signed probes held in memory. Read-only identity SELECT. No login or resource mutation calls.",
+  "results": [
+    {
+      "name": "backend_current_admin",
+      "requestId": "30da6aca-385b-4e34-85c3-20ed311294d4",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "30da6aca-385b-4e34-85c3-20ed311294d4",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true
+    },
+    {
+      "name": "gateway_current_admin",
+      "requestId": "60f8e107-4138-447d-9705-a3158b045bf4",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "60f8e107-4138-447d-9705-a3158b045bf4",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true
+    },
+    {
+      "name": "backend_questions_signed_admin",
+      "requestId": "de763b75-581f-4d90-80d1-9c679dfbe758",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "de763b75-581f-4d90-80d1-9c679dfbe758",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true,
+      "questionCount": 1
+    },
+    {
+      "name": "gateway_questions_signed_admin",
+      "requestId": "aceeb154-9173-4a45-ac3e-571c01eb7714",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "aceeb154-9173-4a45-ac3e-571c01eb7714",
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "json": true,
+      "questionCount": 1
+    },
+    {
+      "name": "questions_current_admin",
+      "requestId": "556f743f-8fa2-4434-8ebf-149c106250ae",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "556f743f-8fa2-4434-8ebf-149c106250ae",
+      "cacheControl": "private, no-store",
+      "json": true,
+      "questionCount": 1
+    },
+    {
+      "name": "questions_admin_role",
+      "requestId": "02d58177-0239-468a-b5ee-b6cefd02920e",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": "02d58177-0239-468a-b5ee-b6cefd02920e",
+      "cacheControl": "private, no-store",
+      "json": true,
+      "questionCount": 1
+    },
+    {
+      "name": "questions_anonymous",
+      "requestId": "2f8ead34-4ba7-4df6-8c0b-84d9e224f7a9",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_forged_headers_without_cookie",
+      "requestId": "ec8da675-2481-4c69-9f89-ea67d0a464dc",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_signed_student_role",
+      "requestId": "e2ac821f-229e-47c2-8523-d95a64f24ee6",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_audience",
+      "requestId": "c4c48928-f7f5-4ce1-8812-db486e2fa2a7",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_brand",
+      "requestId": "b7f318ee-fe3c-461a-9564-94bd9ba5dad5",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_wrong_token_class",
+      "requestId": "f7f30540-6c15-4831-b690-a42b7930b701",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_expired",
+      "requestId": "97f20e90-9e89-424e-97ec-ba8f52f039e5",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_inactive_token",
+      "requestId": "0358493c-70a0-46cc-9cdc-bc56892fb82e",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_unknown_account",
+      "requestId": "8d7c3f22-2230-4052-8bd5-afe15852e163",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    },
+    {
+      "name": "questions_invalid_signature",
+      "requestId": "d842705c-dc64-4d0d-b0d3-92d942df623b",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "pass": true,
+      "bodyValid": true,
+      "responseRequestId": null,
+      "cacheControl": "private, no-store",
+      "json": true
+    }
+  ]
+}

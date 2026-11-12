@@ -4,7 +4,7 @@ export type ProxyRequestOptions = {
   userId?: string;
   shadowUserId?: string;
   originalUserId?: string;
-  portal?: 'admin' | 'user';
+  portal?: 'admin' | 'user' | 'shc-admin';
   brand?: string;
   roles?: string[]; // 🔥 ADD: User roles for RBAC
   upstreamPath?: string;

@@ -2,6 +2,7 @@ import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
+import { serverErrorResponse } from '@/share-branding/api/server-error';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,9 @@ async function getHandler(request: NextRequest) {
     );
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        return serverErrorResponse(request, response.status, 'Progress service unavailable');
+      }
       return NextResponse.json({ error: 'Failed to get progress' }, { status: response.status });
     }
 
@@ -74,7 +78,7 @@ async function getHandler(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
     }
 
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 500 });
+    return serverErrorResponse(request, 500, 'Internal server error', error);
   }
 }
 
@@ -119,6 +123,9 @@ async function postHandler(request: NextRequest) {
     );
 
     if (!response.ok) {
+      if (response.status >= 500) {
+        return serverErrorResponse(request, response.status, 'Progress service unavailable');
+      }
       return NextResponse.json({ error: 'Failed to track progress' }, { status: response.status });
     }
 
@@ -129,7 +136,7 @@ async function postHandler(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
     }
 
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 500 });
+    return serverErrorResponse(request, 500, 'Internal server error', error);
   }
 }
 

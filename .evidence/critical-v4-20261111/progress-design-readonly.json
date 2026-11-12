@@ -1,0 +1,139 @@
+{
+  "timestamp": "2026-11-11T13:55:54.634Z",
+  "source": "f245e11ee5584018a0f751080595192325e74ee6",
+  "targetFingerprint": "d69fe9af7c33",
+  "transaction": [
+    {
+      "read_only": "on",
+      "isolation": "repeatable read"
+    }
+  ],
+  "columns": [
+    {
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "subtopic_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "status",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "NO",
+      "column_default": "'not_started'::tutorial_progress_status"
+    },
+    {
+      "column_name": "blocks_completed",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "column_name": "remediation_triggered",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "column_name": "score",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "column_name": "time_spent_sec",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "column_name": "completed_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "column_name": "version",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "column_name": "deleted_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    }
+  ],
+  "counts": [
+    {
+      "rows": "0",
+      "retained_deleted_rows": "0"
+    }
+  ],
+  "duplicates": [
+    {
+      "groups": "0"
+    }
+  ],
+  "indexes": [
+    {
+      "indexname": "idx_tutorial_progress_user",
+      "indexdef": "CREATE INDEX idx_tutorial_progress_user ON public.tutorial_progress USING btree (user_id)"
+    },
+    {
+      "indexname": "tutorial_progress_pkey",
+      "indexdef": "CREATE UNIQUE INDEX tutorial_progress_pkey ON public.tutorial_progress USING btree (id)"
+    },
+    {
+      "indexname": "uq_tutorial_progress_user_subtopic",
+      "indexdef": "CREATE UNIQUE INDEX uq_tutorial_progress_user_subtopic ON public.tutorial_progress USING btree (user_id, subtopic_id)"
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "tutorial_progress_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "views": [],
+  "triggers": [],
+  "functions": [],
+  "rowSecurity": [
+    {
+      "enabled": false,
+      "forced": false
+    }
+  ],
+  "policies": [],
+  "migrationLedger": [
+    {
+      "table_schema": "drizzle",
+      "table_name": "__drizzle_migrations"
+    }
+  ]
+}

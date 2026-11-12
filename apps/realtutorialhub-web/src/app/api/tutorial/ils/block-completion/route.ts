@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireStudent, AssignmentAuthError } from '@/lib/assignment-auth';
+import { serverErrorResponse } from '@/share-branding/api/server-error';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,9 @@ export async function POST(request: NextRequest) {
     });
     
     if (!response.ok) {
+      if (response.status >= 500) {
+        return serverErrorResponse(request, response.status, 'Block completion service unavailable');
+      }
       const error = await response.json().catch(() => ({ error: 'Failed to record block completion' }));
       return NextResponse.json(
         { error: error.error || 'Block completion recording failed' },
@@ -65,10 +69,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
     
   } catch (error) {
-    console.error('[RTH ILS] recordBlockCompletion error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
-    );
+    return serverErrorResponse(request, 500, 'Internal server error', error);
   }
 }

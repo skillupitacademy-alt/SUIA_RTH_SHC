@@ -1,3 +1,4 @@
+import { queueSignatureFixture } from './queue-signature-fixture';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { createQStashHandler } from '../consumer';
@@ -13,7 +14,7 @@ it('does not invoke a registered handler for a different custom-schema event typ
   });
   let accepted = false;
   try {
-    const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.approved', correlationId: 'fixture', id: 'fixture' }) }));
+    const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture }, body: JSON.stringify({ type: 'project.approved', correlationId: 'fixture', id: 'fixture' }) }));
     accepted = response.ok;
   } catch {
     // A parser rejection is also a denial; the handler must still have no effects.
@@ -29,7 +30,7 @@ it('allows a verified message matching the registered event type', async () => {
     schema: z.object({ type: z.literal('project.submitted'), correlationId: z.string(), id: z.string() }),
     tenantScope: 'skillup',
   });
-  const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.submitted', correlationId: 'fixture', id: 'fixture' }) }));
+  const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture }, body: JSON.stringify({ type: 'project.submitted', correlationId: 'fixture', id: 'fixture' }) }));
   expect(response.ok).toBe(true);
   expect(effect).toHaveBeenCalledOnce();
 });

@@ -1,3 +1,4 @@
+import { queueSignatureFixture } from './queue-signature-fixture';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const transport = vi.hoisted(() => ({ publishJSON: vi.fn() }));
 vi.mock('@upstash/qstash', () => ({ Client: class { publishJSON = transport.publishJSON; }, Receiver: class {} }));
@@ -13,13 +14,13 @@ it('passes a published enrolled event through its registered consumer', async ()
   const published = await publishEvent(PlatformEventTypes.STUDENT_ENROLLED, payload, { destinationUrl: 'https://isolated.invalid/', source: 'fixture' });
   const handle = vi.fn();
   const consumer = createQStashHandler(PlatformEventTypes.STUDENT_ENROLLED, handle, { receiver: { verify: async () => true } as never });
-  const response = await consumer(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify(captured) }));
+  const response = await consumer(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture }, body: JSON.stringify(captured) }));
   expect(response.ok).toBe(true);
   expect(handle).toHaveBeenCalledWith(expect.objectContaining({ id: published.envelope.id, version: 1, data: payload }));
 });
 it('rejects malformed registered event before its handler', async () => {
   const handle = vi.fn();
   const consumer = createQStashHandler(PlatformEventTypes.STUDENT_ENROLLED, handle, { receiver: { verify: async () => true } as never });
-  await expect(consumer(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'student.enrolled', data: {} }) }))).rejects.toThrow();
+  await expect(consumer(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': queueSignatureFixture }, body: JSON.stringify({ type: 'student.enrolled', data: {} }) }))).rejects.toThrow();
   expect(handle).not.toHaveBeenCalled();
 });

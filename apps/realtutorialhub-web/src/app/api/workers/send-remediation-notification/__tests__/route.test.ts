@@ -1,3 +1,4 @@
+const validWorkerSignature = `header.${Buffer.from(JSON.stringify({ sub: 'https://realtutorialhub.test/api/workers/send-remediation-notification' })).toString('base64url')}.signature`;
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SignatureError } from '@upstash/qstash';
 
@@ -38,7 +39,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { POST } from '../route';
 
-const createRequest = (data: Record<string, unknown>, signature = 'valid-signature') =>
+const createRequest = (data: Record<string, unknown>, signature = validWorkerSignature) =>
   new Request('https://realtutorialhub.test/api/workers/send-remediation-notification', {
     method: 'POST',
     headers: {
@@ -111,7 +112,7 @@ describe('send-remediation-notification worker', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'upstash-signature': 'valid-signature',
+        'upstash-signature': validWorkerSignature,
       },
       body: JSON.stringify(malformed),
     }));

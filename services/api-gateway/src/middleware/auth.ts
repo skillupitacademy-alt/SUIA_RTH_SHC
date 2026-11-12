@@ -16,7 +16,7 @@ type RouteLike = {
 
 export type AuthResolution = {
   payload: SkillHubCoreTokenPayload;
-  portal: PortalKind;
+  portal: PortalKind | 'shc-admin';
   tokenSource: AuthTokenSource;
   requestBrand: Brand;
 };
@@ -252,9 +252,18 @@ export async function authenticateRequest(
       resolvedBrand,
     }));
 
+    // Preserve the signed SHC audience when rebuilding upstream identity.
+    // A caller-supplied portal header cannot establish this identity.
+    const audiences = typeof verifiedPayload.aud === 'string'
+      ? [verifiedPayload.aud]
+      : verifiedPayload.aud ?? [];
+    const verifiedPortal = portal === 'admin' && tokenBrand === 'skillhubcore' && audiences.includes('shc-admin')
+      ? 'shc-admin'
+      : portal;
+
     return {
       payload,
-      portal,
+      portal: verifiedPortal,
       tokenSource: selection.source ?? 'authorization',
       requestBrand: resolvedBrand,
     };

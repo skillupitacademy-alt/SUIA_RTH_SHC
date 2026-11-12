@@ -74,7 +74,7 @@ export async function requireStudent(request: Request) {
 
 export async function requireAssignmentAccess(request: Request, subtopicId: string) {
   const user = await requireStudent(request);
-  const isComplete = await progressRepository.isSubtopicComplete(user.userId, subtopicId);
+  const isComplete = await progressRepository.isSubtopicComplete(user.userId, subtopicId, user.brand);
 
   if (!isComplete) {
     throw new AssignmentAuthError('Complete the tutorial content (all 6 blocks) to unlock assignments', 403);

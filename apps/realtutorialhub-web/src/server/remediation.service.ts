@@ -128,6 +128,7 @@ export class RemediationService {
         .where(
           and(
             eq(tutorialProgress.userId, userId),
+            eq(tutorialProgress.tenantId, 'realtutorialhub'),
             inArray(tutorialProgress.subtopicId, subtopicIds),
             isNull(tutorialProgress.deletedAt)
           )
@@ -261,6 +262,7 @@ export class RemediationService {
                 weakSubtopics.map((item) => ({
                   userId,
                   subtopicId: item.subtopicId,
+                  tenantId: 'realtutorialhub',
                   status: 'not_started' as const,
                   blocksCompleted: [] as string[],
                   remediationTriggered: true as const,
@@ -274,7 +276,7 @@ export class RemediationService {
                 }))
               )
               .onConflictDoUpdate({
-                target: [tutorialProgress.userId, tutorialProgress.subtopicId],
+                target: [tutorialProgress.tenantId, tutorialProgress.userId, tutorialProgress.subtopicId],
                 set: {
                   status: 'not_started',
                   blocksCompleted: [],
@@ -411,7 +413,7 @@ export class RemediationService {
             version: sql`${tutorialProgress.version} + 1`,
             updatedAt: now,
           })
-          .where(and(eq(tutorialProgress.userId, userId), eq(tutorialProgress.subtopicId, subtopicId), isNull(tutorialProgress.deletedAt)))
+          .where(and(eq(tutorialProgress.userId, userId), eq(tutorialProgress.tenantId, 'realtutorialhub'), eq(tutorialProgress.subtopicId, subtopicId), isNull(tutorialProgress.deletedAt)))
           .returning(),
         STANDARD_QUERY_TIMEOUT,
         'RemediationService.markSubtopicRemediated.updateProgress'
@@ -425,6 +427,7 @@ export class RemediationService {
             .where(
               and(
                 eq(tutorialProgress.userId, userId),
+                eq(tutorialProgress.tenantId, 'realtutorialhub'),
                 inArray(tutorialProgress.subtopicId, trigger.weakSubtopicIds),
                 isNull(tutorialProgress.deletedAt)
               )

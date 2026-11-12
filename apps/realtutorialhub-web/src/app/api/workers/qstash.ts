@@ -1,4 +1,5 @@
 import { Receiver, SignatureError } from '@upstash/qstash';
+import { assertWorkerDestination } from '@quiz/events';
 
 const getReceiver = () => {
   const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
@@ -28,6 +29,7 @@ export async function verifyQStashRequest(request: Request): Promise<string> {
     body,
     clockTolerance: 60,
   });
+  assertWorkerDestination(signature.trim(), request.url);
 
   return body;
 }

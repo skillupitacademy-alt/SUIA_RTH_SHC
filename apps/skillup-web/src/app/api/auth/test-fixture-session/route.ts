@@ -16,8 +16,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   const deployedProduction = process.env.VERCEL_ENV === 'production' ||
     process.env.APP_ENV === 'production' || process.env.ENVIRONMENT === 'production';
-  const isolatedPreview = process.env.PROJECT_LLM_ISOLATED_VERIFICATION === 'true';
-  if (deployedProduction || (process.env.NODE_ENV === 'production' && !isolatedPreview) ||
+  if (deployedProduction || process.env.NODE_ENV === 'production' ||
       process.env.PROJECT_LLM_LEARNER_RUNTIME_ENABLED !== 'true') {
     return NextResponse.json(
       { error: 'Test fixture auth endpoint is disabled in production' },
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     const testTenant = (body.tenant || configuredTenant || '').toLowerCase();
     const fixtureId = body.fixtureId || '';
     const testLearnerId = process.env.PROJECT_LLM_TEST_LEARNER_ID || '';
-    if (!configuredTenant || !testTenant || testTenant !== configuredTenant.toLowerCase()) {
+    if (!configuredTenant || testTenant !== 'skillup' || testTenant !== configuredTenant.toLowerCase()) {
       return NextResponse.json({ error: 'Unknown test tenant' }, { status: 400 });
     }
     if (!fixtureId || !configuredFixtureIds.includes(fixtureId)) {

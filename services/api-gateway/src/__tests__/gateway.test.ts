@@ -50,6 +50,56 @@ beforeEach(() => {
 });
 
 describe('api-gateway', () => {
+  it.each(['admin', 'super_admin'])('preserves the verified SHC Questions portal for %s', async role => {
+    const token = await new SignJWT({
+      userId: 'shc-principal', originalUserId: 'shc-principal', shadowUserId: 'shc-principal',
+      roles: [role], isAdmin: true, tokenType: 'admin', brand: 'skillhubcore',
+    }).setProtectedHeader({ alg: 'HS256' }).setIssuer('skillhubcore.in')
+      .setAudience('shc-admin').setIssuedAt().setExpirationTime('5m')
+      .sign(new TextEncoder().encode(env.ADMIN_JWT_SECRET));
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok'));
+    const response = await app.request('http://127.0.0.1:8787/api/admin/questions?limit=1', {
+      headers: {
+        authorization: `Bearer ${token}`, 'x-portal-identity': 'shc-admin',
+        'x-original-host': 'admin.skillhubcore.in', 'x-internal-secret': env.INTERNAL_GATEWAY_SECRET,
+        'x-user-id': 'forged-user', 'x-user-roles': 'forged-role',
+      },
+    }, env);
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchSpy.mock.calls[0];
+    expect(String(url)).toBe(`${env.EXAM_SERVICE_URL}/api/admin/questions?limit=1`);
+    const headers = new Headers((init as RequestInit).headers);
+    expect(headers.get('x-portal-identity')).toBe('shc-admin');
+    expect(headers.get('x-user-id')).toBe('shc-principal');
+    expect(headers.get('x-user-roles')).toBe(role);
+  });
+
+  it('ignores a forged SHC portal header on a tenant administrator token', async () => {
+    const token = await makeToken(['admin']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok'));
+    const response = await app.request('https://api.realtutorialhub.com/api/admin/questions', {
+      headers: { authorization: `Bearer ${token}`, 'x-portal-identity': 'shc-admin' },
+    }, env);
+    expect(response.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0];
+    expect(new Headers((init as RequestInit).headers).get('x-portal-identity')).toBe('admin');
+  });
+
+  it('rejects a learner using forged SHC administrator headers before forwarding Questions', async () => {
+    const token = await makeToken(['student']);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok'));
+    const response = await app.request('https://api.realtutorialhub.com/api/admin/questions', {
+      headers: {
+        authorization: `Bearer ${token}`, 'x-portal-identity': 'shc-admin',
+        'x-user-id': 'forged-admin', 'x-user-roles': 'super_admin',
+      },
+    }, env);
+    expect(response.status).toBe(403);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it('returns healthz without auth', async () => {
     const response = await app.request('https://api.example.com/healthz', undefined, env);
     expect(response.status).toBe(200);

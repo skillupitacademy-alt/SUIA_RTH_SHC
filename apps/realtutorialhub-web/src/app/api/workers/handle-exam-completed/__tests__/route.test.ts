@@ -1,3 +1,4 @@
+const validWorkerSignature = `header.${Buffer.from(JSON.stringify({ sub: 'https://realtutorialhub.test/api/workers/handle-exam-completed' })).toString('base64url')}.signature`;
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PlatformEventTypes } from '@quiz/events'
 import { SignatureError } from '@upstash/qstash'
@@ -53,7 +54,7 @@ const createEnvelope = (data: Record<string, unknown>) => ({
   data,
 })
 
-const createRequest = (data: Record<string, unknown>, signature = 'valid-signature') =>
+const createRequest = (data: Record<string, unknown>, signature = validWorkerSignature) =>
   new Request('https://realtutorialhub.test/api/workers/handle-exam-completed', {
     method: 'POST',
     headers: {
@@ -116,7 +117,7 @@ describe('handle-exam-completed worker', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'upstash-signature': 'valid-signature',
+        'upstash-signature': validWorkerSignature,
       },
       body: JSON.stringify(malformed),
     }))

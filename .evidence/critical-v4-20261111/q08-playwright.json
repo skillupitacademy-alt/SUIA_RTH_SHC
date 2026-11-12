@@ -1,0 +1,372 @@
+{
+  "config": {
+    "argv": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "E:\\onlinewebsites\\quiz-platform\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/shc-login-security.spec.ts",
+      "--project=chromium",
+      "--workers=1",
+      "--retries=0",
+      "--reporter=line,json",
+      "--output=.evidence/critical-v4-20261111/q08-browser-results"
+    ],
+    "configFile": "E:\\onlinewebsites\\quiz-platform\\playwright.config.ts",
+    "rootDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "E:/onlinewebsites/quiz-platform/.evidence/critical-v4-20261111/q08-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+        "testIgnore": [
+          "**/ils-tutorial-session.spec.ts",
+          "**/phase-2b18-step-1.3-instructional-completion.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "E:/onlinewebsites/quiz-platform/.evidence/critical-v4-20261111/q08-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+        "testIgnore": [
+          "**/ils-tutorial-session.spec.ts",
+          "**/phase-2b18-step-1.3-instructional-completion.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "E:/onlinewebsites/quiz-platform/.evidence/critical-v4-20261111/q08-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+        "testIgnore": [
+          "**/ils-tutorial-session.spec.ts",
+          "**/phase-2b18-step-1.3-instructional-completion.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "E:/onlinewebsites/quiz-platform/.evidence/critical-v4-20261111/q08-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "suia",
+        "name": "suia",
+        "testDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/ils-tutorial-session.spec.ts",
+          "**/phase-2b18-step-1.3-instructional-completion.spec.ts",
+          "**/diagnostic-block-identity-fix.spec.ts",
+          "**/gate-e-short-runtime-proof.spec.ts",
+          "**/gate-fgh-automatic-completion-certification.spec.ts",
+          "**/feature-flag-preflight.spec.ts",
+          "**/inspect-ils-progress.spec.ts",
+          "**/gate-f-diagnostic.spec.ts",
+          "**/gate-f-forensic-console-capture.spec.ts"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "E:/onlinewebsites/quiz-platform/.evidence/critical-v4-20261111/q08-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rth",
+        "name": "rth",
+        "testDir": "E:/onlinewebsites/quiz-platform/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/ils-tutorial-session.spec.ts"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "shc-login-security.spec.ts",
+      "file": "shc-login-security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Q08 blocks login without JavaScript and declares a safe native POST",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1835,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:43.049Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-6a87feac9cd67a2cbe81",
+          "file": "shc-login-security.spec.ts",
+          "line": 38,
+          "column": 5
+        },
+        {
+          "title": "Q08 keeps the form disabled while hydration scripts are delayed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:44.996Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-fa99bb40e139e7144eb7",
+          "file": "shc-login-security.spec.ts",
+          "line": 60,
+          "column": 5
+        },
+        {
+          "title": "Q08 native submission remains a body-only POST when controls are forcibly enabled",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 242,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:45.868Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-6b629d10bcf7b8529d83",
+          "file": "shc-login-security.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "Q08 hydrated click uses one JSON POST and the sanitized redirect",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 994,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:46.119Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-a0515340fa4bbdb14274",
+          "file": "shc-login-security.spec.ts",
+          "line": 129,
+          "column": 5
+        },
+        {
+          "title": "Q08 hydrated Enter uses one JSON POST and the sanitized redirect",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 959,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:47.123Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-9994a31b795216575690",
+          "file": "shc-login-security.spec.ts",
+          "line": 129,
+          "column": 5
+        },
+        {
+          "title": "Q08 hides upstream diagnostics after hydrated submission",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1278,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-11T06:47:48.091Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a5681510490d68701e6f-158276ee73438b4418a8",
+          "file": "shc-login-security.spec.ts",
+          "line": 151,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-11T06:47:42.293Z",
+    "duration": 7936.503,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

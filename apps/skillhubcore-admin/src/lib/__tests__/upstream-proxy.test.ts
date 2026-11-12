@@ -20,6 +20,7 @@ function request(method = 'GET') {
       host: 'attacker.example', cookie: 'accessToken=verified-token; admin_accessToken=different-token; unrelated=secret',
       authorization: 'Bearer forged', 'x-user-id': 'forged', 'x-user-roles': 'super_admin',
       'x-brand': 'skillup', 'x-internal-secret': 'forged', 'x-gateway-secret': 'forged',
+      'x-portal-identity': 'infrastructure',
       'x-forwarded-host': 'attacker.example', 'x-forwarded-proto': 'http',
       'content-type': 'application/json',
     },
@@ -39,6 +40,7 @@ describe('SHC upstream trust boundary', () => {
     expect(options.upstreamPath).toBe('api/admin/questions');
     expect(forwarded.headers.get('host')).toBe('admin.skillhubcore.in');
     expect(forwarded.headers.get('x-brand')).toBe('skillhubcore');
+    expect(forwarded.headers.get('x-portal-identity')).toBe('shc-admin');
     expect(forwarded.headers.get('x-user-id')).toBe(user.userId);
     expect(forwarded.headers.get('x-user-roles')).toBe('admin');
     expect(forwarded.headers.get('authorization')).toBe('Bearer verified-token');
@@ -56,7 +58,7 @@ describe('SHC upstream trust boundary', () => {
     mocks.authenticate.mockResolvedValue({ type: 'INVALID_TOKEN' });
     await proxyUpstreamRequest(request('POST'), { fallbackApiBase: 'fixed', upstreamPath: `api/shc/auth/${action}` });
     const [forwarded, options] = mocks.upstream.mock.calls[0];
-    for (const name of ['cookie', 'authorization', 'x-user-id', 'x-user-roles', 'x-internal-secret']) {
+    for (const name of ['cookie', 'authorization', 'x-user-id', 'x-user-roles', 'x-internal-secret', 'x-portal-identity']) {
       expect(forwarded.headers.has(name)).toBe(false);
     }
     expect(new TextDecoder().decode(options.body)).toBe('{"hello":"world"}');
@@ -67,5 +69,13 @@ describe('SHC upstream trust boundary', () => {
     const [forwarded, options] = mocks.upstream.mock.calls[0];
     expect(forwarded.method).toBe('POST');
     expect(options.body).toBe('server-body');
+  });
+  it.each(['api/admin/questions/id', 'api/admin/questions/bulk'])('pins the Questions child path %s', async upstreamPath => {
+    await proxyUpstreamRequest(request(), { fallbackApiBase: 'fixed', upstreamPath });
+    expect(mocks.upstream.mock.calls[0][0].headers.get('x-portal-identity')).toBe('shc-admin');
+  });
+  it.each(['api/admin/questions-other', 'api/admin/users'])('keeps unrelated portal contracts for %s', async upstreamPath => {
+    await proxyUpstreamRequest(request(), { fallbackApiBase: 'fixed', upstreamPath });
+    expect(mocks.upstream.mock.calls[0][0].headers.has('x-portal-identity')).toBe(false);
   });
 });
