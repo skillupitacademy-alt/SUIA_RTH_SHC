@@ -119,3 +119,4 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
   };
 }
+

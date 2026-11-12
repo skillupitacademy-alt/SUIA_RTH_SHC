@@ -28,12 +28,12 @@ const PUBLIC_PATHS = [
 const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'];
 
 const PROTECTED_PREFIXES = [
-  '/learn/',
   '/start-learning/',
   '/tutorial-v2',
+  '/tutorial/assignments',
   '/api/tutorial/',
   '/api/ai-tutor/',
-  '/remediation/',
+  '/remediation',
   '/dashboard',
   '/onboarding',
   '/student',

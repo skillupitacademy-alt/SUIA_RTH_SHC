@@ -10,21 +10,21 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-vi.mock('@/components/content/LearnerProgressPanel', () => ({
+vi.mock('../../../../../../../../components/content/LearnerProgressPanel', () => ({
   LearnerProgressPanel: (props: { subtopicId: string }) => React.createElement('div', {
     'data-testid': 'learner-progress-panel',
     'data-subtopic-id': props.subtopicId,
   }),
 }));
 
-vi.mock('@/lib/domain-themes', () => ({
+vi.mock('../../../../../../../../lib/domain-themes', () => ({
   getDomainTheme: vi.fn(() => ({})),
 }));
 
 const mockGetHierarchyBySlugs = vi.fn();
 const mockGetPublishedTutorialContent = vi.fn();
 
-vi.mock('@/lib/tutorial-hierarchy', () => ({
+vi.mock('../../../../../../../../lib/tutorial-hierarchy', () => ({
   getHierarchyBySlugs: (...args: unknown[]) => mockGetHierarchyBySlugs(...args),
   getPublishedTutorialContent: (...args: unknown[]) => mockGetPublishedTutorialContent(...args),
   slugifySegment: (value: string) => value.toLowerCase().replace(/\s+/g, '-'),
@@ -66,7 +66,7 @@ describe('tutorial assignments page (Correction R3: Missing Hierarchy Protection
 
     expect(metadata.title).toBe('Promises Assignments - Async Programming | RealTutorialHub');
     expect(metadata.description).toContain('Practice paths stay tied to the same hierarchy');
-    expect(metadata.openGraph?.type).toBe('article');
+    expect(metadata.openGraph).toMatchObject({ type: 'article' });
   });
 
   it('returns fallback not-found metadata when hierarchy is null without querying content', async () => {
@@ -103,3 +103,4 @@ describe('tutorial assignments page (Correction R3: Missing Hierarchy Protection
     expect(mockGetPublishedTutorialContent).not.toHaveBeenCalled();
   });
 });
+

@@ -129,7 +129,7 @@ export default async function RemediationPage() {
               notesExcerpt: getNotesExcerpt(tutorialContent, weakSubtopic.subtopicName),
               hierarchy,
               href: path
-                ? `/learn/${path.domainSlug}/${path.subjectSlug}/${path.topicSlug}/${path.subtopicSlug}`
+                ? `/tutorial?domain=${encodeURIComponent(path.domainSlug)}&subject=${encodeURIComponent(path.subjectSlug)}&topic=${encodeURIComponent(path.topicSlug)}&subtopic=${encodeURIComponent(path.subtopicSlug)}`
                 : null,
             } satisfies RemediationWeakAreaCard;
           })

@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { RemediationOverview } from '../RemediationOverview';
-import { getDomainTheme } from '@/lib/domain-themes';
+import { getDomainTheme } from '../../../lib/domain-themes';
 
 const theme = getDomainTheme('full-stack');
 
@@ -30,7 +30,7 @@ describe('RemediationOverview', () => {
                 topicSlug: 'asynchronous-programming',
                 subtopicSlug: 'promises',
               },
-              href: '/learn/full-stack/javascript/asynchronous-programming/promises',
+              href: '/tutorial?domain=full-stack&subject=javascript&topic=asynchronous-programming&subtopic=promises',
             },
           ],
         }}

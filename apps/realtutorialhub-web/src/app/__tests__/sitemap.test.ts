@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/tutorial-hierarchy', () => ({
-  getPublishedTutorialPaths: vi.fn(async () => [
+vi.mock('../../server/tutorial-delivery', () => ({
+  getPublishedTutorialPathsForDelivery: vi.fn(async () => [
     {
       domainSlug: 'full-stack',
       subjectSlug: 'javascript',
@@ -20,7 +20,7 @@ describe('sitemap', () => {
     const entries = await sitemap();
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]?.url).toContain('/learn/full-stack/javascript/async-programming/promises');
+    expect(entries[0]?.url).toContain('/tutorial?domain=full-stack&subject=javascript&topic=async-programming&subtopic=promises');
     expect(entries[0]?.changeFrequency).toBe('weekly');
   });
 });

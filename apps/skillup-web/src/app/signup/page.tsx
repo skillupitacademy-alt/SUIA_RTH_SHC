@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import AuthPage from '../../../../../src/share-branding/AuthPage';
 
 export const metadata = {
@@ -7,9 +6,5 @@ export const metadata = {
 };
 
 export default function SignupPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AuthPage brand="skillup" initialMode="signup" />
-    </Suspense>
-  );
+  return <AuthPage brand="skillup" initialMode="signup" />;
 }

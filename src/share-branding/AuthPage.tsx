@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   GraduationCap,
@@ -28,17 +28,7 @@ interface AuthPageProps {
 }
 
 export default function AuthPage(props: AuthPageProps) {
-  return (
-    <React.Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-50">
-          <Loader2 className="h-10 w-10 animate-spin text-slate-300" />
-        </div>
-      }
-    >
-      <AuthContent {...props} />
-    </React.Suspense>
-  );
+  return <AuthContent {...props} />;
 }
 
 function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
@@ -51,7 +41,6 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
   const [submitError, setSubmitError] = useState('');
   const submittingRef = useRef(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -106,8 +95,12 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
             sessionStorage.setItem('skip_initial_refresh', 'true');
           }
 
+          const rawRedirect =
+            typeof window !== 'undefined'
+              ? new URLSearchParams(window.location.search).get('redirect')
+              : null;
           const destination = onboardingCompleted
-            ? sanitizeLearnerRedirect(searchParams.get('redirect'))
+            ? sanitizeLearnerRedirect(rawRedirect)
             : '/onboarding';
 
           navigating = true;

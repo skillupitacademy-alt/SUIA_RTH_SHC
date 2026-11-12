@@ -61,11 +61,11 @@ describe('realtutorialhub-web proxy', () => {
   });
 
   it('redirects protected routes to login on same origin when unauthenticated', async () => {
-    const response = await proxy(makeRequest('/learn/full-stack/js/promises', undefined, 'http://realtutorialhub.localhost:3003'));
+    const response = await proxy(makeRequest('/tutorial-v2/full-stack/js/async/promises/notes', undefined, 'http://realtutorialhub.localhost:3003'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('http://realtutorialhub.localhost:3003/login?redirect=%2Flearn%2Ffull-stack%2Fjs%2Fpromises');
-    expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/learn/full-stack/js/promises');
+    expect(response.headers.get('location')).toBe('http://realtutorialhub.localhost:3003/login?redirect=%2Ftutorial-v2%2Ffull-stack%2Fjs%2Fasync%2Fpromises%2Fnotes');
+    expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/tutorial-v2/full-stack/js/async/promises/notes');
   });
 
   it('accepts a valid brand JWT on public routes and adds user headers', async () => {

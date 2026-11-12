@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = await getPublishedTutorialPathsForDelivery();
 
   return paths.map((path) => ({
-    url: `${baseUrl}/learn/${path.domainSlug}/${path.subjectSlug}/${path.topicSlug}/${path.subtopicSlug}`,
+    url: `${baseUrl}/tutorial?domain=${encodeURIComponent(path.domainSlug)}&subject=${encodeURIComponent(path.subjectSlug)}&topic=${encodeURIComponent(path.topicSlug)}&subtopic=${encodeURIComponent(path.subtopicSlug)}`,
     lastModified: path.updatedAt ?? new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,

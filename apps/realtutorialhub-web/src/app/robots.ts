@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      allow: ['/learn/', '/start-learning/', '/tutorial/'],
+      allow: ['/start-learning/', '/tutorial/', '/tutorial-v2/'],
       disallow: ['/api/', '/dashboard/', '/login', '/signup'],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
