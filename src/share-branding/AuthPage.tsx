@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +20,7 @@ import {
 import { type SharedBrandId, getBrandConfig } from './brandConfig';
 import { getAuthPageData } from './authPageData';
 import { fetchCurrentUserState, loginUser, signupUser } from './auth/authLoader';
+import { sanitizeLearnerRedirect } from './auth/sanitizeLearnerRedirect';
 
 interface AuthPageProps {
   brand: SharedBrandId;
@@ -44,11 +45,17 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
   const config = getBrandConfig(brand);
   const data = getAuthPageData(config);
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot_password'>(initialMode);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const submittingRef = useRef(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const modeContent = data.modes[mode];
 
@@ -68,88 +75,89 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isHydrated || isLoading || submittingRef.current) return;
+
+    submittingRef.current = true;
     setSubmitError('');
     setIsLoading(true);
+    let navigating = false;
 
-    if (mode === 'login') {
-      const formData = new FormData(event.currentTarget);
-      const email = formData.get('email')?.toString().trim() ?? '';
-      const password = formData.get('password')?.toString() ?? '';
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email')?.toString().trim() ?? '';
+    const password = formData.get('password')?.toString() ?? '';
+    const name = formData.get('name')?.toString().trim() ?? '';
 
-      try {
-        // ✅ STEP 1: Authenticate user (sets cookies)
-        console.log('[AUTH_PAGE] 🔐 Step 1: Calling loginUser...');
-        await loginUser({ email, password, brand });
-        console.log('[AUTH_PAGE] ✅ Step 1: Login successful');
-        
-        // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
-        // NO router.refresh() needed - we fetch directly with cache bypass
-        console.log('[AUTH_PAGE] 🔍 Step 2: Fetching current user state...');
-        const sessionState = await fetchCurrentUserState();
-        console.log('[AUTH_PAGE] ✅ Step 2: Session state retrieved:', {
-          onboardingCompleted: sessionState.onboardingCompleted,
-        });
-        
-        // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
-        // This prevents race conditions when navigating to dashboard/profile
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('skip_initial_refresh', 'true');
+    try {
+      if (mode === 'login') {
+        if (!email || !password) {
+          setSubmitError('Enter your email and password.');
+          return;
         }
-        
-        // ✅ STEP 3: Navigate based on fresh state
-        // Server component will re-fetch and verify (double-check pattern)
-        const redirectTarget = searchParams.get('redirect');
-        const destination = sessionState.onboardingCompleted === true
-          ? redirectTarget || '/dashboard'
-          : '/onboarding';
-        
-        console.log('[AUTH_PAGE] 🎯 Step 3: Redirecting to:', destination, {
-          onboardingCompleted: sessionState.onboardingCompleted,
-          hasRedirectParam: !!redirectTarget,
-        });
-        
-        window.location.assign(destination);
-      } catch (error) {
-        setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
-      } finally {
+
+        const result = await loginUser({ email, password, brand });
+        if (result.success) {
+          const sessionState = await fetchCurrentUserState();
+          const onboardingCompleted =
+            result.user?.onboardingCompleted === true ||
+            result.user?.onboarded === true ||
+            sessionState.onboardingCompleted === true;
+
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('skip_initial_refresh', 'true');
+          }
+
+          const destination = onboardingCompleted
+            ? sanitizeLearnerRedirect(searchParams.get('redirect'))
+            : '/onboarding';
+
+          navigating = true;
+          window.location.assign(destination);
+          return;
+        }
+        setSubmitError('Invalid email or password.');
+        return;
+      }
+
+      if (mode === 'signup') {
+        if (!name || !email || !password) {
+          setSubmitError('Complete all required fields.');
+          return;
+        }
+
+        const result = await signupUser({ name, email, password, brand });
+        if (result.success) {
+          const sessionState = await fetchCurrentUserState();
+          const onboardingCompleted =
+            result.user?.onboardingCompleted === true ||
+            result.user?.onboarded === true ||
+            sessionState.onboardingCompleted === true;
+
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('skip_initial_refresh', 'true');
+          }
+
+          const destination = onboardingCompleted ? '/dashboard' : '/onboarding';
+          navigating = true;
+          window.location.assign(destination);
+          return;
+        }
+        setSubmitError('Account cannot be created with those details.');
+        return;
+      }
+
+      setSubmitError('Authentication is only available through the live auth flow.');
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Authentication service is temporarily unavailable.',
+      );
+    } finally {
+      if (!navigating) {
+        submittingRef.current = false;
         setIsLoading(false);
       }
-      return;
     }
-
-    if (mode === 'signup') {
-      const formData = new FormData(event.currentTarget);
-      const name = formData.get('name')?.toString().trim() ?? '';
-      const email = formData.get('email')?.toString().trim() ?? '';
-      const password = formData.get('password')?.toString() ?? '';
-
-      try {
-        // ✅ STEP 1: Create user account (sets cookies)
-        await signupUser({ name, email, password, brand });
-        
-        // ✅ STEP 2: Fetch fresh session state (cache: 'no-store' guarantees fresh data)
-        // NO router.refresh() needed - we fetch directly with cache bypass
-        const sessionState = await fetchCurrentUserState();
-        
-        // 🔥 PRODUCTION FIX: Set flag to skip initial token refresh
-        // This prevents race conditions when navigating to dashboard/profile
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('skip_initial_refresh', 'true');
-        }
-        
-        // ✅ STEP 3: Navigate based on fresh state
-        // Server component will re-fetch and verify (double-check pattern)
-        window.location.assign(sessionState.onboardingCompleted === true ? '/dashboard' : '/onboarding');
-      } catch (error) {
-        setSubmitError(error instanceof Error ? error.message : 'Authentication failed');
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    setIsLoading(false);
-    setSubmitError('Authentication is only available through the live auth flow.');
   };
 
   return (
@@ -215,11 +223,11 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
         </section>
 
         <section className="relative flex w-full justify-center overflow-x-hidden overflow-y-auto bg-white p-4 sm:p-6 md:w-1/2 md:min-w-0 md:p-10 lg:p-12">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={mode}
               variants={containerVariants}
-              initial="hidden"
+              initial={false}
               animate="visible"
               exit="exit"
               className="mt-2 flex h-full w-full max-w-md min-w-0 flex-col sm:mt-4 md:mt-0"
@@ -245,6 +253,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                 <form
                   className="space-y-4"
                   method="post"
+                  action={mode === 'signup' ? '/signup' : '/login'}
                   noValidate
                   onSubmit={(event) => {
                     event.preventDefault();
@@ -262,6 +271,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                           id="full-name"
                           name="name"
                           type="text"
+                          disabled={!isHydrated || isLoading}
                           placeholder={data.fullNamePlaceholder}
                           autoComplete="name"
                           className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-4 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
@@ -281,6 +291,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                         id="email"
                         name="email"
                         type="email"
+                        disabled={!isHydrated || isLoading}
                         placeholder={data.emailPlaceholder}
                         autoComplete="email"
                         className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-4 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
@@ -312,6 +323,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                           id="password"
                           name="password"
                           type={showPassword ? 'text' : 'password'}
+                          disabled={!isHydrated || isLoading}
                           placeholder={data.passwordPlaceholder}
                           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                           className="w-full rounded-2xl border border-slate-200 bg-gray-50 py-3 pl-12 pr-12 font-semibold text-slate-950 placeholder-slate-500 outline-none transition-all group-focus-within:shadow-sm focus:bg-white focus:border-[color:var(--brand-sec)] focus:ring-4 focus:ring-[color:var(--brand-sec)]/20"
@@ -336,7 +348,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                   ) : null}
 
                   <button
-                    disabled={isLoading}
+                    disabled={!isHydrated || isLoading}
                     type="submit"
                     className="relative !mt-8 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-black/10 bg-slate-950 py-3.5 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0 sm:text-lg"
                     style={{ backgroundColor: config.primaryColorDark }}

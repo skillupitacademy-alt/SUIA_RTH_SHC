@@ -21,7 +21,20 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
   const t = useTranslations('blocks.layman');
   const common = useTranslations('common');
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader
+          icon="L"
+          title={t('title')}
+          accentColor={theme.blockLaymanHeader}
+          badge={isCompleted ? common('completed') : common('plainEnglish')}
+          badgeTone={isCompleted ? 'success' : 'neutral'}
+          headingId="block-layman-heading"
+        />
+      </section>
+    );
+  }
 
   // Check for Modular Format (support both snake_case from DB and camelCase)
   const isModular = 'simpleOverview' in data || 'simple_overview' in data || 'analogy_card' in data || 'intro_card' in data;
@@ -129,7 +142,7 @@ export function LaymanBlock({ data, theme, isCompleted = false }: LaymanBlockPro
         >
           {[safeData.example1, safeData.example2].map((example, index) => (
             <article
-              key={example?.company}
+              key={`${example?.company ?? 'example'}-${index}`}
               style={{
                 padding: '14px 16px',
                 borderRadius: 12,

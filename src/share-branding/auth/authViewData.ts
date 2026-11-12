@@ -10,7 +10,10 @@ export interface AuthViewData {
 export interface LoginUserSummary {
   id?: string;
   email?: string;
+  name?: string | null;
   roles?: string[];
+  onboarded?: boolean;
+  onboardingCompleted?: boolean;
 }
 
 export interface LoginApiResponse {

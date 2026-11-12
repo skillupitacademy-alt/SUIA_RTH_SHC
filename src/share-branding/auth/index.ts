@@ -12,6 +12,8 @@ export {
   type AuthValidationState,
 } from './validateAuthState';
 
+export { sanitizeLearnerRedirect } from './sanitizeLearnerRedirect';
+
 // Core auth extraction and validation
 export {
   extractAuthFromRequest,

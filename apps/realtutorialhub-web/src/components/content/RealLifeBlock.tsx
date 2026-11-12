@@ -29,7 +29,13 @@ export function RealLifeBlock({ data, theme }: RealLifeBlockProps) {
   const t = useTranslations('blocks.real_life');
   const common = useTranslations('common');
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader icon="R" title={t('title')} accentColor={theme.blockRealLifeHeader} headingId="block-reallife-heading" />
+      </section>
+    );
+  }
 
   // Check for Modular Format (support both snake_case and camelCase)
   const isModular = 'conceptMapping' in data || 'concept_mapping' in data || 'industry_scenario' in data;

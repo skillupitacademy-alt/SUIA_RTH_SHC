@@ -24,7 +24,7 @@ interface AuthRequestContext {
  * The gateway is now shared across all brands (SkillUp, RTH, SkillHubCore).
  * Brand resolution happens at the gateway based on X-Original-Host.
  */
-function getGatewayUrlForHost(host?: string): string | undefined {
+function getGatewayUrlForHost(): string | undefined {
   const configured = process.env.GATEWAY_URL;
   return configured?.trim().replace(/\/+$/, '') || undefined;
 }
@@ -94,7 +94,7 @@ async function buildAuthRequestContext(): Promise<AuthRequestContext> {
       throw new Error('[AUTH_VALIDATE] No valid host header found');
     }
 
-    const gatewayUrl = getGatewayUrlForHost(publicHost);
+    const gatewayUrl = getGatewayUrlForHost();
 
     if (!gatewayUrl) {
       throw new Error('[AUTH_VALIDATE] No gateway URL configured');
@@ -138,7 +138,84 @@ async function buildCookieHeader(): Promise<string> {
   }
 }
 
+function parseAuthValidationState(raw: unknown): AuthValidationState | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const root = raw as Record<string, unknown>;
+  const dataObj =
+    root.data && typeof root.data === 'object' ? (root.data as Record<string, unknown>) : undefined;
+  const candidate =
+    (root.user && typeof root.user === 'object' ? (root.user as Record<string, unknown>) : undefined) ??
+    (dataObj?.user && typeof dataObj.user === 'object'
+      ? (dataObj.user as Record<string, unknown>)
+      : undefined) ??
+    dataObj ??
+    root;
+
+  const id =
+    typeof candidate.id === 'string' && candidate.id.trim().length > 0
+      ? candidate.id.trim()
+      : typeof candidate.userId === 'string' && candidate.userId.trim().length > 0
+        ? candidate.userId.trim()
+        : null;
+  const email =
+    typeof candidate.email === 'string' && candidate.email.trim().length > 0
+      ? candidate.email.trim()
+      : null;
+
+  if (!id || !email) {
+    return null;
+  }
+
+  const rawRoles = Array.isArray(candidate.roles)
+    ? candidate.roles.filter((role): role is string => typeof role === 'string' && role.trim().length > 0)
+    : [];
+  const fallbackRole =
+    typeof candidate.role === 'string' && candidate.role.trim().length > 0
+      ? [candidate.role.trim()]
+      : ['user'];
+
+  const onboardingCompleted =
+    candidate.onboardingCompleted === true || candidate.onboarded === true;
+
+  return {
+    id,
+    email,
+    onboardingCompleted,
+    roles: rawRoles.length > 0 ? rawRoles : fallbackRole,
+  };
+}
+
+async function validateBrowserAuthState(): Promise<AuthValidationState | null> {
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data: unknown = await res.json().catch(() => null);
+    return parseAuthValidationState(data);
+  } catch {
+    return null;
+  }
+}
+
 export async function validateAuthState(): Promise<AuthValidationState | null> {
+  if (typeof window !== 'undefined') {
+    return validateBrowserAuthState();
+  }
+
   const MAX_RETRIES = 2;
   const TIMEOUT_MS = 3000;
 
@@ -160,6 +237,7 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
       const gatewayUrl = authRequestContext.gatewayUrl;
 
       if (!gatewayUrl) {
+        clearTimeout(timeout);
         console.error('[AUTH_VALIDATE] Gateway URL unavailable for SSR auth validation');
         return null;
       }
@@ -195,6 +273,7 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         typeof internalGatewaySecret !== 'string' ||
         internalGatewaySecret.trim().length === 0
       ) {
+        clearTimeout(timeout);
         console.error('[AUTH_VALIDATE] INTERNAL_GATEWAY_SECRET is not configured');
         return null;
       }
@@ -240,8 +319,8 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
       }
 
       if (!res.ok) {
-        const errorText = await res.text().catch(() => 'Unable to read error');
-        console.warn(`[AUTH_VALIDATE] Server error (attempt ${attempt + 1}):`, res.status, errorText);
+        await res.body?.cancel().catch(() => undefined);
+        console.warn(`[AUTH_VALIDATE] Server error (attempt ${attempt + 1}):`, res.status);
         lastError = new Error(`Auth validation failed: HTTP ${res.status}`);
 
         if (attempt < MAX_RETRIES) {
@@ -250,10 +329,10 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         continue;
       }
 
-      const data = await res.json();
-      const user = data.user;
+      const data: unknown = await res.json();
+      const result = parseAuthValidationState(data);
 
-      if (!user?.id || !user?.email) {
+      if (!result) {
         lastError = new Error('Auth validation returned an invalid user payload');
 
         if (attempt < MAX_RETRIES) {
@@ -261,20 +340,6 @@ export async function validateAuthState(): Promise<AuthValidationState | null> {
         }
         continue;
       }
-
-      const result = {
-        id: user.id,
-        email: user.email,
-        onboardingCompleted: user.onboardingCompleted,
-        roles: user.roles || (user.role ? [user.role] : ['user']),
-      };
-
-      console.log('[AUTH_VALIDATE] Success:', {
-        userId: result.id.slice(0, 8),
-        email: result.email,
-        onboardingCompleted: result.onboardingCompleted,
-        roles: result.roles,
-      });
 
       return result;
     } catch (err) {

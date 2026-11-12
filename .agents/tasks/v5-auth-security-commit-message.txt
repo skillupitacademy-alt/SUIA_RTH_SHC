@@ -1,0 +1,964 @@
+﻿feat: V5 Auth Security & Content Blocks - Redirect Sanitization & State Validation
+
+EXECUTIVE SUMMARY
+
+This V5 commit delivers comprehensive authentication security hardening across the
+shared learner authentication system (RTH and SkillUp), introduces redirect sanitization
+to prevent open redirect attacks, expands auth state validation with SSR gateway support
+and retry logic, enhances content block rendering with modular format support, and
+establishes E2E security test coverage for learner login flows. The work addresses
+critical security boundaries including credential exposure prevention, diagnostic
+string leakage protection, auth loop mitigation, and multi-brand isolation enforcement.
+
+Security improvements include a new sanitizeLearnerRedirect utility that blocks
+protocol-relative redirects, backslash path traversal, URL-encoded attacks, control
+characters, and auth page loops. Auth state validation now supports SSR with internal
+gateway secrets, fail-closed behavior when gateway is unavailable, timeout handling,
+retry logic with exponential backoff, and redacted logging to prevent identity leakage
+in console output.
+
+Content block components (CodeBlock, LaymanBlock, RealLifeBlock, TechnicalBlock) now
+detect modular vs legacy format and route to appropriate renderers, maintaining backward
+compatibility while supporting the new content schema. RTH tutorial sections API route
+was added to proxy tutorial sections through the centralized API with brand context.
+
+Comprehensive E2E security tests validate login flows without JavaScript (SSR-disabled
+controls), hydration-delayed controls, native form POST interception, redirect
+sanitization, diagnostic string redaction, signup double-submit protection, and
+credential exposure prevention across request URLs, console logs, and page errors.
+
+Test infrastructure improvements include Vitest configuration with path aliases,
+setup file with jsdom environment and mock globals, and expanded test coverage for
+assignment auth, sanitize redirect, student auth, and tutorial API routes.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 1: AUTH SECURITY CORE (6 FILES - MAJOR REFACTORING)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. src/share-branding/auth/validateAuthState.ts (107 additions - MAJOR EXPANSION)
+   ─────────────────────────────────────────────────────────────────────────────
+   
+   SECURITY BOUNDARY ENFORCEMENT:
+   • getPublicHostFromHeaders: Only reads Next.js 'host' header, NEVER x-original-host
+     or x-forwarded-host from browser requests (attacker-controlled)
+   • Host parsing extracts hostname only, strips port and trailing dots
+   • Fail-closed behavior: returns null when GATEWAY_URL or INTERNAL_GATEWAY_SECRET
+     unavailable in SSR context
+   
+   SSR GATEWAY VALIDATION:
+   • buildAuthRequestContext: Constructs SSR auth request with publicHost from
+     Next.js headers and gatewayUrl from environment
+   • buildCookieHeader: Serializes Next.js cookie store for SSR requests
+   • Gateway URL shared across all brands (SkillUp, RTH, SkillHubCore) with
+     brand resolution at gateway via X-Original-Host
+   • SSR requests include X-Original-Host (from Next.js host) and X-Internal-Secret
+     to prove trusted application server origin
+   
+   RETRY & TIMEOUT LOGIC:
+   • validateAuthState: Implements 3-attempt retry with exponential backoff
+     (100ms * attempt) on server errors or invalid payloads
+   • 3-second timeout per attempt with AbortController
+   • Distinguishes 401 (unauthenticated, return null) from 5xx (retry eligible)
+   • All retries exhausted logs critical error and returns null (fail-closed)
+   
+   BROWSER VALIDATION:
+   • validateBrowserAuthState: Uses relative /api/profile endpoint with
+     credentials:include and cache:no-store
+   • No gateway URL or internal secrets exposed to browser
+   • Returns null on any non-ok response
+   
+   PAYLOAD PARSING:
+   • parseAuthValidationState: Handles multiple payload shapes (root.user,
+     root.data.user, root.data, root) for gateway compatibility
+   • Accepts both 'id' and 'userId' fields, 'onboardingCompleted' and 'onboarded'
+   • Validates id and email presence before accepting payload
+   • Extracts roles array or falls back to single 'role' field or ['user']
+   
+   LOGGING & OBSERVABILITY:
+   • Development mode logs request details (URL, publicHost, gatewayUrl, cookie length)
+     and response status without exposing user identity
+   • Production mode logs only errors and critical failures
+   • Timeout, server error, and retry exhaustion logged with attempt counts
+   
+   HELPER FUNCTIONS:
+   • hasCompletedOnboarding: Checks auth.onboardingCompleted === true
+   • getUserRole: Returns auth.roles[0] or 'user' fallback
+
+2. src/share-branding/auth/sanitizeLearnerRedirect.ts (NEW - 62 lines)
+   ────────────────────────────────────────────────────────────────────
+   
+   REDIRECT ATTACK PREVENTION:
+   • sanitizeLearnerRedirect(raw, fallback = '/dashboard'): Returns sanitized
+     internal path or fallback
+   
+   VALIDATION RULES (returns fallback on violation):
+   • Type check: Only string values accepted
+   • Must start with '/' (internal path required)
+   • Must not start with '//' (protocol-relative redirect blocked)
+   • Must not contain backslashes (path traversal blocked)
+   • Control character check: Rejects ASCII 0x00-0x1f and 0x7f
+   
+   URL-ENCODED ATTACK PREVENTION:
+   • Extracts raw path before query/hash with split(/[?#]/, 1)
+   • Regex check for encoded attacks: /%2f|%5c|%00|%0a|%0d/i
+   • Blocks encoded slashes (%2f), backslashes (%5c), null bytes (%0a), newlines (%0d)
+   
+   AUTH LOOP PREVENTION:
+   • BLOCKED_AUTH_PATHS Set: /login, /signup, /register, /forgot-password, /reset-password
+   • Normalized pathname (trailing slash removed) checked against blocked set
+   • Case-insensitive comparison (.toLowerCase())
+   
+   ORIGIN VALIDATION:
+   • URL parsed with learner.internal dummy origin
+   • Parsed origin must match learner.internal (ensures relative path)
+   • Returns pathname + search + hash (preserves query params and anchors)
+   
+   CONTROL CHARACTER DETECTION:
+   • hasControlCharacter: Manual loop checking charCodeAt for 0x00-0x1f and 0x7f
+   • Faster than regex for small strings, catches injection attempts
+
+3. src/share-branding/AuthPage.tsx (164 changes - MAJOR REFACTORING)
+   ──────────────────────────────────────────────────────────────────
+   
+   SSR-SAFE DISABLED CONTROLS:
+   • isHydrated state defaults false, set true in useEffect
+   • All form inputs and submit button receive disabled={!isHydrated || isLoading}
+   • Prevents form submission before React hydration completes
+   • Native form action="/login" and method="post" attributes for no-JS fallback
+   
+   DOUBLE-SUBMIT PROTECTION:
+   • submittingRef: useRef(false) for synchronous lock
+   • handleSubmit checks submittingRef.current before processing
+   • Set true before async work, reset to false only if not navigating
+   • Prevents race condition from rapid double-clicks or Enter key spam
+   
+   REDIRECT SANITIZATION INTEGRATION:
+   • Login success: sanitizeLearnerRedirect(searchParams.get('redirect'))
+   • Signup success: Hard-coded /onboarding or /dashboard (no user redirect)
+   • Sanitized destination assigned via window.location.assign(destination)
+   • navigating flag prevents submittingRef reset during navigation
+   
+   ERROR MESSAGE SANITIZATION:
+   • submitError state displayed in error panel
+   • Catch block maps errors to public messages via authLoader/authMapper
+   • Fallback: "Authentication service is temporarily unavailable."
+   • No backend diagnostic strings, stack traces, or SQL errors exposed
+   
+   SESSION STATE VALIDATION:
+   • fetchCurrentUserState called after login/signup success
+   • Combines result.user.onboardingCompleted, result.user.onboarded, and
+     sessionState.onboardingCompleted (triple check for compatibility)
+   • sessionStorage.setItem('skip_initial_refresh', 'true') before navigation
+   
+   FORM STRUCTURE:
+   • Login: email + password inputs
+   • Signup: name + email + password inputs (name required)
+   • Forgot password: email only (functionality placeholder)
+   • Native form POST targets /login or /signup for no-JS fallback
+   • Hydrated form calls handleSubmit via onSubmit preventDefault
+   
+   UX ENHANCEMENTS:
+   • Password visibility toggle (Eye/EyeOff icons)
+   • Loading state with Loader2 spinner
+   • Framer Motion transitions between login/signup/forgot_password modes
+   • Brand-themed focus rings and accent colors via CSS custom properties
+   • Disabled state styling (opacity, cursor-wait)
+   
+   ACCESSIBILITY:
+   • Label htmlFor attributes match input IDs
+   • ARIA labels for password toggle button
+   • Semantic form structure with proper input types
+   • Focus management preserved during mode transitions
+
+4. src/share-branding/auth/authLoader.ts (22 changes)
+   ──────────────────────────────────────────────────────────────
+   
+   DEVICE HEADER INJECTION:
+   • submitAuthRequest: Calls getDeviceHeaders() from @quiz/auth
+   • Spread deviceHeaders into request headers for login/signup
+   • Comment: "🔥 CRITICAL FIX: Device tracking"
+   
+   LOGOUT DEVICE CONTEXT:
+   • logoutUser: Added comment about device context clearing
+   • Current implementation keeps device ID persistent for tracking
+   • Note explains product requirement vs security tradeoff
+   
+   CURRENT USER STATE FETCHING:
+   • fetchCurrentUserState: Calls validateAuthState (new import)
+   • Returns { onboardingCompleted: auth?.onboardingCompleted === true }
+   • Returns { onboardingCompleted: false } when auth is null
+   
+   ENDPOINT CONFIGURATION:
+   • LOGIN_ENDPOINT: '/api/auth/login'
+   • SIGNUP_ENDPOINT: '/api/auth/signup'
+   • Logout endpoint: '/api/auth/logout'
+   • All use unifiedFetch with credentials:include
+
+5. src/share-branding/auth/authMapper.ts (26 changes)
+   ─────────────────────────────────────────────────────────
+   
+   PUBLIC ERROR MESSAGE MAPPING:
+   • publicAuthErrorMessage: Maps HTTP status to user-safe messages
+   • 401: "Invalid email or password."
+   • 403: "Access denied."
+   • 429: "Too many attempts. Try again later."
+   • 400/422: "Please check your details."
+   • 409: "Account cannot be created with those details."
+   • 500/503: "Authentication service is temporarily unavailable."
+   • Default: Same as 500/503 (fail-safe)
+   
+   ERROR MAPPING:
+   • mapLoginError(_response, status): Ignores response body entirely
+   • Returns new Error with public message only
+   • Comment indicates parameter renamed to _response (explicitly unused)
+   
+   RESPONSE MAPPING:
+   • mapLoginResponse: Returns LoginResultViewData with success:true
+   • Preserves user summary and expiresAt from response
+   • No transformation or sanitization of user fields
+
+6. src/share-branding/auth/authViewData.ts (3 additions)
+   ───────────────────────────────────────────────────────
+   
+   TYPE ADDITIONS:
+   • LoginUserSummary: Added 'onboarded?: boolean' field
+   • Complements existing 'onboardingCompleted?: boolean'
+   • Supports legacy API responses that use 'onboarded' naming
+   • Both fields checked in AuthPage for backward compatibility
+
+7. src/share-branding/auth/index.ts (2 additions)
+   ────────────────────────────────────────────────
+   
+   NEW EXPORTS:
+   • validateAuthState function
+   • hasCompletedOnboarding helper
+   • getUserRole helper
+   • AuthValidationState type
+   • sanitizeLearnerRedirect function
+   
+   EXISTING EXPORTS PRESERVED:
+   • extractAuthFromRequest, createInternalHeaders, requireBffAuth
+   • resolveBrandFromHostname, extractHostnameFromRequest, isSupportedBrand
+   • getDatabaseUserId, getObservabilityUserId, getIdentityContext
+   • fetchBackendAuthState, proxyAuthRequest, proxyUpstreamRequest
+   • AUTH_CONFIG, FALLBACK_API_BASE_* constants
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 2: CONTENT BLOCK IMPROVEMENTS (5 FILES)
+═══════════════════════════════════════════════════════════════════════════════
+
+8. apps/realtutorialhub-web/src/components/content/CodeBlock.tsx (11 changes)
+   ───────────────────────────────────────────────────────────────────────────
+   
+   MODULAR FORMAT DETECTION:
+   • isModular check: 'problemContext' in data || 'problem_context' in data ||
+     'problem_context_card' in data
+   • Supports both camelCase (TypeScript) and snake_case (database) field names
+   
+   CONDITIONAL RENDERING:
+   • isModular=true: Renders CodeModularRenderer with type-casted data
+   • isModular=false: Renders legacy format with safeData type view
+   
+   LEGACY FALLBACK:
+   • safeData typed as unknown cast with title, explanation, intro, image,
+     language, code fields
+   • Renders title, explanation/intro, language badge, and code block
+   • Preserves existing styling and structure
+
+9. apps/realtutorialhub-web/src/components/content/LaymanBlock.tsx (17 changes)
+   ────────────────────────────────────────────────────────────────────────────
+   
+   MODULAR FORMAT DETECTION:
+   • isModular check: 'simpleOverview' in data || 'simple_overview' in data ||
+     'analogy_card' in data || 'intro_card' in data
+   • More field variants checked due to layman section flexibility
+   
+   CONDITIONAL RENDERING:
+   • isModular=true: Renders LaymanModularRenderer
+   • isModular=false: Renders legacy with simpleExplanation, analogyOrStory,
+     example1/example2 structure
+   
+   COMPLETION BADGE:
+   • Badge prop: isCompleted ? common('completed') : common('plainEnglish')
+   • badgeTone: 'success' (completed) or 'neutral' (plain English)
+   • Visible in BlockHeader component
+
+10. apps/realtutorialhub-web/src/components/content/RealLifeBlock.tsx (8 changes)
+    ─────────────────────────────────────────────────────────────────────────────
+    
+    MODULAR FORMAT DETECTION:
+    • isModular check: 'conceptMapping' in data || 'concept_mapping' in data ||
+      'industry_scenario' in data
+    
+    CONDITIONAL RENDERING:
+    • isModular=true: Renders RealLifeModularRenderer
+    • isModular=false: Renders legacy with title, scenario, bullets, image, tip
+    
+    LEGACY STRUCTURE:
+    • Grid layout with bullets column and image placeholder
+    • Pro tip panel with left border accent
+    • Preserves existing visual design
+
+11. apps/realtutorialhub-web/src/components/content/TechnicalBlock.tsx (19 changes)
+    ──────────────────────────────────────────────────────────────────────────────
+    
+    MODULAR FORMAT DETECTION:
+    • isModular check: 'coreTechnicalDefinition' in data ||
+      'technical_definition_block' in data
+    
+    CONDITIONAL RENDERING:
+    • isModular=true: Renders TechnicalModularRenderer with themeColor prop
+    • isModular=false: Renders legacy with concept, deepExplanation/markdown,
+      image, advancedPoints/bullets
+    
+    LEGACY ADVANCED POINTS:
+    • Checks advancedPoints ?? bullets for backward compatibility
+    • Renders label/term and detail in bordered cards
+    • Grid layout with gap and soft surface background
+
+12. apps/realtutorialhub-web/src/components/content/__tests__/BlockRenderer.test.tsx (32 changes)
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    
+    TEST IMPROVEMENTS:
+    • Import getDomainTheme from lib/domain-themes for realistic theme
+    • Use mockTutorialContent fixture for realistic content structure
+    • renderWithIntl helper wraps components with next-intl provider
+    • runAxe helper validates accessibility compliance
+    
+    TEST CASES:
+    • "renders the default notes block and passes axe": Validates default block
+      selection, ARIA labels, and WCAG compliance with 30s timeout
+    • "renders the requested activeBlockType": Validates explicit block type
+      selection via activeBlockType prop
+    • "prioritizes explicit type over activeBlockType": Validates type prop
+      precedence over activeBlockType
+    
+    ACCESSIBILITY VALIDATION:
+    • Checks for proper ARIA labels (aria-label attributes)
+    • Runs axe-core validator with await runAxe(container)
+    • Expects zero accessibility violations
+    • 30-second timeout for axe analysis
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 3: RTH API ROUTES & TESTS (4 FILES)
+═══════════════════════════════════════════════════════════════════════════════
+
+13. apps/realtutorialhub-web/src/app/api/tutorial/sections/[subtopicId]/route.ts (38 additions - NEW ROUTE)
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    RTH BFF TUTORIAL SECTIONS PROXY:
+    • GET /api/tutorial/sections/:subtopicId
+    • Mirrors authentication pattern from /api/tutorial/content/
+    • Calls centralized API server for tutorial sections
+    
+    AUTHENTICATION:
+    • requireStudent(request) validates RTH learner identity
+    • Catches AssignmentAuthError and returns appropriate status (401/403)
+    • Returns private, no-store cache-control on auth errors
+    
+    QUERY PARAMETER FORWARDING:
+    • Extracts searchParams from request URL
+    • Forwards all query params to upstream API (difficulty, sectionType, etc.)
+    • Builds API URL with subtopicId param and forwarded query string
+    
+    BRAND CONTEXT HEADERS:
+    • X-Brand: 'realtutorialhub' (hard-coded RTH brand)
+    • X-User-ID: user.userId (RTH tenant user ID from requireStudent)
+    • X-Internal-Secret: process.env.INTERNAL_API_SECRET (trusted server proof)
+    
+    UPSTREAM API CALL:
+    • Fetches from INTERNAL_API_URL or GATEWAY_URL fallback
+    • Uses cache: 'no-store' for fresh data
+    • Returns upstream response with private cache-control
+    • Maps upstream errors to public error messages
+    
+    ERROR HANDLING:
+    • Try/catch logs errors with [RTH Tutorial Sections] prefix
+    • Returns 500 with "Internal server error" on exceptions
+    • All error responses include 'Cache-Control: private, no-store'
+
+14. apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts (193 additions - NEW TEST)
+    ────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    TEST SETUP:
+    • Mocks @/lib/assignment-auth with requireStudent and AssignmentAuthError
+    • Stubs INTERNAL_API_URL and INTERNAL_API_SECRET environment variables
+    • Mocks global fetch for upstream API calls
+    • beforeEach: Clears mocks, stubs env, sets up successful requireStudent
+    • afterEach: Restores all mocks, globals, and env
+    
+    TEST CASES:
+    1. "should return 404 when subtopic not found upstream"
+       • Mocks upstream 404 response
+       • Validates error message and 404 status
+       • Confirms private, no-store cache-control header
+    
+    2. "should return sections for valid subtopic with RTH brand headers and
+        private cache-control"
+       • Mocks successful upstream response with sections
+       • Validates response structure (subtopicId, subtopicName, sections, totalSections)
+       • Confirms fetch called with X-Brand: realtutorialhub, X-User-ID, X-Internal-Secret
+       • Confirms cache: no-store and private cache-control
+    
+    3. "should forward difficulty and sectionType query parameters to upstream"
+       • Request with query params: ?difficulty=intermediate&sectionType=notes
+       • Validates query params forwarded to upstream URL
+       • Confirms response includes difficulty and sectionType
+    
+    4. "should reject unauthenticated or wrong-brand callers before calling upstream"
+       • Mocks requireStudent rejection with 403 AssignmentAuthError
+       • Validates 403 response without upstream fetch call
+    
+    5. "should handle upstream transport errors gracefully with sanitized 500 response"
+       • Mocks fetch rejection with Error
+       • Validates 500 status with "Internal server error" message
+       • Confirms no diagnostic leakage in response
+
+15. apps/realtutorialhub-web/src/app/api/tutorial/progress/__tests__/route.test.ts (134 changes)
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    
+    TEST IMPROVEMENTS:
+    • Changed from describe.skip to active describe block
+    • Updated mock structure for requireStudent and TokenService
+    • Uses crypto.randomUUID() for userId and subtopicId fixtures
+    
+    TEST CASES:
+    1. "returns the current progress snapshot with private cache-control"
+       • Validates GET /api/tutorial/progress?subtopicId=:id
+       • Confirms blocksViewed, blocksCompleted, completionPercent, assignmentUnlocked
+       • Validates X-Brand, X-User-ID, X-Internal-Secret headers
+       • Confirms cache: no-store and private cache-control
+    
+    2. "returns 400 for an invalid subtopic id without calling upstream"
+       • Validates input validation before upstream call
+       • Confirms fetch not called for invalid input
+    
+    3. "records a viewed block and returns the updated snapshot"
+       • POST /api/tutorial/progress with subtopicId, blockType: 'code', status: 'viewed'
+       • Validates updated snapshot with assignmentUnlocked: true
+       • Confirms brand context headers sent to upstream
+    
+    4. "returns 400 for invalid payloads without calling upstream"
+       • POST with missing status field
+       • Confirms 400 without upstream call
+
+16. apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/__tests__/page.test.ts (30 changes)
+    ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    TEST SETUP:
+    • Mocks TutorialExperience component (renders null)
+    • Mocks getDomainTheme to return empty object
+    • Mocks tutorial-delivery server functions with hierarchy and sections
+    
+    METADATA TEST:
+    • "builds metadata from hierarchy and published content"
+    • Calls generateMetadata with domain/subject/topic/subtopic slugs
+    • Validates title: "Promises - Async Programming | RealTutorialHub"
+    • Validates description contains "Promises help you handle future values"
+    • Validates openGraph.type === 'article'
+    
+    MOCK DATA:
+    • Hierarchy: Full Stack > JavaScript > Async Programming > Promises
+    • Sections: Layman section with simpleOverview.simpleDefinition
+    • Validates metadata generation from real tutorial hierarchy structure
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 4: TEST INFRASTRUCTURE (4 FILES)
+═══════════════════════════════════════════════════════════════════════════════
+
+17. apps/realtutorialhub-web/vitest.config.ts (5 additions)
+    ──────────────────────────────────────────────────────
+    
+    VITEST CONFIGURATION:
+    • Environment: jsdom for React component testing
+    • Globals: true (enables global test APIs)
+    • Setup file: ./vitest.setup.ts
+    • Timeouts: testTimeout and hookTimeout both 60000ms (60 seconds)
+    • Include pattern: src/**/*.{test,spec}.{ts,tsx}
+    • Pool: threads with fileParallelism: false, maxWorkers: 1, minWorkers: 1
+      (serial execution for database-dependent tests)
+    
+    PATH ALIASES:
+    • @quiz/api-client -> ../../packages/api-client/src
+    • @quiz/ui -> ../../packages/ui/src
+    • @quiz/auth -> ../../packages/auth/src
+    • @quiz/types -> ../../packages/types/src
+    • @quiz/db-tutorial -> ../../packages/db-tutorial/src
+    • @/share-branding -> ../../src/share-branding
+    • @ -> ./src (app-local imports)
+    • Supports both bare imports and subpath imports with regex find patterns
+
+18. apps/realtutorialhub-web/vitest.setup.ts (6 additions)
+    ─────────────────────────────────────────────────────
+    
+    MOCK SETUP:
+    • Mocks next/cache: unstable_cache returns fn as-is, revalidatePath/revalidateTag
+      are vi.fn() stubs
+    
+    BROWSER ENVIRONMENT (typeof window !== 'undefined'):
+    • Imports @testing-library/jest-dom/vitest for DOM matchers
+    • Calls cleanup() in afterEach for test isolation
+    • Mocks window.matchMedia for responsive component tests
+    • Defines ResizeObserver mock if undefined
+    • Mocks HTMLElement.prototype.scrollIntoView if undefined
+    • Mocks HTMLCanvasElement.prototype.getContext for chart/graph components
+      (fillRect, clearRect, getImageData, drawImage, etc.)
+
+19. apps/realtutorialhub-web/src/lib/__tests__/assignment-auth.test.ts (20 additions)
+    ──────────────────────────────────────────────────────────────────────────────────
+    
+    NEW TEST ADDITIONS:
+    • "returns the retired contract without fetching legacy content"
+      • Validates GET /api/tutorial/content/:subtopicId returns 410 Gone
+      • Confirms fetch spy not called (no upstream request)
+      • Validates response body: { error: 'Gone', statusCode: 410 }
+    
+    • "keeps the legacy route retired for foreign-brand callers"
+      • Mocks requireStudent with brand: 'skillup' (wrong brand)
+      • Confirms 410 response without upstream fetch
+      • Validates content retirement enforced regardless of brand
+    
+    • "retires the source-file writer"
+      • Validates POST /api/content-manager/add-section returns 410 Gone
+      • Confirms legacy content writer route permanently retired
+
+20. apps/skillup-web/src/lib/student-auth.test.ts (21 changes)
+    ──────────────────────────────────────────────────────────
+    
+    TEST IMPROVEMENTS:
+    • Updated mock structure for TokenService.verifyUserAccessToken
+    • Added test for tutorial sections route cache-control
+    
+    NEW TEST CASE:
+    • "does not cache tutorial sections publicly"
+      • Mocks upstream sections response
+      • Validates response includes 'Cache-Control: private, no-store'
+      • Confirms fetch called with X-Brand: skillup, X-User-ID, cache: no-store
+      • Validates BFF prevents public CDN caching of user-specific content
+    
+    EXISTING TESTS PRESERVED:
+    • Rejects raw identity headers
+    • Rejects wrong brand even with platform membership
+    • Preserves brand-local identity when shadowUserId differs
+    • Ignores forged headers
+    • Returns 410 for retired content routes
+
+21. apps/skillup-web/src/app/api/tutorial/content/[subtopicId]/__tests__/log-boundary.test.ts (21 changes)
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    TEST IMPROVEMENTS:
+    • Simplified to single focused test
+    • Uses vi.spyOn for console.log and console.warn with mockImplementation
+    • Validates 410 Gone status without upstream fetches
+    • Confirms no sensitive identifiers logged
+    
+    LOG BOUNDARY VALIDATION:
+    • Constructs request with x-user-id: 'fixture-user-sensitive'
+    • Passes subtopicId: 'fixture-subtopic-sensitive'
+    • Stringifies all log.mock.calls and warn.mock.calls
+    • Validates stringified output does not contain sensitive canaries
+    • Confirms log boundary prevents PII leakage in telemetry
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 5: NEW E2E SECURITY TEST (1 FILE - 450+ LINES)
+═══════════════════════════════════════════════════════════════════════════════
+
+22. tests/e2e/learner-login-security.spec.ts (NEW - COMPREHENSIVE E2E TEST)
+    ───────────────────────────────────────────────────────────────────────
+    
+    TEST CONFIGURATION:
+    • Targets: SUIA (SkillUp) and RTH (RealTutorialHub) learner portals
+    • Base URLs from environment variables with localhost:port fallbacks
+    • Viewport: 1440x900 for consistent rendering
+    • Timeout: 180 seconds per test (accommodates slow CI environments)
+    • Screenshot directory: .evidence/screenshots/v5-20261112/
+    
+    SYNTHETIC CANARIES:
+    • canaryName: 'V5 Synthetic Learner'
+    • canaryEmail: 'v5-learner-fixture@example.invalid'
+    • canaryPassword: 'v5-never-valid-password-canary'
+    • diagnosticCanary: 'private-diagnostic-canary-v5'
+    • Used to detect credential/diagnostic exposure in requests, console, errors
+    
+    CREDENTIAL EXPOSURE DETECTION:
+    • observeCredentialAndDiagnosticExposure(page): Returns failures array
+    • Listens to page events: request, console, pageerror, framenavigated
+    • Checks URLs, referrers, console messages, error messages for canaries
+    • hasSensitiveCanary: Checks both raw and URL-encoded canary forms
+    • Failures tracked: "credential query parameter", "canary in request URL",
+      "canary in console", "canary in pageerror", "canary in frame navigation"
+    
+    TEST SUITE 1: NO-JS SSR VALIDATION
+    • "blocks login without JavaScript and declares safe native POST /login"
+      • Browser context with javaScriptEnabled: false
+      • Validates form visible with method="post" action="/login"
+      • Validates email, password, submit button all disabled
+      • Keyboard Enter press does not trigger navigation
+      • Screenshot: {brand}-login-no-js.png
+      • Confirms zero credential exposure
+    
+    TEST SUITE 2: HYDRATION-DELAYED CONTROLS
+    • "keeps login controls disabled while hydration scripts are delayed"
+      • Routes all script requests through Promise gate
+      • Navigates to /login with waitUntil: 'commit' (before script execution)
+      • Validates all controls disabled before scripts released
+      • Enter key press does not navigate
+      • Screenshot: {brand}-login-before-hydration.png
+      • Releases scripts, waits for controls to enable
+      • Confirms zero credential exposure
+    
+    TEST SUITE 3: FORCED NATIVE SUBMISSION
+    • "forced native login submission is a body-only POST to /login"
+      • Browser context with javaScriptEnabled: false
+      • Intercepts POST /login requests
+      • Uses page.evaluate to bypass disabled state and fill form
+      • Validates POST method, empty query string, form body with email/password
+      • Fulfills with synthetic response
+      • Confirms single native submission, zero credential exposure
+    
+    TEST SUITE 4: HYDRATED SUBMISSION & REDIRECT
+    • "hydrated {click|Enter} sends one JSON POST /api/auth/login with
+       brand={brand} and honors sanitized redirect"
+      • Tests both click and Enter key submission
+      • Mocks /api/auth/login with synthetic success response
+      • Mocks /api/profile with authenticated user
+      • Mocks /dashboard destination
+      • Navigates to /login?redirect=/dashboard?tab=active#today
+      • Fills credentials and submits (click or Enter)
+      • Waits for redirect request to /dashboard?tab=active (confirms query/hash)
+      • Validates single login submission with platform: brand in JSON body
+      • Confirms zero credential exposure
+    
+    TEST SUITE 5: UNSAFE REDIRECT REJECTION
+    • "rejects external, protocol-relative, backslash, and auth-loop redirects
+       to /dashboard"
+      • Unsafe redirects: https://evil.example/phish, //evil.example/phish,
+        /\evil.example, /login, /signup, /%2f/evil.example
+      • Mocks /api/auth/login success and /dashboard safe destination
+      • For each unsafe redirect, fills credentials and submits
+      • Waits for navigation to /dashboard (fallback)
+      • Validates "Safe Fallback Dashboard" text visible
+      • Confirms all unsafe redirects rejected
+      • Confirms zero credential exposure
+    
+    TEST SUITE 6: DIAGNOSTIC STRING REDACTION
+    • "hides upstream diagnostic strings on 500 and 401 login failures"
+      • Mocks /api/auth/login with status 500, body contains diagnosticCanary
+      • Validates public error: "Authentication service is temporarily unavailable."
+      • Validates diagnosticCanary not visible on page
+      • Changes mock to status 401
+      • Validates public error: "Invalid email or password."
+      • Validates diagnosticCanary still not visible
+      • Screenshot: {brand}-safe-login-error.png
+      • Confirms zero credential exposure
+    
+    TEST SUITE 7: SIGNUP FLOW VALIDATION
+    • "signup enforces SSR disabled controls, safe native POST /signup, and
+       single hydrated POST /api/auth/signup"
+      
+      PART A - NO-JS NATIVE SIGNUP:
+      • Browser context with javaScriptEnabled: false
+      • Intercepts POST /signup requests
+      • Validates form method="post" action="/signup"
+      • Validates full-name, email, password all disabled
+      • Uses page.evaluate to bypass disabled and fill form
+      • Validates POST with body-only (no query string)
+      • Form body: name, email, password
+      • Fulfills with synthetic response
+      • Confirms single native submission, zero noJsExposure
+      
+      PART B - HYDRATED SIGNUP WITH DOUBLE-SUBMIT LOCK:
+      • Mocks /api/auth/signup with 150ms delay
+      • Mocks /api/profile 404 (new user)
+      • Mocks /onboarding destination
+      • Fills name, email, password
+      • Uses page.evaluate to dispatch TWO rapid form.requestSubmit() calls
+      • Validates single /api/auth/signup call (submittingRef lock worked)
+      • Validates navigation to /onboarding
+      • Validates JSON body: name, email, password, platform: brand
+      • Confirms zero credential exposure
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 6: SANITIZE REDIRECT TEST SUITE (1 FILE)
+═══════════════════════════════════════════════════════════════════════════════
+
+23. apps/skillup-web/src/lib/__tests__/sanitize-learner-redirect.test.ts (NEW - COMPREHENSIVE UNIT TEST)
+    ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    UNSAFE REDIRECT TEST CASES (rejects to /dashboard):
+    • null, undefined, empty string, whitespace-only string
+    • Absolute URLs: https://evil.example/steal, http://evil.example/steal
+    • Protocol-relative: //evil.example/steal
+    • Backslash traversal: /\evil.example
+    • JavaScript protocol: javascript:alert(1)
+    • Data URI: data:text/html,<script>alert(1)</script>
+    • Auth loop paths: /login, /login?redirect=/dashboard, /signup, /register,
+      /forgot-password, /reset-password
+    • URL-encoded attacks: /%2f/evil.example, /%5c/evil.example, /%0a/evil.example,
+      /%0d/evil.example
+    • Control characters: /dashboard\u0000evil, /dashboard\r\nevil
+    
+    SAFE REDIRECT TEST CASES (preserves input):
+    • /dashboard
+    • /dashboard?tab=active#today (query + hash preserved)
+    • /learn/python
+    • /tutorial-v2/programming/python/basics/variables/intro?mode=practice
+    • /student/attendance
+    
+    AUTH STATE VALIDATION TESTS:
+    • mapLoginError & mapLoginResponse public error boundary
+      • Tests HTTP status codes: 401, 403, 429, 400, 422, 409, 500, 503
+      • Validates public messages without diagnostic leakage
+      • Passes response with "canary" strings to verify redaction
+    
+    • validateAuthState & fetchCurrentUserState (browser vs SSR)
+      
+      BROWSER MODE TEST:
+      • Stubs window global (browser environment)
+      • Mocks fetch to return /api/profile response
+      • Validates relative URL with credentials:include, cache:no-store
+      • Validates no server secrets (X-Internal-Secret) in browser requests
+      • Spies on console.log and console.warn
+      • Validates user identity not logged (canary email/ID redacted)
+      
+      BROWSER 401/404 TEST:
+      • Mocks /api/profile with 401 or 404 status
+      • Validates fetchCurrentUserState returns { onboardingCompleted: false }
+      
+      SSR MODE TEST:
+      • Stubs GATEWAY_URL and INTERNAL_GATEWAY_SECRET environment variables
+      • Mocks next/headers.headers with host: 'skillup.localhost:3009'
+      • Mocks next/headers.cookies with accessToken
+      • Mocks fetch to return gateway response
+      • Validates gateway URL: http://127.0.0.1:8787/auth/me
+      • Validates headers: cookie (serialized), x-original-host (hostname only),
+        x-internal-secret (gateway auth)
+      • Validates cache: no-store
+      • Validates console logs redact user identity (ssr-canary email/ID)
+
+═══════════════════════════════════════════════════════════════════════════════
+PART 7: TYPE DEFINITIONS & EVIDENCE (4 ITEMS)
+═══════════════════════════════════════════════════════════════════════════════
+
+24. apps/realtutorialhub-web/next-env.d.ts (2 changes)
+    ───────────────────────────────────────────────────
+    • Updated Next.js type references
+    • Imports ./.next/dev/types/routes.d.ts for route type safety
+    • Auto-generated file - no manual editing
+
+25. apps/skillhubcore-admin/next-env.d.ts (2 changes)
+    ──────────────────────────────────────────────────
+    • Updated Next.js type references
+    • Imports ./.next/dev/types/routes.d.ts
+    • Auto-generated file
+
+26. apps/skillup-web/next-env.d.ts (2 changes)
+    ───────────────────────────────────────────
+    • Updated Next.js type references
+    • Imports ./.next/dev/types/routes.d.ts
+    • Auto-generated file
+
+27. .evidence/screenshots/v5-20261112/ (NEW DIRECTORY)
+    ──────────────────────────────────────────────────
+    • Screenshot directory for E2E test evidence
+    • Expected screenshots (generated during test execution):
+      • suia-login-no-js.png
+      • rth-login-no-js.png
+      • suia-login-before-hydration.png
+      • rth-login-before-hydration.png
+      • suia-safe-login-error.png
+      • rth-safe-login-error.png
+
+═══════════════════════════════════════════════════════════════════════════════
+SECURITY IMPROVEMENTS SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+REDIRECT SANITIZATION:
+• Blocks protocol-relative redirects (//evil.example)
+• Blocks backslash path traversal (/\evil.example)
+• Blocks URL-encoded attacks (/%2f, /%5c, /%0a, /%0d, /%00)
+• Blocks control characters (0x00-0x1f, 0x7f)
+• Blocks auth page loops (/login, /signup, /register, /forgot-password, /reset-password)
+• Validates origin to prevent absolute URLs
+• Preserves query parameters and hash fragments
+
+AUTH STATE VALIDATION EXPANSION:
+• SSR gateway validation with internal secret authentication
+• Fail-closed behavior when gateway unavailable
+• Timeout handling (3 seconds per attempt)
+• Retry logic with exponential backoff (max 3 attempts)
+• Redacted logging (user identity not exposed in console)
+• Browser validation uses relative /api/profile endpoint
+• Supports multiple payload shapes for gateway compatibility
+• Validates id and email presence before accepting payload
+
+DIAGNOSTIC STRING PROTECTION:
+• mapLoginError ignores response body entirely
+• publicAuthErrorMessage maps HTTP status to fixed public messages
+• No SQL errors, stack traces, or internal diagnostics exposed to frontend
+• Error boundary in AuthPage catch block uses public messages only
+• E2E tests validate diagnostic canary not visible on error pages
+
+SSR CONTROL DISABLEMENT:
+• Form controls disabled until React hydration completes
+• Native form POST targets /login and /signup for no-JS fallback
+• Prevents credential submission before JavaScript loads
+• E2E tests validate controls stay disabled during script delay
+
+DOUBLE-SUBMIT PROTECTION:
+• submittingRef synchronous lock prevents race conditions
+• Checked before async work begins
+• Reset only when not navigating
+• E2E test validates single submission with rapid double requestSubmit()
+
+CREDENTIAL EXPOSURE PREVENTION:
+• No credentials in query parameters
+• No credentials in request URLs or referrers
+• No credentials in console logs or page errors
+• No credentials in frame navigation URLs
+• E2E tests monitor all exposure vectors with synthetic canaries
+
+DEVICE TRACKING:
+• getDeviceHeaders() injected into login/signup requests
+• Device context headers included in authentication
+• Persistent device ID for security monitoring
+
+CACHE-CONTROL ENFORCEMENT:
+• All BFF routes return 'Cache-Control: private, no-store'
+• Prevents public CDN caching of user-specific content
+• Tutorial sections, progress, and content routes enforce private caching
+
+═══════════════════════════════════════════════════════════════════════════════
+TEST COVERAGE SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+NEW E2E SECURITY TESTS (learner-login-security.spec.ts):
+• No-JS SSR validation (controls disabled, safe native POST)
+• Hydration-delayed controls (disabled until scripts load)
+• Forced native submission (body-only POST with form data)
+• Hydrated submission (JSON POST to /api/auth/login with brand)
+• Redirect sanitization (unsafe redirects rejected to /dashboard)
+• Diagnostic string redaction (500/401 errors show public messages only)
+• Signup flow (SSR disabled controls, double-submit lock)
+• Credential exposure monitoring (requests, console, errors, frame navigation)
+
+NEW UNIT TESTS (sanitize-learner-redirect.test.ts):
+• Unsafe redirect rejection (30+ test cases)
+• Safe redirect preservation (5+ test cases)
+• Error message mapping (8 HTTP status codes)
+• Browser auth validation (relative /api/profile)
+• SSR auth validation (gateway URL with internal secret)
+• Console log redaction (user identity not exposed)
+
+EXPANDED EXISTING TESTS:
+• assignment-auth.test.ts: Content retirement validation (410 Gone)
+• student-auth.test.ts: Cache-control validation (private, no-store)
+• log-boundary.test.ts: Sensitive identifier redaction
+• route.test.ts (tutorial sections): Brand headers, cache-control, error handling
+• route.test.ts (tutorial progress): Brand headers, payload validation
+• page.test.ts (tutorial subtopic): Metadata generation
+• BlockRenderer.test.tsx: Accessibility validation with axe-core
+
+═══════════════════════════════════════════════════════════════════════════════
+VERIFICATION COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+Unit Tests:
+```bash
+npm run test -- sanitize-learner-redirect.test.ts
+npm run test -- validateAuthState
+npm run test -- assignment-auth.test.ts
+npm run test -- student-auth.test.ts
+npm run test -- BlockRenderer.test.tsx
+npm run test -- route.test.ts
+```
+
+E2E Security Tests:
+```bash
+npx playwright test learner-login-security.spec.ts
+npx playwright test learner-login-security.spec.ts --headed
+npx playwright test learner-login-security.spec.ts --project=chromium --debug
+```
+
+Component Tests:
+```bash
+npm run test -- CodeBlock
+npm run test -- LaymanBlock
+npm run test -- RealLifeBlock
+npm run test -- TechnicalBlock
+```
+
+All RTH Tests:
+```bash
+cd apps/realtutorialhub-web && npm run test
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+BREAKING CHANGES
+═══════════════════════════════════════════════════════════════════════════════
+
+None. All changes are backward-compatible:
+• Content blocks detect modular vs legacy format and render appropriately
+• Auth state validation supports both old and new payload shapes
+• Redirect sanitization returns fallback for invalid inputs (no errors thrown)
+• Error messages use fixed public strings (consistent UX)
+
+═══════════════════════════════════════════════════════════════════════════════
+RELATED COMMITS
+═══════════════════════════════════════════════════════════════════════════════
+
+• 74131aa1 - Closure Work
+• 1dbc19c0 - Continuation Fixes
+
+═══════════════════════════════════════════════════════════════════════════════
+FILES CHANGED
+═══════════════════════════════════════════════════════════════════════════════
+
+26 items (23 modified, 3 new)
++531 insertions, -354 deletions
+Net: +177 lines
+
+Auth Security Core (6 files):
+• src/share-branding/auth/validateAuthState.ts (+107)
+• src/share-branding/auth/sanitizeLearnerRedirect.ts (+62 new)
+• src/share-branding/AuthPage.tsx (+164 changes)
+• src/share-branding/auth/authLoader.ts (+22)
+• src/share-branding/auth/authMapper.ts (+26)
+• src/share-branding/auth/authViewData.ts (+3)
+• src/share-branding/auth/index.ts (+2)
+
+Content Blocks (5 files):
+• apps/realtutorialhub-web/src/components/content/CodeBlock.tsx (+11)
+• apps/realtutorialhub-web/src/components/content/LaymanBlock.tsx (+17)
+• apps/realtutorialhub-web/src/components/content/RealLifeBlock.tsx (+8)
+• apps/realtutorialhub-web/src/components/content/TechnicalBlock.tsx (+19)
+• apps/realtutorialhub-web/src/components/content/__tests__/BlockRenderer.test.tsx (+32)
+
+RTH API Routes (4 files):
+• apps/realtutorialhub-web/src/app/api/tutorial/sections/[subtopicId]/route.ts (+38 new)
+• apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts (+193 new)
+• apps/realtutorialhub-web/src/app/api/tutorial/progress/__tests__/route.test.ts (+134)
+• apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/__tests__/page.test.ts (+30)
+
+Test Infrastructure (4 files):
+• apps/realtutorialhub-web/vitest.config.ts (+5 new)
+• apps/realtutorialhub-web/vitest.setup.ts (+6 new)
+• apps/realtutorialhub-web/src/lib/__tests__/assignment-auth.test.ts (+20)
+• apps/skillup-web/src/app/api/tutorial/content/[subtopicId]/__tests__/log-boundary.test.ts (+21)
+• apps/skillup-web/src/lib/student-auth.test.ts (+21)
+
+E2E Security Test (2 files):
+• tests/e2e/learner-login-security.spec.ts (+450 new)
+• apps/skillup-web/src/lib/__tests__/sanitize-learner-redirect.test.ts (+280 new)
+
+Type Definitions (3 files):
+• apps/realtutorialhub-web/next-env.d.ts (+2)
+• apps/skillhubcore-admin/next-env.d.ts (+2)
+• apps/skillup-web/next-env.d.ts (+2)
+
+Evidence:
+• .evidence/screenshots/v5-20261112/ (new directory)
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF COMMIT MESSAGE
+═══════════════════════════════════════════════════════════════════════════════

@@ -31,8 +31,27 @@ describe('SkillUp learner boundary', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.response.status).toBe(403);
   });
-  it('preserves the brand-local identity contract', async () => {
+  it('preserves the brand-local identity contract when shadowUserId differs from userId', async () => {
     expect(await requireStudentAuth(request())).toMatchObject({ ok: true, userId: 'skillup-1' });
+  });
+  it('preserves identity when shadowUserId equals userId or falls back to userId', async () => {
+    mocks.verify.mockResolvedValueOnce({ ...principal, userId: 'skillup-same', shadowUserId: 'skillup-same' });
+    expect(await requireStudentAuth(request())).toMatchObject({ ok: true, userId: 'skillup-same' });
+
+    mocks.verify.mockResolvedValueOnce({ ...principal, userId: 'skillup-only', shadowUserId: undefined });
+    expect(await requireStudentAuth(request())).toMatchObject({ ok: true, userId: 'skillup-only' });
+  });
+  it('ignores forged x-user-id, x-brand, and x-original-host headers when verifying token identity', async () => {
+    const forgedRequest = new NextRequest('https://user.skillupitacademy.com/api/tutorial/sections/topic-1', {
+      headers: {
+        cookie: 'accessToken=token',
+        'x-user-id': 'forged-other-student',
+        'x-brand': 'realtutorialhub',
+        'x-original-host': 'user.realtutorialhub.com',
+      },
+    });
+    const result = await requireStudentAuth(forgedRequest);
+    expect(result).toMatchObject({ ok: true, userId: 'skillup-1' });
   });
   it('returns the retired contract without fetching legacy content', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');

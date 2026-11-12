@@ -8,12 +8,14 @@ import { ContentImage } from './ContentImage';
 import { TechnicalModularRenderer } from './modular/technical/TechnicalModularRenderer';
 import type React from 'react';
 
-type TechnicalLegacyPoint = { label?: string; detail?: string };
+type TechnicalLegacyPoint = { label?: string; term?: string; detail?: string };
 type TechnicalLegacyData = {
   concept?: string;
   deepExplanation?: string;
+  markdown?: string;
   image?: import('@quiz/types').ContentImage;
   advancedPoints?: TechnicalLegacyPoint[];
+  bullets?: TechnicalLegacyPoint[];
 };
 
 interface TechnicalBlockProps {
@@ -27,7 +29,13 @@ interface TechnicalBlockProps {
 export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
   const t = useTranslations('blocks.technical');
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader icon="T" title={t('title')} accentColor={theme.blockTechnicalHeader} headingId="block-technical-heading" />
+      </section>
+    );
+  }
 
   // Check for Modular Format (support both snake_case and camelCase)
   const isModular = 'coreTechnicalDefinition' in data || 'technical_definition_block' in data;
@@ -54,6 +62,7 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
 
   // Legacy Fallback (typed view to avoid explicit `any`)
   const safeData = data as unknown as TechnicalLegacyData;
+  const points = safeData.advancedPoints ?? safeData.bullets;
 
   return (
     <section className="design-panel" aria-label={t('ariaLabel')}>
@@ -71,14 +80,14 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
               {safeData.concept}
             </div>
             <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>
-              {safeData.deepExplanation}
+              {safeData.deepExplanation ?? safeData.markdown}
             </p>
           </div>
           {safeData.image ? <ContentImage image={safeData.image} /> : null}
         </div>
 
         <div style={{ marginTop: 18, display: 'grid', gap: 10 }}>
-          {safeData.advancedPoints?.map((point, idx) => (
+          {points?.map((point, idx) => (
             <div
               key={idx}
               style={{
@@ -88,7 +97,7 @@ export function TechnicalBlock({ data, theme }: TechnicalBlockProps) {
                 border: 'var(--design-content-border)',
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--block-text-primary)', marginBottom: 2 }}>{point.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--block-text-primary)', marginBottom: 2 }}>{point.label ?? point.term}</div>
               <div style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--block-text-secondary)' }}>{point.detail}</div>
             </div>
           ))}

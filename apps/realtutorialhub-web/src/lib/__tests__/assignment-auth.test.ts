@@ -23,6 +23,26 @@ describe('RTH learner boundary', () => {
     expect(await requireAssignmentAccess(request(), 'topic-1')).toEqual(principal);
     expect(mocks.isComplete).toHaveBeenCalledWith('rth-1', 'topic-1', 'realtutorialhub');
   });
+  it('evaluates assignment eligibility with payload.userId even when shadowUserId differs', async () => {
+    const splitPrincipal = {
+      userId: 'rth-db-user-1',
+      originalUserId: 'rth-db-user-1',
+      shadowUserId: 'people-shadow-99',
+      brand: 'realtutorialhub',
+      roles: ['student'],
+    };
+    mocks.verify.mockResolvedValueOnce(splitPrincipal);
+    mocks.isComplete.mockResolvedValueOnce(true);
+    const forgedReq = new NextRequest('https://user.realtutorialhub.com/api/tutorial/assignments/topic-1', {
+      headers: {
+        'x-user-id': 'forged-student-b',
+        'x-brand': 'skillup',
+        'x-original-host': 'user.skillupitacademy.com',
+      },
+    });
+    expect(await requireAssignmentAccess(forgedReq, 'topic-1')).toEqual(splitPrincipal);
+    expect(mocks.isComplete).toHaveBeenCalledWith('rth-db-user-1', 'topic-1', 'realtutorialhub');
+  });
   it('rejects incomplete assignment prerequisites', async () => {
     mocks.isComplete.mockResolvedValue(false);
     await expect(requireAssignmentAccess(request(), 'topic-1')).rejects.toMatchObject({ statusCode: 403 });

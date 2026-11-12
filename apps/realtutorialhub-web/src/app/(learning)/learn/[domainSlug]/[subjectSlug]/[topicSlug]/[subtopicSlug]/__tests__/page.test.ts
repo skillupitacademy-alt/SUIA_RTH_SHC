@@ -1,33 +1,32 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/components/content/TutorialExperience', () => ({
+vi.mock('../../../../../../components/content/TutorialExperience', () => ({
   TutorialExperience: () => null,
 }));
-vi.mock('@/lib/domain-themes', () => ({
+vi.mock('../../../../../../lib/domain-themes', () => ({
   getDomainTheme: vi.fn(() => ({})),
 }));
-vi.mock('@/lib/tutorial-content', () => ({
-  getSeededTutorialContent: vi.fn(async () => ({})),
-}));
-vi.mock('@/lib/tutorial-hierarchy', () => ({
-  getHierarchyBySlugs: vi.fn(async () => ({
+vi.mock('../../../../../../server/tutorial-delivery', () => ({
+  getTutorialHierarchyForDelivery: vi.fn(async () => ({
     domain: { id: 'domain-1', name: 'Full Stack', slug: 'full-stack' },
     subject: { id: 'subject-1', name: 'JavaScript', slug: 'javascript' },
     topic: { id: 'topic-1', name: 'Async Programming', slug: 'async-programming' },
     subtopic: { id: 'subtopic-1', name: 'Promises', slug: 'promises' },
   })),
-  getPublishedTutorialContent: vi.fn(async () => ({
-    id: 'content-1',
+  getValidatedTutorialSectionsForDelivery: vi.fn(async () => ({
     subtopicId: 'subtopic-1',
-    difficulty: 'simple',
-    content: {
+    sections: {
       layman: {
-        simpleExplanation: 'Promises help you handle future values without blocking the app.',
+        simpleOverview: {
+          simpleDefinition: 'Promises help you handle future values without blocking the app.',
+        },
       },
     },
-    updatedAt: new Date('2026-03-22T00:00:00.000Z'),
+    invalidSections: [],
   })),
-  slugifySegment: (value: string) => value.toLowerCase().replace(/\s+/g, '-'),
+  getPublishedTutorialPathsForDelivery: vi.fn(async () => []),
+  buildTutorialContentFromValidatedSections: vi.fn(() => ({})),
+  getSectionValidationErrorMessage: vi.fn(() => 'Validation error'),
 }));
 
 import { generateMetadata } from '../page';
@@ -43,8 +42,9 @@ describe('tutorial subtopic page metadata', () => {
       }),
     });
 
-    expect(metadata.title).toBe('Promises — Async Programming | RealTutorialHub');
+    expect(metadata.title).toBe('Promises - Async Programming | RealTutorialHub');
     expect(metadata.description).toContain('Promises help you handle future values');
     expect(metadata.openGraph?.type).toBe('article');
   });
 });
+

@@ -19,7 +19,13 @@ interface CodeBlockProps {
 export function CodeBlock({ data, theme }: CodeBlockProps) {
   const t = useTranslations('blocks.code');
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <section className="design-panel" aria-label={t('ariaLabel')}>
+        <BlockHeader icon="C" title={t('title')} accentColor={theme.blockCodeHeader} headingId="block-code-heading" />
+      </section>
+    );
+  }
 
   // Check for Modular Format (support both snake_case and camelCase)
   const isModular = 'problemContext' in data || 'problem_context' in data || 'problem_context_card' in data;
@@ -48,6 +54,7 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
   const safeData = data as unknown as {
     title?: string;
     explanation?: string;
+    intro?: string;
     image?: ContentImageType;
     language?: string;
     code?: string;
@@ -69,7 +76,7 @@ export function CodeBlock({ data, theme }: CodeBlockProps) {
               {safeData.title}
             </div>
             <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.75, color: 'var(--block-text-primary)' }}>
-              {safeData.explanation}
+              {safeData.explanation ?? safeData.intro}
             </p>
           </div>
           {safeData.image ? <ContentImage image={safeData.image} /> : null}
