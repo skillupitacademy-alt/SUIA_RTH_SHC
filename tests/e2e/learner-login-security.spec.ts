@@ -308,6 +308,12 @@ for (const target of targets) {
         '/\\evil.example',
         '/login',
         '/signup',
+        '/verify-email',
+        '/api/profile',
+        '/learn/python',
+        '/student/learn',
+        '/remediation',
+        '/tutorial/assignments/full-stack/javascript/async-programming/promises',
         '/%2f/evil.example',
       ];
 
@@ -545,11 +551,11 @@ for (const target of targets) {
   });
 }
 
-test.describe('RTH /learn route retirement and canonical route preservation', () => {
+test.describe('R2 route retirement (/learn, /remediation, /tutorial/assignments, /student/learn) and canonical route preservation', () => {
   const rthBaseUrl = (process.env.RTH_URL ?? 'http://realtutorialhub.localhost:3003').replace(/\/+$/, '');
   const suiaBaseUrl = (process.env.SKILLUP_URL ?? 'http://skillup.localhost:3009').replace(/\/+$/, '');
 
-  test('RTH: keeps /start-learning and /tutorial reachable and returns 404 for all retired /learn URLs', async ({
+  test('RTH & SUIA: returns 404 for all retired URLs and preserves canonical routes', async ({
     request,
   }) => {
     const startLearningRes = await request.get(`${rthBaseUrl}/start-learning`, {
@@ -561,37 +567,61 @@ test.describe('RTH /learn route retirement and canonical route preservation', ()
       maxRedirects: 0,
     });
     expect(tutorialRes.status()).toBe(200);
+    const tutorialHtml = await tutorialRes.text();
+    expect(tutorialHtml).not.toContain('/tutorial/assignments');
 
-    const retiredPaths = [
+    const rthRetiredPaths = [
       '/learn',
       '/learn/remediation',
       '/learn/full-stack/javascript/async-programming/promises',
       '/learn/full-stack/javascript/async-programming/promises/notes',
       '/learn/full-stack/javascript/async-programming/promises/assignments',
+      '/remediation',
+      '/tutorial/assignments',
+      '/tutorial/assignments/full-stack/javascript/async-programming/promises',
     ];
 
-    for (const retiredPath of retiredPaths) {
+    for (const retiredPath of rthRetiredPaths) {
       const response = await request.get(`${rthBaseUrl}${retiredPath}`, {
         maxRedirects: 0,
       });
       expect(response.status(), `Expected 404 for retired RTH path ${retiredPath}`).toBe(404);
     }
 
-    // Preserved re-homed routes are protected by learner auth (307 to /login when unauthenticated, never 404/500)
-    const remediationRes = await request.get(`${rthBaseUrl}/remediation`, {
+    // Next.js normalizes trailing slashes with 308 redirect to non-trailing slash, which resolves to 404
+    const rthTrailingSlashPaths = ['/remediation/', '/tutorial/assignments/'];
+    for (const trailingPath of rthTrailingSlashPaths) {
+      const redirectedRes = await request.get(`${rthBaseUrl}${trailingPath}`, {
+        maxRedirects: 1,
+      });
+      expect(redirectedRes.status(), `Expected 404 for resolved trailing slash RTH path ${trailingPath}`).toBe(404);
+    }
+
+    const suiaRetiredPaths = ['/student/learn'];
+    for (const retiredPath of suiaRetiredPaths) {
+      const response = await request.get(`${suiaBaseUrl}${retiredPath}`, {
+        maxRedirects: 0,
+      });
+      expect(response.status(), `Expected 404 for retired SUIA path ${retiredPath}`).toBe(404);
+    }
+
+    const suiaTrailingSlashRes = await request.get(`${suiaBaseUrl}/student/learn/`, {
+      maxRedirects: 1,
+    });
+    expect(suiaTrailingSlashRes.status()).toBe(404);
+
+    // Preserved canonical routes remain active and protected by learner auth (307 to /login when unauthenticated)
+    const suiaStudentRes = await request.get(`${suiaBaseUrl}/student`, {
       maxRedirects: 0,
     });
-    expect(remediationRes.status()).toBe(307);
-    expect(remediationRes.headers()['location']).toContain('/login?redirect=%2Fremediation');
+    expect(suiaStudentRes.status()).toBe(307);
+    expect(suiaStudentRes.headers()['location']).toContain('/login?redirect=%2Fstudent');
 
-    const assignmentsRes = await request.get(
-      `${rthBaseUrl}/tutorial/assignments/full-stack/javascript/async-programming/promises`,
-      { maxRedirects: 0 },
-    );
-    expect(assignmentsRes.status()).toBe(307);
-    expect(assignmentsRes.headers()['location']).toContain(
-      '/login?redirect=%2Ftutorial%2Fassignments%2Ffull-stack%2Fjavascript%2Fasync-programming%2Fpromises',
-    );
+    const suiaBatchRes = await request.get(`${suiaBaseUrl}/student/my-batch`, {
+      maxRedirects: 0,
+    });
+    expect(suiaBatchRes.status()).toBe(307);
+    expect(suiaBatchRes.headers()['location']).toContain('/login?redirect=%2Fstudent%2Fmy-batch');
 
     const rthTutorialV2Res = await request.get(
       `${rthBaseUrl}/tutorial-v2/full-stack/javascript/async-programming/promises/node-1`,

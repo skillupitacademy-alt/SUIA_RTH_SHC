@@ -16,13 +16,18 @@ export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ subtopicId: string }> }
 ) {
-  const { subtopicId } = await context.params;
+  await context.params;
   return NextResponse.json(
     {
       error: 'Gone',
-      message: `Legacy tutorial content route for subtopic "${subtopicId}" is permanently retired. Use canonical /tutorial-v2 block routes.`,
+      message: 'Legacy tutorial content route is permanently retired. Use canonical /tutorial-v2 block routes.',
       statusCode: 410,
     },
-    { status: 410 }
+    {
+      status: 410,
+      headers: {
+        'Cache-Control': 'private, no-store',
+      },
+    }
   );
 }

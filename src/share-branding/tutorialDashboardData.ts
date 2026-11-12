@@ -127,7 +127,6 @@ export function buildTutorialDashboardData(brand: BrandConfig): TutorialDashboar
       { label: 'Topics', href: '/tutorial/topics' },
       { label: 'My Learning', href: '/tutorial/learning' },
       { label: brand.tutorLabel, href: '/tutorial/tutor', badge: 'New' },
-      { label: 'Assignments', href: '/tutorial/assignments' },
       { label: 'Projects', href: '/tutorial/projects' },
       { label: 'Bookmarks', href: '/tutorial/bookmarks' },
       { label: 'Notes', href: '/tutorial/notes' },

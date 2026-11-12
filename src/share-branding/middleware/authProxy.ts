@@ -30,10 +30,8 @@ const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'
 const PROTECTED_PREFIXES = [
   '/start-learning/',
   '/tutorial-v2',
-  '/tutorial/assignments',
   '/api/tutorial/',
   '/api/ai-tutor/',
-  '/remediation',
   '/dashboard',
   '/onboarding',
   '/student',
@@ -41,6 +39,13 @@ const PROTECTED_PREFIXES = [
   '/faculty',
   '/api/student',
   '/api/batches',
+];
+
+const RETIRED_LEARNER_PREFIXES = [
+  '/student/learn',
+  '/learn',
+  '/remediation',
+  '/tutorial/assignments',
 ];
 
 // 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
@@ -68,6 +73,10 @@ export function isPublicAuthRoute(pathname: string): boolean {
 }
 
 export function isProtectedRoute(pathname: string): boolean {
+  const normalizedPathname = pathname.toLowerCase();
+  if (hasPrefix(normalizedPathname, RETIRED_LEARNER_PREFIXES)) {
+    return false;
+  }
   return hasPrefix(pathname, PROTECTED_PREFIXES);
 }
 

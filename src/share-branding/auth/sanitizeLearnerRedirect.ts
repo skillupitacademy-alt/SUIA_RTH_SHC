@@ -1,10 +1,32 @@
-const BLOCKED_AUTH_PATHS = new Set([
+const BLOCKED_EXACT_PATHS = new Set([
   '/login',
   '/signup',
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/verify-email',
+  '/verify-success',
+  '/api',
+  '/learn',
+  '/student/learn',
+  '/remediation',
+  '/tutorial/assignments',
 ]);
+
+const BLOCKED_PATH_PREFIXES = [
+  '/login/',
+  '/signup/',
+  '/register/',
+  '/forgot-password/',
+  '/reset-password/',
+  '/verify-email/',
+  '/verify-success/',
+  '/api/',
+  '/learn/',
+  '/student/learn/',
+  '/remediation/',
+  '/tutorial/assignments/',
+];
 
 function hasControlCharacter(value: string): boolean {
   for (let index = 0; index < value.length; index += 1) {
@@ -14,6 +36,15 @@ function hasControlCharacter(value: string): boolean {
     }
   }
   return false;
+}
+
+function isBlockedPathname(pathname: string): boolean {
+  const normalized = (pathname.replace(/\/+$/, '') || '/').toLowerCase();
+  if (BLOCKED_EXACT_PATHS.has(normalized)) {
+    return true;
+  }
+  const withTrailingSlash = normalized === '/' ? '/' : `${normalized}/`;
+  return BLOCKED_PATH_PREFIXES.some((prefix) => withTrailingSlash.startsWith(prefix));
 }
 
 export function sanitizeLearnerRedirect(
@@ -42,8 +73,14 @@ export function sanitizeLearnerRedirect(
     if (/(?:%2f|%5c|%00|%0a|%0d)/i.test(rawPathPart)) {
       return fallback;
     }
-    const normalizedPathname = parsed.pathname.replace(/\/+$/, '') || '/';
-    if (BLOCKED_AUTH_PATHS.has(normalizedPathname.toLowerCase())) {
+    const decodedPathname = decodeURIComponent(parsed.pathname);
+    if (
+      decodedPathname.startsWith('//') ||
+      decodedPathname.includes('\\') ||
+      hasControlCharacter(decodedPathname) ||
+      isBlockedPathname( parsed.pathname) ||
+      isBlockedPathname(decodedPathname)
+    ) {
       return fallback;
     }
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;

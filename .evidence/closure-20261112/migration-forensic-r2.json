@@ -1,0 +1,3519 @@
+{
+  "generatedAt": "2026-11-12T14:59:12.129Z",
+  "boundary": "Strict read-only Git object traversal and BEGIN READ ONLY database catalog inspection; zero mutations.",
+  "targetFingerprint": "d69fe9af7c33",
+  "scannedSqlAndJournalBlobCount": 79,
+  "matchedHistoricalBlobsForUnmatchedHashes": [
+    {
+      "hash": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783",
+      "oid": "b4ae3054bbf788d3ad5714125b4afce6c2f77c96",
+      "filePath": "packages/db-tutorial/migrations/0026_complex_mandarin.sql",
+      "format": "raw"
+    },
+    {
+      "hash": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783",
+      "oid": "b4ae3054bbf788d3ad5714125b4afce6c2f77c96",
+      "filePath": "packages/db-tutorial/migrations/0026_complex_mandarin.sql",
+      "format": "LF"
+    },
+    {
+      "hash": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783",
+      "oid": "b4ae3054bbf788d3ad5714125b4afce6c2f77c96",
+      "filePath": "packages/db-tutorial/migrations/0026_complex_mandarin.sql",
+      "format": "LF-trimmed"
+    }
+  ],
+  "journalSnapshotsInGitHistory": [
+    {
+      "oid": "d6e1ceceb07ee2e8acbb828c355af29753ce6c70",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 29,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791508000000,
+          "tag": "0026_complex_mandarin"
+        },
+        {
+          "idx": 27,
+          "when": 1791508489695,
+          "tag": "0027_steady_caretaker"
+        },
+        {
+          "idx": 28,
+          "when": 1791510064024,
+          "tag": "0028_public_multiple_man"
+        }
+      ]
+    },
+    {
+      "oid": "28733629b7fdb47dcbc88d3dbcc8eb0f71f42078",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 30,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791508000000,
+          "tag": "0026_complex_mandarin"
+        },
+        {
+          "idx": 27,
+          "when": 1791508489695,
+          "tag": "0027_steady_caretaker"
+        },
+        {
+          "idx": 28,
+          "when": 1791510064024,
+          "tag": "0028_public_multiple_man"
+        },
+        {
+          "idx": 29,
+          "when": 1791600001000,
+          "tag": "0030_event_outbox"
+        }
+      ]
+    },
+    {
+      "oid": "2b8761d0fbcd09592d6131cf3af53f723051709b",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 31,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791508000000,
+          "tag": "0026_complex_mandarin"
+        },
+        {
+          "idx": 27,
+          "when": 1791508489695,
+          "tag": "0027_steady_caretaker"
+        },
+        {
+          "idx": 28,
+          "when": 1791510064024,
+          "tag": "0028_public_multiple_man"
+        },
+        {
+          "idx": 29,
+          "when": 1791600001000,
+          "tag": "0030_event_outbox"
+        },
+        {
+          "idx": 30,
+          "when": 1791650000000,
+          "tag": "0031_drop_tutorial_page_content_v2"
+        }
+      ]
+    },
+    {
+      "oid": "26868f99e9700a2b3bb0b1b1816268025ca164e6",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 28,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791508489695,
+          "tag": "0026_steady_caretaker"
+        },
+        {
+          "idx": 27,
+          "when": 1791510064024,
+          "tag": "0027_public_multiple_man"
+        }
+      ]
+    },
+    {
+      "oid": "7a5800ef022097675b06238b6d0f8178922a66eb",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 27,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791508489695,
+          "tag": "0026_steady_caretaker"
+        }
+      ]
+    },
+    {
+      "oid": "6919ab1a3ffa240fd6d4ea1b024e7069bbf55d9c",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 27,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        },
+        {
+          "idx": 26,
+          "when": 1791506086614,
+          "tag": "0026_complex_mandarin"
+        }
+      ]
+    },
+    {
+      "oid": "e2d5a5a9cdb4717033a34b48df8934b8592b782c",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 26,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        },
+        {
+          "idx": 25,
+          "when": 1789092365992,
+          "tag": "0025_quiet_tenebrous"
+        }
+      ]
+    },
+    {
+      "oid": "0de616bc3fac27b78971f02980604dacd4e63498",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 25,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        },
+        {
+          "idx": 24,
+          "when": 1788738165011,
+          "tag": "0024_first_wendell_rand"
+        }
+      ]
+    },
+    {
+      "oid": "913a33740040cb4e5930b28fe626cd60269c9a12",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 24,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        },
+        {
+          "idx": 23,
+          "when": 1788587362377,
+          "tag": "0023_lame_deathbird"
+        }
+      ]
+    },
+    {
+      "oid": "2d87be344e4ab1d9fbba254662b676a33d15b0a7",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 23,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        },
+        {
+          "idx": 22,
+          "when": 1788021759918,
+          "tag": "0022_broken_supernaut"
+        }
+      ]
+    },
+    {
+      "oid": "fbe4618ed49919c234d5e94287f160309f0cfcec",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 22,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        },
+        {
+          "idx": 21,
+          "when": 1787341859253,
+          "tag": "0021_sparkling_unus"
+        }
+      ]
+    },
+    {
+      "oid": "b72afa8f03f3687a3fee0327b125d10439840212",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 21,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        },
+        {
+          "idx": 20,
+          "when": 1786997739194,
+          "tag": "0020_add_tutorial_page_content_v2"
+        }
+      ]
+    },
+    {
+      "oid": "f60b22d30b13db7a71f0a1f8d7520b470c315464",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 20,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        },
+        {
+          "idx": 19,
+          "when": 1786995512007,
+          "tag": "0019_add_tutorial_sidebar_trees_v2"
+        }
+      ]
+    },
+    {
+      "oid": "106c51b55f1ead0ac5f9e239c333a35bcbabeb72",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 19,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        },
+        {
+          "idx": 18,
+          "when": 1778979561865,
+          "tag": "0018_amused_rockslide"
+        }
+      ]
+    },
+    {
+      "oid": "95837ae7d529ef541f37e36c6e962604b7b8a14b",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 18,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        },
+        {
+          "idx": 17,
+          "when": 1778315289545,
+          "tag": "0017_tutorial_delivery_indexes"
+        }
+      ]
+    },
+    {
+      "oid": "8100e1e9a70403f2c0d10b0c477ff915b9b3aba8",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 17,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        },
+        {
+          "idx": 14,
+          "when": 1778315289542,
+          "tag": "0014_add_ai_tutor_section_type"
+        },
+        {
+          "idx": 15,
+          "when": 1778315289543,
+          "tag": "0015_backfill_summary_interview_ai_tutor_sections"
+        },
+        {
+          "idx": 16,
+          "when": 1778315289544,
+          "tag": "0016_add_overview_section_type"
+        }
+      ]
+    },
+    {
+      "oid": "234e57564081d2133bc7c65b77236982c5f00ba0",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 14,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        },
+        {
+          "idx": 13,
+          "when": 1778315289541,
+          "tag": "0013_colorful_wong"
+        }
+      ]
+    },
+    {
+      "oid": "5af36a1d58bc6f1357c50a5eea58167b5176d13a",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 13,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        },
+        {
+          "idx": 12,
+          "when": 1778202643367,
+          "tag": "0012_futuristic_pepper_potts"
+        }
+      ]
+    },
+    {
+      "oid": "6460c4160907b37c21c7bfe366c9986d64791451",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 12,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        },
+        {
+          "idx": 11,
+          "when": 1774551053336,
+          "tag": "0011_add_layman_hardening_tables"
+        }
+      ]
+    },
+    {
+      "oid": "dec81c4509ca159e9a4579164928744be30ce9a7",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 11,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        },
+        {
+          "idx": 10,
+          "when": 1774551052336,
+          "tag": "0010_looping_demo_foundation"
+        }
+      ]
+    },
+    {
+      "oid": "c212d0174ff85d1284dc6f7b75c238c695f0d148",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 10,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        },
+        {
+          "idx": 9,
+          "when": 1774551051336,
+          "tag": "0009_mv_student_weak_areas"
+        }
+      ]
+    },
+    {
+      "oid": "f917d136153c3c46fc57c65630ac1bbe0d5bb5ea",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 9,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        },
+        {
+          "idx": 8,
+          "when": 1774217227063,
+          "tag": "0008_opposite_wiccan"
+        }
+      ]
+    },
+    {
+      "oid": "2587dcacbfc4d2f5438d8e118d5ff927aea0d1d2",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 8,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        },
+        {
+          "idx": 7,
+          "when": 1774183908666,
+          "tag": "0007_tiny_bill_hollister"
+        }
+      ]
+    },
+    {
+      "oid": "d964167ab3cf76459a8cd364d8dc2ba63d5d8bd0",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 7,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        },
+        {
+          "idx": 6,
+          "when": 1774181525989,
+          "tag": "0006_heavy_sally_floyd"
+        }
+      ]
+    },
+    {
+      "oid": "afc4a70b57b729b67b44760b28d3f3a4a7521bd0",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 6,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        },
+        {
+          "idx": 5,
+          "when": 1774177951851,
+          "tag": "0005_nebulous_jane_foster"
+        }
+      ]
+    },
+    {
+      "oid": "9b14d3fc8ac82044f916fe428c09b5f253e55973",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 5,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        },
+        {
+          "idx": 4,
+          "when": 1774175200154,
+          "tag": "0004_neat_greymalkin"
+        }
+      ]
+    },
+    {
+      "oid": "1e909dc9140ac902219ca9f75fc03cd5c381e1ad",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 4,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        },
+        {
+          "idx": 3,
+          "when": 1774169829327,
+          "tag": "0003_flawless_surge"
+        }
+      ]
+    },
+    {
+      "oid": "a92497e68411e1a8e2c38c5992eca7ae4435490e",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 3,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        },
+        {
+          "idx": 2,
+          "when": 1774165551232,
+          "tag": "0002_easy_namorita"
+        }
+      ]
+    },
+    {
+      "oid": "02d8477902f33661828a524a7a04304ca085e26b",
+      "filePath": "packages/db-tutorial/migrations/meta/_journal.json",
+      "entryCount": 2,
+      "entries": [
+        {
+          "idx": 0,
+          "when": 1774000000000,
+          "tag": "0000_t1_foundation"
+        },
+        {
+          "idx": 1,
+          "when": 1774000001000,
+          "tag": "0001_content_type"
+        }
+      ]
+    }
+  ],
+  "commitsAround2026_07_07": [
+    "57d7e2372ca71aabd252be25aa691e49f25e018b|2026-07-09 13:12:28 +0530|Increase font sizes by 20% and remove duplicate region landmark",
+    "feff18df1a4c08272e97ced04dd2a86f1f6e64ff|2026-07-09 13:01:18 +0530|Fix color contrast and add aria-label to nav landmark",
+    "227107421f773f16f98bd5e7da1a773dd3ea4fb3|2026-07-09 03:09:09 +0530|Add unique aria-labels to header landmarks for accessibility",
+    "58a60945b19293938b71abe21573e145479d54a3|2026-07-09 03:07:35 +0530|Replace glass morphism backgrounds with solid white/clean backgrounds",
+    "4c34908be99d7585c33b18e0bc444024d1b1ee73|2026-07-09 03:01:35 +0530|Fix accessibility issues: add ARIA labels to landmarks and skip link",
+    "bf89e3af9196f3daa79d90b825acc9cb969f960c|2026-07-09 02:40:25 +0530|Refine TutorialPage layout and styling",
+    "fc2ca13b6c732c5d4a8a49d0313dd19a241aef70|2026-07-09 02:32:51 +0530|Update TutorialPage component",
+    "75362b2b0f20430be9cdd3e6d4ce6a2f8ed8b1fc|2026-07-09 02:25:49 +0530|Add comprehensive learning path tutorial page with interactive components",
+    "ba396c09c3f5b5fb7be6f7ff79ae550d2eb221ba|2026-07-09 00:04:52 +0530|Update Learning Experience components and dependencies",
+    "6fb581ded3a648de6942e750110516a9ddc5e722|2026-07-08 23:50:28 +0530|Add Learning Experience pages and UI components",
+    "dfdb2a862d451f78c89ee2b152570d1d3d0d5aea|2026-07-08 22:41:03 +0530|Update authProxy middleware",
+    "363a37a0e25f33fbab8566cfbe08e04ee0c0ae87|2026-07-08 18:46:46 +0530|Add learning paths and Python notes content",
+    "4b970e12c3ce177dfb8d1aeae2fb565ff0d1d716|2026-07-08 12:13:09 +0530|Disable GitHub workflows - move to workflows.disabled",
+    "ad07bb47c5187b1a45a82324b8fc41964274ca95|2026-07-08 11:12:26 +0530|fix(auth): remove bad gzip forwarding in proxy",
+    "8bd2a6cbf0400134add95d15f10f4a179afce0ea|2026-07-08 09:58:27 +0530|fix: routing issue",
+    "bc22468e70be4f1a8d5a0dea99e44bfbb079ac5d|2026-07-08 09:49:32 +0530|fix(cloudflare): make api gateway deployable",
+    "ed7178efbcaa1e03f1286f6577ef0044108e9d49|2026-07-08 09:26:53 +0530|Add admin.skillhubcore.in routing to Cloudflare Worker",
+    "0d32e9e33ab4f6cbcd147f9d60a849b741b5e42b|2026-07-08 09:08:54 +0530|fix: Update educational hierarchy test with proper BFF cookie authentication",
+    "146a884422439d45f39b7018e234a95c7f7fdf8c|2026-07-08 08:26:44 +0530|test: Add educational hierarchy API test script for deployed admin.skillhubcore.in",
+    "1e5f200aedd4810d9e338aca4960754f4ec46d55|2026-07-08 07:20:08 +0530|docs: Update migration checklist with Docker build success",
+    "5941bf600f60e6bf121c098c1e8f66d0eda40e26|2026-07-08 07:14:26 +0530|fix: Replace db Proxy with getDb() function in all API routes",
+    "ef4178eb48c010f75ae935e828ae15e0b5cc6825|2026-07-08 07:06:06 +0530|fix(db-skillhubcore): lazy initialize database connection",
+    "e1cf1ffec1ac168583555211b6175529f00b260f|2026-07-08 06:51:13 +0530|fix(docker): add missing db-skillhubcore package to Dockerfile",
+    "361dc9daf3167d77c13f6a2a40c79f30d0f1c6a5|2026-07-08 06:18:32 +0530|feat(infra): add -NoCache flag to build script",
+    "7a5a8949953d944a63333d9abeffc3afe18fa21e|2026-07-07 23:26:10 +0530|chore: update pnpm-lock.yaml with new dependencies and cleanup",
+    "d66876a2ffc7f74a1cac264d36d60601d1e5c27d|2026-07-07 22:58:56 +0530|docs(skillhubcore): mark migration complete - ready for deployment",
+    "e728cdf42500acfc46d17b23b5a300421f5ab35a|2026-07-07 22:50:54 +0530|fix(deps): add @types/pg to db-skillhubcore package",
+    "db6094fe159f0f6bd173b14f6417fa8a33ea5bcb|2026-07-07 22:28:39 +0530|fix(skillhubcore): add missing npm dependencies for Docker build",
+    "94e4bfe97d23fca648486c0c287a030227bd02d5|2026-07-07 21:55:14 +0530|fix(skillhubcore): resolve TypeScript errors",
+    "ee22fe3424bf40b168f6181b24067fba9d404157|2026-07-07 21:45:31 +0530|fix(skillhubcore): copy missing interlinked components from realtutorialhub-admin",
+    "1d526642a58e9351d9a71e660e327d3192c7acb7|2026-07-07 21:06:01 +0530|docs(skillhubcore): update checklist with accessible features summary",
+    "4f4c76f21e0d88a7c0d6c89de597877f77098a99|2026-07-07 21:05:15 +0530|feat(skillhubcore): add educational hierarchy page and navigation",
+    "b4dc8573db8a6f2163fe35540a9e867b4983e75c|2026-07-07 20:59:26 +0530|feat(skillhubcore): complete data migration from quiz_platform_prod to tutorial_prod",
+    "a5a6a93f1a7bcb89364cf216c801ebd4339fd815|2026-07-07 18:12:41 +0530|Update migration script to use correct table names and fix database connections",
+    "fe21b286ebab10e0022c52d7d396f138569910cf|2026-07-07 17:50:51 +0530|Run db-tutorial migrations and update checklist",
+    "8f597645c3ad808efc7a899cbdbea9f46cae3e9c|2026-07-07 17:31:52 +0530|Add data migration script and test scripts for educational hierarchy",
+    "972a9618642e3859d52aeaf281735c9646bbcd4f|2026-07-07 17:30:33 +0530|feat: Add data migration and testing scripts for educational hierarchy",
+    "c4cc9b352e340a6451a0cc250b97f35fb3980e99|2026-07-07 10:52:34 +0530|docs: Update checklist with Phases 2-3 completion",
+    "b1279d0357cfad1bcea61295092bfdbe44c37bae|2026-07-07 10:51:48 +0530|feat: Create API routes for educational hierarchy CRUD operations (Phase 3)",
+    "cf994fba840be83199eb475250d9ba99b07d5c3a|2026-07-07 10:46:49 +0530|feat: Copy educational hierarchy components from realtutorialhub-admin (Phase 2)",
+    "6e06b385ab147228da11956df0b4086122a8ea20|2026-07-07 10:36:51 +0530|refactor: Remove duplicate MIGRATION_PROGRESS.md and update existing checklist",
+    "88bde107e4e0cee72c008d5c982bb1afe101c997|2026-07-07 10:34:57 +0530|docs: Update progress tracking with completed Phase 1 and migration verification",
+    "78142d76e5ad79ee6fddc8fa32baa6a5716f4185|2026-07-07 10:33:48 +0530|fix: Update migration script to use tsx and fix database connection",
+    "21bf8e4e3651a2eba76cdc3eff371fb5fb13144a|2026-07-07 10:18:49 +0530|docs: Add migration progress tracking document",
+    "fca31ddae17e492333b1a4a1c2be6d04028cb6e7|2026-07-07 10:11:47 +0530|chore: Add db-skillhubcore dependency to skillhubcore-admin",
+    "7b08ec232db95d6a8b6d7638c984890800a0b4e5|2026-07-07 10:10:36 +0530|feat: Create db-skillhubcore package with educational hierarchy schema",
+    "5467cf5f6cb3f774735e1a3a8e2503034c79f429|2026-07-07 09:39:25 +0530|feat: Add complete SkillHubCore migration documentation for VPS deployment",
+    "7fb39015a68b35d1559402b43ad90819fbc54988|2026-07-07 02:43:24 +0530|fix: add missing student and faculty roles to RTH database",
+    "c6ca250ec302fdd4b59672761c1e545a53b5d87c|2026-07-07 01:42:15 +0530|fix: Complete role standardization to 'student' - update RBAC types and tests",
+    "490379c93518b587f75d2460370857e9fb818395|2026-07-07 01:26:00 +0530|fix(auth): comprehensive user→student unification across all shared code",
+    "c63cb1a91988c9a07fcb383c28fe245659a162e2|2026-07-07 01:20:40 +0530|fix(auth): return 'student' role in login response DTO",
+    "25170179312da70b16c13b43315d20483447f6f6|2026-07-07 00:35:00 +0530|fix(deploy): reload nginx after image restarts",
+    "26a58f19a959807f07e3fb93d775541576497f96|2026-07-07 00:06:00 +0530|fix(deploy): avoid warning-prone local image lookup",
+    "36d53d1eaf270005151f972ccdf57d09df8ecbcf|2026-07-07 00:02:42 +0530|fix(auth): align canonical roles with student normalization",
+    "49c645c3b39c3d3e4b98bb23d466344ac9c98f69|2026-07-06 23:54:40 +0530|fix(deploy): preserve brand env layering for local image builds",
+    "2bda11986c4e65d725870e395282b5e68e14d75d|2026-07-06 23:37:11 +0530|fix(deploy): support local compose image builds",
+    "aeafed6b1c590b6104617c96d576550a0d2755cf|2026-07-06 23:34:54 +0530|feat(deploy): add local image archive deployment",
+    "c2118246f4ffaf6cef3efdcbd79c070d808cac6e|2026-07-06 23:20:07 +0530|docs(deploy): Add Phase 3 cutover guide for registry-based deployment",
+    "58e955ee6b711cbfab89006a2308b5366b5ec180|2026-07-06 23:11:43 +0530|fix(deploy): harden source-free runtime bundle",
+    "67b83457ba93ebcf58d8600bb9a84148f29e19ee|2026-07-06 23:02:02 +0530|feat(deploy): add source-free runtime bundle",
+    "13362cb7e7410d01fac2544e5c703ca2ac1da527|2026-07-06 22:38:45 +0530|chore(deploy): make registry deployment the default path",
+    "373ce7cc7cfa9aa9723f1c274e09adb8b0f145c2|2026-07-06 22:34:08 +0530|feat(deploy): add registry-based phase 2 deployment",
+    "ca08607af98ca5fee4ebc36847e63ae870ce9b8f|2026-07-06 22:24:10 +0530|feat(deploy): add v3.2 operational refinements",
+    "107ae25c936d90cc6b7c5ff66c4c43674ebc87c0|2026-07-06 22:07:08 +0530|fix(deploy): harden v3 rollback and validation",
+    "99e097376e7a9e479321c4ba119171c1b1412a3a|2026-07-06 21:13:32 +0530|docs(deploy): Add comprehensive V3.0 framework completion summary",
+    "be980a00f697242f136e2a3ba179174034f18552|2026-07-06 21:11:22 +0530|feat(deploy): Phase 5 - Docker image-based rollback framework",
+    "13e8ca18845ded2331c43560dae9350796350e8f|2026-07-06 21:05:37 +0530|feat(deploy): Phase 4 - Deployment hardening",
+    "adb07b1485726b7c8202ce0a80c910779f2ce566|2026-07-06 21:01:13 +0530|feat(deploy): Phase 3 - Refactor deploy-production.sh as thin orchestrator",
+    "5e9cef497aa22ba3abed87e78e2d4cb12d5710bb|2026-07-06 20:58:26 +0530|feat(deploy): Phase 2 - Reusable deployment library",
+    "2e3c1eba343c1d2ade9d38b837e7b3be5f55d526|2026-07-06 20:55:30 +0530|feat(deploy): Phase 1 - Data-driven deployment configuration",
+    "11186687ac991eff553a48f9a66634171d690757|2026-07-06 20:42:41 +0530|feat: production-grade deployment system v2 (9.0/10)",
+    "7cab6e211e8d4c7e56d0b5c6b53ed4af1a3bf2e3|2026-07-05 23:07:47 +0530|merge: vps migration into main",
+    "4a5952a95a00c675afae31c36dc9d3f41f9349d8|2026-07-05 23:07:29 +0530|docs: record vps migration completion",
+    "6dbb94ff04605d11ebbb4ef4e1538fabe45a5ffd|2026-07-05 23:05:00 +0530|docs: add project operations runbook",
+    "cef928f5173cd2351a5ea0ff670a667e994b8080|2026-07-05 22:35:32 +0530|fix: route placement handoff to frontend origins",
+    "013f5c7099ef1dcccd45acae052de51a4cf462ea|2026-07-05 22:22:45 +0530|infra: prepare placement worker origin",
+    "2cfd37bddafa410184f7d102bd56339ccac73c2b|2026-07-05 22:13:59 +0530|docs: record dashboard login fix",
+    "fbe058748bf95be0cfc1bece1521c66241f29505|2026-07-05 22:07:06 +0530|fix: navigate after shared login with full reload",
+    "282994b4b8d85bd26999f67ddd6e7c6f58422a55|2026-07-05 21:59:01 +0530|fix: validate dashboard auth through gateway",
+    "352a6b9bff156a2f665945dfa63dd87b8a95373a|2026-07-05 21:42:54 +0530|docs: record hostinger operations hardening",
+    "550f1ceed0542e5f8255cce384f4e59db12b7c38|2026-07-05 21:36:04 +0530|infra: add hostinger operations hardening",
+    "e59708ebe0895d183ef606dcf05a96d9df361e02|2026-07-05 21:23:10 +0530|docs: record retained worker origin cutover",
+    "bff9fe46b7aa8d249165f9b798b85a03d640c493|2026-07-05 21:10:42 +0530|config: point worker frontends to vps origins",
+    "ec7d5c8a6fa2989121186b691402af1980c248ea|2026-07-05 20:42:37 +0530|infra: prepare retained frontend worker origins"
+  ],
+  "commitsAround2026_10_09": [
+    "f26a5311b4d995873fffcaec2a5890e848cf1fd9|2026-10-11 20:06:06 +0530|chore(w0): initialize migration repair run migration-repair-20261011-143539-06936246 - clean baseline established",
+    "069362463165d851cb8ecb6f325957f00ad9942a|2026-10-11 20:04:57 +0530|chore: commit P0 evidence files - agent-runs, verdict, review doc",
+    "16e2aec128db5bebbcefbda0f085aeb68b9856b4|2026-10-11 19:58:40 +0530|docs: add P0 safety fixes evidence and review",
+    "8da0eb2da9b07aa6f2fcc9421bd9f889876ee6d1|2026-10-11 19:56:18 +0530|chore: finalize P0 safety fixes - add manifest, summary, and mark task completed",
+    "2f1a9d2902352aa0d8f54fd404711496d2f1b531|2026-10-11 19:41:13 +0530|fix: p0 integration issues - verification_runner outputs and CLI test async patterns",
+    "765c44f7a864ffa769664814682d0e152567fb6d|2026-10-11 19:12:38 +0530|fix: update ALLOWED_COMMANDS test to include docker-compose",
+    "26e2413ad7b75f5f97b438353c4656c39c3e3926|2026-10-11 19:09:42 +0530|fix: confirm remote SHA after publication (FEAT-005)",
+    "9bce2b6874ef71eb5dac6205ba87c37ee8ca6acd|2026-10-11 19:01:19 +0530|fix: verify evidence files and commit identity (FEAT-004)",
+    "6bdc3389236a2e29c021cbcc4dfa8299f01da5f0|2026-10-11 18:51:02 +0530|fix: guarantee cleanup with verification (FEAT-003)",
+    "f6622f0ef8b6caa15703775525ec488868b37d4b|2026-10-11 18:47:56 +0530|fix: add trusted host/database validation (FEAT-002)",
+    "10ce6e10d56ba907f3610af7535d1e95323d7133|2026-10-11 18:44:39 +0530|fix: eliminate command injection in runner.py (FEAT-001)",
+    "6cdc85edaa3b012174bf8609897863c65b4d5859|2026-10-11 18:04:42 +0530|fix: resolve 5 review findings - add workflow_controller agent, fix db_session, document imports, add coverage report, add dry-run test",
+    "74620dcc8aa6e2672291bb3567d7146dce641939|2026-10-11 14:59:07 +0530|chore: add iteration 1 verification findings for migration repair workflow",
+    "e1929d4c727986f54b4dc8130f922eee79bd2f28|2026-10-11 14:55:39 +0530|docs: FEAT-005 documentation and CLI for migration repair workflow",
+    "d979050f32c4be8065ae8ab27b15a964f8c3c5be|2026-10-11 14:47:51 +0530|test: FEAT-004 integration tests for migration repair workflow",
+    "c66198db74330080dd3b9d0f3f2ef68e431a342f|2026-10-11 14:37:27 +0530|feat: FEAT-003 implement 13 migration repair agents",
+    "f606dd0266512f92912c396fc049d50732f0da4c|2026-10-11 08:00:26 +0530|feat: FEAT-002 extend agent registry to 28 agents",
+    "8e8a16f65caa4e22c68fd406473d1772446894db|2026-10-11 07:54:08 +0530|feat: FEAT-001 foundation modules for migration repair workflow",
+    "3a1e4487c54cb3551129451078b4f4c25ccc491f|2026-10-11 07:34:25 +0530|docs: add migration and test execution report for 2026-10-11",
+    "1dadd030e99fb2899b52cccccfd949c4154774ce|2026-10-11 07:27:53 +0530|fix: restore missing project_ai_* CREATE TABLE statements in migration chain",
+    "07420c89d049c87e2a5a1ffa1b380bb8f2926634|2026-10-11 06:57:44 +0530|docs: document comprehensive migration repair strategy",
+    "0a12952cdc8ebe7dbbf4482de1edba4137975f13|2026-10-11 06:58:23 +0530|fix(db): make delivery indexes idempotent in migration 0018",
+    "3e18f0607fbbfc471d570c3159442a7a1633b984|2026-10-11 06:49:54 +0530|fix(db): make section_type enum migration idempotent",
+    "7da64232eed0e70f25e5a16c19de329b603c19f2|2026-10-11 06:41:53 +0530|fix(db): remove 46 duplicate statements from migration 0012",
+    "9b0490e5188c1a38133cdedeaf7c01a76529cae4|2026-10-11 00:01:42 +0530|docs: complete Drizzle snapshot chain investigation",
+    "cae2f063b51db9279ad694f77c377bedd1de1fa1|2026-10-10 23:50:13 +0530|docs: add critical findings and gate execution log",
+    "decaf92fb2faeb925ce3d40f5415e412db1fc904|2026-10-10 23:39:08 +0530|fix(db): remove duplicate layman_audit_action enum (exists in migration 0011)",
+    "5fdb52380c9b4fb1bc97b4f78b7adfcd210185a8|2026-10-10 23:34:07 +0530|fix(db): remove ALL duplicate enums from migration 0012 (comprehensive fix)",
+    "1589900a497e8a679939046b796ce179515f6428|2026-10-10 23:20:07 +0530|docs: record Gate D evidence commit SHA",
+    "0e1a274e8c558f666f673d81487fa704278da5e7|2026-10-10 23:19:40 +0530|docs: add Gate A-D evidence for project-llm CI fix",
+    "6591fb4c3557c0451b3b259b9354e0d13513946c|2026-10-10 23:12:16 +0530|docs: add Gates A-D evidence for project-llm CI duplicate enum fix",
+    "b9bcc27fe935693b00764064834b3c025713c60c|2026-10-10 23:10:47 +0530|fix(db): remove duplicate assignment_question_type enum from migration 0012",
+    "5872b981dbe877ec18f7be8b93f4e1cf018f14cb|2026-10-10 22:49:52 +0530|fix(db): avoid recreating existing assignment help enum",
+    "061007188560d071ca7eece00f2b3b21d844496c|2026-10-10 22:45:30 +0530|ci: use tutorial database URL expected by Drizzle config",
+    "4d6c7d3052d1fb20a12714cf890e430f27700fe1|2026-10-10 22:37:33 +0530|ci: install pinned pnpm before setup-node cache",
+    "6128c1a883aac32eadf42707191bcf32d7be13ba|2026-10-10 22:33:43 +0530|fix(project-llm): require canonical contract for all handoff exports",
+    "95eb94d09d8ee63952fdfc515afa876df7c7f29d|2026-10-10 22:33:26 +0530|fix(project-llm): correct API base URL normalization",
+    "2cb2b41f123c6c0710895d24d7c96a9961c0fd90|2026-10-10 22:33:17 +0530|feat(project-llm): bind external AI prompt to persisted engineering contract",
+    "4461f795dee96e86aaccea5bd0c0d2bf306b6bb9|2026-10-10 22:33:03 +0530|feat(project-llm): fetch canonical engineering contract for external handoff",
+    "8f669c6ebee2a0512d9dfc87de6210fa1dc08d28|2026-10-10 22:31:29 +0530|fix(project-llm): correct candidate gate status type",
+    "15a54d8e8ace92c5b3d49e96d41d460fa73b1432|2026-10-10 22:29:24 +0530|fix(project-llm): remove simulated candidate validation progress",
+    "37cd8a3e7f7bd06bb3c003b635a576322a232653|2026-10-10 22:29:17 +0530|fix(project-llm): prevent candidate screen from fabricating passing gates",
+    "4e2eb2d9be17faf93cc3d8c7b52891e5ac96dfba|2026-10-10 22:25:47 +0530|fix(project-llm): remove hard-coded compliance gate counts from handoff",
+    "717cb906565ad0c03b88c6b736ee6535ba951e4f|2026-10-10 22:18:11 +0530|test(project-ai): prevent unexecuted browser checks from passing",
+    "ae2a4b80abc44c80cafcfc49b6578269e2f28230|2026-10-10 22:18:08 +0530|fix(project-llm): ignore cached lifecycle success flags",
+    "03f9f022105d4e351861f67a68d97d14bf7aa392|2026-10-10 22:17:49 +0530|docs(project-ai): document workspace and CORS configuration",
+    "75c0a2adff51ec00a323ea1a5fd0275e57dcbac9|2026-10-10 22:17:46 +0530|fix(project-ai): configure explicit CORS origins and portable workspace root",
+    "7aef10402b42f690b946f59dc10557ade749a716|2026-10-10 22:17:43 +0530|test(project-ai): enforce human approval for final certification",
+    "24ad9769501dc1af90e6444287f09c1018e175bd|2026-10-10 22:17:02 +0530|fix(project-llm): remove fabricated workflow success defaults",
+    "c2e08c52f55a56fb9939ca22fb9e18f1f2c31df8|2026-10-10 22:16:59 +0530|fix(project-ai): prevent stub agents from passing certification",
+    "c717bd015da680b4abfb086133ae26a93df0a286|2026-10-10 22:16:56 +0530|fix(project-ai): fail closed on browser verification stubs",
+    "2079cdde6291a8ec8fe0fcb04daf0aef1cd009da|2026-10-10 22:16:53 +0530|test(project-ai): cover fail-closed runtime health checks",
+    "ed1433cd5ae353e0451e51d0029394121e612081|2026-10-10 22:16:51 +0530|fix(project-ai): fail closed when runtime HTTP client is missing",
+    "2e49b2a9f14e15b8f12ba230bb0dc88ce10d0d6f|2026-10-10 19:37:32 +0530|docs: Add remaining Gate E-2 certification and review artifacts",
+    "f8a11efa74b9629be617c1f773799c8fbaa79724|2026-10-10 19:27:23 +0530|feat(gate-g): Complete production certification and evidence bundle",
+    "86f1d31bcc59f935b7e3896cc5a6af1bcfb3abea|2026-10-10 19:16:57 +0530|docs(gate-f): Add Gate F integration verification evidence and reports",
+    "47c78208351a535819b268e46cecbd6883d542c8|2026-10-10 19:09:08 +0530|fix(schema): add uploader_brand to CandidateModel, requester_brand to WorkflowModel",
+    "18413dac627a09410bb643c644dbc8102acf55c0|2026-10-10 18:52:04 +0530|fix: resolve 15 Gate F security domain regressions (13 fixture errors + 2 JWT test failures)",
+    "ce0c8ab128d1be68389f9797009c6518696ce7b2|2026-10-10 18:31:03 +0530|fix(gate-e2): add missing require_contract_admin import in contract.py",
+    "8d4dd2970dbfff6e9e3f4357c68b21ffd45b274e|2026-10-10 18:16:48 +0530|fix(gate-e2): resolve W5 placement authorization review findings - RBAC matrix alignment, brand boundaries, identity fail-closed, in-memory storage removal, test mock fixes",
+    "9b0a8845bcd02a28d84dbd910d9b334025db59f3|2026-10-10 18:14:22 +0530|gate(e1): fix W3C review findings — empty-list guard, semantic field, docs, tests",
+    "776eceda4b0677d30edcbbeb4c4b17aedacd60c7|2026-10-10 18:06:12 +0530|docs: Gate E-1 W3C review fix report - all tests passing, zero findings",
+    "b7283a382d6b0f97e232b3475469766d98768bb4|2026-10-10 16:46:46 +0530|feat: implement Gate E-1 W3C Canonical Artifact Policy remediation",
+    "377edf8dd67f370f115e7f6957af0cae369e868d|2026-10-10 16:38:13 +0530|Gate E-2: W5 placement engine remediation - route authorization enforcement and security hardening",
+    "8aeef526b6a0429543aaa06a42eeaee0941243b6|2026-10-10 16:32:19 +0530|feat: implement Gate D - PostgreSQL integration test infrastructure",
+    "00a4c555a2298d42b63520bd4a8a0bc8f04e353b|2026-10-10 16:17:27 +0530|feat(gate-b): Complete policy definition and certification",
+    "3e9956d428d72a7f2e5e71fe573fa7d656844aa7|2026-10-10 11:51:20 +0530|gate-c: W7 evidence enforcement certification",
+    "c2531a11baedda3104ca67f6b94378e07695de93|2026-10-10 11:48:30 +0530|feat(gates): Add baseline evidence and Gate A-D policy artifacts",
+    "f4df2791e6afd323e295bd78b68a9a36ea8dd8b3|2026-10-10 11:35:01 +0530|feat(gate-c/w7): evidence enforcement policy, route integration, test suite",
+    "59f1542460f1ac2f49c0924f8a95a6bfe0019011|2026-10-10 09:58:10 +0530|docs(wave1): add comprehensive Wave 1 security completion summary",
+    "325163ede14ceb0db5d050aaa8a9a4394ff6bba6|2026-10-10 09:55:26 +0530|chore(wave1d): add governance identity fix certification evidence",
+    "54cf7b320f7262bc9a3c6781387b80db159ebae5|2026-10-10 09:48:05 +0530|fix(wave1d): extract governance identities from JWT, remove client-supplied identity fields",
+    "4c1f643442da2da3497165b82b9a8df3336cf17f|2026-10-10 08:53:00 +0530|docs: add Wave 1D RBAC certification evidence",
+    "2c2e30e63b118dba89566f0a8c5b5708fbc6d853|2026-10-10 08:41:01 +0530|feat(wave1d): implement RBAC enforcement on privileged routes",
+    "75ce7a2c836b5f07f9bb82f6c7f939fd67a94277|2026-10-10 08:19:31 +0530|chore(wave1c): add final completion summary and verification evidence",
+    "228882b388ef09740a344c067340fd989f6165cc|2026-10-10 08:13:13 +0530|fix(auth): Wave 1C remediation - centralize NULL brand policy and add JWT security tests",
+    "795a339f4141b440495a7383b9ebdb51801987e8|2026-10-10 07:59:23 +0530|test: Wave 1C integration verification results - 21 tests passed, 83% coverage",
+    "7124b4934172f9eaa895471b507f1b4b3bf8505b|2026-10-10 07:57:38 +0530|test(auth): add self-approval test and standardize user_id extraction (FEAT-002)",
+    "7f88b8573a08d107288c6a58ce23d0b1ad87711f|2026-10-10 07:50:57 +0530|fix(auth): infrastructure bypass requires privileged role (FEAT-001)",
+    "ceb7b49b47b565c15427aae983afb74dadbe80f4|2026-10-10 06:59:11 +0530|chore(wave1c): add authorization enforcement evidence - plan and review (APPROVED)",
+    "860cc2ef8b56ca3742b6742c91640cdf0ccc474b|2026-10-10 06:48:32 +0530|docs(wave1c): update implementation report with final commit SHA",
+    "76aaba514c4dfee9af3cca264c844b3499d8eb48|2026-10-10 06:48:12 +0530|feat(wave1c): complete authorization enforcement",
+    "772b263097b5f5f8c94b97953c4109c54f320e9e|2026-10-10 06:36:44 +0530|feat(wave1c): implement authorization enforcement (partial)",
+    "a27705a4fb95dc63a6623a9f23c16349c6ec63df|2026-10-10 06:23:32 +0530|chore(wave1b): add remediation evidence - plan, review, and approval",
+    "ac2f0a78b57f60dc95142d4e90a812763ea6322f|2026-10-10 06:05:11 +0530|fix(auth): Wave 1B remediation - remove dead code, add runtime validation",
+    "5869e0c5286aaa49088ff39756e77d1b7ca54458|2026-10-10 05:53:21 +0530|chore(wave1b): independent verification report - PARTIAL with P0 defect",
+    "f41b4a6cd0ef74ae475b8e0d933424d441523c48|2026-10-10 05:38:06 +0530|chore(wave1b): add identity extraction evidence and review approval",
+    "30ab1ad5ecbacbcd6bcea67656d27b0955aaedb7|2026-10-10 05:21:11 +0530|feat(auth): extract complete identity claims from SHC tokens (Wave 1B)",
+    "fe4b8569a39c0b3664564506a1f7fba972ddba1e|2026-10-10 05:10:57 +0530|chore(wave1a): independent verification report - all criteria PASS",
+    "cd4bd84278f1edc775f77bd40a2f2bb7b2ec549f|2026-10-09 22:57:39 +0530|chore(wave1a): add Wave 1A JWT alignment evidence and completion report",
+    "186bf9b075b87cedc0eeb27bb190bb15b5486db6|2026-10-09 22:48:18 +0530|docs: update Wave 1A FEAT files with iteration 2 verification evidence",
+    "006f737f3cebdd725696a1d7bcfd64e8f880d475|2026-10-09 22:47:08 +0530|fix: resolve Wave 1A JWT alignment review findings",
+    "bb3298ce6196a75fafd46e3ee13960b5587927bc|2026-10-09 22:23:51 +0530|chore: add iteration 1 verification evidence to Wave 1A JWT alignment FEAT files",
+    "e289ea5ef389c1ed79f29385a985d7eccdeffe93|2026-10-09 22:19:57 +0530|test(wave1a): FEAT-003 - Add comprehensive JWT alignment test suite",
+    "fd62410c6f689b57249592c98258617e39f50a42|2026-10-09 22:15:33 +0530|feat(wave1a): FEAT-002 - Add issuer validation and admin token support",
+    "dca0c5e7786482ef4e960daf3565f0fce53b2539|2026-10-09 22:11:33 +0530|feat(wave1a): FEAT-001 - Config alignment for JWT_SECRET and ADMIN_JWT_SECRET",
+    "846d78e7d8646e99d5d131aa50b49e2d4927409e|2026-10-09 21:47:46 +0530|chore: Wave 0 baseline audit report",
+    "6003c76d6210405766fe4802bffd083054d1a141|2026-10-09 20:52:38 +0530|chore(m2.9-w3a): final review approval - candidate intake complete",
+    "caf26da0389cda022dd064a52f9b487bf09b549f|2026-10-09 20:47:05 +0530|feat(m2.9): W5 Placement Engine implementation",
+    "02b7bc4b2f45e0b13b042f6480651f0501987acc|2026-10-09 20:44:12 +0530|chore(m2.9): add review documentation for W3A, W5, W7 workflows",
+    "9bb0676d06d9eceb449985304b0b00d569320b8f|2026-10-09 20:39:17 +0530|feat(project-ai): fix W3A review findings - candidate intake security and atomicity",
+    "c4593b1db19b965c291b1864dacef7fe02acc82e|2026-10-09 20:32:52 +0530|fix: W5 Placement Engine - resolve review findings and add API endpoints",
+    "d653fdb9547de74e2dd8c0a083a5050b2338aeb1|2026-10-09 20:32:20 +0530|chore(m2.9-w7): final review approval - final gate evidence enforcement complete",
+    "5d79b07cab87d89a00b078b18b707771c5fb1834|2026-10-09 20:32:11 +0530|chore(m2.9-w3c): final review approval - placement manifest artifact policy integration complete",
+    "217b60c64444c397af24aaa7cdb6629096c6f1c9|2026-10-09 20:07:07 +0530|fix(m2.9/W7): resolve final gate review findings - enforce evidence verification",
+    "6535ef5a79bd6d1cd844f84daa6d4794ba2a2e0e|2026-10-09 19:58:32 +0530|chore(m2.9-w3b): final review approval - canonical comparator wiring complete",
+    "82c5c9b05e798f1c7d16d24e498e2aee041eacb7|2026-10-09 19:49:43 +0530|chore(m2.9-w3c): update W3C verification evidence and completion report",
+    "4efd453c89662fc10753378f333545c62eaa926b|2026-10-09 19:48:58 +0530|chore(m2.9-w3b): add wiring completion evidence report",
+    "9c6262f570868e9e771f61451b0ae167f7e073e9|2026-10-09 19:42:11 +0530|chore: Add commit SHA to W5 evidence",
+    "f0c22ea6649e7cdd2a026b17587b300905170e2d|2026-10-09 19:01:58 +0530|feat: M2.9 W5 - Placement engine matching and scoring",
+    "261275e947e6b9caea1be7592a7e0ad504ec9087|2026-10-09 19:01:32 +0530|feat(project-llm): integrate canonical artifact policy",
+    "afa144151c7203b8aa7ab270337aab5df268b2ae|2026-10-09 18:45:28 +0530|feat(m2.9): W6 verification suite - all 5 verifications complete",
+    "8936241f85a0a9469425a730d3d9c3f5f056b2f1|2026-10-09 18:44:05 +0530|fix(project-ai): add integration test for canonical_comparison coordinator dispatch",
+    "005e269750d5854a668a815735c8dbcb1fbf99ae|2026-10-09 18:43:51 +0530|feat(project-llm): implement candidate intake with binding",
+    "72b7114712fe393e6ce06448b8c54d6dccc07195|2026-10-09 17:28:10 +0530|feat(m2.9): W4 Human Gate 2 - implementation approval",
+    "a4e4799e391691cfc9586330640c27b403bb68df|2026-10-09 17:27:40 +0530|feat(project-llm): integrate canonical artifact policy",
+    "77d11d890107cd285631733ff836dc5315780f02|2026-10-09 17:27:13 +0530|feat: implement security verification script (W6-V5)",
+    "957c398c8c0e74c32b1525c3372498d2e9254e1e|2026-10-09 17:21:48 +0530|feat: add API contract verification script (W6-V1)",
+    "2386c9b04f92f282367c9d6cb1a4e7cc37b1029b|2026-10-09 15:42:05 +0530|test: add W4 implementation approval integration tests",
+    "8707e1f413652fd5e82640098f02523720dbf549|2026-10-09 15:41:33 +0530|fix(project-ai): wire Agent 7 to real CanonicalComparator",
+    "dc2a4c94d8b5d05f8653a07116d0053d21167ea9|2026-10-09 15:11:39 +0530|docs: add JWT authentication final execution report",
+    "fdb35c5d30410b62a73ac567a53a18647dabe2b2|2026-10-09 15:02:17 +0530|fix(project-ai): integration fixes for JWT auth",
+    "704cc28ca39e0b7bd2637a9424957ba8d94fb5ca|2026-10-09 15:00:28 +0530|docs: add FEAT-003 test execution report and update status",
+    "f07e667e2a390f411f9a0003446c8a5c8ee2381b|2026-10-09 14:58:53 +0530|test(project-ai): add comprehensive JWT verification tests",
+    "da4a2563ed04ef5a5889d56f1ca86fe1129f4f65|2026-10-09 14:52:02 +0530|fix(project-ai): secure all API endpoints with JWT authentication",
+    "751a523e23a4ce50baa8ef31ba008c9d912171d9|2026-10-09 14:40:25 +0530|audit: R1/R2/R3 source-level security verification complete",
+    "a5ccd188a0eb0e5b97d46e878bc414b05e950d3c|2026-10-09 13:44:02 +0530|fix: remove Alembic, establish Drizzle-only migration authority",
+    "4b9ab3b57f2bebfab47326b7f9ca841f9a10be7d|2026-10-09 12:02:57 +0530|fix: address FEAT-001 review findings - Depends() chain, test count, timezone test",
+    "d7549be26087073029307f1ded7326f9cd64a841|2026-10-09 11:51:40 +0530|docs: add R4 FEAT-001 implementation summary",
+    "423d2b7f2793d19fbc9e627d7e8acedc74614997|2026-10-09 11:50:36 +0530|feat: implement JWT authentication infrastructure (FEAT-001)",
+    "f487a4749f51cda69015a29018fdec27ebe02874|2026-10-09 11:46:40 +0530|feat: R5 W1-W2 Independent Certification PASS + R4 planning complete",
+    "42603779467076697573e95b3ef7b3d9d8bd43df|2026-10-09 10:52:30 +0530|chore: add R3 evidence artifacts (FEAT-003/004 reviews and test outputs)",
+    "abf683e5ab671fb7bf71f4f8a2c9271ba2b61863|2026-10-09 10:51:48 +0530|docs: FEAT-005 - R3 persistence documentation and final verification",
+    "5fea52e7e73ebf2e18653cdf505811564d5639da|2026-10-09 10:44:12 +0530|fix: FEAT-004 review iteration 2 - resolve all findings",
+    "1e1c70ca174de6fb74ed9793bd1e79b881f939ad|2026-10-09 10:29:38 +0530|feat: FEAT-004 - PostgreSQL integration tests for R3 persistence layer",
+    "c9c58776562f581de2dacb76b3a209c87a971443|2026-10-09 10:13:04 +0530|fix: resolve R3 FEAT-003 review iteration 2 findings",
+    "b0e8138fa1ca47cc42d842453c4e892c6ba8d058|2026-10-09 10:04:05 +0530|fix: address R3 FEAT-003 review findings - async repository-based authorization",
+    "622a716e9328b1076746ae05b2d6b677d380818b|2026-10-09 09:46:42 +0530|fix: FEAT-003 replace all in-memory stores with PostgreSQL repositories",
+    "d0be87d14de773d2969fbb8c18d1e26330bd4e7c|2026-10-09 08:40:16 +0530|docs: complete FEAT-003 implementation report - 297/313 tests passing (95%)",
+    "044684e37b5197ea0ebbaf80589b301972964b31|2026-10-09 08:38:55 +0530|test: update terminal_states and workflow_governance tests for async - 43 tests passing",
+    "91c3fafe94efb112cc3a777a0bc52653af1911b6|2026-10-09 08:31:24 +0530|feat: replace in-memory stores with PostgreSQL repositories (FEAT-003 core)",
+    "a96345691d921017024d608cb3a3c510b4ba7881|2026-10-09 07:52:29 +0530|fix(feat-002): resolve all review findings for ORM models and repositories",
+    "5f3a3ee38b555d88888c1f0ea051e77454baca89|2026-10-09 07:38:59 +0530|fix(feat-002): address all 8 review findings for ORM and repositories",
+    "7e63f1b1950604298c857505d5cc515d7acc1cae|2026-10-09 07:22:44 +0530|fix(feat-002): address review findings - UUID PKs, hash verification, transaction docs",
+    "606b602058088380fe6551eb376ce3851e7334cd|2026-10-09 06:58:41 +0530|feat: implement ORM models and repositories for M2.9 R3 persistence (FEAT-002)",
+    "f3d3f5f38722d8d641361884ea02cced4f141870|2026-10-09 06:50:07 +0530|docs: update FEAT-001 implementation report with review fixes",
+    "67baa785ca9de72a0e8733f6cd50eee8904b9ddb|2026-10-09 06:47:03 +0530|fix: align Drizzle and SQLAlchemy schemas for FEAT-001",
+    "d03b405494dde055368947ac072b2a1178a427bd|2026-10-09 06:15:25 +0530|feat: implement FEAT-001 PostgreSQL infrastructure for M2.9 R3 persistence",
+    "58d6bb65fceefd7668436901a7addd6d2cdbfd5d|2026-10-09 06:06:32 +0530|chore(r2): mark R2 Engineering Contract Derivation as completed",
+    "c9f0f2193a8f0c3ae9df75da3aded6b34808eb59|2026-10-09 05:55:01 +0530|chore(r2): update FEAT files with integration verification results",
+    "2781ef071d130a68dde6b746de2fc3c5f2eb9bf9|2026-10-09 05:54:06 +0530|fix(project-llm): integrate all R2 contract derivation features [R2 integration]",
+    "3ce4c6528dbffdeedd59cc59d7bed947cb2cf6bd|2026-10-09 05:45:41 +0530|refactor(project-llm): rename to seal_contract and ensure deterministic hashing [R2 FEAT-004]",
+    "771147d76f3dc33f6ebbd2d4394e09b3e89db4ba|2026-10-09 00:46:48 +0530|fix(project-llm): replace hardcoded contract values with snapshot-derived data [R2 FEAT-003]",
+    "8b84d8fbcd305146342fc318bcbe020ab32e2113|2026-10-09 00:32:17 +0530|chore(project-llm): update R1 evidence report with fix iteration [R1]",
+    "1d2a2715a61fb2726b574ccb118ccf50d0a4a4c1|2026-10-09 00:31:03 +0530|feat(project-llm): extract repository metadata and derive paths from snapshot [R2 FEAT-002]",
+    "9454ff53d3d8e18b4276ae263b006e2f20432b25|2026-10-09 00:30:47 +0530|fix(project-llm): resolve R1 review findings [R1-FIX]",
+    "af7ac9e437023521664cc3f4158efdf1dcb25df2|2026-10-09 00:03:34 +0530|feat(project-llm): add ContractFieldEvidence model and tracking [R2 FEAT-001]",
+    "1aa42319576cd4ad86ccf31f0792c43c32f1a1d5|2026-10-09 00:01:59 +0530|fix(project-llm): consolidate repository intelligence to snapshot-based [R1]",
+    "d2bbdcbcf0041de2c603462b3a2d40c99937bb85|2026-10-08 23:18:37 +0530|fix(project-llm): establish canonical evidence authority [R0]",
+    "f589c0b3ad92d6dfdd254e1e5e4169bd4a5f4a02|2026-10-08 22:47:00 +0530|chore: consolidate M2.9 W0-W2 evidence and reports",
+    "24e6d7b32badab6da1e0ebdad91c77aced3b7475|2026-10-08 22:34:37 +0530|fix(project-ai): resolve W2 review findings - real git SHA, pytest-asyncio config, immutability docs, test mocks",
+    "3051a540a2a624c0d5bec8acff5428610bfe4c64|2026-10-08 21:55:45 +0530|feat(project-llm): implement immutable engineering contract generation",
+    "bb5fe7a659a0b76e9f2cc148d2c882e0d4533483|2026-10-08 21:24:54 +0530|docs(project-llm): update W1D evidence report with all review fixes",
+    "7af488f99df028a1716c1f637a91f566bcd3dd6a|2026-10-08 21:24:08 +0530|fix(project-llm): address W1D review findings - scope, timezone, locking docs",
+    "090cdcc9df32db294349d27c74a1443759e4b901|2026-10-08 21:19:19 +0530|docs(project-llm): add W1D review evidence report",
+    "850d5f92a86688bb6d193e2d34614e9afcf4bb07|2026-10-08 21:18:40 +0530|fix(project-llm): fix Windows file locking and add multiprocess test (W1D review)",
+    "5182c874dcfbb7de4c2dbb5d71eff7f32dad7f21|2026-10-08 20:56:08 +0530|fix(project-ai): address W1B review findings for repository intelligence",
+    "f5a4449d3abc076d07149e5bc657cea655680ef5|2026-10-08 20:40:10 +0530|docs(project-llm): add W1D evidence report",
+    "85918ee941c3a39214e6477404943c59f004064b|2026-10-08 20:39:22 +0530|fix(project-llm): address Wave 1A review findings",
+    "87ae0bd48a2b9d6d78bd1010988dfd107b07dee6|2026-10-08 20:34:24 +0530|fix(project-llm): evidence harness review findings (W1D)",
+    "82f8a3ee02798350eb991f8712c9d1c393333248|2026-10-08 20:21:55 +0530|feat(project-llm): fix repository intelligence review findings",
+    "fa4c86a967d6167b4121c7fe5eb3fb30b2e795c3|2026-10-08 20:14:28 +0530|docs(w1c): update evidence report with review fix details",
+    "56891aec28de8f99eac30ba9e9a994859dc0ba79|2026-10-08 20:08:17 +0530|fix(docs): correct DesignSource value in W1C migration guide",
+    "304a333f6804b1a1c370f358a128abfdfdb3b73e|2026-10-08 19:53:48 +0530|feat(project-llm): bind workflow target family/version identity",
+    "7988a5f3279f056b7d450e9e1d333b8e2288ecaf|2026-10-08 19:47:23 +0530|docs: Add Wave 1D evidence harness report",
+    "014db5c4fbd6c02ee29e874f492690a28cff2990|2026-10-08 19:47:18 +0530|docs: Update W1B report with correct commit SHA",
+    "4db1184e643ce86a055d7c89433230782f861559|2026-10-08 19:46:21 +0530|docs: Add Wave 1C evidence report",
+    "d04b356c819efdbe4c563258529162f0b104205e|2026-10-08 19:40:32 +0530|feat(project-llm): add repository contract intelligence",
+    "c715af4659e6b1e1285300781db5451aaa9d84c9|2026-10-08 19:40:22 +0530|feat(project-llm): deprecate legacy creation authority (M2.9 W1C)",
+    "54867ba4ad9c952c73cf0178d496774862b99a37|2026-10-08 19:00:26 +0530|docs: Add Wave 0 code review documentation",
+    "5acbd7b3b475dcc237110e7083b95bb302f6e025|2026-10-08 18:41:13 +0530|Update evidence report with final commit SHA",
+    "0d7e782ab1a2e393ca39294eac6c1a8ca071b185|2026-10-08 18:40:43 +0530|M2.9 W0: Fix review findings - integrate governance service and deprecate task routes",
+    "9dc47b4653fdedf33018792109b45fcfd187aba9|2026-10-08 18:24:59 +0530|M2.9 Wave 0: Canonical workflow authority freeze (Agent B01)",
+    "185925bf2a0ec671c6863e7f3f323ad9e98116aa|2026-10-08 18:00:20 +0530|Update evidence report with final commit SHA",
+    "cb45462d9e02ccae0757685fe1915e7c38ec040e|2026-10-08 17:59:37 +0530|M2.9 W0: Freeze canonical workflow authority (Agent B01)",
+    "b5775d400e916695106632ad033f58d2a1cc91b1|2026-10-08 14:51:16 +0530|M2.9 W0: Freeze canonical workflow authority (Agent B01)",
+    "d3e1a9a5010b1bb4bb05d32ec73f29ea15d38cdb|2026-10-08 13:59:01 +0530|chore: create Wave 0 artifact directory structure",
+    "55613c816366cecaf14a11a6b5541a97f7b57494|2026-10-08 13:34:58 +0530|chore: synchronize W6-R3 evidence to final HEAD c062d829 [M2.9]",
+    "c062d829b0d981aa8107df88b081dcbe570cfc51|2026-10-08 13:19:48 +0530|docs: H evidence controller update - W6-R3-COMPLETE status",
+    "78424ae8ca0ab05abb5ea082716923b467f5dc7a|2026-10-08 13:10:25 +0530|fix: resolve infinite hierarchy API loop with useCallback wrapper",
+    "fb3d35980276898dc74ada10bf3750d86cfe27c2|2026-10-08 12:48:11 +0530|chore: Agent F integration reconciliation complete - Phase 2 verified",
+    "b8b3f29d698f5754ba34ed2f4c4353064e8c3c39|2026-10-08 12:36:45 +0530|docs: E2-B-3 security regression test verification complete",
+    "cd008d6f886c767e8ee74921b72e67c5fbd2a640|2026-10-08 12:35:07 +0530|fix: add missing candidate_sha256 argument to test_placement_executor.py (E2-B-2)",
+    "973e230e4042837cd8f90a969bea6fabd7658479|2026-10-08 12:03:44 +0530|chore: reconcile W6-R3 test classification to current HEAD (a5f14c26)",
+    "a5f14c263fcfd65de0bcd00760f74b7ec4528d17|2026-10-08 11:35:49 +0530|chore: W6-R3 partial progress - hygiene, classification, investigation [M2.9]",
+    "e72d321bf76a7c6353a814d641bc4a16a06c9b8b|2026-10-08 10:23:35 +0530|chore: classify W6-R3 test failures (422 total: 58 baseline + 12 production + 69 architectural + 74 false_positive + 209 diagnostic)",
+    "fea4f899e72cf60ebdbbe86b307b17ba1f186a4a|2026-10-08 10:03:11 +0530|fix: remove .worktrees/ pollution from repository [W6-R3-hygiene]",
+    "0b2d07a425883ee1bc96beb5a74ff8606ee0170a|2026-10-08 09:18:43 +0530|feat: M2.9 W5-R2 + W6 implementation",
+    "9494407dba82e78994d96572e77109820f58c3fc|2026-10-08 08:33:58 +0530|fix: M2.9 W5-R2 - remove authorization bypass, enforce all approval bindings",
+    "27ce1e752a7e5ef42f016e0f339f3647dec83c7f|2026-10-08 08:12:32 +0530|On m2-project-ai-canonical-wiring: W6-in-progress: stashing before W5-R2 remediation",
+    "e5aa9f28a2d3f3c39375b149ffda98efea358460|2026-10-08 08:12:32 +0530|index on m2-project-ai-canonical-wiring: 7717e5ab feat: implement W6 browser verifier with Playwright orchestration",
+    "7717e5aba525ed1c0951afd55eb903361e4d3ec9|2026-10-08 08:07:39 +0530|feat: implement W6 browser verifier with Playwright orchestration",
+    "2df3507484f3400cc008691455a0f44caac342bf|2026-10-08 07:45:59 +0530|W5: gate file PASS [M2.9]",
+    "e91ab1c206631e2ddb067213b89242b25858f013|2026-10-08 07:45:30 +0530|W5: RepositoryAdapter + safe placement + approval enforcement + path security [M2.9]",
+    "89d9816f2e773e315f9ba71f5cf9cc2574edda3d|2026-10-08 06:43:54 +0530|chore: M2.9 W4-R1 - update final commit SHA in artifacts",
+    "e945eab33f4f7132cec04429aa4c889dda3c07be|2026-10-08 06:43:33 +0530|chore: M2.9 W4-R1 - final gate and review artifacts (W5-READY)",
+    "701656d998a668d82edcb29e5b2c1b33e2a192ca|2026-10-08 06:39:20 +0530|docs: M2.9 W4-R1 - evidence artifacts (remediation report, gate JSON)",
+    "00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5|2026-10-08 06:37:10 +0530|fix: M2.9 W4-R1 - security remediation (fail-closed requester, mandatory hash verification, expiry resolution)",
+    "9bd1bc6ba6d96731a733d195e0c8f55466f5bb75|2026-10-08 06:18:14 +0530|docs: M2.9 W4 review findings - 3 security gaps identified (self-approval bypass, hash verification bypass, missing expiry)",
+    "9e4224ee27f434722ef8aa15447bcdb7fc56856e|2026-10-08 01:12:59 +0530|docs: W4 gate review",
+    "b4361e481c820dd036597301d7d468290f0a8c68|2026-10-08 01:12:10 +0530|docs: W4 evidence and gate verdict",
+    "56f1030bb720dfbc7b7c97505e36e6628ec71758|2026-10-08 01:11:10 +0530|feat: M2.9 W4 - human implementation approval gate with hash-bound authorization",
+    "22214ef6bdccc0eeb2474063a1a19b70c77b111a|2026-10-08 00:37:50 +0530|feat: M2.9 W3 - candidate intake, canonical comparison, placement manifest",
+    "5aca876b9cabebffad66de42a3f794719ba19c5f|2026-10-08 00:23:22 +0530|fix: remove hardcoded version fallback in compatibility verification (M2.9 W3 preflight blocker)",
+    "996824fa4bd4eb12927a4af23bce324ac9b4e109|2026-10-08 00:09:21 +0530|docs: M2.9 remediation execution artifacts and verification evidence",
+    "37701ee55fa34b95a37e9e268426071960ed856a|2026-10-07 22:46:57 +0530|docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete",
+    "c60e29dc3547d90682465328ad30f3552ed33bb6|2026-10-07 22:33:52 +0530|chore: record Wave 2 gate status - PASS",
+    "185adebcd28676032739111643b9d9bd9dd0f53c|2026-10-07 22:19:15 +0530|m2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT) - migrate contract route, remove legacy filesystem access, derive contract from snapshot",
+    "00154f50f4a0420b808ad0fc7616c4d9eeaa10d0|2026-10-07 22:19:00 +0530|m2.9 W2-R4: frontend integration (P1-FRONTEND) - add API client, state hooks, certification UI, runtime verification controls",
+    "df5e3e19554acbfdbf61078cacb36565f7384ddc|2026-10-07 21:53:23 +0530|m2.9 W1-R2: fix version binding (B07) - use WorkflowTarget.version not hardcoded 1.0.0",
+    "f9583d62dec0e6b8473109a88a2343432a741ccb|2026-10-07 21:45:02 +0530|m2.9 W1-R1: fix repository intelligence boundary (B03) - remove Path(repo_root), consume snapshot only",
+    "f1e0718fb5470ed01c45a02add286b5993b263ea|2026-10-07 21:28:24 +0530|m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes"
+  ],
+  "dbTutorialMigrationsCommitHistory": [
+    "22b86e89598bf512832f2e9ec5428a4a47e17121|2026-11-09 22:03:26 +0530|fix(concurrency): enforce mandatory expectedVersion on tutorial update/append/publish (HTTP 409 on conflict)\n\n .../db-tutorial/migrations/0031_drop_tutorial_page_content_v2.sql  | 6 ------\n packages/db-tutorial/migrations/meta/_journal.json                 | 7 -------\n 2 files changed, 13 deletions(-)",
+    "509d03833f71aa987eb56c7f99cdc660d1bfe2be|2026-11-09 20:56:39 +0530|style: format whitespace in schema and IntroductionBlock\n\n packages/db-tutorial/migrations/0031_drop_tutorial_page_content_v2.sql | 1 +\n 1 file changed, 1 insertion(+)",
+    "3303c10b6621d0570a84e40885c7b9c1500ffbea|2026-11-09 20:49:30 +0530|chore(db-tutorial): retire tutorial_page_content_v2 schema and generate drop migration 0031\n\n .../db-tutorial/migrations/0031_drop_tutorial_page_content_v2.sql  | 5 +++++\n packages/db-tutorial/migrations/meta/_journal.json                 | 7 +++++++\n 2 files changed, 12 insertions(+)",
+    "bd4e0574da35040330a45d4631e08d1a74ed8037|2026-11-07 23:07:47 +0530|feat(w1-w3): complete Slice 22-A migration readiness, 5-entity taxonomy CRUD alignment, and re-anchored inventory evidence\n\n .../migrations/{0015_event_outbox.sql => 0030_event_outbox.sql}   | 8 ++++----\n packages/db-tutorial/migrations/meta/_journal.json                | 7 +++++++\n 2 files changed, 11 insertions(+), 4 deletions(-)",
+    "d5f58b18fba226da69af3408db544ef356f75fb9|2026-11-07 20:36:53 +0530|fix(w1-w3): align taxonomy CRUD contracts, resolve workspace syntax errors, and reconcile FND01/FND12/FND17 inventories (Slice 21)\n\n packages/db-tutorial/migrations/schema.ts | 6 +++---\n 1 file changed, 3 insertions(+), 3 deletions(-)",
+    "926c403e61ce3fcef20bcbbb9786dfdb5128df3b|2026-11-07 06:32:54 +0530|fix(w1-w3): enforce durable outbox fencing, canonical event envelopes, and atomic invitation activation (S1-S3)\n\n packages/db-tutorial/migrations/0015_event_outbox.sql | 2 ++\n 1 file changed, 2 insertions(+)",
+    "f917f76c05df6443651ab562afbe52258536490a|2026-11-07 04:42:42 +0530|fix(events,workers): implement Sol A2 durable outbox publication recovery and tenant-scoped worker locks (Slice 13)\n\n .../db-tutorial/migrations/0015_event_outbox.sql   | 28 ++++++++++++++++++++++\n 1 file changed, 28 insertions(+)",
+    "456a46f5fa8330d7e3f80e6de7d9f7ff088291b8|2026-11-06 15:21:40 +0530|fix(schema): block unproven tenant attribution\n\n .../0029_fnd03_add_tenant_to_progress.sql          | 22 +++-------------------\n 1 file changed, 3 insertions(+), 19 deletions(-)",
+    "d7858b37d1fd6edebd95c987b1002a3636b4a170|2026-11-06 12:56:13 +0530|feat(FND03): Implement tenant-qualified ownership architecture\n\n .../migrations/0029_fnd03_add_tenant_to_progress.sql  | 19 +++++++++++++++++++\n 1 file changed, 19 insertions(+)",
+    "1dadd030e99fb2899b52cccccfd949c4154774ce|2026-10-11 07:27:53 +0530|fix: restore missing project_ai_* CREATE TABLE statements in migration chain\n\n .../migrations/0026_complex_mandarin.sql           |   Bin 0 -> 14820 bytes\n ...ady_caretaker.sql => 0027_steady_caretaker.sql} |     0\n ...ltiple_man.sql => 0028_public_multiple_man.sql} |     0\n .../db-tutorial/migrations/meta/0026_snapshot.json | 11968 ------------------\n .../db-tutorial/migrations/meta/0027_snapshot.json | 11973 -------------------\n packages/db-tutorial/migrations/meta/_journal.json |    13 +-\n 6 files changed, 10 insertions(+), 23944 deletions(-)",
+    "0a12952cdc8ebe7dbbf4482de1edba4137975f13|2026-10-11 06:58:23 +0530|fix(db): make delivery indexes idempotent in migration 0018\n\n packages/db-tutorial/migrations/0018_amused_rockslide.sql | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)",
+    "3e18f0607fbbfc471d570c3159442a7a1633b984|2026-10-11 06:49:54 +0530|fix(db): make section_type enum migration idempotent\n\n packages/db-tutorial/migrations/0018_amused_rockslide.sql | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)",
+    "7da64232eed0e70f25e5a16c19de329b603c19f2|2026-10-11 06:41:53 +0530|fix(db): remove 46 duplicate statements from migration 0012\n\n .../migrations/0012_futuristic_pepper_potts.sql    | 490 +--------------------\n 1 file changed, 1 insertion(+), 489 deletions(-)",
+    "decaf92fb2faeb925ce3d40f5415e412db1fc904|2026-10-10 23:39:08 +0530|fix(db): remove duplicate layman_audit_action enum (exists in migration 0011)\n\n packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql | 1 -\n 1 file changed, 1 deletion(-)",
+    "5fdb52380c9b4fb1bc97b4f78b7adfcd210185a8|2026-10-10 23:34:07 +0530|fix(db): remove ALL duplicate enums from migration 0012 (comprehensive fix)\n\n .../db-tutorial/migrations/0012_futuristic_pepper_potts.sql | 13 -------------\n 1 file changed, 13 deletions(-)",
+    "b9bcc27fe935693b00764064834b3c025713c60c|2026-10-10 23:10:47 +0530|fix(db): remove duplicate assignment_question_type enum from migration 0012\n\n packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql | 2 --\n 1 file changed, 2 deletions(-)",
+    "5872b981dbe877ec18f7be8b93f4e1cf018f14cb|2026-10-10 22:49:52 +0530|fix(db): avoid recreating existing assignment help enum\n\n packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql | 1 -\n 1 file changed, 1 deletion(-)",
+    "7e63f1b1950604298c857505d5cc515d7acc1cae|2026-10-09 07:22:44 +0530|fix(feat-002): address review findings - UUID PKs, hash verification, transaction docs\n\n .../migrations/0026_complex_mandarin.sql           |   116 -\n .../migrations/0027_public_multiple_man.sql        |    61 +\n .../db-tutorial/migrations/meta/0026_snapshot.json | 11968 ++++++++++++++++++\n .../db-tutorial/migrations/meta/0027_snapshot.json | 11973 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 5 files changed, 24009 insertions(+), 116 deletions(-)",
+    "67baa785ca9de72a0e8733f6cd50eee8904b9ddb|2026-10-09 06:47:03 +0530|fix: align Drizzle and SQLAlchemy schemas for FEAT-001\n\n .../migrations/0026_steady_caretaker.sql           | 50 ++++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |  4 +-\n 2 files changed, 52 insertions(+), 2 deletions(-)",
+    "d03b405494dde055368947ac072b2a1178a427bd|2026-10-09 06:15:25 +0530|feat: implement FEAT-001 PostgreSQL infrastructure for M2.9 R3 persistence\n\n .../migrations/0026_complex_mandarin.sql           | 116 +++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |   7 ++\n 2 files changed, 123 insertions(+)",
+    "d225820a6589a95c084f27230ce889d8764ba022|2026-09-11 12:44:56 +0530|feat(ils): Gate 3C.1R Phase D-2 - Idempotent block active-time delivery\n\n .../migrations/0025_quiet_tenebrous.sql            |    15 +\n .../db-tutorial/migrations/meta/0025_snapshot.json | 10991 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 3 files changed, 11013 insertions(+)",
+    "0b37d0ef9a7f575689608faae064a219096ada67|2026-09-07 05:44:10 +0530|Phase 4.6: Implement atomic session-aware block-level metrics\n\n .../migrations/0024_first_wendell_rand.sql         |     1 +\n .../db-tutorial/migrations/meta/0024_snapshot.json | 10851 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 3 files changed, 10859 insertions(+)",
+    "fe005a516b59ef76667a808afdd65a1c3c61854a|2026-09-05 12:04:41 +0530|feat(ils): Phase 4.1 - Schema + Migration Foundation\n\n .../db-tutorial/migrations/0023_lame_deathbird.sql |    24 +\n .../db-tutorial/migrations/meta/0023_snapshot.json | 10845 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 3 files changed, 10876 insertions(+)",
+    "0d2d89365c964898be8323d4d642a82ec2255e3b|2026-08-30 00:38:57 +0530|Phase 1C-A: Auth/Brand Resolution + Migration 0022 (ILS)\n\n .../migrations/0022_broken_supernaut.sql           |    26 +\n .../db-tutorial/migrations/meta/0021_snapshot.json |    18 +\n .../db-tutorial/migrations/meta/0022_snapshot.json | 10616 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n packages/db-tutorial/migrations/relations.ts       |   179 +\n packages/db-tutorial/migrations/schema.ts          |  1109 ++\n 6 files changed, 11955 insertions(+)",
+    "a76b68f9132822abb0cf889098c9adceaddcb46a|2026-08-22 01:39:40 +0530|feat(db-tutorial): GATE 4 - Post-Merge Hardening & Design B Implementation\n\n .../0021_drop_tutorial_v2_hierarchy_fks.sql        |     9 -\n .../db-tutorial/migrations/0021_sparkling_unus.sql |    33 +\n .../db-tutorial/migrations/meta/0021_snapshot.json | 10372 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 4 files changed, 10412 insertions(+), 9 deletions(-)",
+    "550030ec974c263726cc9b8437baafac9dcf6d5b|2026-08-18 05:53:28 +0530|Use SHC hierarchy for tutorial v2\n\n .../migrations/0021_drop_tutorial_v2_hierarchy_fks.sql           | 9 +++++++++\n 1 file changed, 9 insertions(+)",
+    "48ffda872a273533352af9e59c543b4f1accfc10|2026-08-18 01:50:05 +0530|Add tutorial definition and code content publishing\n\n .../0020_add_tutorial_page_content_v2.sql          |    24 +\n .../db-tutorial/migrations/meta/0020_snapshot.json | 10554 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 3 files changed, 10585 insertions(+)",
+    "a937f58beda4fd5b3c9194cac2156935d3a5952c|2026-08-18 01:12:08 +0530|Add tutorial sidebar table migration\n\n .../0019_add_tutorial_sidebar_trees_v2.sql         |    28 +\n .../db-tutorial/migrations/meta/0019_snapshot.json | 10325 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     7 +\n 3 files changed, 10360 insertions(+)",
+    "1508f21701d342dd222c04bc0978fb1e7771bce4|2026-05-17 07:56:25 +0530|feat(admin): support granular subsection prompts and fine-grained content updates\n\n .../migrations/0018_amused_rockslide.sql           |   226 +\n .../db-tutorial/migrations/meta/0018_snapshot.json | 10114 +++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |     9 +-\n 3 files changed, 10348 insertions(+), 1 deletion(-)",
+    "22edb573cf7cf7d86100b3a8e88151c1285784ce|2026-05-13 14:54:47 +0530|Implement tutorial delivery SSR and schema prompt hardening\n\n packages/db-tutorial/migrations/0017_tutorial_delivery_indexes.sql | 5 +++++\n packages/db-tutorial/migrations/meta/_journal.json                 | 7 +++++++\n 2 files changed, 12 insertions(+)",
+    "b7db445f7290a754d5c2a4df4e866a53887db112|2026-05-12 17:50:43 +0530|feat: align modular tutorial section architecture\n\n .../migrations/0014_add_ai_tutor_section_type.sql  |   1 +\n ...ackfill_summary_interview_ai_tutor_sections.sql | 187 +++++++++++++++++++++\n .../migrations/0016_add_overview_section_type.sql  |   1 +\n packages/db-tutorial/migrations/meta/_journal.json |  23 ++-\n 4 files changed, 211 insertions(+), 1 deletion(-)",
+    "513f3b439391e7fd9125eb37168c91209b99db63|2026-05-09 15:06:22 +0530|feat(db): add skillhubcore to brand enum - migration 0013 applied\n\n .../db-tutorial/migrations/0013_colorful_wong.sql  |    1 +\n .../db-tutorial/migrations/meta/0013_snapshot.json | 8627 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 8635 insertions(+)",
+    "ed29278ff935eed16ea5f1d1e0b29ea6bee41d83|2026-05-09 00:51:38 +0530|feat(tutorial): comprehensive architectural audit and tutorial content 403 investigation\n\n .../migrations/0012_futuristic_pepper_potts.sql    | 1079 +++\n .../migrations/0012_user_interactions_only.sql     |   96 +\n .../db-tutorial/migrations/meta/0012_snapshot.json | 8626 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    9 +-\n 4 files changed, 9809 insertions(+), 1 deletion(-)",
+    "ae0f6ab3320417c1c33eaa1e7db735d1424f8fe5|2026-05-04 01:10:08 +0530|fix(security): Phase 2B Week 3.9 - security hardening complete\n\n .../0011_add_layman_hardening_tables.sql           | 215 +++++++++++++++++++++\n .../meta/0011_add_layman_hardening_tables.json     |  14 ++\n packages/db-tutorial/migrations/meta/_journal.json |   7 +\n 3 files changed, 236 insertions(+)",
+    "592031c9804b97c84cf86437f4b6c1b9a51f54fc|2026-03-29 10:11:01 +0530|Add looping demo seed foundation\n\n .../migrations/0010_looping_demo_foundation.sql    | 82 ++++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |  7 ++\n 2 files changed, 89 insertions(+)",
+    "4dc3f404ee190926f128a26df9347193ae70ca37|2026-03-27 00:21:14 +0530|perf(tutorial): add student weak areas materialized view\n\n .../db-tutorial/migrations/0009_mv_student_weak_areas.sql  | 14 ++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json         |  9 ++++++++-\n 2 files changed, 22 insertions(+), 1 deletion(-)",
+    "ca1f9d8fa3d06d91f7b98ca3430870cf196603e7|2026-03-23 03:40:49 +0530|feat(admin): Step 15 Session A - hierarchy reference tables in tutorial DB\n\n .../migrations/0005_nebulous_jane_foster.sql       |   16 +-\n .../migrations/0008_opposite_wiccan.sql            |   58 +\n .../db-tutorial/migrations/meta/0008_snapshot.json | 3136 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 4 files changed, 3212 insertions(+), 5 deletions(-)",
+    "4fa1e361bae8134293e8e0742cfda75e5b233e6e|2026-03-22 19:30:19 +0530|feat(tutorial): T8 — versioning, audit, SEO, prompt service, assignment wiring\n\n .../migrations/0007_tiny_bill_hollister.sql        |   21 +\n .../db-tutorial/migrations/meta/0007_snapshot.json | 2668 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 2696 insertions(+)",
+    "6329505c6a68c27390ecda8d670ea2863a4abc81|2026-03-22 18:01:44 +0530|fix(tutorial): T7 — move materialized view to manual migration\n\n packages/db-tutorial/migrations/0006_heavy_sally_floyd.sql | 14 --------------\n 1 file changed, 14 deletions(-)",
+    "d35d09903f720ca5fc916719a18b5a8318e81b5b|2026-03-22 17:57:06 +0530|feat(tutorial): T7 — remediation engine, saga, materialized view\n\n .../migrations/0006_heavy_sally_floyd.sql          |   32 +\n .../db-tutorial/migrations/meta/0006_snapshot.json | 2522 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 2561 insertions(+)",
+    "220013cfc67d5ec954df9fd5c69b5ce02da16dc7|2026-03-22 16:53:42 +0530|feat(tutorial): T5 — live session request system\n\n .../migrations/0005_nebulous_jane_foster.sql       |   21 +\n .../db-tutorial/migrations/meta/0005_snapshot.json | 2514 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 2542 insertions(+)",
+    "09e19101b450e125dc7bf3f9f8229e84aac6c24a|2026-03-22 16:16:10 +0530|feat(tutorial): T4 — project engine, human approval, badges, certificates\n\n .../migrations/0004_neat_greymalkin.sql            |   36 +\n .../db-tutorial/migrations/meta/0004_snapshot.json | 2354 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 2397 insertions(+)",
+    "3a461471cc6b39a69c9fc5991a3c5e623f44d4f8|2026-03-22 14:57:28 +0530|feat(tutorial): T3-A-02 — assignment engine (practice only) + Assignment Factory UI scaffold\n\n .../db-tutorial/migrations/0003_flawless_surge.sql |   57 +\n .../db-tutorial/migrations/meta/0003_snapshot.json | 2222 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    7 +\n 3 files changed, 2286 insertions(+)",
+    "c647ca5be76ffad9cc6a1da605403664093e40d9|2026-03-22 13:19:40 +0530|feat(tutorial): PRE-2 — certificates and student-streaks schema\n\n .../db-tutorial/migrations/0002_easy_namorita.sql  |   33 +\n .../db-tutorial/migrations/meta/0002_snapshot.json | 1925 ++++++++++++++++++++\n packages/db-tutorial/migrations/meta/_journal.json |    9 +-\n 3 files changed, 1966 insertions(+), 1 deletion(-)",
+    "96add408d8ef9b65012d18c34333e2c2c3267ef7|2026-03-22 01:07:40 +0530|fix(tutorial): T1 patch — content_type column, Zod validation, tests\n\n .../db-tutorial/migrations/0000_t1_foundation.sql  | 47 +++++++++++++++++-----\n .../db-tutorial/migrations/0001_content_type.sql   |  7 ++++\n packages/db-tutorial/migrations/meta/_journal.json | 20 +++++++++\n 3 files changed, 63 insertions(+), 11 deletions(-)",
+    "32423d16542aa73309c6b2748e639c92bfd9ec00|2026-03-22 00:53:58 +0530|feat(tutorial): T1 — DB schema, repositories, seed\n\n .../db-tutorial/migrations/0000_t1_foundation.sql  | 22 +++++++++++-----------\n 1 file changed, 11 insertions(+), 11 deletions(-)",
+    "573bdd2f4440baf95a1705013d14b06c040125b4|2026-03-21 21:44:36 +0530|feat(tutorial): T1 foundation schemas and shared packages\n\n .../db-tutorial/migrations/0000_t1_foundation.sql  | 101 +++++++++++++++++++++\n 1 file changed, 101 insertions(+)"
+  ],
+  "liveSchemaInspection": {
+    "publicTables": [
+      "ai_generation_metrics",
+      "ai_generation_orchestration",
+      "assignment_help_requests",
+      "assignment_progress",
+      "badges",
+      "block_learning_state",
+      "block_telemetry_events",
+      "brand_performance_metrics",
+      "certificates",
+      "content_generation_jobs",
+      "content_review_queue",
+      "deployment_cohort_metrics",
+      "domain_content_config",
+      "domains",
+      "educational_architecture_performance",
+      "educational_architectures",
+      "layman_audit_logs",
+      "layman_content_revisions",
+      "layman_prompt_history",
+      "live_session_requests",
+      "project_ai_approvals",
+      "project_ai_candidates",
+      "project_ai_contracts",
+      "project_ai_manifests",
+      "project_ai_state_transitions",
+      "project_ai_workflows",
+      "prompt_template_performance",
+      "prompt_templates",
+      "remediation_triggers",
+      "revenue_attribution_metrics",
+      "skills",
+      "student_badges",
+      "student_streaks",
+      "subjects",
+      "subtopic_flow_progress",
+      "subtopics",
+      "topic_skills",
+      "topics",
+      "tutorial_assignments",
+      "tutorial_content_audit",
+      "tutorial_content_versions",
+      "tutorial_domains",
+      "tutorial_navigation_progress",
+      "tutorial_progress",
+      "tutorial_project_submissions",
+      "tutorial_projects",
+      "tutorial_sections",
+      "tutorial_sidebar_trees_v2",
+      "tutorial_subjects",
+      "tutorial_subtopics",
+      "tutorial_topics",
+      "ui_architecture_performance",
+      "ui_architectures"
+    ],
+    "keyTableColumns": [
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "subtopic_id",
+        "data_type": "uuid",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "blocks_completed",
+        "data_type": "jsonb",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "remediation_triggered",
+        "data_type": "boolean",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "score",
+        "data_type": "numeric",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "time_spent_sec",
+        "data_type": "integer",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "completed_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "version",
+        "data_type": "integer",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "deleted_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_progress",
+        "column_name": "tenant_id",
+        "data_type": "text",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "subtopic_id",
+        "data_type": "uuid",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "order_index",
+        "data_type": "integer",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "content",
+        "data_type": "jsonb",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "version",
+        "data_type": "integer",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "language",
+        "data_type": "text",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "generated_by_ai",
+        "data_type": "boolean",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "ai_model_used",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "generation_job_id",
+        "data_type": "uuid",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "quality_score",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "hallucination_score",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "regeneration_count",
+        "data_type": "integer",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "approved_by",
+        "data_type": "uuid",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "approved_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "rejection_reason",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "prompt_template_id",
+        "data_type": "uuid",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "educational_architecture_id",
+        "data_type": "uuid",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "ui_architecture_id",
+        "data_type": "uuid",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "brand_id",
+        "data_type": "USER-DEFINED",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "brand_visibility",
+        "data_type": "USER-DEFINED",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "brand_customizations",
+        "data_type": "jsonb",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "updated_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "NO"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "published_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "deleted_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "table_name": "tutorial_sections",
+        "column_name": "navigation_node_id",
+        "data_type": "text",
+        "is_nullable": "NO"
+      }
+    ],
+    "keyTableIndexes": [
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "idx_tutorial_progress_tenant",
+        "indexdef": "CREATE INDEX idx_tutorial_progress_tenant ON public.tutorial_progress USING btree (tenant_id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "idx_tutorial_progress_user",
+        "indexdef": "CREATE INDEX idx_tutorial_progress_user ON public.tutorial_progress USING btree (user_id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "tutorial_progress_pkey",
+        "indexdef": "CREATE UNIQUE INDEX tutorial_progress_pkey ON public.tutorial_progress USING btree (id)"
+      },
+      {
+        "tablename": "tutorial_progress",
+        "indexname": "uq_tutorial_progress_tenant_user_subtopic",
+        "indexdef": "CREATE UNIQUE INDEX uq_tutorial_progress_tenant_user_subtopic ON public.tutorial_progress USING btree (tenant_id, user_id, subtopic_id)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_architecture",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_architecture ON public.tutorial_sections USING btree (educational_architecture_id) WHERE (educational_architecture_id IS NOT NULL)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_brand",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_brand ON public.tutorial_sections USING btree (brand_id, status, updated_at DESC)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_by_status",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_by_status ON public.tutorial_sections USING btree (status, updated_at DESC) WHERE (status = ANY (ARRAY['draft'::section_status, 'pending_review'::section_status, 'in_review'::section_status, 'changes_requested'::section_status]))"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_delivery",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_delivery ON public.tutorial_sections USING btree (subtopic_id, navigation_node_id, brand_id, status)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "idx_tutorial_v2_subtopic_status",
+        "indexdef": "CREATE INDEX idx_tutorial_v2_subtopic_status ON public.tutorial_sections USING btree (subtopic_id, status)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "tutorial_sections_pkey",
+        "indexdef": "CREATE UNIQUE INDEX tutorial_sections_pkey ON public.tutorial_sections USING btree (id)"
+      },
+      {
+        "tablename": "tutorial_sections",
+        "indexname": "uq_tutorial_v2_identity_active",
+        "indexdef": "CREATE UNIQUE INDEX uq_tutorial_v2_identity_active ON public.tutorial_sections USING btree (subtopic_id, navigation_node_id, brand_id) WHERE (deleted_at IS NULL)"
+      }
+    ],
+    "drizzleMigrationsRows": [
+      {
+        "id": 1,
+        "hash": "1e08929b904d46d5b944a624f2b3a3afa454afeec7465bb7013851c1871b5f1f",
+        "created_at": "1774000000000"
+      },
+      {
+        "id": 2,
+        "hash": "96b490f2002e72270a8a7902699fd7e899fed1fc80bf7cd4ab76f3d99a5465bd",
+        "created_at": "1774000001000"
+      },
+      {
+        "id": 3,
+        "hash": "9366320da662f003863620a63e758ff03c58e69427ecc67d116a2e114f6bdf89",
+        "created_at": "1774165551232"
+      },
+      {
+        "id": 4,
+        "hash": "83f41950988bdca64280bf03a379615d8d250bdb6e0d57371ea9c8f2afe16cd3",
+        "created_at": "1774169829327"
+      },
+      {
+        "id": 5,
+        "hash": "579e98db29b216405fd12fff03784fb64894871c1844ce72f9e598d6c17ac402",
+        "created_at": "1774175200154"
+      },
+      {
+        "id": 6,
+        "hash": "a7db6a15c00968806e6fbc8eb9b42918d75d8e93090aaf3d90f7b4c14b74712d",
+        "created_at": "1774177951851"
+      },
+      {
+        "id": 7,
+        "hash": "af41742cb06cc5ea3ecd4a06fd44dcf739e635b1774cfad64606e82fa937fb9e",
+        "created_at": "1774181525989"
+      },
+      {
+        "id": 8,
+        "hash": "728fd95e0f07ecf40b4f5e4dbe1938e974285f00ad7426177e2b9e8eec953427",
+        "created_at": "1774183908666"
+      },
+      {
+        "id": 9,
+        "hash": "4207b6cc9b8343abe4a7d9e87585cb0207090e557aebd0fd2b74add6488b4e9a",
+        "created_at": "1774217227063"
+      },
+      {
+        "id": 10,
+        "hash": "e9908efc6f5949cac2638f881089647d6f7d5203603ccb2af41b1c9c4c0baadd",
+        "created_at": "1774551051336"
+      },
+      {
+        "id": 11,
+        "hash": "df489f3c159f0e92eacf50a39994e179fed33ddbf7ebe46b6de1f7a5cbe37367",
+        "created_at": "1774551052336"
+      },
+      {
+        "id": 12,
+        "hash": "705b2ffadf7fc4b99d8756eb0204a948d27a139a86db009e7455522a01637e6b",
+        "created_at": "1774551053336"
+      },
+      {
+        "id": 19,
+        "hash": "833cf27c73ba6de093f2e73e2ba0ac7dd77fe908bb190e91ea8cfd23aa4a3578",
+        "created_at": "1783399129067"
+      },
+      {
+        "id": 20,
+        "hash": "edd39c7ec3d8128f5351c56fa2992744fda0a3b00b8fc2fc4127d208354fd3e1",
+        "created_at": "1786995512007"
+      },
+      {
+        "id": 21,
+        "hash": "dcfc6cc19e3a6230462048c0d3a201ed52a615fa78713c2c81488c0013f2ca0e",
+        "created_at": "1787341859253"
+      },
+      {
+        "id": 22,
+        "hash": "693fdb515fdecc1b0db7681f32199ebed1064cd70eca20691f6e47328753ccef",
+        "created_at": "1788021759918"
+      },
+      {
+        "id": 23,
+        "hash": "9401a04f177274dca5bc66fa02702d2ee029132e000f1513b7c9ee0dad654832",
+        "created_at": "1788587362377"
+      },
+      {
+        "id": 24,
+        "hash": "252aa7c4c6679613fda5158a0380875fd6bd5727f49b3ce55aa9c8a9dc68eb98",
+        "created_at": "1788738165011"
+      },
+      {
+        "id": 25,
+        "hash": "cf8128b379e1a3293ced8430e81a799f4f9074539d944ddc1f2a281261484a37",
+        "created_at": "1789092365992"
+      },
+      {
+        "id": 26,
+        "hash": "40461fe659d864bbd51e9704daa75157c81aa3b28de097ef3b8c6ea5e0c36783",
+        "created_at": "1791506086614"
+      },
+      {
+        "id": 29,
+        "hash": "38ea712cb4367a364375df08015ed81a5a48301f1aa69cf119ace86213d823ce",
+        "created_at": "1791508489695"
+      },
+      {
+        "id": 30,
+        "hash": "d2533a4af26d3d16f85463842815ef090bebff2d76334280aa32d8759ae009dd",
+        "created_at": "1791510064024"
+      }
+    ]
+  }
+}

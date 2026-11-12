@@ -11,7 +11,6 @@ const navItems = [
   { href: '/student/attendance', label: 'Attendance' },
   { href: '/student/payments', label: 'Payments' },
   { href: 'https://placement.skillhubcore.in/?brand=skillup', label: 'Placement' },
-  { href: '/student/learn', label: 'Learn' },
   { href: '/student/exams', label: 'Exams' },
 ];
 
