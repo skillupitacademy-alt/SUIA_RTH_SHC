@@ -179,6 +179,14 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     const brandUserRepo = useBrandBinding && typeof userRepo.withDb === 'function'
       ? userRepo.withDb(brandContext.db, brandContext.tables)
       : userRepo;
+
+    const currentAccount = await brandUserRepo.findActiveUserWithRoles(payload.userId);
+    if (!currentAccount || currentAccount.deletedAt !== null) {
+      return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
+    }
+    if (currentAccount.isBlocked || currentAccount.roles.length === 0) {
+      return NextResponse.json({ user: null }, { status: 403, headers: { 'Cache-Control': 'private, no-store' } });
+    }
     
     // TASK 3: Fetch user with brand-specific repository
 
@@ -216,7 +224,11 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       .filter((role): role is string => typeof role === 'string' && role.length > 0);
     const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
 
-    const userDto = toUserSummaryDTO(authUserInput, isAdmin);
+    const userDto = {
+      ...toUserSummaryDTO(authUserInput, isAdmin),
+      roles: currentAccount.roles,
+      role: currentAccount.roles[0],
+    };
 
     const end = Date.now();
     const durationMs = end - start;

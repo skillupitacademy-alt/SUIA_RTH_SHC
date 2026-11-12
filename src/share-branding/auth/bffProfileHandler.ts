@@ -136,7 +136,10 @@ export async function handleProfileGet(req: NextRequest) {
       console.log(`[BFF][Profile GET][${correlationId}] Enriched response with email: ${authResult.email}`);
     }
 
-    return NextResponse.json(data, { status: res.status });
+    return NextResponse.json(data, {
+      status: res.status,
+      headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie, Authorization' },
+    });
   } catch (err) {
     const duration = Date.now() - perfStart;
     
@@ -216,7 +219,10 @@ export async function handleProfilePatch(req: NextRequest) {
       console.log(`[BFF][Profile PATCH][${correlationId}] Enriched response with email: ${authResult.email}`);
     }
 
-    return NextResponse.json(data, { status: res.status });
+    return NextResponse.json(data, {
+      status: res.status,
+      headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie, Authorization' },
+    });
   } catch (err) {
     const duration = Date.now() - perfStart;
     console.error(`[BFF][Profile PATCH][${correlationId}] Error (${duration}ms):`, err);

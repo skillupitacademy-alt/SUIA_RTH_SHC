@@ -4,6 +4,9 @@ import type { RequestBrand } from '@/lib/request-brand';
 import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 
 /**
  * 🔐 CANONICAL ROLE NORMALIZER (STRICT UNIFICATION)
@@ -59,6 +62,36 @@ export interface AuthContext {
   roles?: string[]; // 🔥 ADD: Roles for RBAC
 }
 
+async function validateCurrentLearnerContext(context: AuthContext, request: NextRequest): Promise<AuthContext | null> {
+  if (context.brand !== 'skillup' && context.brand !== 'realtutorialhub') return context;
+  const brand = getAuthBrandContext(context.brand);
+  const users = container.get(UserRepository);
+  const tokens = container.get(TokenRepository);
+  const userRepository = shouldUseBrandBinding() ? users.withDb(brand.db, brand.tables) : users;
+  const tokenRepository = shouldUseBrandBinding() ? tokens.withDb(brand.db, { refreshTokens: brand.tables.refreshTokens }) : tokens;
+  const current = await userRepository.findActiveUserWithRoles(context.userId);
+  if (!current || current.deletedAt !== null || current.isBlocked) return null;
+  const currentRoles = canonicalizeRoles(current.roles);
+  const roles = canonicalizeRoles(context.roles).filter(role => currentRoles.includes(role));
+  if (roles.length === 0) return null;
+
+  // Trusted background service calls retain their existing principal contract.
+  // Browser/JWT requests must also satisfy the existing persisted session check.
+  const tokenService = container.get(TokenService);
+  if (tokenService.getAccessToken(request, { scope: 'user' })) {
+    const refresh = tokenService.getRefreshToken(request);
+    if (refresh) {
+      const session = await tokenRepository.findValidSession({
+        userId: context.userId, refreshTokenHash: await tokenService.hashToken(refresh),
+      });
+      if (!session) return null;
+    } else if ((await tokenRepository.getUserSessions(context.userId)).length === 0) {
+      return null;
+    }
+  }
+  return { ...context, roles };
+}
+
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
   const requestCorrelationId = req.headers.get('x-correlation-id');
   const correlationId = (typeof requestCorrelationId === 'string' && requestCorrelationId.trim() !== '') 
@@ -91,14 +124,14 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
         correlationId,
       });
       
-      return {
+      return validateCurrentLearnerContext({
         userId: authResult.context.userId,
         brand: authResult.context.brand as RequestBrand,
         correlationId: authResult.context.correlationId,
         source: authResult.context.authMode,
         email: authResult.context.userEmail,
         roles, // 🔥 CANONICAL: Always unified to ['user'] for both brands
-      };
+      }, req);
     }
   }
 
@@ -141,14 +174,14 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
       correlationId,
     });
 
-    return {
+    return validateCurrentLearnerContext({
       userId: payload.userId,
       brand: (payload.brand as RequestBrand) || 'realtutorialhub',
       correlationId,
       source: 'jwt',
       email: payload.email,
       roles, // 🔥 CANONICAL: Always unified to ['user'] for both brands
-    };
+    }, req);
   } catch (error) {
     console.error(`[AUTH][${correlationId}] JWT validation failed:`, error);
     return null;

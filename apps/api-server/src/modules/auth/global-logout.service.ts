@@ -133,7 +133,8 @@ export class GlobalLogoutService {
       : this.tokenRepo;
 
     // 🔐 W1.2-SESS-01: Pass verified brand-local userId to enforce ownership
-    await brandTokenRepo.revokeById(sessionId, userId);
+    const revoked = await brandTokenRepo.revokeById(sessionId, userId);
+    if (!revoked) return null;
 
     // Audit log
     await this.auditService.log({

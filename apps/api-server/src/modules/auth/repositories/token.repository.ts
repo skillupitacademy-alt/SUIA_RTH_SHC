@@ -108,12 +108,13 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
     }
 
     // Single atomic update with both session ID and owner ID in WHERE clause
-    await this.dbInstance.update(this.refreshTokensTable)
+    const changed = await this.dbInstance.update(this.refreshTokensTable)
       .set({ revoked: true })
       .where(and(
         eq(this.refreshTokensTable.id, id),
         eq(this.refreshTokensTable.userId, userId)
-      ));
+      )).returning({ id: this.refreshTokensTable.id });
+    return changed.length > 0;
   }
 
   async revokeAll(userId: string) {

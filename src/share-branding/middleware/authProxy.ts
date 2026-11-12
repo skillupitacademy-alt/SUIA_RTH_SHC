@@ -1,5 +1,6 @@
 import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCurrentLearnerSession } from '../auth/currentLearnerSession';
 import {
   resolveBrandFromHostname,
   extractHostnameFromRequest,
@@ -69,7 +70,9 @@ export function isPublicRoute(pathname: string): boolean {
 }
 
 export function isPublicAuthRoute(pathname: string): boolean {
-  return pathname === '/api/auth' || pathname.startsWith('/api/auth/');
+  return ['/api/auth/login', '/api/auth/signup', '/api/auth/refresh', '/api/auth/logout',
+    '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/verify-email',
+    '/api/auth/test-fixture-session'].includes(pathname.replace(/\/$/, ''));
 }
 
 export function isProtectedRoute(pathname: string): boolean {
@@ -278,6 +281,9 @@ export interface AuthProxyOptions {
 export async function createAuthProxy(options: AuthProxyOptions = {}) {
   return async function authProxy(request: NextRequest) {
     const path = request.nextUrl.pathname;
+    if (hasPrefix(path.toLowerCase(), RETIRED_LEARNER_PREFIXES)) {
+      return new NextResponse(null, { status: 404 });
+    }
     // Queue authentication belongs to the worker's signature boundary.
     if (path.startsWith('/api/workers/')) return NextResponse.next();
     if (path.startsWith('/api/') && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
@@ -378,6 +384,11 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       
       // For non-API routes, also return 403 (don't redirect to login for wrong brand)
       return new NextResponse('Forbidden', { status: 403 });
+    }
+
+    if (authResult.type === 'authenticated') {
+      const sessionDenied = await requireCurrentLearnerSession(request, authResult.user);
+      if (sessionDenied) return sessionDenied;
     }
 
     // Handle authenticated user accessing onboarding when already completed

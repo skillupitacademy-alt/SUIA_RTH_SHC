@@ -1,0 +1,232 @@
+{
+  "runId": "r4-eb31970d-525e-4db4-9e0a-cabea0ccabc8",
+  "timestamp": "2026-11-12T18:26:20.568Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup real password login A",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "cookies": [
+        {
+          "name": "accessToken",
+          "domain": ".skillup.localhost",
+          "path": "/",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "None"
+        },
+        {
+          "name": "refreshToken",
+          "domain": ".skillup.localhost",
+          "path": "/",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "None"
+        },
+        {
+          "name": "csrfToken",
+          "domain": ".skillup.localhost",
+          "path": "/",
+          "httpOnly": false,
+          "secure": true,
+          "sameSite": "None"
+        }
+      ]
+    },
+    {
+      "name": "skillup browser context has issued access and refresh cookies",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup real persisted refresh session",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup authenticated profile",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup real-session authenticated page",
+      "expected": "/student/exams",
+      "actual": "/student/exams",
+      "pass": true,
+      "httpStatus": 200
+    },
+    {
+      "name": "skillup refresh rotation",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup refresh credential rotates",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup prior refresh revoked in DB",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup logout A",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup A cookies cleared",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup post-logout profile denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup account switch real login B",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup B profile identity",
+      "expected": "ebccbc0d-0f78-4bf9-9cac-79a0415375d8",
+      "actual": "ebccbc0d-0f78-4bf9-9cac-79a0415375d8",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "name": "skillup revoked A session replay denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real password login A",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "cookies": [
+        {
+          "name": "accessToken",
+          "domain": ".realtutorialhub.localhost",
+          "path": "/",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "None"
+        },
+        {
+          "name": "refreshToken",
+          "domain": ".realtutorialhub.localhost",
+          "path": "/",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "None"
+        },
+        {
+          "name": "csrfToken",
+          "domain": ".realtutorialhub.localhost",
+          "path": "/",
+          "httpOnly": false,
+          "secure": true,
+          "sameSite": "None"
+        }
+      ]
+    },
+    {
+      "name": "realtutorialhub browser context has issued access and refresh cookies",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real persisted refresh session",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub authenticated profile",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real-session authenticated page",
+      "expected": "/dashboard",
+      "actual": "/dashboard",
+      "pass": true,
+      "httpStatus": 200
+    },
+    {
+      "name": "realtutorialhub refresh rotation",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub refresh credential rotates",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub prior refresh revoked in DB",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub logout A",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub A cookies cleared",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub post-logout profile denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub account switch real login B",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub B profile identity",
+      "expected": "8a0844d4-a6c5-4c99-8698-45de639bb6c2",
+      "actual": "8a0844d4-a6c5-4c99-8698-45de639bb6c2",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub revoked A session replay denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

@@ -1,0 +1,897 @@
+{
+  "timestamp": "2026-11-12T18:31:12.794Z",
+  "boundary": "Actual local HTTP for every inventoried method except owner-held Marketing. No authentication or service secrets supplied. Forged identity headers, empty mutation bodies and run-random resource IDs only. Public validation is recorded separately. This proves selected anonymous denial behavior, with role/object/session cases covered by separate fixtures.",
+  "results": [
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/auth/me",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/blueprints",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/blueprints",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/blueprints/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/blueprints/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/blueprints/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/domains/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/domains",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/domains",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/admin/domains",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/domains",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/domains/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/domains/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/questions/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/questions/bulk",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/questions",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/questions",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/questions/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/questions/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/questions/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/skills/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/admin/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/skills/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/skills/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/subjects/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/subjects",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/subjects",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/admin/subjects",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/subjects",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/subjects/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/subjects/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/subtopics/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/subtopics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/subtopics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/admin/subtopics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/subtopics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/subtopics/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/subtopics/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/topics/batch-delete",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/topics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/topics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/admin/topics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/topics",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/admin/topics/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/admin/topics/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/admin/topics/40207880-2d3e-4fca-89d7-6d445a12a845/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/admin/topics/40207880-2d3e-4fca-89d7-6d445a12a845/skills",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/auth/login",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": false,
+      "actual": 422,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/auth/logout",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": false,
+      "actual": 200,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/auth/me",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/factory/check-duplicates",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/factory/save",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/health",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": null
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/logs/client",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/marketing/bootstrap/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "disposition": "HOLD",
+      "reason": "Owner Marketing exclusion"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/marketing/collector/observability",
+      "disposition": "HOLD",
+      "reason": "Owner Marketing exclusion"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/marketing/control-plane/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "disposition": "HOLD",
+      "reason": "Owner Marketing exclusion"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/project-llm/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/project-llm/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PUT",
+      "route": "/api/project-llm/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/project-llm/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/analysis",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/block-suggestions",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/import",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/presentation-ideas",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/sections",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/tutorial-composer/sections",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845/blocks",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845/publish",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "PATCH",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "DELETE",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-composer/sections/40207880-2d3e-4fca-89d7-6d445a12a845/suggestions/apply",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/tutorial-left-sidebar/hierarchy",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/tutorial-left-sidebar/navigation-nodes",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "GET",
+      "route": "/api/tutorial-left-sidebar",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "method": "POST",
+      "route": "/api/tutorial-left-sidebar",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/forgot-password",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/login",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 422,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/logout",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/placement-handoff",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/refresh",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/auth/reset-password",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/reset-password",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/auth/sessions",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "DELETE",
+      "route": "/api/auth/sessions",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "DELETE",
+      "route": "/api/auth/sessions/40207880-2d3e-4fca-89d7-6d445a12a845",
+      "publicOperation": false,
+      "expected": "401/403 or retired 404/410",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    }
+  ]
+}
