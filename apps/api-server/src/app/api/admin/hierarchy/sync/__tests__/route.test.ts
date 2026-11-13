@@ -68,7 +68,8 @@ describe('POST /api/admin/hierarchy/sync', () => {
 
   it('falls back to admin auth when the internal key is absent', async () => {
     mocks.getAccessToken.mockReturnValueOnce('admin-token');
-    mocks.verifyAdminAccessToken.mockResolvedValueOnce({ userId: 'admin-1' });
+    const principal = { userId: 'admin-1', brand: 'skillup', roles: ['admin'], tokenType: 'admin', isAdmin: true };
+    mocks.verifyAdminAccessToken.mockResolvedValueOnce(principal);
     mocks.verifyAdmin.mockResolvedValueOnce(true);
     mocks.syncAll.mockResolvedValueOnce({
       total: 0,
@@ -82,7 +83,7 @@ describe('POST /api/admin/hierarchy/sync', () => {
     expect(res.status).toBe(200);
     expect(mocks.getAccessToken).toHaveBeenCalledTimes(1);
     expect(mocks.verifyAdminAccessToken).toHaveBeenCalledWith('admin-token', { audience: 'admin' });
-    expect(mocks.verifyAdmin).toHaveBeenCalledWith({ userId: 'admin-1' });
+    expect(mocks.verifyAdmin).toHaveBeenCalledWith(principal);
     expect(mocks.syncAll).toHaveBeenCalledTimes(1);
   });
 
@@ -93,6 +94,14 @@ describe('POST /api/admin/hierarchy/sync', () => {
     const res = await POST(req, {} as never);
 
     expect(res.status).toBe(401);
+    expect(mocks.syncAll).not.toHaveBeenCalled();
+  });
+
+  it('rejects an admin payload without a verified brand before any bulk write', async () => {
+    mocks.getAccessToken.mockReturnValueOnce('admin-token');
+    mocks.verifyAdminAccessToken.mockResolvedValueOnce({ userId: 'admin-1' });
+    const res = await POST(new NextRequest('http://localhost/api/admin/hierarchy/sync'), {} as never);
+    expect(res.status).toBe(403);
     expect(mocks.syncAll).not.toHaveBeenCalled();
   });
 });

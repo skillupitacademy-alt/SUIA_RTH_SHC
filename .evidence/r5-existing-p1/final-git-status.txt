@@ -1,0 +1,23 @@
+ M apps/api-server/next-env.d.ts
+ M apps/api-server/src/app/api/admin/hierarchy/sync/__tests__/route.test.ts
+ M apps/api-server/src/app/api/auth/profile/route.ts
+ M apps/api-server/src/app/api/workers/retry-hierarchy-sync/__tests__/route.test.ts
+ M apps/api-server/src/app/api/workers/retry-hierarchy-sync/route.ts
+ M apps/api-server/src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts
+ M apps/api-server/src/modules/hierarchy/hierarchy-sync.service.ts
+ M apps/realtutorialhub-web/next-env.d.ts
+ M apps/realtutorialhub-web/src/app/api/tutorial/progress/__tests__/route.test.ts
+ M apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts
+ M apps/realtutorialhub-web/src/app/api/tutorial/projects/submissions/route.ts
+ M apps/realtutorialhub-web/src/app/api/tutorial/sessions/__tests__/routes.test.ts
+ M apps/realtutorialhub-web/src/app/api/tutorial/sessions/my-requests/route.ts
+ M apps/skillup-web/next-env.d.ts
+ M apps/skillup-web/src/app/api/tutorial/progress/route.test.ts
+ M apps/skillup-web/src/app/api/tutorial/progress/route.ts
+ M src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts
+ M src/share-branding/middleware/authProxy.ts
+?? .evidence/r5-existing-p1/
+?? apps/api-server/src/app/api/auth/profile/__tests__/
+?? apps/api-server/src/modules/hierarchy/__tests__/hierarchy-reconciliation.remote.integration.test.ts
+?? docs/architecture/reviews/SHC/R5_HIERARCHY_SYNC_REAL_RECOVERY_REPORT.md
+?? docs/architecture/reviews/SHC/SOL_R5_EXISTING_P1_SECURITY_ENGINEERING_REVIEW.md

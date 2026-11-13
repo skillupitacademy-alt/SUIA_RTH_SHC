@@ -14,7 +14,14 @@ function credentialHeaders(request: NextRequest): Record<string, string> {
   const csrf = request.cookies.get('csrfToken')?.value;
   const csrfHeader = request.headers.get('x-csrf-token');
   const origin = request.headers.get('origin');
-  if (csrf) headers.Cookie = `csrfToken=${csrf}`;
+  // The owning API validates the same persisted device session as the BFF.
+  const refresh = request.cookies.get('refreshToken')?.value;
+  const cookies = [
+    token ? `accessToken=${token}` : undefined,
+    refresh ? `refreshToken=${refresh}` : undefined,
+    csrf ? `csrfToken=${csrf}` : undefined,
+  ].filter(Boolean);
+  if (cookies.length > 0) headers.Cookie = cookies.join('; ');
   if (csrfHeader) headers['x-csrf-token'] = csrfHeader;
   if (origin) headers.Origin = origin;
   return headers;

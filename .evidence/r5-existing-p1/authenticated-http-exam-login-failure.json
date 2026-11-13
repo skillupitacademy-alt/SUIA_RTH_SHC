@@ -1,0 +1,22 @@
+{
+  "runId": "r5-7b3066fc-190d-4fbc-b87e-94869949d152",
+  "timestamp": "2026-11-13T06:38:52.446Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup authenticated probe execution",
+      "expected": "complete",
+      "actual": "AssertionError",
+      "pass": false,
+      "code": "ERR_ASSERTION"
+    },
+    {
+      "name": "realtutorialhub authenticated probe execution",
+      "expected": "complete",
+      "actual": "AssertionError",
+      "pass": false,
+      "code": "ERR_ASSERTION"
+    }
+  ],
+  "cleanupVerified": true
+}

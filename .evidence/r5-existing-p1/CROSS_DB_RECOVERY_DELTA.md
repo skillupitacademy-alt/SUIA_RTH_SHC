@@ -1,0 +1,9 @@
+# R5 cross-database supporting delta
+
+Reuse the fifteen R4 real PostgreSQL coordination scenarios with their original source identity and cleanup receipts. R5 adds current-state reconciliation under the same ancestor-lock convention. Read-only discovery is bounded and ordered by entity kind then UUID. The repair re-reads source/target after acquiring MainDB locks, commits or rolls back TutorialDB work before releasing them, and verifies target mappings following commit.
+
+The new remote suite covers missing-domain and full-chain repair, stale canonical names/wrong parents, retained URLs/difficulty values, a no-op second scan, inactive/deleted sources, retained deleted targets, transport outage/recovery, TutorialDB rollback, MainDB completion failure after a TutorialDB commit, delete-first ordering, write-first lock retention, actual lock timeout/retry, post-commit drift detection, deterministic page continuation, and real signed-worker HTTP integration. It invokes only explicit run-owned scope IDs. It never invokes default discovery across the shared remote hierarchy. Cleanup checks both databases by exact owned IDs.
+
+The provider injections select real PostgreSQL connections and explicit failure points. They do not replace PostgreSQL transaction, locking, FK or commit behavior. Runtime and fault-injection evidence must be described together. A MainDB completion failure after TutorialDB commit retains valid mappings and returns unresolved failure. A later scan can observe consistency and avoid duplicate writes. This does not supply distributed atomicity or a historical event journal.
+
+Direct SQL maintenance and external writers do not automatically obey application locks. Operators must coordinate such maintenance separately. A retained deleted mapping is deliberately unresolved until its restoration semantics are approved. Automatic page continuation and durable run recovery remain under the separate owner decision.

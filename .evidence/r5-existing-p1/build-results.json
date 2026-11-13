@@ -1,0 +1,33 @@
+{
+  "environment": "Local production builds only; local dev listeners stopped to avoid .next collisions. No Docker image or deployment.",
+  "results": [
+    {
+      "name": "api-server-build",
+      "command": "pnpm --filter @quiz/api-server build",
+      "started": "2026-11-13T06:42:17.939Z",
+      "finished": "2026-11-13T06:49:42.651Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-build",
+      "command": "pnpm --filter @quiz/skillhubcore-admin build",
+      "started": "2026-11-13T06:49:42.752Z",
+      "finished": "2026-11-13T06:51:54.668Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-build",
+      "command": "pnpm --filter @quiz/skillup-web build",
+      "started": "2026-11-13T06:51:54.757Z",
+      "finished": "2026-11-13T06:53:44.446Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-build",
+      "command": "pnpm --filter @quiz/realtutorialhub-web build",
+      "started": "2026-11-13T06:53:44.447Z",
+      "finished": "2026-11-13T06:55:41.756Z",
+      "exitCode": 0
+    }
+  ]
+}

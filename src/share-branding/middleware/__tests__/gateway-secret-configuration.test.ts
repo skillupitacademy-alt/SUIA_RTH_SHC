@@ -28,3 +28,24 @@ it('does not forward an unauthenticated nonpublic API when gateway secret is unc
   const response = await proxy(new NextRequest('https://user.skillupitacademy.com/api/private-fixture', { headers: { host: 'user.skillupitacademy.com' } }));
   expect(response.status).toBe(401);
 });
+
+it.each(['/api/tutorial/projects/submissions', '/api/tutorial/sessions/my-requests'])(
+  'allows the existing authenticated browser read %s without exposing the gateway secret', async path => {
+    verify.mockResolvedValue({ ...principal, brand: 'realtutorialhub' });
+    const proxy = await proxyWithSecret('configured-secret');
+    const response = await proxy(new NextRequest(`http://realtutorialhub.localhost:3003${path}`, {
+      headers: { host: 'realtutorialhub.localhost:3003', cookie: 'accessToken=fixture; refreshToken=fixture-refresh' },
+    }));
+    expect(response.status).toBe(200);
+  },
+);
+
+it.each(['/api/tutorial/projects/submissions', '/api/tutorial/sessions/my-requests'])(
+  'still rejects an anonymous browser read %s', async path => {
+    const proxy = await proxyWithSecret('configured-secret');
+    const response = await proxy(new NextRequest(`http://realtutorialhub.localhost:3003${path}`, {
+      headers: { host: 'realtutorialhub.localhost:3003' },
+    }));
+    expect(response.status).toBe(401);
+  },
+);

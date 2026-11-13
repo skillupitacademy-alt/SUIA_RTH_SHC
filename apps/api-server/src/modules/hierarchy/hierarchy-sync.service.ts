@@ -9,11 +9,11 @@ import {
   withMainHierarchyLocks,
   withTimeout,
 } from "@quiz/db-tutorial";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, gt, isNull } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
-type HierarchyEntityType = "domain" | "subject" | "topic" | "subtopic";
+export type HierarchyEntityType = "domain" | "subject" | "topic" | "subtopic";
 type BulkSyncSummary = {
   total: number;
   succeeded: number;
@@ -57,6 +57,70 @@ type TutorialTx = {
   insert: typeof tutorialDb.insert;
 };
 
+const ENTITY_ORDER = ["domain", "subject", "topic", "subtopic"] as const;
+const MAIN_TABLES = { domain: domains, subject: subjects, topic: topics, subtopic: subtopics };
+export type ReconciliationEntity = { entityType: HierarchyEntityType; entityId: string };
+export type ReconciliationOptions = {
+  limit?: number;
+  cursor?: ReconciliationEntity;
+  entities?: ReconciliationEntity[];
+};
+type ReconciliationOutcome = "REPAIRED" | "ALREADY_CONSISTENT" | "SKIPPED_INACTIVE";
+export type ReconciliationSummary = BulkSyncSummary & {
+  mode: "CURRENT_STATE_RECONCILIATION";
+  checked: number;
+  driftFound: number;
+  repaired: number;
+  alreadyConsistent: number;
+  skipped: number;
+  scanComplete: boolean;
+  complete: boolean;
+  remaining: number | null;
+  nextCursor?: ReconciliationEntity;
+  outcomes: Array<ReconciliationEntity & { outcome: ReconciliationOutcome | "UNRESOLVED" }>;
+};
+type SourceMapping = ReconciliationEntity & { name: string; status: string; deletedAt: Date | null };
+type TargetMapping = { id: string; name: string; deletedAt: Date | null; parentId: string | null };
+type MappingReader = Pick<typeof tutorialDb, "query">;
+
+function compareEntities(a: ReconciliationEntity, b: ReconciliationEntity) {
+  return ENTITY_ORDER.indexOf(a.entityType) - ENTITY_ORDER.indexOf(b.entityType) || a.entityId.localeCompare(b.entityId);
+}
+
+function sourceMapping(entityType: HierarchyEntityType, row: { id: string; name: string; status: string; deletedAt: Date | null }): SourceMapping {
+  return { entityType, entityId: row.id, name: row.name, status: row.status, deletedAt: row.deletedAt };
+}
+
+async function readMapping(db: MappingReader, source: ReconciliationEntity): Promise<TargetMapping | undefined> {
+  const read = async () => {
+    const externalId = source.entityId;
+    if (source.entityType === "domain") {
+      const row = await db.query.tutorialDomains.findFirst({ where: eq(tutorialDomains.externalId, externalId) });
+      return row ? { ...row, parentId: null } : undefined;
+    }
+    if (source.entityType === "subject") {
+      const row = await db.query.tutorialSubjects.findFirst({ where: eq(tutorialSubjects.externalId, externalId) });
+      return row ? { ...row, parentId: row.domainId } : undefined;
+    }
+    if (source.entityType === "topic") {
+      const row = await db.query.tutorialTopics.findFirst({ where: eq(tutorialTopics.externalId, externalId) });
+      return row ? { ...row, parentId: row.subjectId } : undefined;
+    }
+    const row = await db.query.tutorialSubtopics.findFirst({ where: eq(tutorialSubtopics.externalId, externalId) });
+    return row ? { ...row, parentId: row.topicId } : undefined;
+  };
+  return withTimeout(read(), STANDARD_QUERY_TIMEOUT, "HierarchySyncService.readMapping");
+}
+
+async function writeMapping(tx: TutorialTx, source: SourceMapping, parentId: string | null, now: Date) {
+  const row = { id: source.entityId, name: source.name };
+  if (source.entityType === "domain") return upsertTutorialDomain(tx, row, now, true);
+  if (parentId === null || parentId.length === 0) throw new Error("Missing parent mapping");
+  if (source.entityType === "subject") return upsertTutorialSubject(tx, row, parentId, now, true);
+  if (source.entityType === "topic") return upsertTutorialTopic(tx, row, parentId, now, true);
+  return upsertTutorialSubtopic(tx, row, parentId, now, true);
+}
+
 const slugify = (value: string) => {
   const normalized = value
     .trim()
@@ -80,6 +144,7 @@ const upsertTutorialDomain = async (
   tx: TutorialTx,
   source: QuizDomainRow,
   now: Date,
+  reconcile = false,
 ) => {
   const rows = await withTimeout(
     tx
@@ -93,9 +158,10 @@ const upsertTutorialDomain = async (
       })
       .onConflictDoUpdate({
         target: tutorialDomains.externalId,
+        setWhere: isNull(tutorialDomains.deletedAt),
         set: {
           name: source.name,
-          slug: uniqueSlug(source.name, source.id),
+          ...(reconcile ? {} : { slug: uniqueSlug(source.name, source.id) }),
           deletedAt: null,
           updatedAt: now,
         },
@@ -115,9 +181,10 @@ const upsertTutorialDomain = async (
 
 const upsertTutorialSubject = async (
   tx: TutorialTx,
-  source: QuizSubjectRow,
+  source: QuizDomainRow,
   tutorialDomainId: string,
   now: Date,
+  reconcile = false,
 ) => {
   const rows = await withTimeout(
     tx
@@ -132,10 +199,11 @@ const upsertTutorialSubject = async (
       })
       .onConflictDoUpdate({
         target: tutorialSubjects.externalId,
+        setWhere: isNull(tutorialSubjects.deletedAt),
         set: {
           domainId: tutorialDomainId,
           name: source.name,
-          slug: uniqueSlug(source.name, source.id),
+          ...(reconcile ? {} : { slug: uniqueSlug(source.name, source.id) }),
           deletedAt: null,
           updatedAt: now,
         },
@@ -155,9 +223,10 @@ const upsertTutorialSubject = async (
 
 const upsertTutorialTopic = async (
   tx: TutorialTx,
-  source: QuizTopicRow,
+  source: QuizDomainRow,
   tutorialSubjectId: string,
   now: Date,
+  reconcile = false,
 ) => {
   const rows = await withTimeout(
     tx
@@ -172,10 +241,11 @@ const upsertTutorialTopic = async (
       })
       .onConflictDoUpdate({
         target: tutorialTopics.externalId,
+        setWhere: isNull(tutorialTopics.deletedAt),
         set: {
           subjectId: tutorialSubjectId,
           name: source.name,
-          slug: uniqueSlug(source.name, source.id),
+          ...(reconcile ? {} : { slug: uniqueSlug(source.name, source.id) }),
           deletedAt: null,
           updatedAt: now,
         },
@@ -195,9 +265,10 @@ const upsertTutorialTopic = async (
 
 const upsertTutorialSubtopic = async (
   tx: TutorialTx,
-  source: QuizSubtopicRow,
+  source: QuizDomainRow,
   tutorialTopicId: string,
   now: Date,
+  reconcile = false,
 ) => {
   const rows = await withTimeout(
     tx
@@ -213,11 +284,12 @@ const upsertTutorialSubtopic = async (
       })
       .onConflictDoUpdate({
         target: tutorialSubtopics.externalId,
+        setWhere: isNull(tutorialSubtopics.deletedAt),
         set: {
           topicId: tutorialTopicId,
           name: source.name,
-          slug: uniqueSlug(source.name, source.id),
-          difficultyLevels: [],
+          ...(reconcile ? {} : { slug: uniqueSlug(source.name, source.id) }),
+          ...(reconcile ? {} : { difficultyLevels: [] }),
           deletedAt: null,
           updatedAt: now,
         },
@@ -255,7 +327,13 @@ export class HierarchySyncService {
     topic: { externalId: string; internalId: string };
     subtopics: Array<{ externalId: string; internalId: string; name: string }>;
   }> {
-    return withMainHierarchyLocks({ topicIds: [topicId] }, () => this.ensureLockedTopicHierarchySynced(topicId));
+    return withMainHierarchyLocks({ topicIds: [topicId] }, async () => {
+      const chain = await this.sourceChain({ entityType: "topic", entityId: topicId });
+      if (chain.some((row) => row.status !== "active" || row.deletedAt !== null)) {
+        throw new Error("Cannot synchronize an inactive hierarchy");
+      }
+      return this.ensureLockedTopicHierarchySynced(topicId);
+    });
   }
 
   private static async ensureLockedTopicHierarchySynced(topicId: string) {
@@ -292,7 +370,8 @@ export class HierarchySyncService {
       quizDb.query.subtopics.findMany({
         where: and(
           eq(subtopics.topicId, topicId),
-          isNull(subtopics.deletedAt)
+          isNull(subtopics.deletedAt),
+          eq(subtopics.status, "active")
         ),
       }) as unknown as Promise<Array<{ id: string; name: string; topicId: string }>>,
       STANDARD_QUERY_TIMEOUT,
@@ -418,27 +497,145 @@ export class HierarchySyncService {
     }
   }
 
-  static async sync(entityType: HierarchyEntityType, entityId: string): Promise<void> {
-    await this.attemptSync(entityType, entityId);
+  static async sync(entityType: HierarchyEntityType, entityId: string): Promise<boolean> {
+    return this.attemptSync(entityType, entityId);
   }
 
-  static async retryFailed(): Promise<BulkSyncSummary> {
-    const summary: BulkSyncSummary = { total: 0, succeeded: 0, failed: 0 };
-    const entityBatches: Array<{ entityType: HierarchyEntityType; ids: Array<{ id: string }> }> = [];
-
-    for (const batch of entityBatches) {
-      for (const row of batch.ids) {
-        summary.total += 1;
-        const success = await this.attemptSync(batch.entityType, row.id);
-        if (success) {
+  /** Reconcile current mappings. No historical failure journal exists. */
+  static async retryFailed(options: ReconciliationOptions = {}): Promise<ReconciliationSummary> {
+    const limit = options.limit ?? 50;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+      throw new Error("Reconciliation limit must be between 1 and 100");
+    }
+    if (options.entities && (options.entities.length === 0 || options.entities.length > 100)) {
+      throw new Error("Reconciliation scope must contain between 1 and 100 entities");
+    }
+    const summary: ReconciliationSummary = {
+      mode: "CURRENT_STATE_RECONCILIATION", total: 0, succeeded: 0, failed: 0,
+      checked: 0, driftFound: 0, repaired: 0, alreadyConsistent: 0, skipped: 0,
+      scanComplete: false, complete: false, remaining: null, outcomes: [],
+    };
+    const candidates = options.entities
+      ? [...new Map(options.entities.map((item) => [`${item.entityType}:${item.entityId}`, item])).values()]
+        .sort(compareEntities).filter((item) => !options.cursor || compareEntities(item, options.cursor) > 0)
+        .slice(0, limit + 1)
+      : await this.reconciliationCandidates(limit + 1, options.cursor);
+    const started = Date.now();
+    for (const candidate of candidates.slice(0, limit)) {
+      // Finish/rollback the current transaction before yielding a continuation.
+      if (summary.checked > 0 && Date.now() - started >= 30_000) break;
+      summary.checked += 1;
+      summary.total += 1;
+      summary.nextCursor = candidate;
+      try {
+        let driftRecorded = false;
+        const outcome = await this.reconcileEntity(candidate, () => {
+          if (!driftRecorded) summary.driftFound += 1;
+          driftRecorded = true;
+        });
+        summary.outcomes.push({ ...candidate, outcome });
+        if (outcome === "SKIPPED_INACTIVE") summary.skipped += 1;
+        else {
           summary.succeeded += 1;
-        } else {
-          summary.failed += 1;
+          if (outcome === "REPAIRED") summary.repaired += 1;
+          else summary.alreadyConsistent += 1;
         }
+      } catch (error) {
+        summary.failed += 1;
+        summary.outcomes.push({ ...candidate, outcome: "UNRESOLVED" });
+        await this.logFailure(candidate.entityType, candidate.entityId, error);
       }
     }
-
+    summary.scanComplete = candidates.length <= limit && summary.checked === candidates.length;
+    summary.complete = summary.scanComplete && summary.failed === 0;
+    summary.remaining = summary.scanComplete ? summary.failed : null;
+    // A caller must retry the current page when any item is unresolved.
+    // Advancing its cursor would otherwise skip failed entities permanently.
+    if (summary.scanComplete || summary.failed > 0) delete summary.nextCursor;
     return summary;
+  }
+
+  private static async reconciliationCandidates(limit: number, cursor?: ReconciliationEntity) {
+    const candidates: ReconciliationEntity[] = [];
+    for (const entityType of ENTITY_ORDER) {
+      if (cursor && ENTITY_ORDER.indexOf(entityType) < ENTITY_ORDER.indexOf(cursor.entityType)) continue;
+      const table = MAIN_TABLES[entityType];
+      const rows = await withTimeout(quizDb.select({ id: table.id }).from(table).where(and(
+        isNull(table.deletedAt), eq(table.status, "active"),
+        cursor?.entityType === entityType ? gt(table.id, cursor.entityId) : undefined,
+      )).orderBy(asc(table.id)).limit(limit - candidates.length), STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.reconciliationCandidates");
+      candidates.push(...rows.map((row) => ({ entityType, entityId: row.id })));
+      if (candidates.length === limit) break;
+    }
+    return candidates;
+  }
+
+  private static async sourceChain(entity: ReconciliationEntity): Promise<SourceMapping[]> {
+    const { entityType, entityId } = entity;
+    const fetchSource = async () => {
+      if (entityType === "domain") {
+        const row = await quizDb.query.domains.findFirst({ where: eq(domains.id, entityId) });
+        return row ? [sourceMapping("domain", row)] : [];
+      }
+      if (entityType === "subject") {
+        const row = await quizDb.query.subjects.findFirst({ where: eq(subjects.id, entityId), with: { domain: true } });
+        return row?.domain ? [sourceMapping("domain", row.domain), sourceMapping("subject", row)] : [];
+      }
+      if (entityType === "topic") {
+        const row = await quizDb.query.topics.findFirst({ where: eq(topics.id, entityId), with: { subject: { with: { domain: true } } } });
+        return row?.subject?.domain ? [sourceMapping("domain", row.subject.domain), sourceMapping("subject", row.subject), sourceMapping("topic", row)] : [];
+      }
+      const row = await quizDb.query.subtopics.findFirst({ where: eq(subtopics.id, entityId), with: { topic: { with: { subject: { with: { domain: true } } } } } });
+      return row?.topic?.subject?.domain ? [sourceMapping("domain", row.topic.subject.domain), sourceMapping("subject", row.topic.subject), sourceMapping("topic", row.topic), sourceMapping("subtopic", row)] : [];
+    };
+    const chain = await withTimeout(fetchSource(), STANDARD_QUERY_TIMEOUT, "HierarchySyncService.sourceChain");
+    if (!chain.length) throw new Error("Authoritative hierarchy is missing or incomplete");
+    return chain;
+  }
+
+  private static async reconcileEntity(entity: ReconciliationEntity, onDrift: () => void): Promise<ReconciliationOutcome> {
+    const scopes = {
+      domain: { domainIds: [entity.entityId] }, subject: { subjectIds: [entity.entityId] },
+      topic: { topicIds: [entity.entityId] }, subtopic: { subtopicIds: [entity.entityId] },
+    };
+    return withMainHierarchyLocks(scopes[entity.entityType], async () => {
+      // Source and target are read after acquiring the same ancestor locks used by deletion.
+      const chain = await this.sourceChain(entity);
+      if (chain.some((row) => row.status !== "active" || row.deletedAt !== null)) return "SKIPPED_INACTIVE";
+      const result = await tutorialDb.transaction(async (tx) => {
+        const expected: Array<{ source: SourceMapping; id: string; parentId: string | null }> = [];
+        let parentId: string | null = null;
+        let repaired = false;
+        for (const source of chain) {
+          const target = await readMapping(tx, source);
+          if (target?.deletedAt) {
+            onDrift();
+            throw new Error("Retained deleted mapping requires an explicit restoration decision");
+          }
+          let id = target?.id;
+          if (!target || target.name !== source.name || target.parentId !== parentId) {
+            onDrift();
+            // Only canonical mapping fields are reconciled. Published content is untouched.
+            id = await writeMapping(tx, source, parentId, new Date());
+            repaired = true;
+          }
+          if (id === undefined || id.length === 0) throw new Error("Mapping write returned no identifier");
+          expected.push({ source, id, parentId });
+          parentId = id;
+        }
+        return { expected, repaired };
+      });
+      // This read follows the actual TutorialDB commit, while MainDB locks remain held.
+      for (const expected of result.expected) {
+        const actual = await readMapping(tutorialDb, expected.source);
+        if (!actual || actual.deletedAt || actual.id !== expected.id ||
+            actual.name !== expected.source.name || actual.parentId !== expected.parentId) {
+          throw new Error("Post-commit hierarchy mapping verification failed");
+        }
+      }
+      return result.repaired ? "REPAIRED" : "ALREADY_CONSISTENT";
+    });
   }
 
   static async syncAll(): Promise<BulkSyncSummary> {
@@ -449,6 +646,8 @@ export class HierarchySyncService {
         ids: await withTimeout(
           quizDb.query.domains.findMany({
             columns: { id: true },
+            where: and(isNull(domains.deletedAt), eq(domains.status, "active")),
+            orderBy: [asc(domains.id)],
           }) as Promise<Array<{ id: string }>>,
           STANDARD_QUERY_TIMEOUT,
           "HierarchySyncService.syncAll.domains",
@@ -459,6 +658,8 @@ export class HierarchySyncService {
         ids: await withTimeout(
           quizDb.query.subjects.findMany({
             columns: { id: true },
+            where: and(isNull(subjects.deletedAt), eq(subjects.status, "active")),
+            orderBy: [asc(subjects.id)],
           }) as Promise<Array<{ id: string }>>,
           STANDARD_QUERY_TIMEOUT,
           "HierarchySyncService.syncAll.subjects",
@@ -469,6 +670,8 @@ export class HierarchySyncService {
         ids: await withTimeout(
           quizDb.query.topics.findMany({
             columns: { id: true },
+            where: and(isNull(topics.deletedAt), eq(topics.status, "active")),
+            orderBy: [asc(topics.id)],
           }) as Promise<Array<{ id: string }>>,
           STANDARD_QUERY_TIMEOUT,
           "HierarchySyncService.syncAll.topics",
@@ -479,6 +682,8 @@ export class HierarchySyncService {
         ids: await withTimeout(
           quizDb.query.subtopics.findMany({
             columns: { id: true },
+            where: and(isNull(subtopics.deletedAt), eq(subtopics.status, "active")),
+            orderBy: [asc(subtopics.id)],
           }) as Promise<Array<{ id: string }>>,
           STANDARD_QUERY_TIMEOUT,
           "HierarchySyncService.syncAll.subtopics",
@@ -518,7 +723,13 @@ export class HierarchySyncService {
       domain: { domainIds: [entityId] }, subject: { subjectIds: [entityId] },
       topic: { topicIds: [entityId] }, subtopic: { subtopicIds: [entityId] },
     };
-    return withMainHierarchyLocks(scopes[entityType], () => this.executeLockedSync(entityType, entityId, now));
+    return withMainHierarchyLocks(scopes[entityType], async () => {
+      const chain = await this.sourceChain({ entityType, entityId });
+      if (chain.some((row) => row.status !== "active" || row.deletedAt !== null)) {
+        throw new Error("Cannot synchronize an inactive hierarchy");
+      }
+      return this.executeLockedSync(entityType, entityId, now);
+    });
   }
 
   private static async executeLockedSync(entityType: HierarchyEntityType, entityId: string, now: Date) {

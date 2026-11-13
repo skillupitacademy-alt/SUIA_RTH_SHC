@@ -357,6 +357,9 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       pathname.startsWith('/api/quiz/') ||
       pathname.startsWith('/api/tutorial/sections/') ||
       pathname.startsWith('/api/tutorial/progress') ||
+      // Existing browser-owned reads still pass current-session and route authorization.
+      pathname === '/api/tutorial/projects/submissions' ||
+      pathname === '/api/tutorial/sessions/my-requests' ||
       
       // Browser → BFF tutorial tracking APIs (ILS Phase 2)
       // These are internal BFF routes; the BFF adds the

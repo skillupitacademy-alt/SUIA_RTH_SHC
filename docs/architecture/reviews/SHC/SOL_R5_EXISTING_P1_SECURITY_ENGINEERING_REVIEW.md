@@ -1,0 +1,47 @@
+# R5 existing-system P1 security and engineering review
+
+13 November 2026. Branch main, starting HEAD 7f8c952a5a19b0e1ca04c4ed307b1a8c7abefc86. The working tree was clean at phase start. R5 changes remain local. Runtime requests use HTTP skillhubcore.localhost:3007, skillup.localhost:3009 and realtutorialhub.localhost:3003, with local backend/gateway on3000/8787. PostgreSQL is remote Neon. All writes in the probes use run-created synthetic UUIDs and verified cleanup.
+
+The bounded hierarchy repair and reproduced authorization defects are implemented and tested. Overall R5 authorization qualification remains PARTIAL. The 195-method matrix has 172 PENDING, 19 PARTIAL and 4 N/A rows, including visible OWNER HOLD rows. No all-method or Q01–Q48 acceptance is claimed. Automatic continuation is a design proposal requiring separate approval.
+
+| Finding | Source and change | Evidence and disposition |
+| --- | --- | --- |
+| Profile ownership mass assignment | apps/api-server/src/app/api/auth/profile/route.ts:49 and198. Client input previously spread userId and other persistence fields into UPDATE. The runtime parser now projects only existing mutable profile fields. PATCH and its existing POST alias share the owning boundary. | Actual HTTP reproduced profile-row reassignment in both brands. Final tests verify B's name and exactly one row per owner after A supplies B's userId. Unit tests cover both backend aliases and malformed fields. VERIFIED FIXED for this defect. |
+| RTH legitimate progress401 | apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts:16. Forward access+refresh cookies and CSRF proof to the API's persisted device-session validation. Equivalent SUIA forwarding receives the same correction. | Before RTH401, after both brands200 with distinct synthetic progress and wrong-brand denial. Unit forwarding assertions plus actual HTTP. VERIFIED FIXED for this path. |
+| RTH existing private-read403 and cache | src/share-branding/middleware/authProxy.ts:358; RTH projects/submissions and sessions/my-requests routes. Two exact existing browser reads now reach their handler after the current-session boundary. Response headers prohibit private-data storage. | Before403, after200 and private,no-store. Anonymous proxy negatives remain denied. Populated foreign-object cases remain PENDING. PARTIALLY VERIFIED resource family. |
+| Empty hierarchy retry | apps/api-server/src/modules/hierarchy/hierarchy-sync.service.ts:505. Current-state drift detection, scoped transactional repair, inactive/deleted protections and committed-state verification replace the empty list. | Six current-contract unit tests and14 real remote/worker scenarios. VERIFIED bounded recovery. Automatic multi-page operation PENDING design approval. |
+| Silent synchronization result | Same service:500. sync now returns the actual boolean outcome. Existing eight background create/update callers intentionally discard it and retain structured failure logging. | Failure/rollback unit controls. Source contract preserves existing background behavior. VERIFIED FIXED for awaited outcome. |
+| MainDB identity schema mismatch | main-users-metadata.json. Source declares tenant_id/local_subject_id/shadow_user_id, while the inspected remote MainDB users table omits them. | Read-only metadata proof and a failed synthetic fixture insertSQLSTATE 42703 retained. Core-column fixtures permit independent exam-owner checks. Schema alignment is PENDING OWNER DECISION under the migration HOLD. No DDL executed. |
+
+The hierarchy repair preserves existing target slugs and difficulty metadata, published content, sidebar identities and progress. It compares canonical names and mapped parent UUIDs only for active, undeleted authoritative chains. Retained deleted target mappings fail closed. Existing ancestor locks remain held across the TutorialDB transaction and post-commit verification. The database fault tests demonstrate rollback and safe rediscovery after partial completion. They provide no distributed atomicity guarantee.
+
+The existing signed worker parses only a verified request body, validates bounded scope, returns503 for unresolved entity failure and409 for an unfinished clean page. A completed comparison returns200. Failed pages expose no advancement cursor. Reconciliation defaults to 50 and allows at most 100 entities per page. Between-entity yielding begins after 30seconds, while existing per-operation timeouts and real transaction completion remain authoritative. Its cursor is JSON inside a signed request envelope. Independent cursor signing and automatic continuation are proposal-only.
+
+The real worker HTTP test uses the existing local internal transport boundary and real QStash cryptographic signatures. Wrong-key, altered-body and expired signatures receive401, and a valid signed scoped request repairs its fixture through the real handler and databases. It does not qualify deployed QStash schedules or provider retries. Existing QStash verification does not independently bind the receiver URL in its current call, so the proposal requires explicit route binding before automatic continuation acceptance.
+
+| Executed evidence | Result |
+| --- | --- |
+| Final local browser-context HTTP and PostgreSQL fixtures |50 assertions passed, cleanup verified. Own/foreign quiz results202/403, forged headers denied, own profile/progress, foreign device deletion404, hostile origin403 and cross-brand cookie denial403. |
+| Real remote reconciliation and signed-worker HTTP |14 tests passed, exit 0, cleanup verified. |
+| API targeted current-contract, profile, session and tenant tests |41 tests passed, exit 0. |
+| Shared proxy mutation-origin/gateway tests |18 mocked tests passed. |
+| SUIA full unit/component suite |218 tests passed, threads-pool rerun exit 0. |
+| RTH full unit/component suite |244 tests passed, threads-pool rerun exit 0. |
+| SHC security and boundary checker |65 tests passed,80 static handler checks passed, exit 0. |
+| API/MainDB Tutorial package and all three app typechecks |Completed receipts in quality-results.json. |
+| Zero-warning lint |API source/tests and corrected shared-source/test invocations pass. All three app lint commands pass. |
+| Production builds |API server, SHC Admin, SUIA and RTH all completed with exit 0. Exact timestamps and commands are in build-results.json. |
+
+Initial failures are preserved. The first hierarchy integration harness lacked production relation metadata and was corrected. The initial signed-worker cache assertion expected an exact header that existing middleware canonicalizes to a no-store equivalent. The original admin-bulk unit fixture omitted a required verified brand. Its positive fixture now includes current claims, and a separate missing-brand negative preserves denial. RTH's old no-cache assertion now requires private,no-store. Fork-based full suites hit a worker-startup timeout. Threads-pool reruns preserve test isolation and pass. No test was skipped, removed or disabled to manufacture a pass.
+
+The first root shared ESLint invocation had no applicable config. The next invocation used the app's type-aware config for a test outside its TS project and failed. Final invocations use the app config for imported shared source and existing base test parsing without a TypeScript project. No lint rule was disabled. API tests ignored by repository defaults were explicitly included with --no-ignore. Earlier warnings were corrected and their receipts retained.
+
+R4 evidence reuse is bounded by r4-reuse-source-check.json. Forty source-manifest entries remain byte-identical. The changed hierarchy/proxy source and tests receive new R5 evidence. Earlier52 gateway and15 PostgreSQL controls retain their original provenance. This report does not relabel them as new executions.
+
+Attendance, payments, Marketing and broad accessibility/performance remain OWNER HOLD. Existing unavailable or missing capabilities retain their own disposition. No new service, schema, queue, worker, endpoint or infrastructure was created. No migration, ledger change, Git commit/push or deployment was performed. The canonical ledger remains 2 PASS / 17 FAIL / 43 PENDING with its original hash. Q48 remains OPEN.
+
+Evidence is under E:/onlinewebsites/quiz-platform/.evidence/r5-existing-p1. HIERARCHY_SYNC_FIVE_CASES.md, AUTHENTICATED_AUTHORIZATION_MATRIX.csv, AUTOMATIC_CONTINUATION_PROPOSAL.md, CROSS_DB_RECOVERY_DELTA.md, ENGINEERING_COMPLIANCE_MATRIX.md and quality/build/runtime receipts describe the remaining limits. The exact final changed paths and safety hashes are recorded in source-safety-check.json and final-git-status.txt.
+
+Final corrected gate receipts are consolidated in QUALITY_FINAL_RESULTS.json and QUALITY_RECEIPTS.md. All 21 recorded verification gates and all four local production builds completed with exit 0. Graphify tool metadata warnings remain recorded. These results do not close the 172 pending authorization-matrix rows, the 19 partial rows, the MainDB identity-schema mismatch or the automatic-continuation design decision.
+
+Local server restoration completed. API health, SHC login, SUIA health and RTH health each returned HTTP 200 on the documented localhost ports. The earlier cold-start timeout receipt is retained. Build/dev generated declaration mode changes were reviewed and restored to the baseline bytes. Final source safety checks confirm the canonical ledger hash and original register are preserved, with no held source-path changes.

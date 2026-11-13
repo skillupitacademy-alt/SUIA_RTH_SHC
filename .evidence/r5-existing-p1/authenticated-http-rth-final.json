@@ -1,0 +1,158 @@
+{
+  "runId": "r5-2bc0b8e5-3661-48ec-b13c-3b0a8c304092",
+  "timestamp": "2026-11-13T06:20:39.778Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "add328c7-6418-4da7-82e4-8f33e595a925",
+      "actual": "add328c7-6418-4da7-82e4-8f33e595a925",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "abb2ce3b-1d4e-46bd-b8c4-f568c0479acc",
+      "actual": "abb2ce3b-1d4e-46bd-b8c4-f568c0479acc",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub forged profile subject cannot read B",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own session listing positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/auth/sessions",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub foreign device revocation denied",
+      "expected": 404,
+      "actual": 404,
+      "pass": true,
+      "route": "/api/auth/sessions/[sessionId]",
+      "method": "DELETE"
+    },
+    {
+      "name": "realtutorialhub B remains valid after foreign revocation attempt",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub allowed profile edit or strict field rejection",
+      "expected": [
+        200,
+        400,
+        422
+      ],
+      "actual": 200,
+      "pass": true,
+      "route": "/api/profile",
+      "method": "PATCH"
+    },
+    {
+      "name": "realtutorialhub forged profile update cannot change B",
+      "expected": "Synthetic owner-b",
+      "actual": "Synthetic owner-b",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub hostile-origin profile mutation denied",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own progress A positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub own progress A data isolated",
+      "expected": "[\"notes\"]",
+      "actual": "[\"notes\"]",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own progress B positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub own progress B data isolated",
+      "expected": "[\"code\"]",
+      "actual": "[\"code\"]",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub progress client subject override denied or scoped to A",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub complete cookie pair rejected by foreign brand",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "RTH private existing /api/tutorial/projects/submissions positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/projects/submissions",
+      "method": "GET"
+    },
+    {
+      "name": "RTH private existing /api/tutorial/projects/submissions cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "RTH private existing /api/tutorial/sessions/my-requests positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/sessions/my-requests",
+      "method": "GET"
+    },
+    {
+      "name": "RTH private existing /api/tutorial/sessions/my-requests cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

@@ -77,11 +77,11 @@ describe('tutorial session routes', () => {
     expect(response.status).toBe(400);
   });
 
-  it('returns the student requests with no-cache headers', async () => {
+  it('returns only the current student requests with private no-store headers', async () => {
     const response = await getMyRequests(makeGetRequest());
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('cache-control')).toBe('no-cache');
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
     expect(mocks.getMyRequests).toHaveBeenCalledWith(studentId);
   });
 

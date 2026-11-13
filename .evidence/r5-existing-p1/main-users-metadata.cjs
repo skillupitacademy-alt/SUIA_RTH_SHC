@@ -1,0 +1,3 @@
+const fs=require('fs'); const e=require('dotenv').parse(fs.readFileSync('.env.local')); const n=require('@neondatabase/serverless'); n.neonConfig.webSocketConstructor=require('ws');
+const pool=new n.Pool({connectionString:e.DATABASE_URL});
+(async()=>{try {const result=await pool.query("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users' ORDER BY ordinal_position"); const output={table:'users',columns:result.rows.map(row=>row.column_name),readOnly:true}; fs.writeFileSync('.evidence/r5-existing-p1/main-users-metadata.json',JSON.stringify(output,null,2));console.log(output);}finally{await pool.end();}})().catch(error=>{console.error({name:error.name,code:error.code});process.exitCode=1});

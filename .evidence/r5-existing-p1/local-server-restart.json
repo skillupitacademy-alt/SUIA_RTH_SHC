@@ -1,0 +1,26 @@
+[
+  {
+    "app": "api-server",
+    "port": 3000,
+    "pid": 17264,
+    "url": "http://localhost:3000"
+  },
+  {
+    "app": "skillhubcore-admin",
+    "port": 3007,
+    "pid": 29312,
+    "url": "http://skillhubcore.localhost:3007"
+  },
+  {
+    "app": "skillup-web",
+    "port": 3009,
+    "pid": 32156,
+    "url": "http://skillup.localhost:3009"
+  },
+  {
+    "app": "realtutorialhub-web",
+    "port": 3003,
+    "pid": 9772,
+    "url": "http://realtutorialhub.localhost:3003"
+  }
+]

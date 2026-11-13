@@ -30,3 +30,21 @@ it('never proxies unauthenticated progress requests', async () => {
   expect((await GET(new NextRequest('http://skillup.localhost/api/tutorial/progress'))).status).toBe(401);
   expect(upstream).not.toHaveBeenCalled();
 });
+
+it('forwards the exact access and refresh cookie pair with CSRF proof', async () => {
+  vi.stubEnv('INTERNAL_API_URL', 'http://localhost:3000');
+  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'learner', payload: {} as never });
+  const upstream = vi.fn().mockResolvedValue(Response.json({ data: {} }));
+  vi.stubGlobal('fetch', upstream);
+  const request = new NextRequest('http://skillup.localhost/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111', {
+    headers: { cookie: 'accessToken=device-access; refreshToken=device-refresh; csrfToken=device-csrf', 'x-csrf-token': 'device-csrf' },
+  });
+  expect((await GET(request)).status).toBe(200);
+  expect(upstream).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+    headers: expect.objectContaining({
+      Authorization: 'Bearer device-access',
+      Cookie: 'accessToken=device-access; refreshToken=device-refresh; csrfToken=device-csrf',
+      'x-csrf-token': 'device-csrf',
+    }),
+  }));
+});

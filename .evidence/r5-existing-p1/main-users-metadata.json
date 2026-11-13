@@ -1,0 +1,15 @@
+{
+  "table": "users",
+  "columns": [
+    "id",
+    "email",
+    "password_hash",
+    "email_verified",
+    "created_at",
+    "updated_at",
+    "is_blocked",
+    "last_active_at",
+    "deleted_at"
+  ],
+  "readOnly": true
+}

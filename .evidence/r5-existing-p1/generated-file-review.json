@@ -1,0 +1,5 @@
+{
+  "file": "apps/api-server/next-env.d.ts",
+  "reason": "Local production build switched the generated Next type-import mode. Restore the clean baseline dev declaration for the restarted local servers.",
+  "onlyExpectedModeChange": true
+}

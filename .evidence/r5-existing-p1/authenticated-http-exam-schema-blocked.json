@@ -1,0 +1,94 @@
+{
+  "runId": "r5-4c28cfe7-57b4-48e4-af52-593ce535a73d",
+  "timestamp": "2026-11-13T06:38:19.854Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup own profile identity",
+      "expected": "7a9c139b-2a5f-4fa8-8f6a-c844611dabde",
+      "actual": "7a9c139b-2a5f-4fa8-8f6a-c844611dabde",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "skillup own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup own profile identity",
+      "expected": "982c4f79-c0a1-4cc5-813f-9aae68eef859",
+      "actual": "982c4f79-c0a1-4cc5-813f-9aae68eef859",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "skillup own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup forged profile subject cannot read B",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup authenticated probe execution",
+      "expected": "complete",
+      "actual": "error",
+      "pass": false,
+      "code": "42703"
+    },
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "830a8123-51aa-4a2f-9002-60cd61afce78",
+      "actual": "830a8123-51aa-4a2f-9002-60cd61afce78",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "7fd77fc4-7345-47c2-862e-0ca08c2ba590",
+      "actual": "7fd77fc4-7345-47c2-862e-0ca08c2ba590",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub forged profile subject cannot read B",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub authenticated probe execution",
+      "expected": "complete",
+      "actual": "error",
+      "pass": false,
+      "code": "42703"
+    }
+  ],
+  "cleanupVerified": true
+}

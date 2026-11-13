@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await requireStudent(req);
     const data = await liveSessionService.getMyRequests(session.userId);
-    return NextResponse.json({ data }, { status: 200, headers: { 'Cache-Control': 'no-cache' } });
+    return NextResponse.json({ data }, { status: 200, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     if (error instanceof AssignmentAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.statusCode });

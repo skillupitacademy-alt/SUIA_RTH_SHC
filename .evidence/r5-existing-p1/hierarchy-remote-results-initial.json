@@ -1,0 +1,19 @@
+{
+  "boundary": "Actual existing HierarchySyncService and MainDB lock helper against real remote PostgreSQL transactions. Provider injection selects connections and explicit transport/transaction faults. Exact run-owned UUIDs only. No schema changes or blanket reconciliation.",
+  "tag": "r5-reconcile-42ed6e78-4558-4474-8510-06287380a0c8",
+  "observations": [
+    {
+      "scenario": "missing domain repaired and post-commit observed",
+      "passed": true
+    },
+    {
+      "scenario": "delete-first race cannot create an orphan mapping",
+      "passed": true
+    },
+    {
+      "scenario": "bounded stable cursor over explicitly scoped entities",
+      "passed": true
+    }
+  ],
+  "cleanupVerified": true
+}

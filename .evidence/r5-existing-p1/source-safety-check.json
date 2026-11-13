@@ -1,0 +1,69 @@
+{
+  "head": "7f8c952a5a19b0e1ca04c4ed307b1a8c7abefc86",
+  "changedFiles": [
+    {
+      "path": "apps/api-server/src/app/api/admin/hierarchy/sync/__tests__/route.test.ts",
+      "sha256": "a7975e1b3b43a8b4ada230b28a2e27799cfe80f1610c3f0cf968a4b621fc38ba"
+    },
+    {
+      "path": "apps/api-server/src/app/api/auth/profile/route.ts",
+      "sha256": "8d4baba4a9210352e6fd80e840af3eb109194a624fecff6605eb650d33e6c995"
+    },
+    {
+      "path": "apps/api-server/src/app/api/workers/retry-hierarchy-sync/__tests__/route.test.ts",
+      "sha256": "592778c6a55866de09584fa74a9113ca2069939a5a5632bbd1c0328df5917744"
+    },
+    {
+      "path": "apps/api-server/src/app/api/workers/retry-hierarchy-sync/route.ts",
+      "sha256": "03ebb9ad1b774c4b9e231d92d97543f3293990f4ae05d1a06ce68f2d31807ebb"
+    },
+    {
+      "path": "apps/api-server/src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts",
+      "sha256": "1d4487b71b381258c3f1c390b995e89db4216ace7fea9ff74743b39de116c153"
+    },
+    {
+      "path": "apps/api-server/src/modules/hierarchy/hierarchy-sync.service.ts",
+      "sha256": "054c36bb4751ecd4ea4d536f3825e48dc36185b813402fedd9b343d3d494e5ba"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/progress/__tests__/route.test.ts",
+      "sha256": "821f9842461ce5dd5d66c926ae176a44fc02dee4c01d64959910420062fed15c"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "sha256": "cfc56c883d13f3354c1fe9031ed8ca7d09c06a40dc2d8d95590f54b4491bc6ec"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submissions/route.ts",
+      "sha256": "959853572a7204c8d29315cb3fafd19c5fa2779532901f33b6e68be0c5dd5638"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/__tests__/routes.test.ts",
+      "sha256": "0c12f8ae5732ab9c6f2dce854b38ddc38a5980f08806b46b83865aeb90a63165"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/my-requests/route.ts",
+      "sha256": "63408a1a94a5e25e7d1f091bd6b186c00dda6e2bb9cee4b1475b51156bbf79f4"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.test.ts",
+      "sha256": "979f2d3f2e7733e67a50e155dd7958b930e1cde935fdd22bfec0584763df2060"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "sha256": "6b074fa57d861bc51dd7bf85c8282949ba1cbd3e3503e8aa71220152210811ff"
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts",
+      "sha256": "5cf3e6fb75ec3728147e7a80f21db28e1b91ace55284e8e7eb392fe23641c049"
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "c0828e6953f234774f68a0afe743929a566caa041095987dddf932a15dfe4d4a"
+    }
+  ],
+  "canonicalLedgerSha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+  "canonicalLedgerMatchesBaseline": true,
+  "originalRegisterUnchanged": true,
+  "heldPathChanges": []
+}

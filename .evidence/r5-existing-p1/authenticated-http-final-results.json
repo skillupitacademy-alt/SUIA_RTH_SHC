@@ -1,0 +1,284 @@
+{
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "head": "7f8c952a5a19b0e1ca04c4ed307b1a8c7abefc86",
+  "sources": [
+    "authenticated-http-suia-final-rth-warmup.json (SUIA assertions only)",
+    "authenticated-http-rth-final.json"
+  ],
+  "warmupFailureRetained": "RTH login timeout in the earlier full run remains in its original receipt",
+  "results": [
+    {
+      "name": "skillup own profile identity",
+      "expected": "f26d8d44-17dd-4aed-8136-b37679258b6e",
+      "actual": "f26d8d44-17dd-4aed-8136-b37679258b6e",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "skillup own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup own profile identity",
+      "expected": "7a831b65-d68a-4fae-905b-fd2f9594dbd3",
+      "actual": "7a831b65-d68a-4fae-905b-fd2f9594dbd3",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "skillup own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup forged profile subject cannot read B",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup own session listing positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/auth/sessions",
+      "method": "GET"
+    },
+    {
+      "name": "skillup foreign device revocation denied",
+      "expected": 404,
+      "actual": 404,
+      "pass": true,
+      "route": "/api/auth/sessions/[sessionId]",
+      "method": "DELETE"
+    },
+    {
+      "name": "skillup B remains valid after foreign revocation attempt",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup allowed profile edit or strict field rejection",
+      "expected": [
+        200,
+        400,
+        422
+      ],
+      "actual": 200,
+      "pass": true,
+      "route": "/api/profile",
+      "method": "PATCH"
+    },
+    {
+      "name": "skillup forged profile update cannot change B",
+      "expected": "Synthetic owner-b",
+      "actual": "Synthetic owner-b",
+      "pass": true
+    },
+    {
+      "name": "skillup hostile-origin profile mutation denied",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "skillup own progress A positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "skillup own progress A data isolated",
+      "expected": "[\"notes\"]",
+      "actual": "[\"notes\"]",
+      "pass": true
+    },
+    {
+      "name": "skillup own progress B positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "skillup own progress B data isolated",
+      "expected": "[\"code\"]",
+      "actual": "[\"code\"]",
+      "pass": true
+    },
+    {
+      "name": "skillup progress client subject override denied or scoped to A",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup complete cookie pair rejected by foreign brand",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "add328c7-6418-4da7-82e4-8f33e595a925",
+      "actual": "add328c7-6418-4da7-82e4-8f33e595a925",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own profile identity",
+      "expected": "abb2ce3b-1d4e-46bd-b8c4-f568c0479acc",
+      "actual": "abb2ce3b-1d4e-46bd-b8c4-f568c0479acc",
+      "pass": true,
+      "route": "/api/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "name": "realtutorialhub own private profile cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub forged profile subject cannot read B",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own session listing positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/auth/sessions",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub foreign device revocation denied",
+      "expected": 404,
+      "actual": 404,
+      "pass": true,
+      "route": "/api/auth/sessions/[sessionId]",
+      "method": "DELETE"
+    },
+    {
+      "name": "realtutorialhub B remains valid after foreign revocation attempt",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub allowed profile edit or strict field rejection",
+      "expected": [
+        200,
+        400,
+        422
+      ],
+      "actual": 200,
+      "pass": true,
+      "route": "/api/profile",
+      "method": "PATCH"
+    },
+    {
+      "name": "realtutorialhub forged profile update cannot change B",
+      "expected": "Synthetic owner-b",
+      "actual": "Synthetic owner-b",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub hostile-origin profile mutation denied",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own progress A positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub own progress A data isolated",
+      "expected": "[\"notes\"]",
+      "actual": "[\"notes\"]",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub own progress B positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/progress",
+      "method": "GET"
+    },
+    {
+      "name": "realtutorialhub own progress B data isolated",
+      "expected": "[\"code\"]",
+      "actual": "[\"code\"]",
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub progress client subject override denied or scoped to A",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub complete cookie pair rejected by foreign brand",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "RTH private existing /api/tutorial/projects/submissions positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/projects/submissions",
+      "method": "GET"
+    },
+    {
+      "name": "RTH private existing /api/tutorial/projects/submissions cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "RTH private existing /api/tutorial/sessions/my-requests positive",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/tutorial/sessions/my-requests",
+      "method": "GET"
+    },
+    {
+      "name": "RTH private existing /api/tutorial/sessions/my-requests cache",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

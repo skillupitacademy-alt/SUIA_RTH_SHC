@@ -1,0 +1,63 @@
+{
+  "checked": "2026-11-13T07:02:13.812Z",
+  "results": [
+    {
+      "app": "API",
+      "url": "http://localhost:3000/api/health",
+      "status": null,
+      "attempts": [
+        {
+          "error": "TypeError"
+        },
+        {
+          "error": "TimeoutError"
+        },
+        {
+          "error": "TimeoutError"
+        }
+      ]
+    },
+    {
+      "app": "SHC",
+      "url": "http://skillhubcore.localhost:3007/login",
+      "status": null,
+      "attempts": [
+        {
+          "error": "TypeError"
+        },
+        {
+          "error": "TimeoutError"
+        },
+        {
+          "error": "TimeoutError"
+        }
+      ]
+    },
+    {
+      "app": "SUIA",
+      "url": "http://skillup.localhost:3009/api/healthz",
+      "status": 200,
+      "attempts": [
+        {
+          "error": "TypeError"
+        },
+        {
+          "status": 200
+        }
+      ]
+    },
+    {
+      "app": "RTH",
+      "url": "http://realtutorialhub.localhost:3003/api/healthz",
+      "status": 200,
+      "attempts": [
+        {
+          "error": "TypeError"
+        },
+        {
+          "status": 200
+        }
+      ]
+    }
+  ]
+}

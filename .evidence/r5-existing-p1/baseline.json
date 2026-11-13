@@ -1,0 +1,27 @@
+{
+  "head": "7f8c952a5a19b0e1ca04c4ed307b1a8c7abefc86",
+  "branch": "main",
+  "initialStatus": "",
+  "files": [
+    {
+      "path": "apps/api-server/src/modules/hierarchy/hierarchy-sync.service.ts",
+      "sha256": "299a78c7e1e87a8b286f3b3ae2771eefbb7301de71161ceb166a4bfaf7dddae1"
+    },
+    {
+      "path": "apps/api-server/src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts",
+      "sha256": "66460eb26c86b787a2ebc2081de6eadcba1362181dd30c1be656f4abcccd1ac2"
+    },
+    {
+      "path": "packages/db/src/schema/domain.ts",
+      "sha256": "8c3839a1a6622d099563ca31c7faaffe318a582aed9f3c5ec6b7003f62208ae7"
+    },
+    {
+      "path": "packages/db-tutorial/src/hierarchy-coordination.ts",
+      "sha256": "3899f2e0a296c32ebb01bce96f9a605039cf413f9820a24b0acde86430c6f4cf"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e"
+    }
+  ]
+}

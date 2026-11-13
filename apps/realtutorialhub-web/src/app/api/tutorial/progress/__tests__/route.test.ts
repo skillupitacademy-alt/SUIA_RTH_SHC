@@ -106,6 +106,21 @@ describe('tutorial progress route', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('forwards the exact device cookie pair and CSRF credentials to the owning API', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ data: {} }));
+    const request = new NextRequest(`http://localhost:3003/api/tutorial/progress?subtopicId=${subtopicId}`, {
+      headers: { cookie: 'accessToken=rth-token; refreshToken=device-refresh; csrfToken=device-csrf', 'x-csrf-token': 'device-csrf' },
+    });
+    await GET(request);
+    expect(fetchMock).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: 'Bearer rth-token',
+        Cookie: 'accessToken=rth-token; refreshToken=device-refresh; csrfToken=device-csrf',
+        'x-csrf-token': 'device-csrf',
+      }),
+    }));
+  });
+
   it('records a viewed block and returns the updated snapshot', async () => {
     fetchMock.mockResolvedValueOnce(
       Response.json({

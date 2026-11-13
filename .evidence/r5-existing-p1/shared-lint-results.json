@@ -1,0 +1,33 @@
+[
+  {
+    "name": "shared-source-lint-corrected",
+    "args": [
+      "exec",
+      "eslint",
+      "--config",
+      ".eslintrc.json",
+      "../../src/share-branding/middleware/authProxy.ts",
+      "--max-warnings=0"
+    ],
+    "started": "2026-11-13T06:41:30.749Z",
+    "finished": "2026-11-13T06:41:36.967Z",
+    "exitCode": 0
+  },
+  {
+    "name": "shared-test-lint-corrected",
+    "args": [
+      "exec",
+      "eslint",
+      "--no-eslintrc",
+      "--config",
+      "packages/eslint-config/index.js",
+      "--parser-options",
+      "{\"project\":null}",
+      "src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts",
+      "--max-warnings=0"
+    ],
+    "started": "2026-11-13T06:41:37.049Z",
+    "finished": "2026-11-13T06:41:38.940Z",
+    "exitCode": 0
+  }
+]

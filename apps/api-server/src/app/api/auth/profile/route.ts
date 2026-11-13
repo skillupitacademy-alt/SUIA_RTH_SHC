@@ -6,6 +6,7 @@ import { PERMISSIONS } from '@quiz/auth/rbac/permissions';
 import type { Role } from '@quiz/auth/rbac/roles';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 
 import { badRequest, notFound, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
@@ -43,21 +44,24 @@ function getRBACRoles(authRoles: string[] | undefined): Role[] {
   return normalized;
 }
 
-interface ProfileUpdateBody {
-  name?: string;
-  professionalStatus?: string;
-  educationLevel?: string;
-  ageGroup?: string;
-  experienceYears?: number;
-  domainInterest?: string[];
-  adaptiveLevel?: 'beginner' | 'intermediate' | 'advanced';
-  primaryGoal?: string;
-  domain?: string;
-  subDomain?: string;
-  timeCommitment?: string;
-  journeyStatus?: string;
-  onboardingCompleted?: boolean;
-}
+// Parse the existing mutable contract before constructing a persistence update.
+// Unknown identity, ownership and database fields are discarded here.
+const profileUpdateSchema = z.object({
+  name: z.string().optional(),
+  professionalStatus: z.string().optional(),
+  educationLevel: z.string().optional(),
+  ageGroup: z.string().optional(),
+  experienceYears: z.number().finite().optional(),
+  domainInterest: z.array(z.string()).optional(),
+  adaptiveLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  primaryGoal: z.string().optional(),
+  domain: z.string().optional(),
+  subDomain: z.string().optional(),
+  timeCommitment: z.string().optional(),
+  journeyStatus: z.string().optional(),
+  onboardingCompleted: z.boolean().optional(),
+});
+type ProfileUpdateBody = z.infer<typeof profileUpdateSchema>;
 
 async function getHandler(_req: NextRequest) {
   const perfStart = Date.now();
@@ -191,7 +195,9 @@ async function patchHandler(_req: NextRequest) {
       return ApiResponse.error(badRequest('Payload too deep or large'));
     }
 
-    const body = sanitizeJsonField(rawBody) as ProfileUpdateBody;
+    const parsedBody = profileUpdateSchema.safeParse(sanitizeJsonField(rawBody));
+    if (!parsedBody.success) return ApiResponse.error(badRequest('Invalid profile fields'));
+    const body = parsedBody.data;
     console.log(`[Profile PATCH][${correlationId}] Update fields:`, Object.keys(body));
 
     // Check if profile exists first

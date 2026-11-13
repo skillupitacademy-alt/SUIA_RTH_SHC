@@ -1,0 +1,118 @@
+{
+  "head": "7f8c952a5a19b0e1ca04c4ed307b1a8c7abefc86",
+  "environment": "Local unit/static gates. Remote tests require separate opt-in. No Docker or deployment.",
+  "results": [
+    {
+      "name": "api-targeted-tests",
+      "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts src/app/api/workers/retry-hierarchy-sync/__tests__/route.test.ts src/app/api/admin/hierarchy/sync/__tests__/route.test.ts src/app/api/auth/profile/__tests__/ownership.test.ts src/app/api/auth/me/__tests__/device-session.test.ts src/app/api/auth/sessions/__tests__/[sessionId].route.ownership.test.ts src/modules/auth/__tests__/batch-08-tenant-session-isolation.test.ts --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r5-existing-p1/api-targeted-tests.json",
+      "started": "2026-11-13T06:17:21.302Z",
+      "finished": "2026-11-13T06:17:58.210Z",
+      "exitCode": 1
+    },
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "started": "2026-11-13T06:17:58.280Z",
+      "finished": "2026-11-13T06:19:24.377Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-source-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint src/modules/hierarchy/hierarchy-sync.service.ts src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts src/modules/hierarchy/__tests__/hierarchy-reconciliation.remote.integration.test.ts src/app/api/workers/retry-hierarchy-sync/route.ts src/app/api/workers/retry-hierarchy-sync/__tests__/route.test.ts src/app/api/auth/profile/route.ts src/app/api/auth/profile/__tests__/ownership.test.ts --max-warnings=0",
+      "started": "2026-11-13T06:19:24.433Z",
+      "finished": "2026-11-13T06:24:25.250Z",
+      "exitCode": 1
+    },
+    {
+      "name": "db-tutorial-typecheck",
+      "command": "pnpm --filter @quiz/db-tutorial type-check",
+      "started": "2026-11-13T06:24:25.338Z",
+      "finished": "2026-11-13T06:24:59.197Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shared-proxy-tests",
+      "command": "pnpm exec vitest run src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts src/share-branding/middleware/__tests__/learner-mutation-origin.test.ts --exclude **/.worktrees/** --maxWorkers=1 --reporter=json --outputFile=.evidence/r5-existing-p1/shared-proxy-tests.json",
+      "started": "2026-11-13T06:24:59.328Z",
+      "finished": "2026-11-13T06:25:51.255Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shared-source-lint",
+      "command": "pnpm exec eslint src/share-branding/middleware/authProxy.ts src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts --max-warnings=0",
+      "started": "2026-11-13T06:25:51.406Z",
+      "finished": "2026-11-13T06:26:10.837Z",
+      "exitCode": 2
+    },
+    {
+      "name": "skillup-web-tests",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r5-existing-p1/skillup-web-tests.json",
+      "started": "2026-11-13T06:26:11.223Z",
+      "finished": "2026-11-13T06:28:18.965Z",
+      "exitCode": 1
+    },
+    {
+      "name": "realtutorialhub-web-tests",
+      "command": "pnpm --filter @quiz/realtutorialhub-web exec vitest run --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r5-existing-p1/realtutorialhub-web-tests.json",
+      "started": "2026-11-13T06:28:19.042Z",
+      "finished": "2026-11-13T06:31:21.175Z",
+      "exitCode": 1
+    },
+    {
+      "name": "shc-security",
+      "command": "pnpm --filter @quiz/skillhubcore-admin test:security",
+      "started": "2026-11-13T06:31:21.256Z",
+      "finished": "2026-11-13T06:31:59.037Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-boundaries",
+      "command": "pnpm --filter @quiz/skillhubcore-admin check:boundaries",
+      "started": "2026-11-13T06:31:59.099Z",
+      "finished": "2026-11-13T06:32:01.566Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+      "started": "2026-11-13T06:32:01.641Z",
+      "finished": "2026-11-13T06:35:08.949Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "started": "2026-11-13T06:35:09.058Z",
+      "finished": "2026-11-13T06:37:38.034Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-typecheck",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-13T06:37:38.193Z",
+      "finished": "2026-11-13T06:39:24.624Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-lint",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "started": "2026-11-13T06:39:24.693Z",
+      "finished": "2026-11-13T06:41:07.158Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-typecheck",
+      "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+      "started": "2026-11-13T06:41:07.210Z",
+      "finished": "2026-11-13T06:41:34.514Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-lint",
+      "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+      "started": "2026-11-13T06:41:34.702Z",
+      "finished": "2026-11-13T06:41:42.660Z",
+      "exitCode": 0
+    }
+  ]
+}

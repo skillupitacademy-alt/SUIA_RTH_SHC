@@ -1,0 +1,63 @@
+{
+  "boundary": "Actual existing HierarchySyncService and MainDB lock helper against real remote PostgreSQL transactions. Provider injection selects connections and explicit transport/transaction faults. Exact run-owned UUIDs only. No schema changes or blanket reconciliation.",
+  "tag": "r5-reconcile-8289b568-b2f4-4f43-b2db-da973a5a26cb",
+  "observations": [
+    {
+      "scenario": "missing domain repaired and post-commit observed",
+      "passed": true
+    },
+    {
+      "scenario": "complete chain repair and idempotent unchanged timestamps",
+      "passed": true
+    },
+    {
+      "scenario": "stale canonical name and wrong parent fixed with identity retention",
+      "passed": true
+    },
+    {
+      "scenario": "inactive and soft-deleted MainDB sources excluded",
+      "passed": true
+    },
+    {
+      "scenario": "retained deleted TutorialDB mapping stays deleted",
+      "passed": true
+    },
+    {
+      "scenario": "transport outage and rediscovery recovery",
+      "passed": true
+    },
+    {
+      "scenario": "real TutorialDB rollback and safe retry",
+      "passed": true
+    },
+    {
+      "scenario": "cross-database partial completion remains safe and honestly reported",
+      "passed": true
+    },
+    {
+      "scenario": "delete-first race cannot create an orphan mapping",
+      "passed": true
+    },
+    {
+      "scenario": "write-first real transaction retains ancestor lock until commit",
+      "passed": true
+    },
+    {
+      "scenario": "actual PostgreSQL lock timeout and later recovery",
+      "passed": true
+    },
+    {
+      "scenario": "post-commit comparison detects changed state and retries safely",
+      "passed": true
+    },
+    {
+      "scenario": "bounded stable cursor over explicitly scoped entities",
+      "passed": true
+    },
+    {
+      "scenario": "actual local worker HTTP real QStash cryptography and real scoped repair",
+      "passed": true
+    }
+  ],
+  "cleanupVerified": true
+}
