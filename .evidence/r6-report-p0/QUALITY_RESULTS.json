@@ -1,0 +1,26 @@
+{
+  "provenance": "Owner-reported be6d1f1430304187792841ed9852616661b89a90; local file hashes in baseline.json. All HTTP in these tests is mocked.",
+  "results": [
+    {
+      "name": "exam-and-receiver-final",
+      "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/exam-engine/__tests__ src/app/api/generate-report/__tests__/report-auth.test.ts --pool=threads --maxWorkers=1 --reporter=verbose",
+      "started": "2026-11-13T17:08:59.295Z",
+      "finished": "2026-11-13T17:09:08.369Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "started": "2026-11-13T17:09:08.372Z",
+      "finished": "2026-11-13T17:09:11.931Z",
+      "exitCode": 0
+    },
+    {
+      "name": "affected-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint --no-ignore src/modules/exam-engine/exam.observer.ts src/modules/exam-engine/__tests__/exam.observer.tail.test.ts src/app/api/generate-report/__tests__/report-auth.test.ts --max-warnings=0",
+      "started": "2026-11-13T17:09:11.932Z",
+      "finished": "2026-11-13T17:09:17.606Z",
+      "exitCode": 0
+    }
+  ]
+}

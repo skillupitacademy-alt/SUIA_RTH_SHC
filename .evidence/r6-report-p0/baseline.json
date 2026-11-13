@@ -1,0 +1,95 @@
+{
+  "captured": "2026-11-13T16:58:58.628Z",
+  "ownerReportedCommit": "be6d1f1430304187792841ed9852616661b89a90",
+  "provenance": "Owner-reported commit. Current local bytes independently hashed. Git CLI not used and local HEAD not asserted.",
+  "files": [
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "sha256": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-audience.util.ts",
+      "sha256": "39e6ee9dfcf5078baa782c7d43ef4359e07d3e550e43059c74f1a86e73a5c804"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-admin-verification.test.ts",
+      "sha256": "c75e6de09c3036ae346b6def0eed4961e4a1b217d27463417cd27fc700169f22"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-02-admin-guard.test.ts",
+      "sha256": "9e6c26a05d6212ab71a183d8982f8c553bb7e5956162644d1fa1fd23132620f1"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.engine.ts",
+      "sha256": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.gap.test.ts",
+      "sha256": "8027f995ed825c5b07bcfac8eb7388641a06cc954563688dd49500b9d33fdf97"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.test.ts",
+      "sha256": "fbecf1d3efdb8d7c67b30c6fdc322d3affeb0a18ade9be1d1ab11f962c606035"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.tail2.test.ts",
+      "sha256": "3349dec84f4c329554bb7f1d00cadf66fae83f3ac86d3609ada33a02d48e886f"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.test.ts",
+      "sha256": "bb6a3d634f7f2982a32c0b93ff9ea70555c08cbed40789c9e3687e4ebc43f1ab"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.phase3.test.ts",
+      "sha256": "0e0e827270c774ce49e588b2afaa519575f2426fa67ae67ef98267692063982d"
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c"
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/r6-session-cancellation.test.ts",
+      "sha256": "9b8807c5e8155d76358bfebe4e7a6f15bdd17bf1db0e61772442f9034f374596"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/__tests__/r6-action-authorization.test.ts",
+      "sha256": "4dba871e372f8703e9fce61c2c01f036e4ab18f656889d24adc3a664882b973d"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/__tests__/r6-cancellation-security.test.ts",
+      "sha256": "74836a77502dbc9d251ff10d30f48f4d433959ac87c56dde25f927cb4bf642dc"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "sha256": "e11efc67bc93c4261ef3f408ed3002ad62d58f0cc45b65882ffcd85ab06b70a2"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.observer.tail.test.ts",
+      "sha256": "aed995cc3dc1c854d49a4ec8b3035c1ea007222dddbfd0ccf41f694eb254138d"
+    },
+    {
+      "path": "apps/api-server/src/app/api/generate-report/route.ts",
+      "sha256": "f10959642e0bf6a49d3ea729497fcfa1706f27aa984d410ca08c81250318162b"
+    },
+    {
+      "path": "apps/api-server/src/lib/event-bus.ts",
+      "sha256": "004fb06bd45327f7018cda2c00823b5cd3ec2ef5253dd951df882ac996aa76b2"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e"
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/ENGINEERING_AND_EXCEPTIONS.md",
+      "sha256": "2937158952dafc035b3aea11ac15d789c206951db28323d01b1928fe2f644319"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/OWNER_DECISIONS_AND_HOLDS.md",
+      "sha256": "d7afa58fcf7f845c9f0c208a48f02fd23f4081f9759798eb2be66377de7cbb7f"
+    }
+  ]
+}

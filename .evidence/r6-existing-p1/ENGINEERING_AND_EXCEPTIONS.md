@@ -27,3 +27,9 @@ The answer authorization fixes do not establish serializable concurrent answer-v
 Canonical SHCA criteria and PSEG criterion families have separate identities. The derived evidence does not edit or replace either the62-row ledger or original48-task register. PSEG-001 retains its working/proposed status under the governing precedence.
 
 Automatic continuation, MainDB identity schema changes, report-generator replacement, new services and infrastructure are outside the current R6-A implementation. Attendance/payment/Marketing/accessibility work retains HOLD. No canonical acceptance status is promoted by these engineering observations.
+
+## Later owner-authorized P0 correction — 13 November 2026
+
+The report-trigger credential and endpoint exception above received a separate, narrowly scoped source/test authorization. The existing observer now requires both configured values, emits no request when either is absent or invalid, resolves the existing report endpoint from the explicit API base, blocks redirects and contains failures with sanitized diagnostics. Optional triggering does not delay or reject exam completion. The receiver's authorization and ownership implementation is preserved.
+
+The expanded full exam-engine directory and new receiver tests pass 131/131 across 25 files. This consists of 123 engine tests and 8 receiver tests. All report HTTP, PDF and persistence boundaries in these tests are controlled doubles. Earlier failing receipts remain historical evidence. Current quality/build receipts and source hashes are recorded under `.evidence/r6-report-p0`, with the focused report at `docs/architecture/reviews/SHC/SOL_R6_A_REPORT_GENERATION_P0_REVIEW.md`. That addendum supersedes only the report-trigger source/test exception. It does not qualify live PDF delivery, close the SUIA cold-start 500, promote the authorization matrix or amend owner acceptance.

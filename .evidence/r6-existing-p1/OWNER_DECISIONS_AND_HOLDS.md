@@ -12,3 +12,7 @@
 | Migrations, infrastructure, Git mutation, release | OWNER CONTROLLED | Q48 remains OPEN. No deployment acceptance inferred from local builds. |
 
 The initial read-only Git provenance commands preceded reading the attachment's literal prohibition on every Git CLI operation. This is a recorded execution deviation. Subsequent provenance uses file hashes. The source manifest documents the initial omission of root shared-source hashes and separately records the edited proxy and new tests.
+
+## Later P0 disposition — 13 November 2026
+
+The owner separately authorized the existing report-trigger credential and endpoint correction. Its source and mocked security/compatibility tests are now implemented. Missing internal key or API URL causes a sanitized diagnostic and zero outbound requests. A legitimate configured request retains the existing report endpoint and receiver authentication. Full engine plus receiver tests pass 131/131. Exact completed typecheck, lint and build outcomes are recorded in `.evidence/r6-report-p0`. The focused P0 review supersedes the report-generator decision row above only to the extent supported by those receipts. The original cold-start 500, identity decisions, remaining method evidence and Q48 acceptance gates retain their prior scope. No broader implementation is authorized by this disposition.

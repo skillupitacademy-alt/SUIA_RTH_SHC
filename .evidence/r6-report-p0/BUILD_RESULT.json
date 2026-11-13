@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter @quiz/api-server build",
+  "started": "2026-11-13T17:09:51.710Z",
+  "finished": "2026-11-13T17:13:17.904Z",
+  "exitCode": 0,
+  "boundary": "Local production compile only. Existing Project LLM isolated execution setting and empty Sentry upload credential prevent provider execution/upload. No database commands, Docker image or deployment."
+}

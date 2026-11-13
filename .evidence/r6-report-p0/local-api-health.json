@@ -1,0 +1,6 @@
+{
+  "url": "http://localhost:3000/api/health",
+  "status": 200,
+  "timestamp": "2026-11-13T17:14:24.396Z",
+  "boundary": "Read-only local health request. Report endpoint not invoked."
+}

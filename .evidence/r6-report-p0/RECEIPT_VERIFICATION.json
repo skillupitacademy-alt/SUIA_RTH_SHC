@@ -1,0 +1,139 @@
+{
+  "captured": "2026-11-13T17:14:43.691Z",
+  "configuredCredentialFindings": [],
+  "limitation": "Exact configured-secret substring checks only. Synthetic test tokens and invalid credential-bearing URL fixtures are intentional mock inputs.",
+  "receipts": [
+    {
+      "file": "affected-lint-initial.log",
+      "sha256": "e550421377efec817d0e15482bae9a91e25720b82dc2d5478d15828dbb4db4eb"
+    },
+    {
+      "file": "affected-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "api-build.log",
+      "sha256": "dc7bc150d42f1d2a192b246c4152c3f5adb80ecdcc3a6c115f3b659922f91c9a"
+    },
+    {
+      "file": "api-local-dev.log",
+      "sha256": "c4813665e28bb2df92045b8d7d850350010dac71cd8ed5e599477c6a3d155548"
+    },
+    {
+      "file": "api-local-runtime-config.json",
+      "sha256": "91b23a7fc9a170b988aec2d6d42db42c9411105e0aa54c1afbcf418d25a33488"
+    },
+    {
+      "file": "api-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "baseline.json",
+      "sha256": "d78ddccf5bcf3b801e17ea25e4ae911bfc7fd1e204c56823e5777c47f4d870eb"
+    },
+    {
+      "file": "BUILD_RESULT.json",
+      "sha256": "6da658cfb996b54055825181676201384036ca0a3aaa54c6921eaed5fb3cc8a4"
+    },
+    {
+      "file": "exam-and-receiver-final.log",
+      "sha256": "2fdf919106ed8b58471887178427555cfbe3227205536a4edf5a6831be080bb8"
+    },
+    {
+      "file": "exam-and-receiver-initial.exit",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "file": "exam-and-receiver-initial.log",
+      "sha256": "c9751c07824451f0d8afafb28283097efd4db73a0c4707399f0b4750c294d656"
+    },
+    {
+      "file": "exam-and-receiver-tests.exit",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "file": "exam-and-receiver-tests.log",
+      "sha256": "c9751c07824451f0d8afafb28283097efd4db73a0c4707399f0b4750c294d656"
+    },
+    {
+      "file": "FINAL_SOURCE_AND_SCOPE.json",
+      "sha256": "0c173843c9c788f132f8c49e1218b6b7e9494fd431531b157da910c341f33020"
+    },
+    {
+      "file": "graphify-update-final.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "graphify-update-final.log",
+      "sha256": "304e3fa19f7344b799e088015ad47849c77db39e323d2a19e1dbfacb759e35e2"
+    },
+    {
+      "file": "graphify-update.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "graphify-update.log",
+      "sha256": "6ac235060ccf7f8bfbd74b0e4e86d334ab9c20f1d221859b98d1bffec063f0fc"
+    },
+    {
+      "file": "HISTORICAL_RECEIPT_PRESERVATION.json",
+      "sha256": "ebeb507fccf40bb21f90f8f75a3306eb244288df603881b5f763785c64f4d9db"
+    },
+    {
+      "file": "intermediate-restart-processes.json",
+      "sha256": "d9def100d223bfff511ed8e1bef89deb4fe547e9cc8c9f354ae3ed743cd1c2ea"
+    },
+    {
+      "file": "intermediate-restart.log",
+      "sha256": "59fd3a655ccafdfcd22db1d9d913125dd83abc61e0267dfdd6b2fee375e4d58d"
+    },
+    {
+      "file": "local-api-build-stop.json",
+      "sha256": "d037eea1d9ff6e4c4d9fad0ed4e12470fa522a1d361e1d8c9c303ffa26a02b3f"
+    },
+    {
+      "file": "local-api-health.json",
+      "sha256": "390f874d6b031c9a3d0eb21eab77e788463f4ce03637224d5646eebe520fcce9"
+    },
+    {
+      "file": "observer-after.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "observer-after.log",
+      "sha256": "4f3459a01474355db988611d990ba411f546df867bbf20aeafa0ffc7394330b8"
+    },
+    {
+      "file": "observer-before.exit",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "file": "observer-before.log",
+      "sha256": "bfe54d1713601b23070b8f5c68f0dc7b535d699132b7bde8c3b41127a874789d"
+    },
+    {
+      "file": "observer-tail-before.ts.txt",
+      "sha256": "aed995cc3dc1c854d49a4ec8b3035c1ea007222dddbfd0ccf41f694eb254138d"
+    },
+    {
+      "file": "prior-receipt-hashes.json",
+      "sha256": "b86605f3338663282d8fa58d1d40b43a4e001a82764ad99cdfabc8914f6d01e8"
+    },
+    {
+      "file": "QUALITY_INITIAL_RESULTS.json",
+      "sha256": "559aee2198014c6a956624a64159ad0b9dce98d2ecbbc00ae03328c103f89bfd"
+    },
+    {
+      "file": "QUALITY_RESULTS.json",
+      "sha256": "8aebe69e36ff696889d733df4699be108432ebc73bdb84ca5601bf433be85181"
+    },
+    {
+      "file": "receiver-and-timeout-rerun.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "receiver-and-timeout-rerun.log",
+      "sha256": "223ae8a808ddd4a504c9b5765338fe641e805430f9b82f78ec048e8f8aa10e4c"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "file": "api-local-runtime-config.json",
+    "sha256": "9ab5945040e219f3272844d92e451eda39e2e79aaf364caab1d61fb18727d750"
+  },
+  {
+    "file": "api-local-dev.log",
+    "sha256": "e6b0e3a248394dfcf78d32347d9a5c0a0491a67d0b6db4d998ad25b1bab774ff"
+  }
+]
