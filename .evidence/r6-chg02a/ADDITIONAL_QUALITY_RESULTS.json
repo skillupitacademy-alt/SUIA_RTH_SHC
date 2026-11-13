@@ -1,0 +1,18 @@
+{
+  "results": [
+    {
+      "name": "service-build",
+      "command": "pnpm --filter @quiz/skillhubcore-service build",
+      "started": "2026-11-13T18:44:33.173Z",
+      "finished": "2026-11-13T18:44:35.506Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-typecheck",
+      "command": "pnpm --filter @quiz/db-people type-check",
+      "started": "2026-11-13T18:44:35.572Z",
+      "finished": "2026-11-13T18:44:38.920Z",
+      "exitCode": 0
+    }
+  ]
+}

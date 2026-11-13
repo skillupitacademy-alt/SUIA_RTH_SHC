@@ -1,0 +1,729 @@
+{
+  "captured": "2026-11-13T18:48:48.108Z",
+  "baselineHead": "db2f5a6d0db1fb2f8ee7ae56942030b87c76898a",
+  "headNow": "db2f5a6d0db1fb2f8ee7ae56942030b87c76898a",
+  "modifiedSourceAndTests": [
+    {
+      "path": "packages/types/src/tutorial-repositories.types.ts",
+      "sha256": "595d2fb9d4fb70aa50c448737b9b0d8a604a7d38fac1e6d78f1ad9f685540564",
+      "before": "1098f2d649509878a501a518249af0462b037c9438fc2fddd716c59862ce5fdf"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "sha256": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+      "before": "8a6c5ba82789a75bf590825d37a93f7fe6ddb7de1c9c2da19515270ef8faeff7"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "sha256": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "before": "a39fa6105f1fbb8efa22268c89a211e7e4ffd5493586fac33393f6f8b7764b8e"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.routes.ts",
+      "sha256": "f24e476178eb5b6d57758f0d54666eafd71f35159e8e8bcd00a1bf3e06205b88",
+      "before": "09c43394fdcab4a77495075457cbcb0c04549466e51e4f979074eaf060b6ab67"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts",
+      "sha256": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+      "before": "2c49e8040286751f7e9cf9fe9784702fe04cf8bd4d2114acf52b0110560bb90b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/__tests__/auth.service.test.ts",
+      "sha256": "63209740dacce0e62d66f660d1eeda801688d30bc74885497b0b37295c179b2d"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/__tests__/token-rotation.service.test.ts",
+      "sha256": "5030c53ff3ffbba0d56a476e1be9bc7e5798dcbacedd521579e3d0304246618f"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/__tests__/user.repository.test.ts",
+      "sha256": "739daaca9132c2da2611b834735be8b1174c08ae1a47bb2926ed588c7cf3ef71"
+    }
+  ],
+  "protectedSourceComparisons": [
+    {
+      "path": "apps/skillup-web/src/app/api/batches/route.ts",
+      "expected": "a0091bc80252b449c015ab504b8dd67b8b703732372332ec26c8c8db82205c8b",
+      "current": "a0091bc80252b449c015ab504b8dd67b8b703732372332ec26c8c8db82205c8b",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "expected": "ebfd41f1c1a01dfe6740548549f81861bb8bb4a3ff3b90c47a417c5f5402327a",
+      "current": "ebfd41f1c1a01dfe6740548549f81861bb8bb4a3ff3b90c47a417c5f5402327a",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/route.ts",
+      "expected": "8916a0a2d7734a605bf8344fb1d3914008626cc338d5abbe12167e2383dd62b4",
+      "current": "8916a0a2d7734a605bf8344fb1d3914008626cc338d5abbe12167e2383dd62b4",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "expected": "ff88a9cb986c9a0dda47b99deb128c38d7c14e33392865d12eb6fa145b0ab660",
+      "current": "ff88a9cb986c9a0dda47b99deb128c38d7c14e33392865d12eb6fa145b0ab660",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "expected": "2f8f4c99d80c9fe3ebc97d91fb81ddbb4aca1cf00ef8ad31e49f3abc4a3c83a8",
+      "current": "2f8f4c99d80c9fe3ebc97d91fb81ddbb4aca1cf00ef8ad31e49f3abc4a3c83a8",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "expected": "37b8e8152c168ac67b1b7bf16a0a1e6d60db8838f9b8d4efbf471fdc4b5eb161",
+      "current": "37b8e8152c168ac67b1b7bf16a0a1e6d60db8838f9b8d4efbf471fdc4b5eb161",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "expected": "a023938647e082d330b261baf9f438c354e2d081776a0456580c7d9c12393737",
+      "current": "a023938647e082d330b261baf9f438c354e2d081776a0456580c7d9c12393737",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/__tests__/private-cache.test.ts",
+      "expected": "cddba1dced245d7c1e3dfee20ef13ff20f8a9800c2f8a70855208483874bc0ab",
+      "current": "cddba1dced245d7c1e3dfee20ef13ff20f8a9800c2f8a70855208483874bc0ab",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "expected": "e6e176ce747c179ebc8deb9687c5be2f9595d9e5de38982e2f4d4535700ac7bb",
+      "current": "e6e176ce747c179ebc8deb9687c5be2f9595d9e5de38982e2f4d4535700ac7bb",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "expected": "1002585ea362bfb7f331f542505823f1a322cbadfb597f3a863c1695624ca49c",
+      "current": "1002585ea362bfb7f331f542505823f1a322cbadfb597f3a863c1695624ca49c",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.test.ts",
+      "expected": "2856a6854a1d34625a4eb0c7163f2c3a92eea86a8e9b5d0728a464e6b0e848c2",
+      "current": "2856a6854a1d34625a4eb0c7163f2c3a92eea86a8e9b5d0728a464e6b0e848c2",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "expected": "09ff6f5809b97db275722638ddd87db03c6f6a006e8d01f83412ad3ac208b0b5",
+      "current": "09ff6f5809b97db275722638ddd87db03c6f6a006e8d01f83412ad3ac208b0b5",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "expected": "bd9044a11288c99ef1ef9b7f4e48e1a97e1f4f7e8546d821efe3ed03a9e4e830",
+      "current": "bd9044a11288c99ef1ef9b7f4e48e1a97e1f4f7e8546d821efe3ed03a9e4e830",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "expected": "00d825fe331811b525fc954787b2516715258364893817336c7da2f964f85c70",
+      "current": "00d825fe331811b525fc954787b2516715258364893817336c7da2f964f85c70",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "expected": "768f0883ab4f1b70eadf021fcadbbae0ab2bcc7517de5def028133cf3dbfccce",
+      "current": "768f0883ab4f1b70eadf021fcadbbae0ab2bcc7517de5def028133cf3dbfccce",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/__tests__/boundary.test.ts",
+      "expected": "3e2d5c3c26a603cc1a265105a5b17bb67a9ed145822c44bcea521085ec94dd73",
+      "current": "3e2d5c3c26a603cc1a265105a5b17bb67a9ed145822c44bcea521085ec94dd73",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "expected": "15812e9a1dbe629637d3b961bbd68f9ae4349c7af7c72764e567b48b90d2a3ba",
+      "current": "15812e9a1dbe629637d3b961bbd68f9ae4349c7af7c72764e567b48b90d2a3ba",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/__tests__/boundary.test.ts",
+      "expected": "8595c159d13baf7a132181ebb0a238454063bf083ad2f7ca73c196f891a40f1f",
+      "current": "8595c159d13baf7a132181ebb0a238454063bf083ad2f7ca73c196f891a40f1f",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "expected": "a1ee28be8a7092f9553edf85ab836ecfe0ddd0e1884a5faee378b6d6b723ac5e",
+      "current": "a1ee28be8a7092f9553edf85ab836ecfe0ddd0e1884a5faee378b6d6b723ac5e",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "expected": "c78c92475a241d50a8bef1a7edb94b6d0720bacc02a91711bf67bf6b91fb2898",
+      "current": "c78c92475a241d50a8bef1a7edb94b6d0720bacc02a91711bf67bf6b91fb2898",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.test.ts",
+      "expected": "bcbb2fcf31a6621657e4a3e83b08db659e96ba28969e657d4c6a378c770fc665",
+      "current": "bcbb2fcf31a6621657e4a3e83b08db659e96ba28969e657d4c6a378c770fc665",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "expected": "3c8ce082bf38e7cbd8926bb7643006f617f77388207ed18d2155a1584db0aabf",
+      "current": "3c8ce082bf38e7cbd8926bb7643006f617f77388207ed18d2155a1584db0aabf",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "expected": "e49c21c0a9dfd6e24ae20a74b2bec41a2f494510fd1893646ee6c1dd1b56f1ef",
+      "current": "e49c21c0a9dfd6e24ae20a74b2bec41a2f494510fd1893646ee6c1dd1b56f1ef",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/__tests__/routes.test.ts",
+      "expected": "0d2d7e213ba270f15d97239fb36a19c57dc9d1334c95085dcb0548be2211629c",
+      "current": "0d2d7e213ba270f15d97239fb36a19c57dc9d1334c95085dcb0548be2211629c",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.test.ts",
+      "expected": "c6e23ea9467a54b48e146f0033f810dd673c70e096008c4e442e884c8d3d8bbf",
+      "current": "c6e23ea9467a54b48e146f0033f810dd673c70e096008c4e442e884c8d3d8bbf",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "expected": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "current": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "matches": true
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "expected": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980",
+      "current": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-audience.util.ts",
+      "expected": "39e6ee9dfcf5078baa782c7d43ef4359e07d3e550e43059c74f1a86e73a5c804",
+      "current": "39e6ee9dfcf5078baa782c7d43ef4359e07d3e550e43059c74f1a86e73a5c804",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-admin-verification.test.ts",
+      "expected": "c75e6de09c3036ae346b6def0eed4961e4a1b217d27463417cd27fc700169f22",
+      "current": "c75e6de09c3036ae346b6def0eed4961e4a1b217d27463417cd27fc700169f22",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-02-admin-guard.test.ts",
+      "expected": "9e6c26a05d6212ab71a183d8982f8c553bb7e5956162644d1fa1fd23132620f1",
+      "current": "9e6c26a05d6212ab71a183d8982f8c553bb7e5956162644d1fa1fd23132620f1",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.engine.ts",
+      "expected": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "current": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.gap.test.ts",
+      "expected": "8027f995ed825c5b07bcfac8eb7388641a06cc954563688dd49500b9d33fdf97",
+      "current": "8027f995ed825c5b07bcfac8eb7388641a06cc954563688dd49500b9d33fdf97",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.test.ts",
+      "expected": "fbecf1d3efdb8d7c67b30c6fdc322d3affeb0a18ade9be1d1ab11f962c606035",
+      "current": "fbecf1d3efdb8d7c67b30c6fdc322d3affeb0a18ade9be1d1ab11f962c606035",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.tail2.test.ts",
+      "expected": "3349dec84f4c329554bb7f1d00cadf66fae83f3ac86d3609ada33a02d48e886f",
+      "current": "3349dec84f4c329554bb7f1d00cadf66fae83f3ac86d3609ada33a02d48e886f",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.test.ts",
+      "expected": "bb6a3d634f7f2982a32c0b93ff9ea70555c08cbed40789c9e3687e4ebc43f1ab",
+      "current": "bb6a3d634f7f2982a32c0b93ff9ea70555c08cbed40789c9e3687e4ebc43f1ab",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.phase3.test.ts",
+      "expected": "0e0e827270c774ce49e588b2afaa519575f2426fa67ae67ef98267692063982d",
+      "current": "0e0e827270c774ce49e588b2afaa519575f2426fa67ae67ef98267692063982d",
+      "matches": true
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "expected": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "current": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "matches": true
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/r6-session-cancellation.test.ts",
+      "expected": "9b8807c5e8155d76358bfebe4e7a6f15bdd17bf1db0e61772442f9034f374596",
+      "current": "9b8807c5e8155d76358bfebe4e7a6f15bdd17bf1db0e61772442f9034f374596",
+      "matches": true
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/__tests__/r6-action-authorization.test.ts",
+      "expected": "4dba871e372f8703e9fce61c2c01f036e4ab18f656889d24adc3a664882b973d",
+      "current": "4dba871e372f8703e9fce61c2c01f036e4ab18f656889d24adc3a664882b973d",
+      "matches": true
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/__tests__/r6-cancellation-security.test.ts",
+      "expected": "74836a77502dbc9d251ff10d30f48f4d433959ac87c56dde25f927cb4bf642dc",
+      "current": "74836a77502dbc9d251ff10d30f48f4d433959ac87c56dde25f927cb4bf642dc",
+      "matches": true
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "expected": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980",
+      "current": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-audience.util.ts",
+      "expected": "39e6ee9dfcf5078baa782c7d43ef4359e07d3e550e43059c74f1a86e73a5c804",
+      "current": "39e6ee9dfcf5078baa782c7d43ef4359e07d3e550e43059c74f1a86e73a5c804",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-admin-verification.test.ts",
+      "expected": "c75e6de09c3036ae346b6def0eed4961e4a1b217d27463417cd27fc700169f22",
+      "current": "c75e6de09c3036ae346b6def0eed4961e4a1b217d27463417cd27fc700169f22",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-02-admin-guard.test.ts",
+      "expected": "9e6c26a05d6212ab71a183d8982f8c553bb7e5956162644d1fa1fd23132620f1",
+      "current": "9e6c26a05d6212ab71a183d8982f8c553bb7e5956162644d1fa1fd23132620f1",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.engine.ts",
+      "expected": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "current": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.gap.test.ts",
+      "expected": "8027f995ed825c5b07bcfac8eb7388641a06cc954563688dd49500b9d33fdf97",
+      "current": "8027f995ed825c5b07bcfac8eb7388641a06cc954563688dd49500b9d33fdf97",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.branch.test.ts",
+      "expected": "fbecf1d3efdb8d7c67b30c6fdc322d3affeb0a18ade9be1d1ab11f962c606035",
+      "current": "fbecf1d3efdb8d7c67b30c6fdc322d3affeb0a18ade9be1d1ab11f962c606035",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.tail2.test.ts",
+      "expected": "3349dec84f4c329554bb7f1d00cadf66fae83f3ac86d3609ada33a02d48e886f",
+      "current": "3349dec84f4c329554bb7f1d00cadf66fae83f3ac86d3609ada33a02d48e886f",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.engine.test.ts",
+      "expected": "bb6a3d634f7f2982a32c0b93ff9ea70555c08cbed40789c9e3687e4ebc43f1ab",
+      "current": "bb6a3d634f7f2982a32c0b93ff9ea70555c08cbed40789c9e3687e4ebc43f1ab",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.phase3.test.ts",
+      "expected": "0e0e827270c774ce49e588b2afaa519575f2426fa67ae67ef98267692063982d",
+      "current": "0e0e827270c774ce49e588b2afaa519575f2426fa67ae67ef98267692063982d",
+      "matches": true
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "expected": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "current": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "matches": true
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/r6-session-cancellation.test.ts",
+      "expected": "9b8807c5e8155d76358bfebe4e7a6f15bdd17bf1db0e61772442f9034f374596",
+      "current": "9b8807c5e8155d76358bfebe4e7a6f15bdd17bf1db0e61772442f9034f374596",
+      "matches": true
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/__tests__/r6-action-authorization.test.ts",
+      "expected": "4dba871e372f8703e9fce61c2c01f036e4ab18f656889d24adc3a664882b973d",
+      "current": "4dba871e372f8703e9fce61c2c01f036e4ab18f656889d24adc3a664882b973d",
+      "matches": true
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/__tests__/r6-cancellation-security.test.ts",
+      "expected": "74836a77502dbc9d251ff10d30f48f4d433959ac87c56dde25f927cb4bf642dc",
+      "current": "74836a77502dbc9d251ff10d30f48f4d433959ac87c56dde25f927cb4bf642dc",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "expected": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "current": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/__tests__/exam.observer.tail.test.ts",
+      "expected": "0a9d2e1b7ec555bdf8ba370e74a240dc6a43c81887ff64861f6f689ab0f6e817",
+      "current": "0a9d2e1b7ec555bdf8ba370e74a240dc6a43c81887ff64861f6f689ab0f6e817",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/app/api/generate-report/route.ts",
+      "expected": "f10959642e0bf6a49d3ea729497fcfa1706f27aa984d410ca08c81250318162b",
+      "current": "f10959642e0bf6a49d3ea729497fcfa1706f27aa984d410ca08c81250318162b",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/lib/event-bus.ts",
+      "expected": "004fb06bd45327f7018cda2c00823b5cd3ec2ef5253dd951df882ac996aa76b2",
+      "current": "004fb06bd45327f7018cda2c00823b5cd3ec2ef5253dd951df882ac996aa76b2",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "expected": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "current": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/next-env.d.ts",
+      "expected": "7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651",
+      "current": "7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651",
+      "matches": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "expected": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "current": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "matches": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "expected": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "current": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "matches": true
+    }
+  ],
+  "protectedMismatches": [],
+  "quality": {
+    "baseline": "db2f5a6d0db1fb2f8ee7ae56942030b87c76898a",
+    "environment": "Controlled in-memory persistence, mocked providers, disposable signing keys; DB/Redis/QStash environment removed.",
+    "results": [
+      {
+        "name": "auth-tests",
+        "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts --reporter=verbose",
+        "started": "2026-11-13T18:45:24.684Z",
+        "finished": "2026-11-13T18:45:35.017Z",
+        "exitCode": 0
+      },
+      {
+        "name": "typecheck",
+        "command": "pnpm --filter @quiz/skillhubcore-service type-check",
+        "started": "2026-11-13T18:45:35.020Z",
+        "finished": "2026-11-13T18:45:37.510Z",
+        "exitCode": 0
+      },
+      {
+        "name": "lint",
+        "command": "pnpm --filter @quiz/skillhubcore-service lint",
+        "started": "2026-11-13T18:45:37.511Z",
+        "finished": "2026-11-13T18:45:41.141Z",
+        "exitCode": 0
+      },
+      {
+        "name": "types-lint",
+        "command": "pnpm exec eslint --no-ignore --config packages/eslint-config/index.js --max-warnings=0 packages/types/src/tutorial-repositories.types.ts",
+        "started": "2026-11-13T18:45:41.146Z",
+        "finished": "2026-11-13T18:45:42.798Z",
+        "exitCode": 1
+      },
+      {
+        "name": "chg01b-regressions",
+        "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts --pool=threads --maxWorkers=1 --reporter=verbose",
+        "started": "2026-11-13T18:45:42.799Z",
+        "finished": "2026-11-13T18:45:44.690Z",
+        "exitCode": 0
+      }
+    ]
+  },
+  "additionalQuality": {
+    "results": [
+      {
+        "name": "service-build",
+        "command": "pnpm --filter @quiz/skillhubcore-service build",
+        "started": "2026-11-13T18:44:33.173Z",
+        "finished": "2026-11-13T18:44:35.506Z",
+        "exitCode": 0
+      },
+      {
+        "name": "people-typecheck",
+        "command": "pnpm --filter @quiz/db-people type-check",
+        "started": "2026-11-13T18:44:35.572Z",
+        "finished": "2026-11-13T18:44:38.920Z",
+        "exitCode": 0
+      }
+    ]
+  },
+  "shcCompatibility": {
+    "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/auth/__tests__/batch-08-shc-session-binding.test.ts --reporter=verbose",
+    "started": "2026-11-13T18:47:08.275Z",
+    "finished": "2026-11-13T18:47:11.356Z",
+    "exitCode": 0,
+    "classification": "Existing mocked SHC login/logout compatibility tests, no real database or browser request."
+  },
+  "finalServiceBuildExit": 0,
+  "graphifyExit": 0,
+  "tests": {
+    "service": 38,
+    "chg01b": 38,
+    "shc": 3,
+    "total": 79
+  },
+  "sharedTypesLint": {
+    "baselineHashVerified": true,
+    "unchangedDiagnostics": true,
+    "outputs": [
+      {
+        "name": "baseline",
+        "exitCode": 1,
+        "errorCount": 2,
+        "warningCount": 9,
+        "messages": [
+          {
+            "ruleId": "@typescript-eslint/no-unused-vars",
+            "line": 21,
+            "column": 3,
+            "message": "'LiveSessionRequestCreateInput' is defined but never used.",
+            "severity": 2
+          },
+          {
+            "ruleId": "@typescript-eslint/no-unused-vars",
+            "line": 25,
+            "column": 3,
+            "message": "'LiveSessionRequestUpdateInput' is defined but never used.",
+            "severity": 2
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 427,
+            "column": 25,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 429,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 429,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 430,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 430,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 431,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 431,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 432,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 432,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          }
+        ]
+      },
+      {
+        "name": "current",
+        "exitCode": 1,
+        "errorCount": 2,
+        "warningCount": 9,
+        "messages": [
+          {
+            "ruleId": "@typescript-eslint/no-unused-vars",
+            "line": 21,
+            "column": 3,
+            "message": "'LiveSessionRequestCreateInput' is defined but never used.",
+            "severity": 2
+          },
+          {
+            "ruleId": "@typescript-eslint/no-unused-vars",
+            "line": 25,
+            "column": 3,
+            "message": "'LiveSessionRequestUpdateInput' is defined but never used.",
+            "severity": 2
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 427,
+            "column": 25,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 429,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 429,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 430,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 430,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 431,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 431,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 432,
+            "column": 21,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          },
+          {
+            "ruleId": "@typescript-eslint/no-explicit-any",
+            "line": 432,
+            "column": 31,
+            "message": "Unexpected any. Specify a different type.",
+            "severity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "privateKeyFindings": [],
+  "logHashes": [
+    {
+      "file": "auth-tests.log",
+      "sha256": "37079d131dc9a3df90e28563f0f369da8f57a49f01201d362572021298579fcf"
+    },
+    {
+      "file": "before.log",
+      "sha256": "3261e56db9ee23675d9809be152cbbafc743368a1234e6c929faaa4d8c3f9670"
+    },
+    {
+      "file": "chg01b-regressions.log",
+      "sha256": "16ef475e7f6f10bc39c7c911173cfdd243a9d8ea041abe58f6e91ccc6680cf5b"
+    },
+    {
+      "file": "graphify-update-final.log",
+      "sha256": "3aa30f41a9f22e02b6df8e7f2f07e78a7b6f9e456537498c6fa8ce83787f26f1"
+    },
+    {
+      "file": "graphify-update.log",
+      "sha256": "6da0d14ec0b9ef5231d938c51f54818bf6f6c4868e6ae1e3598b210d690a5b12"
+    },
+    {
+      "file": "lint.log",
+      "sha256": "c4f15d123885c808627fd5ab9e0ef7a7904fd2b2090d7a38f0107bd88b45d2e7"
+    },
+    {
+      "file": "people-typecheck.log",
+      "sha256": "4465be3f068160ac33b8f09ca0a97906912759a73676c985fdcd4813c3298b29"
+    },
+    {
+      "file": "service-build-final.log",
+      "sha256": "8132a5b038ec5be9951fc0aea4788d354d1b3b0b78721baad6b7d78138887a46"
+    },
+    {
+      "file": "service-build.log",
+      "sha256": "e00f43923fc9468eaf2629ae9758b1bcce4cfbcd5228ce56aea1d8216d3803e3"
+    },
+    {
+      "file": "shc-compatibility.log",
+      "sha256": "9de0eed4093bda66f5035b26075e54bf89963687ccfc06b1701cc82421da0629"
+    },
+    {
+      "file": "targeted.log",
+      "sha256": "65681c2e8e0549b1118a00e3c462d767b6d87fafec62bc6dfd3dba52c47dd44a"
+    },
+    {
+      "file": "typecheck.log",
+      "sha256": "914061ba87b89185840a492165d4b55a91abafc858cce41aa53c80cf52f0dfef"
+    },
+    {
+      "file": "types-lint.log",
+      "sha256": "49310d4125c79979c7594a8c6239ac752113352d592c24270b227f5ce288c9ca"
+    }
+  ],
+  "limitations": [
+    "Controlled persistence and mocked provider boundaries. No PostgreSQL or browser execution.",
+    "Shared-types zero-warning lint remains failed with identical pre-existing diagnostics.",
+    "No whole-worktree status claim. Previously existing and concurrent owner/model changes outside this manifest are unclassified."
+  ]
+}

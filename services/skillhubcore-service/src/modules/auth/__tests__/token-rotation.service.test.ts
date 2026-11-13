@@ -174,7 +174,7 @@ describe('TokenRotationService', () => {
     const result = await rotation.rotate(refreshToken);
 
     expect(result.refreshToken).not.toBe(refreshToken);
-    expect(result.user.platforms).toEqual(expect.arrayContaining(['realtutorialhub', 'skillup']));
+    expect(result.user.platforms).toEqual(['realtutorialhub']);
   });
 
   it('marks a family compromised when a stale token is reused', async () => {
@@ -207,3 +207,4 @@ describe('TokenRotationService', () => {
     expect(repo.families.get(familyId)?.isCompromised).toBe(true);
   });
 });
+

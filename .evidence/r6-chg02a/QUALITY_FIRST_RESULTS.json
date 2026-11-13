@@ -1,0 +1,34 @@
+{
+  "baseline": "db2f5a6d0db1fb2f8ee7ae56942030b87c76898a",
+  "environment": "Controlled in-memory persistence, mocked providers, disposable signing keys; DB/Redis/QStash environment removed.",
+  "results": [
+    {
+      "name": "auth-tests",
+      "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts --reporter=verbose",
+      "started": "2026-11-13T18:41:07.075Z",
+      "finished": "2026-11-13T18:41:18.797Z",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-service type-check",
+      "started": "2026-11-13T18:41:18.968Z",
+      "finished": "2026-11-13T18:41:54.144Z",
+      "exitCode": 2
+    },
+    {
+      "name": "lint",
+      "command": "pnpm --filter @quiz/skillhubcore-service lint",
+      "started": "2026-11-13T18:41:54.171Z",
+      "finished": "2026-11-13T18:42:33.714Z",
+      "exitCode": 0
+    },
+    {
+      "name": "types-lint",
+      "command": "pnpm exec eslint --no-ignore --max-warnings=0 packages/types/src/tutorial-repositories.types.ts",
+      "started": "2026-11-13T18:42:33.729Z",
+      "finished": "2026-11-13T18:42:34.485Z",
+      "exitCode": 2
+    }
+  ]
+}

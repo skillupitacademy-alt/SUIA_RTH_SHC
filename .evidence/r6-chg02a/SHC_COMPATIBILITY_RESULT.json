@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/auth/__tests__/batch-08-shc-session-binding.test.ts --reporter=verbose",
+  "started": "2026-11-13T18:47:08.275Z",
+  "finished": "2026-11-13T18:47:11.356Z",
+  "exitCode": 0,
+  "classification": "Existing mocked SHC login/logout compatibility tests, no real database or browser request."
+}

@@ -1,0 +1,393 @@
+[
+  {
+    "filePath": "E:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-repositories.types.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 2,
+        "message": "'LiveSessionRequestCreateInput' is defined but never used.",
+        "line": 21,
+        "column": 3,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 32,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "LiveSessionRequestCreateInput"
+            },
+            "fix": {
+              "range": [
+                613,
+                643
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"LiveSessionRequestCreateInput\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 2,
+        "message": "'LiveSessionRequestUpdateInput' is defined but never used.",
+        "line": 25,
+        "column": 3,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 32,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "LiveSessionRequestUpdateInput"
+            },
+            "fix": {
+              "range": [
+                730,
+                764
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"LiveSessionRequestUpdateInput\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 427,
+        "column": 25,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 427,
+        "endColumn": 28,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15632,
+                15635
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15632,
+                15635
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 429,
+        "column": 21,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 429,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15744,
+                15747
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15744,
+                15747
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 429,
+        "column": 31,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 429,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15754,
+                15757
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15754,
+                15757
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 430,
+        "column": 21,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 430,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15780,
+                15783
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15780,
+                15783
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 430,
+        "column": 31,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 430,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15790,
+                15793
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15790,
+                15793
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 431,
+        "column": 21,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 431,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15816,
+                15819
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15816,
+                15819
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 431,
+        "column": 31,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 431,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15826,
+                15829
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15826,
+                15829
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 432,
+        "column": 21,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 432,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15852,
+                15855
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15852,
+                15855
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 1,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 432,
+        "column": 31,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 432,
+        "endColumn": 34,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                15862,
+                15865
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                15862,
+                15865
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 9,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type {\r\n  ContentBlockType,\r\n  TutorialContentAuditCreateInput,\r\n  TutorialContentAuditRecord,\r\n  TutorialContentVersionCreateInput,\r\n  TutorialContentVersionRecord,\r\n} from './tutorial-content.types';\r\nimport type { TutorialContentJSON } from './tutorial-content.schema';\r\nimport type {\r\n  AssignmentDifficulty,\r\n  AssignmentHelpRequestCreateInput,\r\n  AssignmentHelpRequestRecord,\r\n  AssignmentHelpRequestStatus,\r\n  AssignmentHelpRequestUpdateInput,\r\n  AssignmentProgressRecord,\r\n  AssignmentProgressStatus,\r\n  AssignmentRecord,\r\n  AssignmentTierStatusMap,\r\n} from './assignment.types';\r\nimport type {\r\n  LiveSessionRequestCreateInput,\r\n  LiveSessionRequestFilters,\r\n  LiveSessionRequestRecord,\r\n  LiveSessionRequestStatus,\r\n  LiveSessionRequestUpdateInput,\r\n} from './live-session.types';\r\nimport type {\r\n  ProjectBadgeAwardRecord,\r\n  ProjectRecord,\r\n  ProjectScope,\r\n  ProjectSubmissionCreateInput,\r\n  ProjectSubmissionRecord,\r\n  ProjectSubmissionStatus,\r\n} from './project.types';\r\n\r\n// Import canonical TutorialDifficulty from tutorial-composer contracts\r\nimport type { TutorialDifficulty } from './tutorial-composer/contracts';\r\n\r\n// Re-export for backward compatibility\r\nexport type { TutorialDifficulty };\r\n\r\nexport type TutorialProjectLevel = 'simple' | 'intermediate' | 'expert';\r\nexport type TutorialProjectSubmissionStatus =\r\n  | 'pending'\r\n  | 'submitted'\r\n  | 'ai_reviewing'\r\n  | 'needs_review'\r\n  | 'approved'\r\n  | 'revision_needed'\r\n  | 'graded'\r\n  | 'revision-requested';\r\n\r\nexport interface TutorialDbClientLike {\r\n  select: () => unknown;\r\n  insert: (table: unknown) => unknown;\r\n  update: (table: unknown) => unknown;\r\n  delete: (table: unknown) => unknown;\r\n  query?: Record<string, unknown>;\r\n}\r\n\r\nexport interface TutorialContentRecord {\r\n  id: string;\r\n  subtopicId: string;\r\n  difficulty: TutorialDifficulty;\r\n  contentType: string;\r\n  content: TutorialContentJSON;\r\n  version: number;\r\n  language: string;\r\n  isPublished: boolean;\r\n  generatedByAi: boolean;\r\n  aiModelUsed: string | null;\r\n  generationJobId: string | null;\r\n  adminApprovedBy: string | null;\r\n  adminApprovedAt: Date | null;\r\n  qualityScore: Record<string, unknown> | null;\r\n  regenerationCount: number;\r\n  createdAt: Date;\r\n  updatedAt: Date;\r\n  deletedAt: Date | null;\r\n}\r\n\r\nexport interface TutorialContentUpsertInput {\r\n  subtopicId: string;\r\n  difficulty: TutorialDifficulty;\r\n  content: TutorialContentJSON;\r\n  language?: string;\r\n  isPublished?: boolean;\r\n  generatedByAi?: boolean;\r\n  aiModelUsed?: string | null;\r\n  generationJobId?: string | null;\r\n  adminApprovedBy?: string | null;\r\n  adminApprovedAt?: Date | null;\r\n  qualityScore?: Record<string, unknown> | null;\r\n}\r\n\r\nexport interface TutorialProgressRecord {\r\n  id: string;\r\n  userId: string;\r\n  subtopicId: string;\r\n  status: 'not_started' | 'in_progress' | 'completed';\r\n  blocksCompleted: ContentBlockType[];\r\n  remediationTriggered: boolean;\r\n  score: string | null;\r\n  timeSpentSec: number;\r\n  completedAt: Date | null;\r\n  version: number;\r\n  createdAt: Date;\r\n  updatedAt: Date;\r\n  deletedAt: Date | null;\r\n}\r\n\r\n/**\r\n * Phase 2.6: Completed Block Record\r\n * \r\n * Preserves block identity and version across content revisions.\r\n */\r\nexport interface CompletedBlockRecord {\r\n  blockId: string;\r\n  blockVersion: string; // e.g., \"D1\", \"C1\", \"S1\"\r\n  completedAt: string; // ISO timestamp\r\n}\r\n\r\n/**\r\n * Phase 2.6: Navigation Progress Record\r\n * \r\n * Per-navigation-node learner progress\r\n */\r\nexport interface TutorialNavigationProgressRecord {\r\n  id: string;\r\n  userId: string;\r\n  navigationNodeId: string;\r\n  sectionId: string | null;\r\n  subtopicId: string;\r\n  status: 'not_started' | 'in_progress' | 'completed';\r\n  completedBlocks: CompletedBlockRecord[]; // Block records with versions\r\n  timeSpentActiveSec: number;\r\n  visitCount: number;\r\n  revisionCount: number;\r\n  lastSessionId: string | null; // JWT family ID or client session UUID\r\n  firstViewedAt: Date | null;\r\n  lastViewedAt: Date | null;\r\n  completedAt: Date | null;\r\n  version: number;\r\n  createdAt: Date;\r\n  updatedAt: Date;\r\n  deletedAt: Date | null;\r\n}\r\n\r\n/**\r\n * Phase 2.6: Navigation Progress Create Input\r\n */\r\nexport interface TutorialNavigationProgressCreateInput {\r\n  userId: string;\r\n  navigationNodeId: string;\r\n  sectionId?: string | null;\r\n  subtopicId: string;\r\n}\r\n\r\n/**\r\n * Phase 2.6: Block Completion Event\r\n * \r\n * IMPORTANT: Preserves blockVersion to track content revisions\r\n */\r\nexport interface TutorialBlockCompletionEvent {\r\n  userId: string;\r\n  navigationNodeId: string;\r\n  sectionId: string | null;\r\n  subtopicId: string;\r\n  blockId: string;\r\n  blockType: string;\r\n  blockVersion: string; // e.g., \"D1\", \"C1\", \"S1\"\r\n  sessionId?: string; // Optional: Learning session identifier for idempotency\r\n  occurredAt?: Date;\r\n}\r\n\r\n/**\r\n * Phase 2.6: Time Update Event\r\n */\r\nexport interface TutorialTimeUpdateEvent {\r\n  userId: string;\r\n  navigationNodeId: string;\r\n  subtopicId: string;\r\n  timeSpentActiveSec: number; // Accumulated active time\r\n  sessionId?: string; // Optional: For deduplication\r\n}\r\n\r\n/**\r\n * Phase 2.6: Visit Event\r\n * \r\n * SESSION SEMANTICS:\r\n * - sessionId: REQUIRED learning session identifier (JWT family ID or client-generated UUID)\r\n * - Service layer owns session ID generation:\r\n *   * Authenticated users: JWT family/session ID\r\n *   * Anonymous users: Stable client session UUID\r\n * - Repository uses sessionId for atomic session transition detection\r\n * - IS DISTINCT FROM comparison determines new vs same session\r\n * \r\n * REVISION SEMANTICS:\r\n * - Revision = return to previously completed node in a new session\r\n * - Automatically detected by repository when:\r\n *   * status = 'completed' AND sessionId different from lastSessionId\r\n */\r\nexport interface TutorialVisitEvent {\r\n  userId: string;\r\n  navigationNodeId: string;\r\n  subtopicId: string;\r\n  sessionId: string; // REQUIRED - service must provide stable session identity\r\n  occurredAt?: Date;\r\n}\r\n\r\nexport interface TutorialProjectSubmissionRecord {\r\n  id: string;\r\n  userId: string;\r\n  projectId: string;\r\n  projectLevel: TutorialProjectLevel;\r\n  difficulty: TutorialDifficulty;\r\n  submissionContent: Record<string, unknown>;\r\n  status: TutorialProjectSubmissionStatus;\r\n  score: number | null;\r\n  feedback: string | null;\r\n  aiReview: Record<string, unknown> | null;\r\n  peerReviews: Record<string, unknown>[];\r\n  adminReview: Record<string, unknown> | null;\r\n  badgeAwarded: boolean;\r\n  videoRequired: boolean;\r\n  videoUrl: string | null;\r\n  submittedAt: Date | null;\r\n  gradedAt: Date | null;\r\n  version: number;\r\n  createdAt: Date;\r\n  updatedAt: Date;\r\n  deletedAt: Date | null;\r\n}\r\n\r\nexport interface TutorialProjectSubmissionCreateInput {\r\n  userId: string;\r\n  projectId: string;\r\n  projectLevel: TutorialProjectLevel;\r\n  difficulty: TutorialDifficulty;\r\n  submissionContent: Record<string, unknown>;\r\n  status?: TutorialProjectSubmissionStatus;\r\n  score?: number | null;\r\n  feedback?: string | null;\r\n  aiReview?: Record<string, unknown> | null;\r\n  peerReviews?: Record<string, unknown>[];\r\n  adminReview?: Record<string, unknown> | null;\r\n  badgeAwarded?: boolean;\r\n  videoRequired?: boolean;\r\n  videoUrl?: string | null;\r\n  submittedAt?: Date | null;\r\n  gradedAt?: Date | null;\r\n}\r\n\r\nexport interface IProjectRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  getProject(projectId: string): Promise<ProjectRecord | undefined>;\r\n  getSubmission(submissionId: string): Promise<ProjectSubmissionRecord | undefined>;\r\n  getSubmissionsByUser(userId: string): Promise<ProjectSubmissionRecord[]>;\r\n  createSubmission(data: ProjectSubmissionCreateInput): Promise<ProjectSubmissionRecord>;\r\n  updateSubmissionStatus(\r\n    submissionId: string,\r\n    status: ProjectSubmissionStatus,\r\n    reviewData?: Record<string, unknown> | null\r\n  ): Promise<ProjectSubmissionRecord | undefined>;\r\n  awardBadge(userId: string, badgeId: string, submissionId: string): Promise<ProjectBadgeAwardRecord>;\r\n  getBadgesByUser(userId: string): Promise<ProjectBadgeAwardRecord[]>;\r\n  getProjectsByScope(scope: ProjectScope, parentId: string): Promise<ProjectRecord[]>;\r\n}\r\n\r\nexport interface ITutorialContentRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  findById(id: string): Promise<TutorialContentRecord | undefined>;\r\n  findBySubtopicId(\r\n    subtopicId: string,\r\n    difficulty?: TutorialDifficulty\r\n  ): Promise<TutorialContentRecord[]>;\r\n  getPublished(\r\n    subtopicId: string,\r\n    difficulty?: TutorialDifficulty\r\n  ): Promise<TutorialContentRecord[]>;\r\n  upsertBlocks(data: TutorialContentUpsertInput): Promise<TutorialContentRecord>;\r\n  updateById(\r\n    contentId: string,\r\n    data: TutorialContentUpsertInput\r\n  ): Promise<TutorialContentRecord | undefined>;\r\n  publish(contentId: string): Promise<TutorialContentRecord | undefined>;\r\n  getVersionHistory(contentId: string): Promise<TutorialContentRecord[]>;\r\n  softDelete(contentId: string): Promise<TutorialContentRecord | undefined>;\r\n  createVersionSnapshot(input: TutorialContentVersionCreateInput): Promise<TutorialContentVersionRecord>;\r\n  getVersionSnapshot(versionId: string): Promise<TutorialContentVersionRecord | undefined>;\r\n  getVersionSnapshots(contentId: string): Promise<TutorialContentVersionRecord[]>;\r\n  createAuditEntry(input: TutorialContentAuditCreateInput): Promise<TutorialContentAuditRecord>;\r\n  getAuditEntries(filters: {\r\n    contentId?: string;\r\n    action?: TutorialContentAuditRecord['action'];\r\n    limit?: number;\r\n    offset?: number;\r\n  }): Promise<TutorialContentAuditRecord[]>;\r\n}\r\n\r\nexport interface ITutorialProgressRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  findById(id: string, tenantId?: string): Promise<TutorialProgressRecord | undefined>;\r\n  getProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord | undefined>;\r\n  markBlockComplete(\r\n    userId: string,\r\n    subtopicId: string,\r\n    blockType: ContentBlockType,\r\n    tenantId?: string\r\n  ): Promise<TutorialProgressRecord>;\r\n  isSubtopicComplete(userId: string, subtopicId: string, tenantId?: string): Promise<boolean>;\r\n  getCompletedSubtopics(userId: string, tenantId?: string): Promise<string[]>;\r\n  resetProgress(userId: string, subtopicId: string, tenantId?: string): Promise<TutorialProgressRecord>;\r\n}\r\n\r\n/**\r\n * Phase 2.6: Navigation Progress Repository Interface\r\n * \r\n * COMPLETION POLICY BOUNDARY:\r\n * - Repository: Persistence layer only\r\n * - Service: Business logic and completion eligibility validation\r\n * \r\n * SERVICE LAYER RESPONSIBILITY (NOT REPOSITORY):\r\n * - Determine if node can be marked complete\r\n * - Validate required blocks completed\r\n * - Apply D1/C1/S1-specific completion rules\r\n * - Determine session boundaries for visit counting\r\n * - Determine revision triggers (return after completion)\r\n * \r\n * REPOSITORY RESPONSIBILITY:\r\n * - Persist progress state\r\n * - Ensure idempotency\r\n * - Atomic updates\r\n * - Concurrency-safe operations\r\n */\r\nexport interface ITutorialNavigationProgressRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  \r\n  // Core CRUD\r\n  findById(id: string): Promise<TutorialNavigationProgressRecord | undefined>;\r\n  getProgress(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord | undefined>;\r\n  getProgressForSubtopic(userId: string, subtopicId: string): Promise<TutorialNavigationProgressRecord[]>;\r\n  createProgress(data: TutorialNavigationProgressCreateInput): Promise<TutorialNavigationProgressRecord>;\r\n  \r\n  // Block completion (idempotent, preserves blockVersion)\r\n  markBlockCompleted(event: TutorialBlockCompletionEvent): Promise<TutorialNavigationProgressRecord>;\r\n  isBlockCompleted(userId: string, navigationNodeId: string, blockId: string, blockVersion?: string): Promise<boolean>;\r\n  \r\n  // Time tracking (cumulative, validated)\r\n  recordTime(event: TutorialTimeUpdateEvent): Promise<TutorialNavigationProgressRecord>;\r\n  \r\n  // Visit tracking (service determines increment logic)\r\n  recordVisit(event: TutorialVisitEvent): Promise<TutorialNavigationProgressRecord>;\r\n  incrementRevision(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord>;\r\n  \r\n  // Completion (service validates eligibility before calling)\r\n  completeNode(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord>;\r\n  \r\n  // Queries\r\n  getCompletedNodes(userId: string, subtopicId: string): Promise<string[]>; // Returns navigationNodeIds\r\n  isNodeComplete(userId: string, navigationNodeId: string): Promise<boolean>;\r\n}\r\n\r\nexport interface IProjectSubmissionRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  findById(id: string): Promise<TutorialProjectSubmissionRecord | undefined>;\r\n  submit(data: TutorialProjectSubmissionCreateInput): Promise<TutorialProjectSubmissionRecord>;\r\n  grade(\r\n    submissionId: string,\r\n    score: number,\r\n    feedback: string\r\n  ): Promise<TutorialProjectSubmissionRecord | undefined>;\r\n  getPending(projectId?: string): Promise<TutorialProjectSubmissionRecord[]>;\r\n  getByUser(\r\n    userId: string,\r\n    level?: TutorialProjectLevel\r\n  ): Promise<TutorialProjectSubmissionRecord[]>;\r\n  requiresVideo(projectId: string, difficulty: TutorialDifficulty): Promise<boolean>;\r\n  softDelete(id: string): Promise<TutorialProjectSubmissionRecord | undefined>;\r\n}\r\n\r\nexport interface IAssignmentRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  getAssignments(subtopicId: string, difficulty: AssignmentDifficulty): Promise<AssignmentRecord[]>;\r\n  getProgress(\r\n    userId: string,\r\n    subtopicId: string,\r\n    difficulty: AssignmentDifficulty\r\n  ): Promise<AssignmentProgressRecord | undefined>;\r\n  upsertProgress(\r\n    userId: string,\r\n    subtopicId: string,\r\n    difficulty: AssignmentDifficulty,\r\n    status: AssignmentProgressStatus\r\n  ): Promise<AssignmentProgressRecord>;\r\n  getTierStatus(userId: string, subtopicId: string): Promise<AssignmentTierStatusMap>;\r\n  createHelpRequest(data: AssignmentHelpRequestCreateInput): Promise<AssignmentHelpRequestRecord>;\r\n  getHelpRequests(filters: {\r\n    status?: AssignmentHelpRequestStatus;\r\n    assignedTo?: string;\r\n    subtopicId?: string;\r\n  }): Promise<AssignmentHelpRequestRecord[]>;\r\n  updateHelpRequest(\r\n    id: string,\r\n    data: AssignmentHelpRequestUpdateInput\r\n  ): Promise<AssignmentHelpRequestRecord | undefined>;\r\n}\r\n\r\nexport interface ILiveSessionRepository {\r\n  withDb(dbClient: TutorialDbClientLike): this;\r\n  createRequest(studentId: string, subtopicId: string, doubtText?: string | null): Promise<LiveSessionRequestRecord>;\r\n  getRequest(id: string): Promise<LiveSessionRequestRecord | undefined>;\r\n  getRequestsByStudent(studentId: string, status?: LiveSessionRequestStatus): Promise<LiveSessionRequestRecord[]>;\r\n  getRequestsByFaculty(facultyId: string, status?: LiveSessionRequestStatus): Promise<LiveSessionRequestRecord[]>;\r\n  getPendingRequests(filters?: LiveSessionRequestFilters): Promise<LiveSessionRequestRecord[]>;\r\n  acceptRequest(id: string, facultyId: string): Promise<LiveSessionRequestRecord>;\r\n  scheduleRequest(id: string, scheduledAt: Date, meetingLink: string): Promise<LiveSessionRequestRecord>;\r\n  completeRequest(id: string): Promise<LiveSessionRequestRecord>;\r\n  cancelRequest(id: string, reason: string): Promise<LiveSessionRequestRecord>;\r\n  updateMeetingLink(id: string, meetingLink: string): Promise<LiveSessionRequestRecord | undefined>;\r\n}\r\n\r\nexport type PeoplePlatform = 'realtutorialhub' | 'skillup';\r\nexport type PeopleUserRole = 'student' | 'faculty' | 'admin' | 'super_admin';\r\n\r\nexport interface PeopleDbClientLike {\r\n  query: Record<string, any>;\r\n  transaction: <T>(callback: (tx: PeopleDbClientLike) => Promise<T>) => Promise<T>;\r\n  select: (...args: any[]) => any;\r\n  insert: (...args: any[]) => any;\r\n  update: (...args: any[]) => any;\r\n  delete: (...args: any[]) => any;\r\n}\r\n\r\nexport interface PeopleUserRecord {\r\n  id: string;\r\n  email: string;\r\n  passwordHash: string;\r\n  role: PeopleUserRole;\r\n  platform: PeoplePlatform;\r\n  isActive: boolean;\r\n  deletedAt: Date | null;\r\n  version: number;\r\n  createdAt: Date;\r\n  updatedAt: Date;\r\n}\r\n\r\nexport interface PeopleSubscriptionRecord {\r\n  id: string;\r\n  userId: string;\r\n  planType: 'free' | 'pro' | 'enterprise';\r\n  features: string[];\r\n  status: 'active' | 'cancelled' | 'expired';\r\n  startedAt: Date;\r\n  expiresAt: Date | null;\r\n  deletedAt: Date | null;\r\n}\r\n\r\nexport interface PeopleSessionRecord {\r\n  id: string;\r\n  userId: string;\r\n  familyId: string | null;\r\n  platform: PeoplePlatform;\r\n  revokedAt: Date | null;\r\n  deletedAt: Date | null;\r\n  createdAt: Date;\r\n}\r\n\r\nexport interface AuthUserDTO {\r\n  id: string;\r\n  email: string;\r\n  roles: PeopleUserRole[];\r\n  platforms: PeoplePlatform[];\r\n  subscriptions: string[];\r\n}\r\n\r\nexport interface AuthResultDTO {\r\n  accessToken: string;\r\n  refreshToken: string;\r\n  user: AuthUserDTO;\r\n}\r\n\r\nexport interface IUserRepository {\r\n  withDb(dbClient: PeopleDbClientLike): this;\r\n  transaction<T>(callback: (repo: IUserRepository) => Promise<T>): Promise<T>;\r\n  /** A missing platform is permitted only for unambiguous legacy shared-admin login. */\r\n  findByEmail(email: string, platform?: PeoplePlatform): Promise<PeopleUserRecord | undefined>;\r\n  findById(userId: string): Promise<PeopleUserRecord | undefined>;\r\n  createUser(input: {\r\n    email: string;\r\n    passwordHash: string;\r\n    role: PeopleUserRole;\r\n    platform: PeoplePlatform;\r\n  }): Promise<PeopleUserRecord>;\r\n  createSubscription(input: {\r\n    userId: string;\r\n    planType: 'free' | 'pro' | 'enterprise';\r\n    features: string[];\r\n  }): Promise<PeopleSubscriptionRecord>;\r\n  grantPlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown>;\r\n  revokePlatformAccess(userId: string, platform: PeoplePlatform): Promise<unknown>;\r\n  listPlatforms(userId: string): Promise<PeoplePlatform[]>;\r\n  getActiveSubscription(userId: string): Promise<PeopleSubscriptionRecord | undefined>;\r\n  createSession(input: {\r\n    userId: string;\r\n    jwtFamily: string;\r\n    platform: PeoplePlatform;\r\n    refreshTokenHash: string;\r\n  }): Promise<unknown>;\r\n  listActiveSessions(userId: string): Promise<PeopleSessionRecord[]>;\r\n  findSessionById(userId: string, sessionId: string): Promise<PeopleSessionRecord | null>;\r\n  revokeSessionById(userId: string, sessionId: string, reason: string): Promise<void>;\r\n  findSessionByFamily(userId: string, familyId: string): Promise<unknown>;\r\n  revokeSessionByFamily(userId: string, familyId: string, reason: string): Promise<unknown>;\r\n  revokeAllSessions(userId: string, reason: string): Promise<unknown>;\r\n  createTokenFamily(input: { userId: string; familyId: string }): Promise<unknown>;\r\n  findTokenFamilyByFamilyId(familyId: string): Promise<unknown>;\r\n  markTokenFamilyCompromised(familyId: string): Promise<unknown>;\r\n  updateTokenFamilyUsage(familyId: string): Promise<unknown>;\r\n  createAuditLog(input: {\r\n    actorId?: string | null;\r\n    action: string;\r\n    platform?: string | null;\r\n    ip?: string | null;\r\n    success?: boolean | null;\r\n    metadata?: Record<string, unknown> | null;\r\n  }): Promise<unknown>;\r\n}\r\n",
+    "usedDeprecatedRules": [
+      {
+        "ruleId": "no-extra-semi",
+        "replacedBy": []
+      },
+      {
+        "ruleId": "no-mixed-spaces-and-tabs",
+        "replacedBy": []
+      }
+    ]
+  }
+]

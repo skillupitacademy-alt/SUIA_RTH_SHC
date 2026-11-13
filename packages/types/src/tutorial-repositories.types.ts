@@ -483,7 +483,8 @@ export interface AuthResultDTO {
 export interface IUserRepository {
   withDb(dbClient: PeopleDbClientLike): this;
   transaction<T>(callback: (repo: IUserRepository) => Promise<T>): Promise<T>;
-  findByEmail(email: string): Promise<PeopleUserRecord | undefined>;
+  /** A missing platform is permitted only for unambiguous legacy shared-admin login. */
+  findByEmail(email: string, platform?: PeoplePlatform): Promise<PeopleUserRecord | undefined>;
   findById(userId: string): Promise<PeopleUserRecord | undefined>;
   createUser(input: {
     email: string;

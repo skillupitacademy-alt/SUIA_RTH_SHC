@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import { withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
 import type { PeopleDbClientLike, PeoplePlatform, PeopleSessionRecord, PeopleSubscriptionRecord, PeopleUserRecord, PeopleUserRole, IUserRepository } from '@quiz/types';
@@ -39,16 +39,26 @@ export class DrizzleUserRepository implements IUserRepository {
     return this.dbClient.transaction(async (tx) => callback(new DrizzleUserRepository(tx as unknown as PeopleDb)));
   }
 
-  async findByEmail(email: string): Promise<PeopleUserRecord | undefined> {
+  async findByEmail(email: string, platform?: PeoplePlatform): Promise<PeopleUserRecord | undefined> {
     const rows = await withTimeout(
       this.dbClient
         .select()
         .from(schema.users)
-        .where(and(eq(schema.users.email, email), isNull(schema.users.deletedAt)))
-        .limit(1),
+        .where(and(
+          sql`LOWER(TRIM(${schema.users.email})) = ${email.trim().toLowerCase()}`,
+          platform === undefined
+            ? inArray(schema.users.platform, ['skillup', 'realtutorialhub'])
+            : eq(schema.users.platform, platform),
+          isNull(schema.users.deletedAt),
+        ))
+        .limit(2),
       STANDARD_QUERY_TIMEOUT,
       'people.users.findByEmail'
     );
+    // Refuse duplicate normalized identities even before the unique-index migration.
+    if (rows.length > 1) {
+      throw new Error('Invalid credentials');
+    }
     return rows[0] as PeopleUserRecord | undefined;
   }
 
@@ -70,7 +80,7 @@ export class DrizzleUserRepository implements IUserRepository {
       this.dbClient
         .insert(schema.users)
         .values({
-          email: input.email,
+          email: input.email.trim().toLowerCase(),
           passwordHash: input.passwordHash,
           role: input.role,
           platform: input.platform,

@@ -1,0 +1,23 @@
+services/skillhubcore-service/src/modules/user\user.repository.ts:9:  email: string;
+services/skillhubcore-service/src/modules/user\user.repository.ts:42:  async findByEmail(email: string, platform?: PeoplePlatform): Promise<PeopleUserRecord | undefined> {
+services/skillhubcore-service/src/modules/user\user.repository.ts:48:          sql`LOWER(TRIM(${schema.users.email})) = ${email.trim().toLowerCase()}`,
+services/skillhubcore-service/src/modules/user\user.repository.ts:56:      'people.users.findByEmail'
+services/skillhubcore-service/src/modules/user\user.repository.ts:83:          email: input.email.trim().toLowerCase(),
+services/skillhubcore-service/src/modules/auth\token-rotation.service.ts:22:  private toUserDto(user: { id: string; email: string; role: AuthResult['user']['roles'][number] }, platforms: string[], subscriptions: string[]) {
+services/skillhubcore-service/src/modules/auth\token-rotation.service.ts:25:      email: user.email,
+services/skillhubcore-service/src/modules/auth\auth.types.ts:27:  email: string;
+services/skillhubcore-service/src/modules/auth\auth.types.ts:34:  email: string;
+services/skillhubcore-service/src/modules/auth\auth.types.ts:45:  email: string;
+services/skillhubcore-service/src/modules/auth\auth.service.ts:30:  private toUserDto(user: { id: string; email: string; role: AuthUserDTO['roles'][number] }, platforms: string[], subscriptions: string[]): AuthUserDTO {
+services/skillhubcore-service/src/modules/auth\auth.service.ts:33:      email: user.email,
+services/skillhubcore-service/src/modules/auth\auth.service.ts:41:    const email = input.email.trim().toLowerCase();
+services/skillhubcore-service/src/modules/auth\auth.service.ts:42:    const existing = await this.userRepo.findByEmail(email, input.platform);
+services/skillhubcore-service/src/modules/auth\auth.service.ts:53:        email,
+services/skillhubcore-service/src/modules/auth\auth.service.ts:95:      email: result.user.email,
+services/skillhubcore-service/src/modules/auth\auth.service.ts:105:    const user = await this.userRepo.findByEmail(input.email.trim().toLowerCase(), input.platform);
+services/skillhubcore-service/src/modules/auth\auth.service.ts:168:  async loginAdmin(email: string, password: string, platform?: PlatformName): Promise<AuthResult> {
+services/skillhubcore-service/src/modules/auth\auth.service.ts:169:    const user = await this.userRepo.findByEmail(email.trim().toLowerCase(), platform);
+services/skillhubcore-service/src/modules/auth\auth.routes.ts:11:  email: z.string().trim().toLowerCase().email(),
+services/skillhubcore-service/src/modules/auth\auth.routes.ts:18:  email: z.string().trim().toLowerCase().email(),
+services/skillhubcore-service/src/modules/auth\auth.routes.ts:24:  email: z.string().trim().toLowerCase().email(),
+services/skillhubcore-service/src/modules/auth\auth.routes.ts:110:      const result = await authService.loginAdmin(parsed.data.email, parsed.data.password, parsed.data.platform);

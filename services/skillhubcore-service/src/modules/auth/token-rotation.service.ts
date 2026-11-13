@@ -1,5 +1,5 @@
 import { TokenService } from '@quiz/auth';
-import type { AuthResult } from './auth.types';
+import type { AuthResult, PlatformName } from './auth.types';
 import { SubscriptionService } from '../subscription/subscription.service';
 import type { IUserRepository } from '@quiz/types';
 
@@ -72,11 +72,18 @@ export class TokenRotationService {
     }
 
     const user = await this.userRepo.findById(payload.sub);
-    if (user === undefined) {
+    if (user === undefined || user.isActive !== true || user.deletedAt !== null) {
       throw new Error('Invalid refresh token');
     }
 
-    const platforms = await this.userRepo.listPlatforms(user.id);
+    const sessionPlatform = (existingSession as { platform?: unknown }).platform;
+    const grantedPlatforms = await this.userRepo.listPlatforms(user.id);
+    if ((sessionPlatform !== 'skillup' && sessionPlatform !== 'realtutorialhub')
+      || user.platform !== sessionPlatform
+      || !grantedPlatforms.includes(sessionPlatform)) {
+      throw new Error('Invalid refresh token');
+    }
+    const platforms: PlatformName[] = [sessionPlatform];
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
 
     const [accessToken, nextRefreshToken] = await Promise.all([
@@ -89,7 +96,7 @@ export class TokenRotationService {
       await repo.createSession({
         userId: user.id,
         jwtFamily: payload.family,
-        platform: platforms[0] ?? 'realtutorialhub',
+        platform: sessionPlatform,
         refreshTokenHash: nextRefreshToken,
       });
       await repo.updateTokenFamilyUsage(payload.family);

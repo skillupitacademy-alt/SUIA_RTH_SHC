@@ -15,6 +15,7 @@ import { AuthService } from '../auth.service';
 import { SubscriptionService } from '../../subscription/subscription.service';
 import { SsoService } from '../sso/sso.service';
 import { TokenRotationService } from '../token-rotation.service';
+import { createAuthRoutes } from '../auth.routes';
 import type { PeoplePlatform, PeopleUserRole, IUserRepository, PeopleSubscriptionRecord, PeopleUserRecord } from '@quiz/types';
 
 type SessionRecord = {
@@ -68,8 +69,13 @@ class FakeRepo implements IUserRepository {
     return callback(this);
   }
 
-  async findByEmail(email: string) {
-    return [...this.users.values()].find((user) => user.email === email);
+  async findByEmail(email: string, platform?: PeoplePlatform) {
+    const matches = [...this.users.values()].filter((user) =>
+      user.email.trim().toLowerCase() === email.trim().toLowerCase()
+      && user.deletedAt === null
+      && (platform === undefined || user.platform === platform));
+    if (matches.length > 1) throw new Error('Invalid credentials');
+    return matches[0];
   }
 
   async findById(userId: string) {
@@ -92,7 +98,7 @@ class FakeRepo implements IUserRepository {
     };
     this.users.set(userId, user);
     this.platforms.set(userId, [input.platform]);
-    return user;
+    return user as PeopleUserRecord;
   }
 
   async createSubscription(input: { userId: string; planType: 'free' | 'pro' | 'enterprise'; features: string[] }) {
@@ -288,7 +294,7 @@ describe('AuthService', () => {
     }));
   });
 
-  it('logs in and auto-grants new platform access', async () => {
+  it('logs in only to the account platform without granting another platform', async () => {
     const { service, repo, tokenService, passwordService, subscriptionService } = createService();
     const passwordHash = await passwordService.hash('Password123!');
     const userId = randomUUID();
@@ -319,11 +325,11 @@ describe('AuthService', () => {
     const result = await service.login({
       email: 'student@example.com',
       password: 'Password123!',
-      platform: 'skillup',
+      platform: 'realtutorialhub',
     });
 
-    expect(result.user.platforms).toContain('skillup');
-    expect(repo.platforms.get(userId)).toEqual(['realtutorialhub', 'skillup']);
+    expect(result.user.platforms).toEqual(['realtutorialhub']);
+    expect(repo.platforms.get(userId)).toEqual(['realtutorialhub']);
     expect(subscriptionService.getFeatures).toHaveBeenCalledWith(userId);
     const accessPayload = await tokenService.verifySkillHubCoreJWT(result.accessToken);
     expect(accessPayload.subscriptions).toEqual(['tutorial.preview_only']);
@@ -362,7 +368,8 @@ describe('AuthService', () => {
 
     expect(result.user.roles).toContain('super_admin');
     expect(accessPayload.roles).toContain('super_admin');
-    expect(accessPayload.platforms).toEqual(expect.arrayContaining(['realtutorialhub', 'skillup']));
+    expect(accessPayload.platforms).toEqual(['realtutorialhub']);
+    expect(accessPayload.brand).toBe('realtutorialhub');
   });
 
   it('refreshes tokens and detects reuse of revoked refresh tokens', async () => {
@@ -443,5 +450,149 @@ describe('AuthService', () => {
 
     expect(await redis.get(`skillhubcore:refresh:${familyId}`)).toBeNull();
     expect(repo.audits[repo.audits.length - 1]?.action).toBe('logout');
+  });
+});
+
+describe('CHG-02A platform-qualified credentials', () => {
+  const seed = async (context: ReturnType<typeof createService>, platform: PeoplePlatform, role: PeopleUserRole = 'admin') => {
+    const user = await context.repo.createUser({
+      email: ' Shared@Example.com ',
+      passwordHash: await context.passwordService.hash(`Password-${platform}!`),
+      role,
+      platform,
+    });
+    return user;
+  };
+
+  it('rejects ambiguous legacy administrator login before checking a password', async () => {
+    const context = createService();
+    await seed(context, 'skillup');
+    await seed(context, 'realtutorialhub');
+    const compare = vi.spyOn(context.passwordService, 'compare');
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!')).rejects.toThrow('Invalid credentials');
+    expect(compare).not.toHaveBeenCalled();
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it.each(['skillup', 'realtutorialhub'] as const)('selects only the explicit %s admin and persists that session authority', async (platform) => {
+    const context = createService();
+    const suia = await seed(context, 'skillup');
+    const rth = await seed(context, 'realtutorialhub');
+    const expected = platform === 'skillup' ? suia : rth;
+    context.repo.platforms.set(expected.id, ['realtutorialhub', 'skillup']);
+    const result = await context.service.loginAdmin(' SHARED@example.COM ', `Password-${platform}!`, platform);
+    expect(result.user.id).toBe(expected.id);
+    expect(result.user.platforms).toEqual([platform]);
+    const claims = await context.tokenService.verifySkillHubCoreJWT(result.accessToken);
+    expect(claims.platforms).toEqual([platform]);
+    expect(claims.brand).toBe(platform);
+    await expect(context.tokenService.verifyAdminAccessToken(result.accessToken, { audience: 'shc-admin' })).rejects.toThrow();
+    expect([...context.repo.sessions.values()][0]?.platform).toBe(platform);
+    const refreshed = await context.service.refresh(result.refreshToken);
+    const rotated = await context.tokenService.verifySkillHubCoreJWT(refreshed.accessToken);
+    expect(rotated.platforms).toEqual([platform]);
+    expect(rotated.brand).toBe(platform);
+  });
+
+  it('rejects the other account password, absent grants, wrong roles and inactive/deleted accounts', async () => {
+    const context = createService();
+    const suia = await seed(context, 'skillup');
+    await seed(context, 'realtutorialhub');
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-realtutorialhub!', 'skillup')).rejects.toThrow('Invalid credentials');
+    context.repo.platforms.set(suia.id, []);
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup')).rejects.toThrow('Forbidden');
+    context.repo.platforms.set(suia.id, ['skillup']);
+    suia.role = 'student';
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup')).rejects.toThrow('Forbidden');
+    suia.role = 'admin';
+    suia.isActive = false;
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup')).rejects.toThrow('suspended');
+    suia.isActive = true;
+    suia.deletedAt = new Date();
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup')).rejects.toThrow('Invalid credentials');
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it('normalizes registration and scopes duplicates to the selected brand', async () => {
+    const context = createService();
+    await seed(context, 'skillup');
+    const result = await context.service.register({ email: ' SHARED@example.COM ', password: 'Password-new!', platform: 'realtutorialhub' });
+    expect(result.user.email).toBe('shared@example.com');
+    await expect(context.service.register({ email: 'shared@example.com', password: 'Password-new!', platform: 'skillup' })).rejects.toThrow('Email already exists');
+  });
+
+  it('never grants login access to a same-email account from the wrong brand', async () => {
+    const context = createService();
+    await seed(context, 'realtutorialhub', 'student');
+    await expect(context.service.login({ email: 'shared@example.com', password: 'Password-realtutorialhub!', platform: 'skillup' })).rejects.toThrow('Invalid credentials');
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it('independently rejects a repository result outside the selected platform', async () => {
+    const context = createService();
+    const rth = await seed(context, 'realtutorialhub');
+    vi.spyOn(context.repo, 'findByEmail').mockResolvedValue(rth);
+    const compare = vi.spyOn(context.passwordService, 'compare');
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-realtutorialhub!', 'skillup')).rejects.toThrow('Invalid credentials');
+    await expect(context.service.login({ email: 'shared@example.com', password: 'Password-realtutorialhub!', platform: 'skillup' })).rejects.toThrow('Invalid credentials');
+    expect(compare).not.toHaveBeenCalled();
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it('does not select an SHC account for the standalone administrative login', async () => {
+    const context = createService();
+    await seed(context, 'skillhubcore' as PeoplePlatform);
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillhubcore!')).rejects.toThrow('Invalid credentials');
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it('rejects duplicate normalized accounts within the selected platform', async () => {
+    const context = createService();
+    await seed(context, 'skillup');
+    await seed(context, 'skillup');
+    await expect(context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup')).rejects.toThrow('Invalid credentials');
+    expect(context.repo.sessions.size).toBe(0);
+  });
+
+  it('normalizes the route selector while ignoring forged platform and privilege headers', async () => {
+    const context = createService();
+    const suia = await seed(context, 'skillup');
+    await seed(context, 'realtutorialhub');
+    const routes = createAuthRoutes(context.service);
+    const request = (body: Record<string, string>) => routes.request('/admin/login', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-forwarded-for': '192.0.2.201',
+        'x-platform': 'realtutorialhub',
+        'x-brand': 'skillhubcore',
+        'x-role': 'super_admin',
+      },
+      body: JSON.stringify(body),
+    });
+    const response = await request({ email: ' SHARED@EXAMPLE.COM ', password: 'Password-skillup!', platform: 'skillup' });
+    expect(response.status).toBe(200);
+    const result = await response.json();
+    expect(result.user.id).toBe(suia.id);
+    expect(result.user.platforms).toEqual(['skillup']);
+    const claims = await context.tokenService.verifySkillHubCoreJWT(result.accessToken);
+    expect(claims.roles).toEqual(['admin']);
+    expect(claims.brand).toBe('skillup');
+    const ambiguous = await request({ email: 'shared@example.com', password: 'Password-skillup!' });
+    expect(ambiguous.status).toBe(401);
+    const invalid = await request({ email: 'shared@example.com', password: 'Password-skillup!', platform: 'skillhubcore' });
+    expect(invalid.status).toBe(400);
+    expect(context.repo.sessions.size).toBe(1);
+  });
+
+  it('refresh rejects revoked platform access and inactive accounts', async () => {
+    const context = createService();
+    const user = await seed(context, 'skillup');
+    const login = await context.service.loginAdmin('shared@example.com', 'Password-skillup!', 'skillup');
+    context.repo.platforms.set(user.id, []);
+    await expect(context.service.refresh(login.refreshToken)).rejects.toThrow('Invalid refresh token');
+    context.repo.platforms.set(user.id, ['skillup']);
+    user.isActive = false;
+    await expect(context.service.refresh(login.refreshToken)).rejects.toThrow('Invalid refresh token');
   });
 });

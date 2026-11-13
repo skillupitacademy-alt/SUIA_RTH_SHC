@@ -1,0 +1,176 @@
+{
+  "baselineHashVerified": true,
+  "unchangedDiagnostics": true,
+  "outputs": [
+    {
+      "name": "baseline",
+      "exitCode": 1,
+      "errorCount": 2,
+      "warningCount": 9,
+      "messages": [
+        {
+          "ruleId": "@typescript-eslint/no-unused-vars",
+          "line": 21,
+          "column": 3,
+          "message": "'LiveSessionRequestCreateInput' is defined but never used.",
+          "severity": 2
+        },
+        {
+          "ruleId": "@typescript-eslint/no-unused-vars",
+          "line": 25,
+          "column": 3,
+          "message": "'LiveSessionRequestUpdateInput' is defined but never used.",
+          "severity": 2
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 427,
+          "column": 25,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 429,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 429,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 430,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 430,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 431,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 431,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 432,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 432,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        }
+      ]
+    },
+    {
+      "name": "current",
+      "exitCode": 1,
+      "errorCount": 2,
+      "warningCount": 9,
+      "messages": [
+        {
+          "ruleId": "@typescript-eslint/no-unused-vars",
+          "line": 21,
+          "column": 3,
+          "message": "'LiveSessionRequestCreateInput' is defined but never used.",
+          "severity": 2
+        },
+        {
+          "ruleId": "@typescript-eslint/no-unused-vars",
+          "line": 25,
+          "column": 3,
+          "message": "'LiveSessionRequestUpdateInput' is defined but never used.",
+          "severity": 2
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 427,
+          "column": 25,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 429,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 429,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 430,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 430,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 431,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 431,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 432,
+          "column": 21,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        },
+        {
+          "ruleId": "@typescript-eslint/no-explicit-any",
+          "line": 432,
+          "column": 31,
+          "message": "Unexpected any. Specify a different type.",
+          "severity": 1
+        }
+      ]
+    }
+  ]
+}

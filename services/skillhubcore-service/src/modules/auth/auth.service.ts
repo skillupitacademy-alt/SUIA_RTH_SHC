@@ -38,7 +38,8 @@ export class AuthService {
   }
 
   async register(input: RegisterInput): Promise<AuthResult> {
-    const existing = await this.userRepo.findByEmail(input.email);
+    const email = input.email.trim().toLowerCase();
+    const existing = await this.userRepo.findByEmail(email, input.platform);
     if (existing !== undefined) {
       throw new Error('Email already exists');
     }
@@ -49,7 +50,7 @@ export class AuthService {
 
     const result = await this.userRepo.transaction(async (repo) => {
       const user = await repo.createUser({
-        email: input.email,
+        email,
         passwordHash,
         role: input.role ?? 'student',
         platform: input.platform,
@@ -101,8 +102,8 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<AuthResult> {
-    const user = await this.userRepo.findByEmail(input.email);
-    if (user === undefined) {
+    const user = await this.userRepo.findByEmail(input.email.trim().toLowerCase(), input.platform);
+    if (user === undefined || user.platform !== input.platform) {
       throw new Error('Invalid credentials');
     }
 
@@ -122,7 +123,11 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    const platforms = await this.ssoService.grantPlatformAccess(user.id, input.platform);
+    const grantedPlatforms = await this.userRepo.listPlatforms(user.id);
+    if (!grantedPlatforms.includes(input.platform)) {
+      throw new Error('Forbidden');
+    }
+    const platforms = [input.platform];
 
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
     const familyId = TokenService.generateFamilyId();
@@ -160,9 +165,11 @@ export class AuthService {
     return this.tokenRotationService.rotate(refreshToken);
   }
 
-  async loginAdmin(email: string, password: string): Promise<AuthResult> {
-    const user = await this.userRepo.findByEmail(email);
-    if (user === undefined) {
+  async loginAdmin(email: string, password: string, platform?: PlatformName): Promise<AuthResult> {
+    const user = await this.userRepo.findByEmail(email.trim().toLowerCase(), platform);
+    if (user === undefined
+      || (user.platform !== 'skillup' && user.platform !== 'realtutorialhub')
+      || (platform !== undefined && user.platform !== platform)) {
       throw new Error('Invalid credentials');
     }
 
@@ -187,16 +194,18 @@ export class AuthService {
 
     const subscriptions = await this.subscriptionService.getFeatures(user.id);
     const configuredPlatforms = await this.userRepo.listPlatforms(user.id);
-    const platforms: PlatformName[] = configuredPlatforms.length > 0
-      ? configuredPlatforms
-      : ['realtutorialhub', 'skillup'];
+    const accountPlatform = user.platform;
+    if (!configuredPlatforms.includes(accountPlatform)) {
+      throw new Error('Forbidden');
+    }
+    const platforms: PlatformName[] = [accountPlatform];
     const familyId = TokenService.generateFamilyId();
 
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signSkillHubCoreAccessToken(user.id, [user.role], subscriptions, platforms, {
         originalUserId: user.id,
         shadowUserId: user.id,
-        brand: platforms[0] ?? 'realtutorialhub',
+        brand: accountPlatform,
       }),
       this.tokenService.signSkillHubCoreRefreshToken(user.id, familyId),
     ]);
@@ -207,7 +216,7 @@ export class AuthService {
       await repo.createSession({
         userId: user.id,
         jwtFamily: familyId,
-        platform: (platforms[0] ?? 'realtutorialhub') as PlatformName,
+        platform: accountPlatform,
         refreshTokenHash: refreshToken,
       });
       await repo.createAuditLog({

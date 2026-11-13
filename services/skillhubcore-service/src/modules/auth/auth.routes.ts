@@ -8,21 +8,22 @@ import { requireAuth, requirePlatform } from '@/middleware/verify-jwt';
 import type { AuthService } from './auth.service';
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
   platform: z.enum(['realtutorialhub', 'skillup']),
   role: z.enum(['student', 'faculty', 'admin']).optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),
   platform: z.enum(['realtutorialhub', 'skillup']),
 });
 
 const adminLoginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),
+  platform: z.enum(['realtutorialhub', 'skillup']).optional(),
   portalIdentity: z.enum(['admin', 'super_admin']).default('super_admin'),
 });
 
@@ -106,7 +107,7 @@ export const createAuthRoutes = (authService: AuthService): Hono => {
     }
 
     try {
-      const result = await authService.loginAdmin(parsed.data.email, parsed.data.password);
+      const result = await authService.loginAdmin(parsed.data.email, parsed.data.password, parsed.data.platform);
       return c.json(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';

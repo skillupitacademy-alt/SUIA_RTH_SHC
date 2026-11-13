@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-13T18:38:44.662Z",
+  "head": "db2f5a6d0db1fb2f8ee7ae56942030b87c76898a",
+  "hashes": {
+    "services/skillhubcore-service/src/modules/user/user.repository.ts": "8a6c5ba82789a75bf590825d37a93f7fe6ddb7de1c9c2da19515270ef8faeff7",
+    "services/skillhubcore-service/src/modules/auth/auth.service.ts": "a39fa6105f1fbb8efa22268c89a211e7e4ffd5493586fac33393f6f8b7764b8e",
+    "services/skillhubcore-service/src/modules/auth/auth.routes.ts": "09c43394fdcab4a77495075457cbcb0c04549466e51e4f979074eaf060b6ab67",
+    "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts": "2c49e8040286751f7e9cf9fe9784702fe04cf8bd4d2114acf52b0110560bb90b",
+    "packages/types/src/tutorial-repositories.types.ts": "1098f2d649509878a501a518249af0462b037c9438fc2fddd716c59862ce5fdf",
+    "apps/api-server/src/modules/auth/shc-auth.service.ts": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+    "apps/skillup-web/src/lib/student-auth.ts": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+    "apps/skillup-web/next-env.d.ts": "7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651"
+  }
+}
