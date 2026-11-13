@@ -1,0 +1,53 @@
+{
+  "started": "2026-11-13T18:55:28.925Z",
+  "mode": "Read-only per-database identity snapshots; UUID joins in memory; aggregate output only",
+  "targets": [
+    {
+      "key": "DATABASE_URL_PEOPLE",
+      "readOnly": true,
+      "rows": 319
+    },
+    {
+      "key": "DATABASE_URL_SKILLUP",
+      "readOnly": true,
+      "rows": 46
+    },
+    {
+      "key": "DATABASE_URL_RTH",
+      "readOnly": true,
+      "rows": 103
+    }
+  ],
+  "status": "VERIFIED READONLY AGGREGATES",
+  "brands": [
+    {
+      "platform": "skillup",
+      "totalBrandRows": 46,
+      "undeletedBrandRows": 46,
+      "missingShadow": 1,
+      "missingPerson": 0,
+      "wrongPlatform": 0,
+      "externalIdMismatch": 0,
+      "invalidPersonState": 0,
+      "missingGrantOnMappedAccount": 0,
+      "correctlyMapped": 45,
+      "peopleRowsWithExternalIdWithoutLocalAccount": 0,
+      "peopleRowsWithoutExternalId": 172
+    },
+    {
+      "platform": "realtutorialhub",
+      "totalBrandRows": 103,
+      "undeletedBrandRows": 103,
+      "missingShadow": 2,
+      "missingPerson": 0,
+      "wrongPlatform": 0,
+      "externalIdMismatch": 0,
+      "invalidPersonState": 0,
+      "missingGrantOnMappedAccount": 0,
+      "correctlyMapped": 101,
+      "peopleRowsWithExternalIdWithoutLocalAccount": 0,
+      "peopleRowsWithoutExternalId": 0
+    }
+  ],
+  "finished": "2026-11-13T18:55:31.157Z"
+}

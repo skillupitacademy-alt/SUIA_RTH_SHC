@@ -1,0 +1,22 @@
+{
+  "captured": "2026-11-13T18:54:38.092Z",
+  "head": "b8a3ec4a03332c5053dd3c954bc19ba130ffe9aa",
+  "hashes": {
+    "packages/db-people/src/schema/users.ts": "8dbac150390589d44d8f1d1a866045377112b111bdab4e6e76299538d7948cec",
+    "packages/db-people/src/schema/platform-access.ts": "9a5e0c465c88cdec447f0fa93dfe9fefb9ae2f4fea365c408bd87a475373a573",
+    "packages/db-people/src/seed-skillup.ts": "f0baa89365ec6856371d857e6090fe6d2e2946db84e6ccc61ef975161372c5d5",
+    "packages/identity-bridge/src/UserIdentityBridgeService.ts": "84ff0f49b1d538dc7a98f4736ec9706df3cd70eaf6c5e43e260a381807eec3bb",
+    "apps/api-server/src/modules/auth/signup.service.ts": "eaf44165ac2dc2e62fb36df7e7a738d993c61fc748acf0a3cd0eda13a0e5bebe",
+    "apps/api-server/src/modules/auth/login.service.ts": "d60b142c8774263882f3e3cb1dac4c44a4c6beb5beb5f908b36c855449241571",
+    "apps/api-server/src/modules/auth/shc-auth.service.ts": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+    "apps/skillup-web/src/lib/student-auth.ts": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+    "services/skillhubcore-service/src/index.ts": "f7cb14ca994c45ef18b6645213829c46b21bb6a7dcf8513c153fb1df7b245765",
+    "services/skillhubcore-service/src/modules/auth/auth.service.ts": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+    "services/skillhubcore-service/src/modules/auth/auth.routes.ts": "f24e476178eb5b6d57758f0d54666eafd71f35159e8e8bcd00a1bf3e06205b88",
+    "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+    "services/skillhubcore-service/src/modules/user/user.repository.ts": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+    "packages/db-people/migrations/meta/_journal.json": "0b084a76378fafcc4bbad5c3777f48cca22ef1e2b949c642c3bff09bf361e252",
+    "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+    ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "captured": "2026-11-13T18:56:46.955Z",
+  "transaction": "READ ONLY",
+  "sql": "SELECT to_regclass('public.student_invitations')::text AS student_invitations_table, pg_size_pretty(pg_total_relation_size('public.users')) AS users_total_size, (SELECT count(*)::int FROM pg_constraint WHERE contype='f' AND confrelid='public.users'::regclass AND pg_get_constraintdef(oid) LIKE '%REFERENCES users(email)%') AS email_reference_count",
+  "rows": [
+    {
+      "student_invitations_table": null,
+      "users_total_size": "264 kB",
+      "email_reference_count": 0
+    }
+  ]
+}

@@ -1,0 +1,478 @@
+{
+  "started": "2026-11-13T18:54:38.200Z",
+  "mode": "READ ONLY transaction; aggregate identity/grant checks and system catalogs only",
+  "queries": [
+    {
+      "name": "transaction",
+      "sql": "SELECT current_setting('transaction_read_only') AS read_only, current_setting('server_version') AS version",
+      "started": "2026-11-13T18:54:39.121Z",
+      "rows": [
+        {
+          "read_only": "on",
+          "version": "17.12 (14c6cec)"
+        }
+      ]
+    },
+    {
+      "name": "columns",
+      "sql": "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='users' ORDER BY ordinal_position",
+      "started": "2026-11-13T18:54:39.212Z",
+      "rows": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "email",
+          "data_type": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "password_hash",
+          "data_type": "text",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "role",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "platform",
+          "data_type": "USER-DEFINED",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "deleted_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "version",
+          "data_type": "integer",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO"
+        },
+        {
+          "column_name": "external_id",
+          "data_type": "uuid",
+          "is_nullable": "YES"
+        },
+        {
+          "column_name": "external_brand",
+          "data_type": "text",
+          "is_nullable": "YES"
+        }
+      ]
+    },
+    {
+      "name": "constraints",
+      "sql": "SELECT c.conname, c.contype, c.conrelid::regclass::text AS owner_table, c.confrelid::regclass::text AS referenced_table, pg_get_constraintdef(c.oid) AS definition FROM pg_constraint c WHERE c.conrelid IN ('public.users'::regclass,'public.platform_access'::regclass) OR c.confrelid='public.users'::regclass ORDER BY owner_table, c.conname",
+      "started": "2026-11-13T18:54:39.443Z",
+      "rows": [
+        {
+          "conname": "admissions_approved_by_users_id_fk",
+          "contype": "f",
+          "owner_table": "admissions",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL"
+        },
+        {
+          "conname": "admissions_student_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "admissions",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "attendance_records_student_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "attendance_records",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "batch_enrollments_student_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "batch_enrollments",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "enquiries_assigned_counsellor_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "enquiries",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (assigned_counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+        },
+        {
+          "conname": "enquiry_follow_ups_counsellor_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "enquiry_follow_ups",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+        },
+        {
+          "conname": "faculty_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "faculty",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "payment_installments_student_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "payment_installments",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "platform_access_pkey",
+          "contype": "p",
+          "owner_table": "platform_access",
+          "referenced_table": "-",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "conname": "platform_access_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "platform_access",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+        },
+        {
+          "conname": "refresh_token_families_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "refresh_token_families",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+        },
+        {
+          "conname": "sso_sessions_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "sso_sessions",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+        },
+        {
+          "conname": "student_placement_profiles_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "student_placement_profiles",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "subscriptions_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "subscriptions",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+        },
+        {
+          "conname": "user_features_cache_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "user_features_cache",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "user_profiles_user_id_users_id_fk",
+          "contype": "f",
+          "owner_table": "user_profiles",
+          "referenced_table": "users",
+          "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "conname": "users_email_unique",
+          "contype": "u",
+          "owner_table": "users",
+          "referenced_table": "-",
+          "definition": "UNIQUE (email)"
+        },
+        {
+          "conname": "users_pkey",
+          "contype": "p",
+          "owner_table": "users",
+          "referenced_table": "-",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ]
+    },
+    {
+      "name": "indexes",
+      "sql": "SELECT t.relname AS table_name, i.relname AS index_name, x.indisunique, x.indisvalid, x.indisready, pg_get_indexdef(i.oid) AS definition FROM pg_index x JOIN pg_class t ON t.oid=x.indrelid JOIN pg_class i ON i.oid=x.indexrelid WHERE x.indrelid IN ('public.users'::regclass,'public.platform_access'::regclass) ORDER BY table_name,index_name",
+      "started": "2026-11-13T18:54:39.540Z",
+      "rows": [
+        {
+          "table_name": "platform_access",
+          "index_name": "platform_access_pkey",
+          "indisunique": true,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+        },
+        {
+          "table_name": "platform_access",
+          "index_name": "platform_access_user_platform_unique",
+          "indisunique": true,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+        },
+        {
+          "table_name": "users",
+          "index_name": "idx_users_email_platform",
+          "indisunique": false,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "table_name": "users",
+          "index_name": "idx_users_external_id_platform",
+          "indisunique": true,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+        },
+        {
+          "table_name": "users",
+          "index_name": "users_email_unique",
+          "indisunique": true,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+        },
+        {
+          "table_name": "users",
+          "index_name": "users_pkey",
+          "indisunique": true,
+          "indisvalid": true,
+          "indisready": true,
+          "definition": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+        }
+      ]
+    },
+    {
+      "name": "accounts",
+      "sql": "SELECT platform::text, role::text, count(*)::int AS total, count(*) FILTER (WHERE deleted_at IS NULL)::int AS undeleted, count(*) FILTER (WHERE deleted_at IS NULL AND is_active)::int AS active FROM public.users GROUP BY platform,role ORDER BY platform,role",
+      "started": "2026-11-13T18:54:39.616Z",
+      "rows": [
+        {
+          "platform": "realtutorialhub",
+          "role": "admin",
+          "total": 1,
+          "undeleted": 1,
+          "active": 1
+        },
+        {
+          "platform": "realtutorialhub",
+          "role": "student",
+          "total": 99,
+          "undeleted": 99,
+          "active": 99
+        },
+        {
+          "platform": "realtutorialhub",
+          "role": "super_admin",
+          "total": 1,
+          "undeleted": 1,
+          "active": 1
+        },
+        {
+          "platform": "skillhubcore",
+          "role": "super_admin",
+          "total": 1,
+          "undeleted": 1,
+          "active": 1
+        },
+        {
+          "platform": "skillup",
+          "role": "student",
+          "total": 217,
+          "undeleted": 217,
+          "active": 217
+        }
+      ]
+    },
+    {
+      "name": "duplicates",
+      "sql": "SELECT count(*)::int AS conflicting_groups, coalesce(sum(n),0)::int AS conflicting_rows FROM (SELECT count(*) AS n FROM public.users WHERE deleted_at IS NULL GROUP BY lower(trim(email)),platform HAVING count(*)>1) d",
+      "started": "2026-11-13T18:54:39.707Z",
+      "rows": [
+        {
+          "conflicting_groups": 0,
+          "conflicting_rows": 0
+        }
+      ]
+    },
+    {
+      "name": "cross_platform",
+      "sql": "SELECT count(*)::int AS shared_normalized_email_groups FROM (SELECT lower(trim(email)) FROM public.users WHERE deleted_at IS NULL GROUP BY lower(trim(email)) HAVING count(DISTINCT platform)>1) d",
+      "started": "2026-11-13T18:54:39.796Z",
+      "rows": [
+        {
+          "shared_normalized_email_groups": 0
+        }
+      ]
+    },
+    {
+      "name": "normalization",
+      "sql": "SELECT count(*) FILTER (WHERE email <> lower(trim(email)))::int AS noncanonical_rows, count(*) FILTER (WHERE trim(email)='')::int AS blank_rows, count(*) FILTER (WHERE email ~ '[[:space:]]' AND email <> trim(email))::int AS surrounding_whitespace_rows FROM public.users WHERE deleted_at IS NULL",
+      "started": "2026-11-13T18:54:39.862Z",
+      "rows": [
+        {
+          "noncanonical_rows": 0,
+          "blank_rows": 0,
+          "surrounding_whitespace_rows": 0
+        }
+      ]
+    },
+    {
+      "name": "grants",
+      "sql": "SELECT u.platform::text, count(*)::int AS active_accounts, count(*) FILTER (WHERE NOT EXISTS (SELECT 1 FROM public.platform_access p WHERE p.user_id=u.id AND p.platform=u.platform AND p.deleted_at IS NULL))::int AS missing_active_own_platform_grant FROM public.users u WHERE u.deleted_at IS NULL AND u.is_active GROUP BY u.platform ORDER BY u.platform",
+      "started": "2026-11-13T18:54:39.929Z",
+      "rows": [
+        {
+          "platform": "realtutorialhub",
+          "active_accounts": 101,
+          "missing_active_own_platform_grant": 0
+        },
+        {
+          "platform": "skillup",
+          "active_accounts": 217,
+          "missing_active_own_platform_grant": 171
+        },
+        {
+          "platform": "skillhubcore",
+          "active_accounts": 1,
+          "missing_active_own_platform_grant": 1
+        }
+      ]
+    },
+    {
+      "name": "grant_integrity",
+      "sql": "SELECT count(*) FILTER (WHERE u.id IS NULL)::int AS orphan_grants, count(*) FILTER (WHERE p.deleted_at IS NOT NULL)::int AS deleted_grants, count(*) FILTER (WHERE u.id IS NOT NULL AND p.platform<>u.platform AND p.deleted_at IS NULL)::int AS cross_platform_grants FROM public.platform_access p LEFT JOIN public.users u ON u.id=p.user_id",
+      "started": "2026-11-13T18:54:40.006Z",
+      "rows": [
+        {
+          "orphan_grants": 0,
+          "deleted_grants": 0,
+          "cross_platform_grants": 1
+        }
+      ]
+    },
+    {
+      "name": "external_identity",
+      "sql": "SELECT platform::text, count(*) FILTER (WHERE external_id IS NULL)::int AS missing_external_id, count(*) FILTER (WHERE external_brand IS NOT NULL AND external_brand<>platform::text)::int AS mismatched_external_brand FROM public.users WHERE deleted_at IS NULL GROUP BY platform ORDER BY platform",
+      "started": "2026-11-13T18:54:40.079Z",
+      "rows": [
+        {
+          "platform": "realtutorialhub",
+          "missing_external_id": 0,
+          "mismatched_external_brand": 0
+        },
+        {
+          "platform": "skillhubcore",
+          "missing_external_id": 1,
+          "mismatched_external_brand": 0
+        },
+        {
+          "platform": "skillup",
+          "missing_external_id": 172,
+          "mismatched_external_brand": 0
+        }
+      ]
+    },
+    {
+      "name": "external_duplicates",
+      "sql": "SELECT count(*)::int AS conflicting_external_identity_groups FROM (SELECT external_id,platform FROM public.users WHERE external_id IS NOT NULL GROUP BY external_id,platform HAVING count(*)>1) d",
+      "started": "2026-11-13T18:54:40.142Z",
+      "rows": [
+        {
+          "conflicting_external_identity_groups": 0
+        }
+      ]
+    },
+    {
+      "name": "migration_table",
+      "sql": "SELECT table_schema,table_name FROM information_schema.tables WHERE table_name='__drizzle_migrations' ORDER BY table_schema",
+      "started": "2026-11-13T18:54:40.205Z",
+      "rows": [
+        {
+          "table_schema": "drizzle",
+          "table_name": "__drizzle_migrations"
+        }
+      ]
+    },
+    {
+      "name": "migration_ledger_drizzle",
+      "sql": "SELECT id,hash,created_at FROM \"drizzle\".\"__drizzle_migrations\" ORDER BY created_at,id",
+      "rows": [
+        {
+          "id": 1,
+          "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+          "created_at": "1774191220131"
+        },
+        {
+          "id": 2,
+          "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+          "created_at": "1774536900897"
+        },
+        {
+          "id": 3,
+          "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+          "created_at": "1774537191952"
+        },
+        {
+          "id": 25,
+          "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+          "created_at": "1774538285178"
+        },
+        {
+          "id": 26,
+          "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+          "created_at": "1774541869102"
+        },
+        {
+          "id": 27,
+          "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+          "created_at": "1774550945793"
+        },
+        {
+          "id": 29,
+          "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+          "created_at": "1774591239501"
+        },
+        {
+          "id": 30,
+          "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+          "created_at": "1774935418558"
+        },
+        {
+          "id": 31,
+          "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+          "created_at": "1774938098054"
+        }
+      ]
+    }
+  ],
+  "status": "VERIFIED READONLY SNAPSHOT",
+  "targetFingerprint": "1afab5e2e8e6ad74fe44c4ecc682d7e34ea0a37e32f9bbe72a81ce846a6d9d98",
+  "finished": "2026-11-13T18:54:40.413Z"
+}

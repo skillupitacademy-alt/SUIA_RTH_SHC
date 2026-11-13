@@ -1,0 +1,189 @@
+{
+  "captured": "2026-11-13T19:00:15.408Z",
+  "sourceBaseline": "b8a3ec4a03332c5053dd3c954bc19ba130ffe9aa",
+  "headNow": "b8a3ec4a03332c5053dd3c954bc19ba130ffe9aa",
+  "sourceComparisons": [
+    {
+      "path": "packages/db-people/src/schema/users.ts",
+      "expected": "8dbac150390589d44d8f1d1a866045377112b111bdab4e6e76299538d7948cec",
+      "current": "8dbac150390589d44d8f1d1a866045377112b111bdab4e6e76299538d7948cec",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/src/schema/platform-access.ts",
+      "expected": "9a5e0c465c88cdec447f0fa93dfe9fefb9ae2f4fea365c408bd87a475373a573",
+      "current": "9a5e0c465c88cdec447f0fa93dfe9fefb9ae2f4fea365c408bd87a475373a573",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/src/seed-skillup.ts",
+      "expected": "f0baa89365ec6856371d857e6090fe6d2e2946db84e6ccc61ef975161372c5d5",
+      "current": "f0baa89365ec6856371d857e6090fe6d2e2946db84e6ccc61ef975161372c5d5",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "expected": "84ff0f49b1d538dc7a98f4736ec9706df3cd70eaf6c5e43e260a381807eec3bb",
+      "current": "84ff0f49b1d538dc7a98f4736ec9706df3cd70eaf6c5e43e260a381807eec3bb",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/signup.service.ts",
+      "expected": "eaf44165ac2dc2e62fb36df7e7a738d993c61fc748acf0a3cd0eda13a0e5bebe",
+      "current": "eaf44165ac2dc2e62fb36df7e7a738d993c61fc748acf0a3cd0eda13a0e5bebe",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "expected": "d60b142c8774263882f3e3cb1dac4c44a4c6beb5beb5f908b36c855449241571",
+      "current": "d60b142c8774263882f3e3cb1dac4c44a4c6beb5beb5f908b36c855449241571",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "expected": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "current": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "expected": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "current": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/index.ts",
+      "expected": "f7cb14ca994c45ef18b6645213829c46b21bb6a7dcf8513c153fb1df7b245765",
+      "current": "f7cb14ca994c45ef18b6645213829c46b21bb6a7dcf8513c153fb1df7b245765",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "expected": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "current": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.routes.ts",
+      "expected": "f24e476178eb5b6d57758f0d54666eafd71f35159e8e8bcd00a1bf3e06205b88",
+      "current": "f24e476178eb5b6d57758f0d54666eafd71f35159e8e8bcd00a1bf3e06205b88",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts",
+      "expected": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+      "current": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "expected": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+      "current": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/migrations/meta/_journal.json",
+      "expected": "0b084a76378fafcc4bbad5c3777f48cca22ef1e2b949c642c3bff09bf361e252",
+      "current": "0b084a76378fafcc4bbad5c3777f48cca22ef1e2b949c642c3bff09bf361e252",
+      "matches": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "expected": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "current": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "matches": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "expected": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "current": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "matches": true
+    }
+  ],
+  "sourceMismatches": [],
+  "chg02aComparisons": [
+    {
+      "path": "packages/types/src/tutorial-repositories.types.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.routes.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/__tests__/auth.service.test.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/__tests__/token-rotation.service.test.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/__tests__/user.repository.test.ts",
+      "matches": true
+    }
+  ],
+  "chg02aMismatches": [],
+  "peopleLedgerMatchedRows": 9,
+  "pendingPeopleMigrations": [
+    "0009_student_invitations"
+  ],
+  "evidence": [
+    {
+      "file": "BASELINE.json",
+      "sha256": "ccaab8fe7f1ed873f3e4d0324d4ca83bfd13e371afbb5f2e86e983208ad90328"
+    },
+    {
+      "file": "BRAND_PROJECTION_READONLY.json",
+      "sha256": "b4eb3075a126b6b5662f97d30c66d07c65ad25133932d4c70831e844b0b7371b"
+    },
+    {
+      "file": "BRIDGE_CONTROLLED_ANALYSIS.json",
+      "sha256": "254691d4819cbd5a29b9efa6d76b365c6308201613451543877d19668de1eb4f"
+    },
+    {
+      "file": "DEPENDENCY_READINESS.csv",
+      "sha256": "8960b631b7072e5d4e1393faccecffa3d089932b19c0d8336f1da9057b105f46"
+    },
+    {
+      "file": "MIGRATION_JOURNAL_COMPARISON.json",
+      "sha256": "0b77ee4a962402ecf56c00501a32515f56a846211c3c43efcd2a3fc135c5cdb2"
+    },
+    {
+      "file": "PEOPLEDB_READONLY_CATALOG.json",
+      "sha256": "9105a9868f0df88c01506fa4d9816a194955fe7589107061f61d5c1c68600e8c"
+    },
+    {
+      "file": "READONLY_SUPPLEMENT.json",
+      "sha256": "f51d1dbef599326e863ab31089fa8de75271966d9b9a23a6c5c5b306ae0cd857"
+    }
+  ],
+  "report": {
+    "path": "docs/architecture/reviews/SHC/SOL_R6_B_CHG02_MIGRATION_READINESS_AND_CHG03_REVIEW.md",
+    "sha256": "904dfea85f5b4065ecc355dd67e50dbe645f05e4f16c062e8ebee206ac4ba236"
+  },
+  "execution": {
+    "database": "SELECT catalogs/aggregate identity data within READ ONLY transactions, rolled back",
+    "bridgeProbes": "3 current-source in-memory probes; production source bytes preserved",
+    "migration": "DESIGN ONLY",
+    "gitCli": "No invocation in this task",
+    "wholeWorktreeStatus": "Unverified"
+  },
+  "limitations": [
+    "Snapshot conditions need repeating before execution.",
+    "Per-database snapshots do not establish cross-database snapshot atomicity.",
+    "Migration, backup restore, synthetic SQL writers and runtime browser compatibility unexecuted."
+  ]
+}

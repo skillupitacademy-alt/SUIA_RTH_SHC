@@ -1,0 +1,29 @@
+{
+  "captured": "2026-11-13T18:56:12.696Z",
+  "sourceSha256": "84ff0f49b1d538dc7a98f4736ec9706df3cd70eaf6c5e43e260a381807eec3bb",
+  "classification": "Current source transpiled only in memory; controlled repository/constraint/failure adapters; no SQL, network, source edits or real database writes",
+  "cases": [
+    {
+      "name": "concurrent same external identity",
+      "fulfilled": 1,
+      "rejected": 1,
+      "peopleRows": 1,
+      "grantRows": 1,
+      "interpretation": "unique index prevents duplicate identity; current loser is not recovered into idempotent success"
+    },
+    {
+      "name": "user commit followed by grant failure and repeat sync",
+      "initialRejected": true,
+      "retryReturnedSuccess": true,
+      "peopleRows": 1,
+      "grantRows": 0,
+      "interpretation": "existing-user branch does not heal missing grant"
+    },
+    {
+      "name": "grant lookup sees soft-deleted grant",
+      "activeGrants": 0,
+      "returnedSuccess": true,
+      "interpretation": "soft-deleted grant is reported already granted; revocation/restore policy needs explicit handling"
+    }
+  ]
+}

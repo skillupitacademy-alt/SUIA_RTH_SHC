@@ -1,0 +1,160 @@
+{
+  "captured": "2026-11-13T18:55:10.878Z",
+  "records": [
+    {
+      "tag": "0000_perpetual_microbe",
+      "when": 1774191220131,
+      "rawSha256": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "lfSha256": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "applied": [
+        {
+          "id": 1,
+          "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+          "created_at": "1774191220131"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0001_abnormal_gamma_corps",
+      "when": 1774536900897,
+      "rawSha256": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "lfSha256": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "applied": [
+        {
+          "id": 2,
+          "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+          "created_at": "1774536900897"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0002_low_captain_midlands",
+      "when": 1774537191952,
+      "rawSha256": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "lfSha256": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "applied": [
+        {
+          "id": 3,
+          "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+          "created_at": "1774537191952"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0003_massive_kitty_pryde",
+      "when": 1774538285178,
+      "rawSha256": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "lfSha256": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "applied": [
+        {
+          "id": 25,
+          "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+          "created_at": "1774538285178"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0004_amusing_kang",
+      "when": 1774541869102,
+      "rawSha256": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "lfSha256": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "applied": [
+        {
+          "id": 26,
+          "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+          "created_at": "1774541869102"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0005_people_perf_indexes",
+      "when": 1774550945793,
+      "rawSha256": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "lfSha256": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "applied": [
+        {
+          "id": 27,
+          "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+          "created_at": "1774550945793"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0006_skillhubcore_subscription_schema",
+      "when": 1774591239501,
+      "rawSha256": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "lfSha256": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "applied": [
+        {
+          "id": 29,
+          "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+          "created_at": "1774591239501"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0007_long_sentinels",
+      "when": 1774935418558,
+      "rawSha256": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "lfSha256": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "applied": [
+        {
+          "id": 30,
+          "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+          "created_at": "1774935418558"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0008_common_zodiak",
+      "when": 1774938098054,
+      "rawSha256": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "lfSha256": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "applied": [
+        {
+          "id": 31,
+          "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+          "created_at": "1774938098054"
+        }
+      ],
+      "rawMatches": true,
+      "lfMatches": true,
+      "pendingByInstalledRunner": false
+    },
+    {
+      "tag": "0009_student_invitations",
+      "when": 1791600000000,
+      "rawSha256": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+      "lfSha256": "dc8452f27c575868d4957172697b6c032a11b35b545bdf60ad144288f608d4f0",
+      "applied": [],
+      "rawMatches": false,
+      "lfMatches": false,
+      "pendingByInstalledRunner": true
+    }
+  ],
+  "unmappedLedgerRows": []
+}
