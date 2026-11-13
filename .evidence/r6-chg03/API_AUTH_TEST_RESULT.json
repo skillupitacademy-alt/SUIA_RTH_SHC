@@ -1,0 +1,6 @@
+{
+  "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/auth/__tests__ --maxWorkers=1 --reporter=verbose",
+  "started": "2026-11-13T19:19:00.826Z",
+  "finished": "2026-11-13T19:19:39.103Z",
+  "exitCode": 1
+}

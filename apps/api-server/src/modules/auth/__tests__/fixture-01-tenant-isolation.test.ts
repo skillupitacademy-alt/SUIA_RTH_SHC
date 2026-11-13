@@ -22,7 +22,7 @@ import { TokenService } from '../token.service';
  *   4. Denied attempts create zero sessions.
  *   5. Store isolation: writes in SUIA cannot alter RTH store.
  *   6. Fixture sensitivity check: wrong-store selection is detected.
- *   7. Shadow user ID fast-path assertion: identity bridge is NOT invoked.
+ *   7. Existing shadow identity is revalidated through the controlled bridge.
  */
 
 interface InMemUser {
@@ -112,11 +112,10 @@ const rthStore = new InMemTenantStore('realtutorialhub');
 // Mock identity bridge to spy on sync calls
 const mockIdentityBridgeSync = vi.fn();
 vi.mock('@quiz/identity-bridge', () => ({
-  UserIdentityBridgeService: vi.fn().mockImplementation(() => ({
-    syncUser: mockIdentityBridgeSync,
-    updateShadowUserId: vi.fn(),
-    grantPlatformAccess: vi.fn(),
-  })),
+  UserIdentityBridgeService: class {
+    syncUser = mockIdentityBridgeSync;
+    updateShadowUserId = vi.fn();
+  },
 }));
 
 // Mock brand-db module to bind brand context to our in-memory tenant stores
@@ -188,6 +187,7 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockIdentityBridgeSync.mockReset();
+    mockIdentityBridgeSync.mockImplementation(async (input: { expectedShadowUserId?: string }) => ({ shadowUserId: input.expectedShadowUserId, created: false }));
     suiaStore.reset();
     rthStore.reset();
 
@@ -253,8 +253,8 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     expect(result.isAdmin).toBe(false);
     expect(result.shadowUserId).toBe('shadow-suia-100');
 
-    // Invariant: Identity bridge is NOT invoked because shadowUserId is prepopulated
-    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
+    // The persisted shadow link is revalidated without changing the selected identity.
+    expect(mockIdentityBridgeSync).toHaveBeenCalledWith(expect.objectContaining({ externalId: COLLIDING_LOCAL_USER_ID, platform: 'skillup', expectedShadowUserId: 'shadow-suia-100' }));
 
     // Verify session stored ONLY in SUIA store
     expect(suiaStore.sessions.length).toBe(1);
@@ -290,8 +290,8 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     expect(result.isAdmin).toBe(false);
     expect(result.shadowUserId).toBe('shadow-rth-100');
 
-    // Invariant: Identity bridge is NOT invoked because shadowUserId is prepopulated
-    expect(mockIdentityBridgeSync).toHaveBeenCalledTimes(0);
+    // The persisted shadow link is revalidated without changing the selected identity.
+    expect(mockIdentityBridgeSync).toHaveBeenCalledWith(expect.objectContaining({ externalId: COLLIDING_LOCAL_USER_ID, platform: 'realtutorialhub', expectedShadowUserId: 'shadow-rth-100' }));
 
     // Verify session stored ONLY in RTH store
     expect(rthStore.sessions.length).toBe(1);

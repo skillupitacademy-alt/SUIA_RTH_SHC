@@ -1,0 +1,89 @@
+{
+  "results": [
+    {
+      "name": "bridge-tests",
+      "command": "pnpm --filter @quiz/identity-bridge test",
+      "started": "2026-11-13T19:18:50.694Z",
+      "finished": "2026-11-13T19:18:52.330Z",
+      "exitCode": 0
+    },
+    {
+      "name": "seed-tests",
+      "command": "pnpm --filter @quiz/db-people exec vitest run src/__tests__/seed-user-conflict.test.ts",
+      "started": "2026-11-13T19:18:52.334Z",
+      "finished": "2026-11-13T19:18:53.773Z",
+      "exitCode": 0
+    },
+    {
+      "name": "chg02a-tests",
+      "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts",
+      "started": "2026-11-13T19:18:53.775Z",
+      "finished": "2026-11-13T19:19:04.234Z",
+      "exitCode": 0
+    },
+    {
+      "name": "chg01b-tests",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts --maxWorkers=1",
+      "started": "2026-11-13T19:19:04.236Z",
+      "finished": "2026-11-13T19:19:07.777Z",
+      "exitCode": 0
+    },
+    {
+      "name": "bridge-typecheck",
+      "command": "pnpm --filter @quiz/identity-bridge type-check",
+      "started": "2026-11-13T19:19:07.778Z",
+      "finished": "2026-11-13T19:19:10.174Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-typecheck",
+      "command": "pnpm --filter @quiz/db-people type-check",
+      "started": "2026-11-13T19:19:10.175Z",
+      "finished": "2026-11-13T19:19:12.564Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "started": "2026-11-13T19:19:12.565Z",
+      "finished": "2026-11-13T19:19:16.258Z",
+      "exitCode": 0
+    },
+    {
+      "name": "bridge-lint",
+      "command": "pnpm exec eslint --config packages/eslint-config/index.js --max-warnings=0 packages/identity-bridge/src/UserIdentityBridgeService.ts packages/identity-bridge/src/types.ts packages/identity-bridge/src/index.ts packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "started": "2026-11-13T19:19:16.259Z",
+      "finished": "2026-11-13T19:19:18.031Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-lint",
+      "command": "pnpm --filter @quiz/db-people exec eslint --no-ignore --max-warnings=0 src/seed-skillup.ts src/__tests__/seed-user-conflict.test.ts",
+      "started": "2026-11-13T19:19:18.032Z",
+      "finished": "2026-11-13T19:19:21.171Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint --no-ignore --max-warnings=0 src/modules/auth/login.service.ts src/modules/auth/signup.service.ts src/modules/auth/admin-auth.service.ts",
+      "started": "2026-11-13T19:19:21.172Z",
+      "finished": "2026-11-13T19:19:28.599Z",
+      "exitCode": 0
+    },
+    {
+      "name": "admin-typecheck",
+      "command": "pnpm --filter @quiz/skillup-admin exec tsc --noEmit",
+      "started": "2026-11-13T19:19:28.601Z",
+      "finished": "2026-11-13T19:19:30.996Z",
+      "exitCode": 0
+    },
+    {
+      "name": "admin-lint",
+      "command": "pnpm --filter @quiz/skillup-admin exec eslint --no-ignore --max-warnings=0 src/app/api/admin/students/route.ts src/app/api/admin/students/[id]/route.ts",
+      "started": "2026-11-13T19:19:30.998Z",
+      "finished": "2026-11-13T19:19:35.556Z",
+      "exitCode": 0
+    }
+  ],
+  "environment": "Controlled adapters; database/provider environment removed"
+}

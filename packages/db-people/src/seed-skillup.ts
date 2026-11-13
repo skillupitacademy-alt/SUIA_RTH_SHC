@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 
@@ -39,9 +39,9 @@ import {
   subscriptions,
   topics,
   userProfiles,
-  users,
 } from './schema';
 import { hierarchySeed } from './seed';
+import { normalizeEmail } from './utils/email-normalization';
 
 type SeedAccount = {
   email: string;
@@ -119,32 +119,28 @@ const seedMeta = {
 
 const hashPassword = async (password: string): Promise<string> => bcrypt.hash(password, 12);
 
-async function upsertUser(account: SeedAccount): Promise<string> {
+export async function upsertUser(account: SeedAccount): Promise<string> {
   const passwordHash = await hashPassword(account.password);
-  const [row] = await db
-    .insert(users)
-    .values({
-      email: account.email,
-      passwordHash,
-      role: account.role,
-      platform: account.platform,
-      isActive: true,
-      deletedAt: null,
-    })
-    .onConflictDoUpdate({
-      target: users.email,
-      set: {
-        passwordHash,
-        role: account.role,
-        platform: account.platform,
-        isActive: true,
-        deletedAt: null,
-        updatedAt: new Date(),
-      },
-    })
-    .returning({ id: users.id });
-
-  return row.id;
+  const email = normalizeEmail(account.email);
+  const result = await db.execute<{ id: string }>(sql`
+    INSERT INTO public.users (email, password_hash, role, platform, is_active)
+    VALUES (${email}, ${passwordHash}, ${account.role}, ${account.platform}, true)
+    ON CONFLICT (lower(trim(email)), platform) WHERE deleted_at IS NULL
+    DO NOTHING
+    RETURNING id
+  `);
+  if (result.rows.length === 1) return result.rows[0].id;
+  // A separate statement observes a concurrent winner after INSERT has waited.
+  const existing = await db.execute<{ id: string }>(sql`
+    SELECT id FROM public.users
+    WHERE lower(trim(email)) = ${email}
+      AND platform = ${account.platform} AND deleted_at IS NULL AND is_active = true
+    LIMIT 2
+  `);
+  if (existing.rows.length !== 1) {
+    throw new Error('A unique active seed account is required');
+  }
+  return existing.rows[0].id;
 }
 
 async function upsertUserProfile(userId: string, name: string): Promise<void> {

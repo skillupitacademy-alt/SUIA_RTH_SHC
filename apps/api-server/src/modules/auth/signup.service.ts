@@ -93,8 +93,7 @@ export class SignupService {
         platform: brand,
       });
 
-      await bridge.updateShadowUserId(brandDb, brandUsers, newUser.id, result.shadowUserId);
-      await bridge.grantPlatformAccess(result.shadowUserId, brand);
+      await bridge.updateShadowUserId(brandDb, brandUsers, newUser.id, result.shadowUserId, brand);
       logger.info(
         {
           action: 'identity.bridge.sync_user',
@@ -106,11 +105,13 @@ export class SignupService {
         'Identity bridge sync completed',
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const bridgeCodes = ['IDENTITY_CONFLICT', 'PROJECTION_UNAVAILABLE', 'ACCESS_REVOKED', 'SHADOW_LINK_CONFLICT'];
+      const code = error instanceof Error && 'code' in error && typeof error.code === 'string' && bridgeCodes.includes(error.code)
+        ? error.code : 'PROJECTION_UNAVAILABLE';
       await this.auditService.log({
         userId: newUser.id,
         action: 'identity_bridge_sync_failed',
-        metadata: { error: message, brand, email, retryQueued: true },
+        metadata: { code, brand, recovery: 'LOGIN_RECONCILIATION_REQUIRED' },
         ip,
         brand,
       });
@@ -118,18 +119,11 @@ export class SignupService {
         {
           action: 'identity.bridge.sync_failed',
           brand,
-          userId: newUser.id,
-          retryQueued: true,
-          err: error instanceof Error ? error : undefined,
+          code,
+          recovery: 'LOGIN_RECONCILIATION_REQUIRED',
         },
         'Identity bridge sync failed',
       );
-      await eventBus.emit('identity.bridge.retry_requested', {
-        userId: newUser.id,
-        email,
-        brand,
-        requestedAt: new Date(),
-      });
     }
 
     const verificationUrl = buildBrandVerificationUrl(verificationToken, brand);

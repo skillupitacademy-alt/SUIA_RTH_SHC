@@ -1,0 +1,70 @@
+{
+  "ref": "b8a3ec4a03332c5053dd3c954bc19ba130ffe9aa",
+  "results": [
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "rawMatch": true,
+      "crlfMatch": false
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-auth.service.ts",
+      "rawMatch": false,
+      "crlfMatch": false
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/signup.service.ts",
+      "rawMatch": true,
+      "crlfMatch": false
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.test.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts",
+      "rawMatch": false,
+      "crlfMatch": false
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts",
+      "rawMatch": false,
+      "crlfMatch": false
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-lifecycle-transition.test.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-tenant-session-isolation.test.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-01-tenant-isolation.test.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/login-01-purpose.test.ts",
+      "rawMatch": false,
+      "crlfMatch": true
+    }
+  ]
+}

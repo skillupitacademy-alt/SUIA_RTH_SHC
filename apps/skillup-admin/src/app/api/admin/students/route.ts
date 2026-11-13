@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { listAdminStudents } from '@/lib/skillup-admin-data';
@@ -14,7 +14,7 @@ import { admissions, db, enquiries, userProfiles, users } from '@quiz/db-people'
 
 const createStudentSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   batchId: z.string().min(1),
   batchName: z.string().min(1),
 });
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       .from(users)
       .where(
         and(
-          eq(users.email, normalizedEmail),
+          sql`lower(trim(${users.email})) = ${normalizedEmail}`,
           eq(users.platform, 'skillup'),
           isNull(users.deletedAt)
         )

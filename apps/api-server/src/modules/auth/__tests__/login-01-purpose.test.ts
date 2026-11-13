@@ -486,3 +486,15 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose & Ingress Scoping', () =
     });
   });
 });
+
+// This suite qualifies the auth consumer with a controlled, verified bridge.
+// Actual projection/grant/rollback behavior is covered by bridge and recovery tests.
+vi.mock('@quiz/identity-bridge', () => ({
+  UserIdentityBridgeService: class {
+    async syncUser(input: { expectedShadowUserId?: string; platform: string }) {
+      return { shadowUserId: input.expectedShadowUserId ?? (input.platform === 'skillup'
+        ? '22222222-2222-4222-8222-222222222222' : '33333333-3333-4333-8333-333333333333'), created: false };
+    }
+    async updateShadowUserId() {}
+  },
+}));

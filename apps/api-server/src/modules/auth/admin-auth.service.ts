@@ -97,22 +97,20 @@ export class AdminAuthService {
     }
 
     // 5. Success
+    const existingShadowUserId = typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0 ? user.shadowUserId : undefined;
+    const bridge = new UserIdentityBridgeService();
+    const result = await bridge.syncUser({
+      externalId: user.id,
+      externalBrand: brand,
+      email: user.email,
+      platform: brand,
+      expectedShadowUserId: existingShadowUserId,
+      role: roleNames.includes('super_admin') ? 'super_admin' : roleNames.includes('admin') ? 'admin' : 'student',
+    });
+    await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId, brand);
+    const shadowUserId = result.shadowUserId;
     await securityService.trackLoginAttempt(ip, cleanEmail, true, brand);
     await container.get(AuditService).log({ userId: user.id, action: 'admin_login_success', ip, brand });
-    let shadowUserId = typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0 ? user.shadowUserId : undefined;
-    if (shadowUserId === undefined) {
-      const bridge = new UserIdentityBridgeService();
-      const result = await bridge.syncUser({
-        externalId: user.id,
-        externalBrand: brand,
-        email: user.email,
-        platform: brand,
-        role: roleNames.includes('super_admin') ? 'super_admin' : roleNames.includes('admin') ? 'admin' : 'student',
-      });
-      await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
-      await bridge.grantPlatformAccess(result.shadowUserId, brand);
-      shadowUserId = result.shadowUserId;
-    }
 
     // 6. Generate Admin-Scoped Tokens with Portal Identity
     const accessToken = await container.get(TokenService).generateAccessToken({

@@ -1,165 +1,153 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { and, eq, isNull, or } from 'drizzle-orm';
+import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core';
 
-import { db, platformAccess, users } from '@quiz/db-people';
+import { db, normalizeEmail, platformAccess, users, type DbClient } from '@quiz/db-people';
 
 import { logger } from './logger';
 import type { SyncUserInput, SyncUserResult } from './types';
 
-type SupportedPlatform = 'realtutorialhub' | 'skillup' | 'skillhubcore';
+type SupportedPlatform = SyncUserInput['platform'];
+type PeopleTransaction = Parameters<Parameters<DbClient['transaction']>[0]>[0];
+type SourceIdentity = Pick<SyncUserInput, 'externalId' | 'externalBrand'>;
+type BrandIdentityTable = AnyPgTable & {
+  id: AnyPgColumn;
+  shadowUserId: AnyPgColumn;
+  deletedAt: AnyPgColumn;
+};
+
+export class IdentityBridgeError extends Error {
+  constructor(readonly code: 'IDENTITY_CONFLICT' | 'PROJECTION_UNAVAILABLE' | 'ACCESS_REVOKED' | 'SHADOW_LINK_CONFLICT') {
+    super('Identity reconciliation could not be completed');
+    this.name = 'IdentityBridgeError';
+  }
+}
 
 export class UserIdentityBridgeService {
   constructor(private readonly database = db) {}
 
   async syncUser(input: SyncUserInput): Promise<SyncUserResult> {
     if (input.externalBrand !== input.platform) {
-      throw new Error(
-        `Identity bridge mismatch: externalBrand "${input.externalBrand}" does not match platform "${input.platform}"`
-      );
+      throw new IdentityBridgeError('IDENTITY_CONFLICT');
     }
 
-    const existing = await this.database
-      .select({ id: users.id, email: users.email })
-      .from(users)
-      .where(
-        and(
-          eq(users.externalId, input.externalId),
-          eq(users.platform, input.platform),
-          isNull(users.deletedAt),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      const shadowUser = existing[0];
-
-      await this.database
-        .update(users)
-        .set({ email: input.email, updatedAt: new Date() })
-        .where(eq(users.id, shadowUser.id));
-
-      logger.info(
-        {
-          shadowUserId: shadowUser.id,
+    try {
+      const email = normalizeEmail(input.email);
+      const candidateId = randomUUID();
+      const result = await this.database.transaction(async (tx) => {
+        const [inserted] = await tx.insert(users).values({
+          id: candidateId,
           externalId: input.externalId,
           externalBrand: input.externalBrand,
-          action: 'identity.bridge.updated',
-        },
-        'Shadow user updated',
-      );
+          email,
+          platform: input.platform,
+          role: input.role ?? 'student',
+          passwordHash: '',
+        }).onConflictDoNothing().returning({ id: users.id });
 
-      return { shadowUserId: shadowUser.id, created: false };
+        // A conflict can involve the legacy email key or the external identity key.
+        // Resolve only the authoritative identity, including after a concurrent insert.
+        const [existing] = inserted === undefined
+          ? await tx.select({ id: users.id }).from(users).where(and(
+            eq(users.externalId, input.externalId), eq(users.platform, input.platform),
+            eq(users.isActive, true), isNull(users.deletedAt),
+          )).limit(1).for('update')
+          : [];
+        const person = inserted ?? existing;
+
+        if (person === undefined) {
+          throw new IdentityBridgeError('PROJECTION_UNAVAILABLE');
+        }
+        if (input.expectedShadowUserId !== undefined && person.id !== input.expectedShadowUserId) {
+          throw new IdentityBridgeError('SHADOW_LINK_CONFLICT');
+        }
+
+        if (inserted === undefined) {
+          await tx.update(users).set({ email, updatedAt: new Date() }).where(eq(users.id, person.id));
+        }
+
+        // Only the canonical, authenticated brand account may request its own grant.
+        await this.ensurePlatformAccess(tx, person.id, input.platform);
+        return { shadowUserId: person.id, created: person.id === candidateId };
+      }, { isolationLevel: 'read committed' });
+      logger.info({ platform: input.platform, created: result.created, action: 'identity.bridge.reconciled' }, 'Identity projection reconciled');
+      return result;
+    } catch (error) {
+      throw this.safeError(error);
     }
-
-    const newUser = await this.database
-      .insert(users)
-      .values({
-        externalId: input.externalId,
-        externalBrand: input.externalBrand,
-        email: input.email,
-        platform: input.platform,
-        role: input.role ?? 'student',
-        passwordHash: '',
-      })
-      .returning({ id: users.id });
-
-    const shadowUserId = newUser[0].id;
-
-    await this.database.insert(platformAccess).values({
-      userId: shadowUserId,
-      platform: input.platform,
-    });
-
-    logger.info(
-      {
-        shadowUserId,
-        externalId: input.externalId,
-        externalBrand: input.externalBrand,
-        platform: input.platform,
-        action: 'identity.bridge.created',
-      },
-      'Shadow user created',
-    );
-
-    return { shadowUserId, created: true };
   }
 
-  async getShadowUserId(
-    externalId: string,
-    platform: SupportedPlatform,
-  ): Promise<string | null> {
-    const result = await this.database
-      .select({ id: users.id })
-      .from(users)
-      .where(
-        and(
-          eq(users.externalId, externalId),
-          eq(users.platform, platform),
-          isNull(users.deletedAt),
-        ),
-      )
-      .limit(1);
-
-    if (result.length === 0) return null;
-    return result[0].id;
+  async getShadowUserId(externalId: string, platform: SupportedPlatform): Promise<string | null> {
+    const [person] = await this.database.select({ id: users.id }).from(users).where(and(
+      eq(users.externalId, externalId), eq(users.platform, platform),
+      eq(users.isActive, true), isNull(users.deletedAt),
+    )).limit(1);
+    return person?.id ?? null;
   }
 
   async updateShadowUserId(
-    brandDb: any,
-    brandUsersTable: any,
+    brandDb: Pick<DbClient, 'update'>,
+    brandUsersTable: BrandIdentityTable,
     brandUserId: string,
-    shadowUserId: string,
-  ): Promise<void> {
-    await brandDb
-      .update(brandUsersTable)
-      .set({ shadowUserId })
-      .where(eq(brandUsersTable.id, brandUserId));
-
-    logger.info(
-      {
-        brandUserId,
-        shadowUserId,
-        action: 'identity.bridge.linked',
-      },
-      'Shadow user linked to brand user',
-    );
-  }
-
-  async grantPlatformAccess(
     shadowUserId: string,
     platform: SupportedPlatform,
   ): Promise<void> {
-    const existing = await this.database
-      .select()
-      .from(platformAccess)
-      .where(
-        and(
-          eq(platformAccess.userId, shadowUserId),
-          eq(platformAccess.platform, platform),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      logger.info(
-        {
-          shadowUserId,
-          platform,
-          action: 'identity.bridge.access_already_granted',
-        },
-        'Platform access already granted',
-      );
-      return;
+    try {
+      const mappedId = await this.getShadowUserId(brandUserId, platform);
+      if (mappedId !== shadowUserId) {
+        throw new IdentityBridgeError('SHADOW_LINK_CONFLICT');
+      }
+      const linked = await brandDb.update(brandUsersTable).set({ shadowUserId }).where(and(
+        eq(brandUsersTable.id, brandUserId),
+        isNull(brandUsersTable.deletedAt),
+        or(isNull(brandUsersTable.shadowUserId), eq(brandUsersTable.shadowUserId, shadowUserId)),
+      )).returning({ id: brandUsersTable.id });
+      if (linked.length !== 1) {
+        throw new IdentityBridgeError('SHADOW_LINK_CONFLICT');
+      }
+    } catch (error) {
+      throw this.safeError(error);
     }
+  }
 
-    await this.database.insert(platformAccess).values({ userId: shadowUserId, platform });
+  async grantPlatformAccess(shadowUserId: string, platform: SupportedPlatform, source: SourceIdentity): Promise<void> {
+    if (source === undefined || source.externalBrand !== platform) {
+      throw new IdentityBridgeError('IDENTITY_CONFLICT');
+    }
+    try {
+      await this.database.transaction(async (tx) => {
+        const [person] = await tx.select({ id: users.id }).from(users).where(and(
+          eq(users.id, shadowUserId), eq(users.externalId, source.externalId),
+          eq(users.platform, platform), eq(users.isActive, true), isNull(users.deletedAt),
+        )).limit(1).for('update');
+        if (person === undefined) {
+          throw new IdentityBridgeError('IDENTITY_CONFLICT');
+        }
+        await this.ensurePlatformAccess(tx, shadowUserId, platform);
+      });
+    } catch (error) {
+      throw this.safeError(error);
+    }
+  }
 
-    logger.info(
-      {
-        shadowUserId,
-        platform,
-        action: 'identity.bridge.access_granted',
-      },
-      'Platform access granted',
-    );
+  private async ensurePlatformAccess(tx: PeopleTransaction, shadowUserId: string, platform: SupportedPlatform): Promise<void> {
+    await tx.insert(platformAccess).values({ userId: shadowUserId, platform }).onConflictDoNothing({
+      target: [platformAccess.userId, platformAccess.platform],
+    });
+    const [grant] = await tx.select({ deletedAt: platformAccess.deletedAt }).from(platformAccess).where(and(
+      eq(platformAccess.userId, shadowUserId), eq(platformAccess.platform, platform),
+    )).limit(1).for('update');
+    if (grant === undefined || grant.deletedAt !== null) {
+      throw new IdentityBridgeError('ACCESS_REVOKED');
+    }
+  }
+
+  private safeError(error: unknown): IdentityBridgeError {
+    if (error instanceof IdentityBridgeError) return error;
+    const cause = error instanceof Error && 'cause' in error ? error.cause : error;
+    const uniqueConflict = typeof cause === 'object' && cause !== null && 'code' in cause && cause.code === '23505';
+    const safe = new IdentityBridgeError(uniqueConflict ? 'IDENTITY_CONFLICT' : 'PROJECTION_UNAVAILABLE');
+    logger.warn({ code: safe.code, action: 'identity.bridge.failed' }, 'Identity reconciliation failed');
+    return safe;
   }
 }

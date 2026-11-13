@@ -46,35 +46,18 @@ export class LoginService {
     user: { id: string; email: string; shadowUserId?: string | null },
     brand: RequestBrand,
   ): Promise<string> {
-    if (typeof user.shadowUserId === 'string' && user.shadowUserId.trim().length > 0) {
-      return user.shadowUserId;
-    }
+    const bridge = new UserIdentityBridgeService();
+    const brandContext = getAuthBrandContext(brand);
+    const result = await bridge.syncUser({
+      externalId: user.id,
+      externalBrand: brand,
+      email: user.email,
+      platform: brand,
+      expectedShadowUserId: user.shadowUserId ?? undefined,
+    });
 
-    try {
-      const bridge = new UserIdentityBridgeService();
-      const brandContext = getAuthBrandContext(brand);
-      const result = await bridge.syncUser({
-        externalId: user.id,
-        externalBrand: brand,
-        email: user.email,
-        platform: brand,
-      });
-
-      await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId);
-      await bridge.grantPlatformAccess(result.shadowUserId, brand);
-      return result.shadowUserId;
-    } catch (error) {
-      const isTestEnv =
-        process.env.NODE_ENV === 'test' ||
-        process.env.VITEST === 'true' ||
-        process.env.VITEST_WORKER_ID !== undefined;
-
-      if (isTestEnv) {
-        return user.id;
-      }
-
-      throw error;
-    }
+    await bridge.updateShadowUserId(brandContext.db, brandContext.tables.users, user.id, result.shadowUserId, brand);
+    return result.shadowUserId;
   }
 
   async login(
@@ -189,12 +172,6 @@ export class LoginService {
 
     console.log('[LOGIN_DEBUG] SUCCESS: All checks passed, proceeding with token generation');
 
-    // Update Last Active
-    await brandUserRepo.updateLastActive(user.id);
-
-    await brandSecurityService.trackLoginAttempt(ip, email, true, brand);
-    await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
-
     const rawRoleNames = user.userRoles
       .map((ur) => normalizeRoleName(ur.role.name))
       .filter((role): role is string => role !== null);
@@ -221,6 +198,10 @@ export class LoginService {
     }
 
     const shadowUserId = await this.ensureShadowUserId(user, brand);
+
+    await brandUserRepo.updateLastActive(user.id);
+    await brandSecurityService.trackLoginAttempt(ip, email, true, brand);
+    await this.auditService.log({ userId: user.id, action: 'login_success', ip, brand });
 
     timings.afterShadowUser = Date.now();
 

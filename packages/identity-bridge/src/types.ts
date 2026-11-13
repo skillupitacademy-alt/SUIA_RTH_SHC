@@ -6,6 +6,8 @@ export interface SyncUserInput {
   email: string;
   platform: 'realtutorialhub' | 'skillup' | 'skillhubcore';
   role?: 'student' | 'admin' | 'faculty' | 'super_admin';
+  /** Existing persisted brand link, when present. A conflicting link must fail closed. */
+  expectedShadowUserId?: string;
 }
 
 export interface SyncUserResult {

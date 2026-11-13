@@ -8,7 +8,7 @@ import { admissions, batchCapacityService, batchEnrollments, batches, db, enquir
 
 const updateStudentSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   batchId: z.string().min(1),
 });
 

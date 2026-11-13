@@ -1,0 +1,360 @@
+{
+  "captured": "2026-11-13T19:23:22.132Z",
+  "baselineHead": "005f2b36101992e042b2720e19ef8d38cb0fe5ff",
+  "headNow": "005f2b36101992e042b2720e19ef8d38cb0fe5ff",
+  "changedSourceAndTests": [
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "before": "244d839fba03ce374097ead9445350bfe49fc9e7d1eee6f04e5bf0b110a348c9",
+      "after": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99"
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "before": "f5adb0988766c4ac25c6d29c53b032348aeba699a434acd85128471ed1513fec",
+      "after": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e"
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "before": "84ff0f49b1d538dc7a98f4736ec9706df3cd70eaf6c5e43e260a381807eec3bb",
+      "after": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739"
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "before": "aae9e6455462d611722ec2b84c90ee3071843dd18fbb0299feaa1de9357d03bf",
+      "after": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17"
+    },
+    {
+      "path": "packages/db-people/src/seed-skillup.ts",
+      "before": "f0baa89365ec6856371d857e6090fe6d2e2946db84e6ccc61ef975161372c5d5",
+      "after": "fc8efeb9d6dcb52612417b6c10feebbff9e6c043701606d2822cb986ed3bb70e"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-auth.service.ts",
+      "before": "bf2dbbc11e4aef72bac129acc47707ebf3c5307662d207231263d4efba4b1976",
+      "after": "8e2d9ed18111734791fa34366c844d3f554635e2c13977ad136af591b75a3c63"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "before": "d60b142c8774263882f3e3cb1dac4c44a4c6beb5beb5f908b36c855449241571",
+      "after": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/signup.service.ts",
+      "before": "eaf44165ac2dc2e62fb36df7e7a738d993c61fc748acf0a3cd0eda13a0e5bebe",
+      "after": "4ab5321acb92d0f7bd7ada6eac3debd5cc3ee7d34c0424bb919dba0211b4f033"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.test.ts",
+      "before": "f5ea65e96620bbb6a39614dbf00e291b1d606b463ed2ad2630948527b1837724",
+      "after": "0ddbee1b1716bf16fc1b75c5be50b26e00c7ced33081c909cc72336e5f283afa"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts",
+      "before": "b4c5129e40ee622276ea8cec965ff2d8a86179620739c4b029f4778b076690bd",
+      "after": "4a0408d3375d9d1087f212b42033dfbe3a64bca68275c045d306ec31a6a13da0"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts",
+      "before": "172fcd15d4ce310aca1ee0b06250ec14035e7649be553c542c2dffc394eb7798",
+      "after": "1c3efdf2224a6819097492de1b287e96894215739e31901d65c4001de798d287"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-lifecycle-transition.test.ts",
+      "before": "552d1c6845737d267cc866b0e0eafa586081d340f170887518b4e99eb52d3402",
+      "after": "266af61d2d729a956c0eed64fad8905ee22c7a8a8cb6efb41901df81a60076a0"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-tenant-session-isolation.test.ts",
+      "before": "7696550e7a3195354cd4507820345888d798b9897bbc5596ce8494e70aba1c74",
+      "after": "668b21bd3428d73ecefe2df5130f9d53a88d24c1c2f181cae83d55f64d75d446"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-01-tenant-isolation.test.ts",
+      "before": "da83ff71d46a76375dfa1fffe6fd8be6d889ee4c6730a3aa05d70fa23f4b26e6",
+      "after": "0187676fe8b42b464c593df5ac531c625ac9cdd0bcecdc5945948c48b7d81cdb"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/login-01-purpose.test.ts",
+      "before": "e8e05ad12bb5dd4903347e5d67af0e979c8a25e56f5475d8670496dffa0de9d2",
+      "after": "2baf8485b47461e5e73a0fcac5fe9f5451c12c250353d264f8eaf8b8fccd00dc"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/route.ts",
+      "before": "9a8ccb70e91e0c47d87eb9833c77118e82218b45f38c72b3165b5e996b237230",
+      "after": "6c387862511a97aba2cf2d3a5d5953e34de821845765338d353f5542d3a75f38"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/[id]/route.ts",
+      "before": "62af311ecd078f4d2c33b4eb36ea576c3ef7c69238a62830f2381a01ea9cf228",
+      "after": "d57537b593e532c2b1fe9d27625b5aa70436fea589586777de0b6ca032c43000"
+    }
+  ],
+  "addedTests": [
+    {
+      "path": "packages/db-people/src/__tests__/seed-user-conflict.test.ts",
+      "sha256": "9ff307379e5445be357276d3794ee035769cdfd7630bae9385e1d88f5637110e"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/chg03-recovery.test.ts",
+      "sha256": "6c10956eff3713996ac2c896e34b9698285f2e11b085c1d023b7d8cca55bb705"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/__tests__/email-boundary.test.ts",
+      "sha256": "a2d2ec062ee0a4dfe80c4db075eee83b6805662027f3436b0acd827d48a4d6df"
+    }
+  ],
+  "protectedChecks": [
+    {
+      "path": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.engine.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts",
+      "matches": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "matches": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "matches": true
+    }
+  ],
+  "unexpectedHeldOrSchemaChanges": [],
+  "qualityResults": {
+    "results": [
+      {
+        "name": "bridge-tests",
+        "command": "pnpm --filter @quiz/identity-bridge test",
+        "started": "2026-11-13T19:18:50.694Z",
+        "finished": "2026-11-13T19:18:52.330Z",
+        "exitCode": 0
+      },
+      {
+        "name": "seed-tests",
+        "command": "pnpm --filter @quiz/db-people exec vitest run src/__tests__/seed-user-conflict.test.ts",
+        "started": "2026-11-13T19:18:52.334Z",
+        "finished": "2026-11-13T19:18:53.773Z",
+        "exitCode": 0
+      },
+      {
+        "name": "chg02a-tests",
+        "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts",
+        "started": "2026-11-13T19:18:53.775Z",
+        "finished": "2026-11-13T19:19:04.234Z",
+        "exitCode": 0
+      },
+      {
+        "name": "chg01b-tests",
+        "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts --maxWorkers=1",
+        "started": "2026-11-13T19:19:04.236Z",
+        "finished": "2026-11-13T19:19:07.777Z",
+        "exitCode": 0
+      },
+      {
+        "name": "bridge-typecheck",
+        "command": "pnpm --filter @quiz/identity-bridge type-check",
+        "started": "2026-11-13T19:19:07.778Z",
+        "finished": "2026-11-13T19:19:10.174Z",
+        "exitCode": 0
+      },
+      {
+        "name": "people-typecheck",
+        "command": "pnpm --filter @quiz/db-people type-check",
+        "started": "2026-11-13T19:19:10.175Z",
+        "finished": "2026-11-13T19:19:12.564Z",
+        "exitCode": 0
+      },
+      {
+        "name": "api-typecheck",
+        "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+        "started": "2026-11-13T19:19:12.565Z",
+        "finished": "2026-11-13T19:19:16.258Z",
+        "exitCode": 0
+      },
+      {
+        "name": "bridge-lint",
+        "command": "pnpm exec eslint --config packages/eslint-config/index.js --max-warnings=0 packages/identity-bridge/src/UserIdentityBridgeService.ts packages/identity-bridge/src/types.ts packages/identity-bridge/src/index.ts packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+        "started": "2026-11-13T19:19:16.259Z",
+        "finished": "2026-11-13T19:19:18.031Z",
+        "exitCode": 0
+      },
+      {
+        "name": "people-lint",
+        "command": "pnpm --filter @quiz/db-people exec eslint --no-ignore --max-warnings=0 src/seed-skillup.ts src/__tests__/seed-user-conflict.test.ts",
+        "started": "2026-11-13T19:19:18.032Z",
+        "finished": "2026-11-13T19:19:21.171Z",
+        "exitCode": 0
+      },
+      {
+        "name": "api-lint",
+        "command": "pnpm --filter @quiz/api-server exec eslint --no-ignore --max-warnings=0 src/modules/auth/login.service.ts src/modules/auth/signup.service.ts src/modules/auth/admin-auth.service.ts",
+        "started": "2026-11-13T19:19:21.172Z",
+        "finished": "2026-11-13T19:19:28.599Z",
+        "exitCode": 0
+      },
+      {
+        "name": "admin-typecheck",
+        "command": "pnpm --filter @quiz/skillup-admin exec tsc --noEmit",
+        "started": "2026-11-13T19:19:28.601Z",
+        "finished": "2026-11-13T19:19:30.996Z",
+        "exitCode": 0
+      },
+      {
+        "name": "admin-lint",
+        "command": "pnpm --filter @quiz/skillup-admin exec eslint --no-ignore --max-warnings=0 src/app/api/admin/students/route.ts src/app/api/admin/students/[id]/route.ts",
+        "started": "2026-11-13T19:19:30.998Z",
+        "finished": "2026-11-13T19:19:35.556Z",
+        "exitCode": 0
+      }
+    ],
+    "environment": "Controlled adapters; database/provider environment removed"
+  },
+  "authComparison": {
+    "baselineTests": {
+      "passed": 360,
+      "failed": 20
+    },
+    "currentTests": {
+      "passed": 363,
+      "failed": 20
+    },
+    "sameFailureNames": true
+  },
+  "graphifyExit": 0,
+  "emailRouteTestsExit": 0,
+  "emailTestLintExit": 0,
+  "adminFinalTypecheckExit": 0,
+  "report": {
+    "path": "docs/architecture/reviews/SHC/SOL_R6_B_CHG03_IDENTITY_BRIDGE_SOURCE_REVIEW.md",
+    "sha256": "2100e7b9840d3590966d5d23be1123f65d1ba31c37e39dd5d45a488da58e7fbc"
+  },
+  "receipts": [
+    {
+      "file": "admin-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "admin-typecheck-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "admin-typecheck-last.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "api-auth-baseline.log",
+      "sha256": "c66f834873196559386dbefe0d19cab199b1868c99109911e81290b1fe79d11f"
+    },
+    {
+      "file": "api-auth-tests-initial.log",
+      "sha256": "98cc503aa88efab2b59e4ae6aa6a960322bda32896c16ba3e1bb4f476d331e0e"
+    },
+    {
+      "file": "api-auth-tests-prior.log",
+      "sha256": "ef24a88125312de8ba9ad9ac329c4129ba017e9429bc34571f1a2db9858d3991"
+    },
+    {
+      "file": "api-auth-tests.log",
+      "sha256": "036b1879d83b75f7b3d680aa02afdbff0f204451c4ad05758bd444149e573ade"
+    },
+    {
+      "file": "api-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "api-typecheck-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "api-typecheck-initial.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "bridge-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "bridge-tests-final.log",
+      "sha256": "9342cf2267d5aa8c9d3e81ca49dfd70ae7f41425f61eac3913e052c3d8493169"
+    },
+    {
+      "file": "bridge-tests-initial.log",
+      "sha256": "9fdc22993faf29b178f95a1f4e8bf051cfb0c0377d9466e382ef788e0a2bbf02"
+    },
+    {
+      "file": "bridge-tests.log",
+      "sha256": "fc86661727f8c5de45ca1f7b5cd9c187a81708018d4faf962eedea3939906231"
+    },
+    {
+      "file": "bridge-typecheck-final.log",
+      "sha256": "957428f33ff194f81b22c0122d75a90fed932fed5ba6f60d88c08987195d98c5"
+    },
+    {
+      "file": "bridge-typecheck-initial.log",
+      "sha256": "4315d3f8d60239130e34788fef9d26423f3323393db27ec77b8504a3b7985166"
+    },
+    {
+      "file": "bridge-typecheck.log",
+      "sha256": "b3fcab7ab7296b0bfe52a18200524c0a156031ff304d425e2c9b3f06ccda0e1c"
+    },
+    {
+      "file": "chg01b-tests-final.log",
+      "sha256": "1e455c05518060d3c3343e0bede1485b28e1d52ba1f3a39aac5111b2cc7fa9b5"
+    },
+    {
+      "file": "chg02a-tests-final.log",
+      "sha256": "897e31c66871d2c099f98cc16f98fbbc160cc54d8e512b03c8c4850bf6be1223"
+    },
+    {
+      "file": "email-route-tests.log",
+      "sha256": "690c8157b9dd1b61eab88c78ff05f3248bb54b0028739d2ef044c476df5bd02f"
+    },
+    {
+      "file": "email-test-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "graphify-update.log",
+      "sha256": "7f17e325de65e4b172198d9ff456b4cf10bc412cc7aed042d912ada41035e4eb"
+    },
+    {
+      "file": "people-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "people-typecheck-final.log",
+      "sha256": "4465be3f068160ac33b8f09ca0a97906912759a73676c985fdcd4813c3298b29"
+    },
+    {
+      "file": "seed-tests-final.log",
+      "sha256": "c11bda32d920d2a7205af8806e9b6b9e343c22651c0c3a82b420a6e2e8923507"
+    },
+    {
+      "file": "seed-tests.log",
+      "sha256": "ed0ed8dfc268f28237500716aca5d809d488ba5cfa345c8f353887f0f22de6a1"
+    }
+  ],
+  "limits": [
+    "No real PostgreSQL, browser or migration execution.",
+    "Wider API auth suite remains failed with twenty matching baseline failures.",
+    "Whole-worktree Git status unqueried under current restriction."
+  ]
+}
