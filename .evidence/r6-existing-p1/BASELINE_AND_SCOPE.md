@@ -1,0 +1,11 @@
+# R6-A baseline and scope
+
+13 November 2026. Sol owns R6-A authenticated authorization only. Claude owns B/C design and Gemini owns D independent database recovery. Existing hierarchy recovery and schema declarations have no R6-A edit owner. Work is grouped into at most eight findings per checkpoint.
+
+The initial read-only Git checks reported main at62f920f4782b8bbb277f88dc27930cd3b86f1b15 with a clean tree. Those commands preceded reading the attachment's literal ban on all Git CLI operations. This deviation is recorded. Further provenance uses baseline-source-hashes.json, with no additional Git commands. Both attachments are byte-identical183-line work orders. The latest owner allocation limits this execution to A and supersedes the master prompt's combined B/C/D assignment.
+
+Governance00 and applicable previously read01–05, SHC canonical CSV, R4 report and R5 baseline/report/receipts retain their documented precedence. PSEG-001 remains proposed working governance. Historical read-only/SHC-only scope yields to current R6-A implementation authority. R5 has195 method rows across151 files. Its50 HTTP assertions,14 PostgreSQL/worker tests and quality/build receipts remain historical evidence. Source hashes establish reuse applicability.
+
+Attendance, payments, Marketing and broader accessibility/performance are HOLD. No new capability, service, schema, endpoint, provider activity, migration, Git mutation, Docker or deployment is authorized. R6-B's identity mismatch is a dependency gate for tests requiring absent columns. R6-A fixtures may use existing approved run-owned synthetic records and exact cleanup, with local HTTP only. No blanket writes or paid providers.
+
+Checkpoint1 covers question/hierarchy/publishing/blueprint action permissions, quiz mutation ownership and populated RTH private-list boundaries. Existing administrator RBAC grants all current tutorial author actions to admin and wildcard to super_admin. No separate restricted-admin role or arbitrary token-supplied permission override is introduced. Faculty/student negatives and permission-boundary tests establish the existing policy. Populated private reads require actual run-owned data and ownership assertions, not empty-list positives.

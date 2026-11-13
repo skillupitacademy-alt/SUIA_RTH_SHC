@@ -1,0 +1,10 @@
+{
+  "pid": 32072,
+  "started": "2026-11-13T13:46:02.092Z",
+  "localOrigins": [
+    "http://skillhubcore.localhost:3007",
+    "http://skillup.localhost:3009",
+    "http://realtutorialhub.localhost:3003"
+  ],
+  "boundary": "Ephemeral local process environment only. Existing configured origins retained. No environment file or deployment configuration edited."
+}

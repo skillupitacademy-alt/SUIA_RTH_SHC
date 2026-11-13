@@ -1,0 +1,101 @@
+{
+  "baseline": "62f920f4782b8bbb277f88dc27930cd3b86f1b15",
+  "results": [
+    {
+      "name": "api-exam-regressions",
+      "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/exam-engine/__tests__/exam.engine.tail2.test.ts src/modules/exam-engine/__tests__/exam.engine.test.ts --pool=threads --maxWorkers=1 --reporter=verbose",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:27:49.509Z",
+      "finished": "2026-11-13T13:27:51.810Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:27:51.837Z",
+      "finished": "2026-11-13T13:29:14.234Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint src/modules/exam-engine/exam.engine.ts src/modules/auth/admin-audience.util.ts --max-warnings=0",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:29:14.236Z",
+      "finished": "2026-11-13T13:31:13.961Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:31:13.970Z",
+      "finished": "2026-11-13T13:31:49.892Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-admin exec eslint src/lib/__tests__/r6-action-authorization.test.ts --max-warnings=0",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:31:49.893Z",
+      "finished": "2026-11-13T13:31:55.594Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shared-source-lint",
+      "command": "pnpm exec eslint --config .eslintrc.json ../../src/share-branding/middleware/authProxy.ts --max-warnings=0",
+      "cwd": "E:\\onlinewebsites\\quiz-platform\\apps\\skillup-web",
+      "started": "2026-11-13T13:31:55.595Z",
+      "finished": "2026-11-13T13:32:15.098Z",
+      "exitCode": 0
+    },
+    {
+      "name": "rth-targeted",
+      "command": "pnpm --filter @quiz/realtutorialhub-web exec vitest run src/app/api/tutorial/sessions/__tests__/r6-cancellation-security.test.ts src/app/api/tutorial/sessions/__tests__/routes.test.ts --environment=node --pool=threads --maxWorkers=1 --reporter=verbose",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:32:15.151Z",
+      "finished": "2026-11-13T13:32:17.453Z",
+      "exitCode": 0
+    },
+    {
+      "name": "rth-typecheck",
+      "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:32:17.465Z",
+      "finished": "2026-11-13T13:32:49.376Z",
+      "exitCode": 0
+    },
+    {
+      "name": "rth-lint",
+      "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:32:49.379Z",
+      "finished": "2026-11-13T13:33:03.849Z",
+      "exitCode": 0
+    },
+    {
+      "name": "suia-typecheck",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:33:03.902Z",
+      "finished": "2026-11-13T13:33:07.655Z",
+      "exitCode": 0
+    },
+    {
+      "name": "suia-lint",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:33:07.656Z",
+      "finished": "2026-11-13T13:33:19.546Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-boundaries",
+      "command": "pnpm --filter @quiz/skillhubcore-admin check:boundaries",
+      "cwd": "E:\\onlinewebsites\\quiz-platform",
+      "started": "2026-11-13T13:33:19.556Z",
+      "finished": "2026-11-13T13:33:20.597Z",
+      "exitCode": 0
+    }
+  ]
+}

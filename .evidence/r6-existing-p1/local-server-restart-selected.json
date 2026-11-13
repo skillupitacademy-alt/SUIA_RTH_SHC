@@ -1,0 +1,18 @@
+{
+  "started": "2026-11-13T13:48:07.004Z",
+  "results": [
+    {
+      "app": "skillup-web",
+      "port": 3009,
+      "pid": 4484,
+      "url": "http://skillup.localhost:3009"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "port": 3003,
+      "pid": 35924,
+      "url": "http://realtutorialhub.localhost:3003"
+    }
+  ],
+  "boundary": "Authorized local development processes and ephemeral canonical localhost origin configuration."
+}

@@ -1,0 +1,38 @@
+{
+  "runId": "r6-572cf0e7-bc93-41bc-9f67-88947d3ecba9",
+  "timestamp": "2026-11-13T13:27:27.654Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup real password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup warmed own started quiz result",
+      "expected": 202,
+      "actual": 202,
+      "pass": true,
+      "route": "/api/quiz/result",
+      "method": "GET",
+      "requestId": "bff7c770-0908-4066-97be-fc2bc177bf37"
+    },
+    {
+      "name": "realtutorialhub real password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub warmed own started quiz result",
+      "expected": 202,
+      "actual": 202,
+      "pass": true,
+      "route": "/api/quiz/result",
+      "method": "GET",
+      "requestId": "16ae591b-10ee-4e1a-ab04-60a441a9b2de"
+    }
+  ],
+  "cleanupVerified": true
+}

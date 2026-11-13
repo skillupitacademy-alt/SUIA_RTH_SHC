@@ -360,6 +360,9 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       // Existing browser-owned reads still pass current-session and route authorization.
       pathname === '/api/tutorial/projects/submissions' ||
       pathname === '/api/tutorial/sessions/my-requests' ||
+      // Existing learner cancellation remains subject to current-session,
+      // origin and service-level request ownership validation.
+      (request.method === 'DELETE' && /^\/api\/tutorial\/sessions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pathname)) ||
       
       // Browser → BFF tutorial tracking APIs (ILS Phase 2)
       // These are internal BFF routes; the BFF adds the

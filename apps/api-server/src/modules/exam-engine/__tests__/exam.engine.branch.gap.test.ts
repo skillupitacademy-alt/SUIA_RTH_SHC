@@ -154,12 +154,16 @@ describe('ExamEngine branch gap coverage', () => {
     vi.spyOn(cacheService, 'get').mockResolvedValueOnce({ used: true } as any);
     const getActiveSpy = vi
       .spyOn(ExamEngine.prototype as any, 'getAndCacheActiveExam')
-      .mockResolvedValue({} as any);
+      .mockResolvedValue({ id: 'e1', userId: 'u1', status: 'started' } as any);
+    const membership = vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+      id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+    });
 
-    // submitAnswer with idempotency key should short-circuit when cache has value
+    // Accepted retries still verify exam ownership and question membership.
     await container.get(ExamEngine).submitAnswer('e1', 'q1', 'A', 'u1', 'idem-ans');
 
-    expect(getActiveSpy).not.toHaveBeenCalled();
+    expect(getActiveSpy).toHaveBeenCalledWith('u1', 'e1', true);
+    expect(membership).toHaveBeenCalledWith('e1', 'q1');
   });
 
   it('getAndCacheActiveExam caches db result and tolerates cache set failure', async () => {
@@ -204,6 +208,10 @@ describe('ExamEngine branch gap coverage', () => {
   });
 
   it('submitAnswer writes idempotency marker when no cache hit', async () => {
+    vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+      id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+    });
+    vi.spyOn(ExamEngine.prototype, 'updateExamResponse').mockResolvedValue(undefined);
     vi.spyOn(cacheService, 'get').mockResolvedValueOnce(null);
     const cacheSet = vi.spyOn(cacheService, 'set').mockResolvedValue(undefined as any);
     vi.spyOn(ExamEngine.prototype as any, 'getAndCacheActiveExam').mockResolvedValue({
@@ -385,6 +393,10 @@ describe('ExamEngine branch gap coverage', () => {
   });
 
   it('submitAnswer gracefully handles Redis get failure for idempotency check (.catch line 140)', async () => {
+    vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+      id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+    });
+    vi.spyOn(ExamEngine.prototype, 'updateExamResponse').mockResolvedValue(undefined);
     const { cacheService } = await import('@/modules/core/cache.service');
     // Make cacheService.get reject to trigger .catch(() => null) on line 140
     vi.spyOn(cacheService, 'get').mockRejectedValue(new Error('redis down'));

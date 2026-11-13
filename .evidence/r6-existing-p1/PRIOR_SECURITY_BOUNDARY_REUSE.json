@@ -1,0 +1,36 @@
+{
+  "priorHead": "bf1e39bc2d59e779a72629a28e7c55cf3b733492",
+  "scope": "Source-boundary comparison only. Historical runtime receipts retain their original environment and SHA.",
+  "rows": [
+    {
+      "path": "apps/api-server/src/lib/auth-context.ts",
+      "sha256": "3964d853952d87174b3335f2592b469babf2b8d43e925401b2d23ac7cb0e204e",
+      "current": "3964d853952d87174b3335f2592b469babf2b8d43e925401b2d23ac7cb0e204e",
+      "unchanged": true
+    },
+    {
+      "path": "src/share-branding/auth/currentLearnerSession.ts",
+      "sha256": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500",
+      "current": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500",
+      "unchanged": true
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts",
+      "sha256": "61fa6bd21cdf8e9d4fe96a4f01169bbff1599e3ee327ec92b4adc522d2a06e71",
+      "current": "5cf3e6fb75ec3728147e7a80f21db28e1b91ace55284e8e7eb392fe23641c049",
+      "unchanged": false
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "48db11179a9e50645f5e38534fa00ed202ef398eb73325fc1f7adb96bbb62706",
+      "current": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "unchanged": false
+    },
+    {
+      "path": "packages/db-tutorial/src/hierarchy-coordination.ts",
+      "sha256": "3899f2e0a296c32ebb01bce96f9a605039cf413f9820a24b0acde86430c6f4cf",
+      "current": "3899f2e0a296c32ebb01bce96f9a605039cf413f9820a24b0acde86430c6f4cf",
+      "unchanged": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-11-13T13:54:15.687Z",
+  "results": [
+    {
+      "url": "http://localhost:3000/api/health",
+      "status": 200
+    },
+    {
+      "url": "http://skillhubcore.localhost:3007/api/health",
+      "status": 200
+    },
+    {
+      "url": "http://skillup.localhost:3009/api/healthz",
+      "status": 200
+    },
+    {
+      "url": "http://realtutorialhub.localhost:3003/api/healthz",
+      "status": 200
+    }
+  ]
+}

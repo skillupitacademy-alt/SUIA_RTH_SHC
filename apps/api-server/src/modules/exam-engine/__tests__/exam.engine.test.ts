@@ -87,6 +87,51 @@ describe('ExamEngine', () => {
   });
 
   describe('submitAnswer', () => {
+    it('rejects a completed exam despite an older started header in cache', async () => {
+      vi.mocked(cacheService.get).mockResolvedValue(mockExam);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue({ ...mockExam, status: 'completed' } as any);
+      vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+        id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+      });
+      const persist = vi.spyOn(ExamEngine.prototype, 'updateExamResponse').mockResolvedValue(undefined);
+      vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+
+      await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'A', 'u1')).rejects.toThrow('Exam is not active');
+      expect(persist).not.toHaveBeenCalled();
+    });
+    it('preserves an accepted retry for an owned question after the exam completes', async () => {
+      vi.mocked(cacheService.get).mockImplementation(async key => key.startsWith('idem:ans:') ? { used: true } : null);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue({ ...mockExam, status: 'completed' } as any);
+      vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+        id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+      });
+      const update = vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+
+      await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'A', 'u1', 'accepted-key')).resolves.toBeUndefined();
+      expect(update).not.toHaveBeenCalled();
+      expect(cacheService.set).not.toHaveBeenCalledWith('exam-state:e1:q:q1', expect.anything(), expect.anything());
+    });
+    it('denies a foreign exam even when this user has an accepted idempotency key', async () => {
+      vi.mocked(cacheService.get).mockImplementation(async key => key.startsWith('idem:ans:') ? { used: true } : null);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue({ ...mockExam, userId: 'other-user' } as any);
+      const update = vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+
+      await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'A', 'u1', 'accepted-key'))
+        .rejects.toMatchObject({ status: 403, code: 'FORBIDDEN' });
+      expect(update).not.toHaveBeenCalled();
+      expect(cacheService.set).not.toHaveBeenCalledWith('exam-state:e1:q:q1', expect.anything(), expect.anything());
+    });
+    it('rejects a question outside the owned exam before staging or updating an answer', async () => {
+      vi.mocked(cacheService.get).mockResolvedValue(null);
+      vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(mockExam as any);
+      vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue(null);
+      const update = vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+
+      await expect(container.get(ExamEngine).submitAnswer('e1', 'foreign-question', 'A', 'u1'))
+        .rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+      expect(cacheService.set).not.toHaveBeenCalledWith('exam-state:e1:q:foreign-question', expect.anything(), expect.anything());
+      expect(update).not.toHaveBeenCalled();
+    });
     it('throws if exam expired', async () => {
       vi.mocked(cacheService.get).mockResolvedValue(null);
       const expiredExam = { 
@@ -95,17 +140,32 @@ describe('ExamEngine', () => {
         durationSeconds: 10
       };
       vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(expiredExam as any);
+      vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+        id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+      });
 
       await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'ans', 'u1')).rejects.toThrow('Time limit exceeded');
     });
 
-    it('stages answer in Redis', async () => {
+    it('stages and persists an answer for a question belonging to the owned exam', async () => {
       vi.mocked(cacheService.get).mockResolvedValue(null);
       vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue(mockExam as any);
       vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+      vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+        id: 'eq1', responseMetadata: null, isCorrect: null,
+        question: { type: 'mcq', correctAnswer: 'A', options: ['A', 'ans'] },
+      });
+      const persist = vi.spyOn(ExamRepository.prototype, 'updateExamQuestionResponse').mockResolvedValue(undefined);
+      vi.spyOn(AnswerEvaluationEngine.prototype, 'evaluate').mockReturnValue(false);
 
       await container.get(ExamEngine).submitAnswer('e1', 'q1', 'ans', 'u1');
-      expect(cacheService.set).toHaveBeenCalled();
+      expect(cacheService.set).toHaveBeenCalledWith(
+        'exam-state:e1:q:q1',
+        expect.objectContaining({ questionId: 'q1', answer: 'ans' }),
+        expect.any(Number),
+      );
+      expect(ExamRepository.prototype.updateLastAnswered).toHaveBeenCalledWith('e1');
+      expect(persist).toHaveBeenCalledWith('eq1', expect.objectContaining({ userAnswer: 'ans', isCorrect: false }));
     });
   });
 

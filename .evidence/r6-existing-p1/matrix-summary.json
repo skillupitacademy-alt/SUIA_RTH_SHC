@@ -1,0 +1,9 @@
+{
+  "methods": 195,
+  "states": {
+    "N/A": 4,
+    "PARTIAL": 30,
+    "PENDING": 161
+  },
+  "boundedR6Rows": 27
+}

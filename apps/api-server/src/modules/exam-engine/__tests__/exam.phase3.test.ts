@@ -42,10 +42,18 @@ describe('Exam/Selection/Scoring/Report phase 3 coverage', () => {
   it('submitAnswer short-circuits when idempotency key already recorded', async () => {
     container.reset()
     const getSpy = vi.spyOn(cacheService, 'get').mockResolvedValue('seen' as any)
+    const currentExam = vi.spyOn(ExamRepository.prototype, 'findByIdWithBlueprint').mockResolvedValue({
+      id: 'exam-x', userId: 'user-1', status: 'started',
+    } as any)
+    const membership = vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+      id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+    })
     
     // submitAnswer with idempotency key should short-circuit when cache has value
     const engine = container.get(ExamEngine)
     await engine.submitAnswer('exam-x', 'q1', 'A', 'user-1', 'idem-1')
     expect(getSpy).toHaveBeenCalled()
+    expect(currentExam).toHaveBeenCalledWith('exam-x')
+    expect(membership).toHaveBeenCalledWith('exam-x', 'q1')
   })
 })

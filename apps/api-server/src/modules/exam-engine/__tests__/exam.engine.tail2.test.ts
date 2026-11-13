@@ -25,7 +25,7 @@ describe('ExamEngine extreme tail logic', () => {
         );
 
         await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'a', 'ACTUAL_USER', 'idem1'))
-            .rejects.toThrow('Unauthorized');
+            .rejects.toMatchObject({ message: 'Unauthorized', status: 403, code: 'FORBIDDEN' });
     });
 
     it('submitAnswer: uses durationSeconds defaults when missing (Lines 243, 258)', async () => {
@@ -36,8 +36,13 @@ describe('ExamEngine extreme tail logic', () => {
         });
         vi.spyOn(ExamEngine.prototype as any, 'checkExamTimeLimit').mockReturnValue(undefined);
         vi.spyOn(ExamRepository.prototype, 'updateLastAnswered').mockResolvedValue(undefined as any);
+        const membership = vi.spyOn(ExamRepository.prototype, 'findQuestionByExamAndQuestion').mockResolvedValue({
+            id: 'eq1', question: { type: 'mcq', correctAnswer: 'A' }, responseMetadata: null,
+        });
+        vi.spyOn(ExamEngine.prototype, 'updateExamResponse').mockResolvedValue(undefined);
 
         await expect(container.get(ExamEngine).submitAnswer('e1', 'q1', 'a', 'u1')).resolves.toBeUndefined();
+        expect(membership).toHaveBeenCalledWith('e1', 'q1');
     });
 
     it('completeExam: handles existing idempotency key and unauthorized logic (Lines 301-309)', async () => {

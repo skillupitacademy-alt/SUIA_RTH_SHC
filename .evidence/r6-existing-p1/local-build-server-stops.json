@@ -1,0 +1,20 @@
+[
+  {
+    "port": 3009,
+    "pid": 36524,
+    "parent": 19848,
+    "command": "C:\\nvm4w\\nodejs\\node.exe E:\\onlinewebsites\\quiz-platform\\node_modules\\next\\dist\\server\\lib\\start-server.js"
+  },
+  {
+    "port": 3003,
+    "pid": 15624,
+    "parent": 42100,
+    "command": "C:\\nvm4w\\nodejs\\node.exe E:\\onlinewebsites\\quiz-platform\\node_modules\\next\\dist\\server\\lib\\start-server.js"
+  },
+  {
+    "port": 3000,
+    "pid": 28936,
+    "parent": 29180,
+    "command": "C:\\nvm4w\\nodejs\\node.exe E:\\onlinewebsites\\quiz-platform\\node_modules\\next\\dist\\server\\lib\\start-server.js"
+  }
+]

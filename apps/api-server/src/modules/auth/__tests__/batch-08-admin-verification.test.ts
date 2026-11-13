@@ -6,6 +6,7 @@ import { container } from '@/modules/core/container';
 import { TokenService } from '../token.service';
 import { requireAdminRouteAccess, verifyAdminOrInfraToken } from '../admin-audience.util';
 import { _verifyActiveAccount, _verifyAdmin } from '../rbac.service';
+import { SHCAuthService, UserNotFoundError } from '../shc-auth.service';
 
 vi.mock('../rbac.service', () => ({ _verifyActiveAccount: vi.fn(async () => true), _verifyAdmin: vi.fn(async () => true) }));
 const key = new TextEncoder().encode('admin-helper-disposable-key-32bytes!');
@@ -20,7 +21,14 @@ function req(value?: string, portal?: string, cookie?: string, path = '/api/admi
 }
 async function status(promise: Promise<unknown>) { try { await promise; return 200; } catch (error) { return ApiResponse.error(error).status; } }
 describe('admin credential verification boundary', () => {
-  beforeEach(() => { vi.clearAllMocks(); container.register(TokenService, tokens); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    container.register(TokenService, tokens);
+    vi.spyOn(SHCAuthService.prototype, 'me').mockResolvedValue({
+      id: 'admin', email: 'fixture@example.invalid', role: 'admin',
+      platform: 'skillhubcore', isActive: true, createdAt: new Date(),
+    });
+  });
   afterEach(() => { vi.restoreAllMocks(); container.register(TokenService, previous); });
   it.each(['missing', 'malformed', 'expired', 'wrong-signature', 'wrong-audience'] as const)('rejects %s before RBAC', async kind => {
     const other = new TextEncoder().encode('wrong-admin-signature-key-32bytes');
@@ -50,6 +58,40 @@ describe('admin credential verification boundary', () => {
   it('denies a role-ineligible SHC principal without changing the 403 contract', async () => {
     const value = await tokens.generateAccessToken({ userId: 'admin', roles: ['student'], brand: 'skillhubcore', tokenType: 'admin', isAdmin: true, aud: 'shc-admin' });
     expect(await status(requireAdminRouteAccess(req(value, 'shc-admin')))).toBe(403);
+  });
+  it.each([
+    { role: 'admin', isActive: false },
+    { role: 'student', isActive: true },
+    { role: 'faculty', isActive: true },
+  ])('denies current SHC account eligibility %j despite stale admin claims', async account => {
+    vi.mocked(SHCAuthService.prototype.me).mockResolvedValueOnce({
+      id: 'admin', email: 'fixture@example.invalid', platform: 'skillhubcore',
+      createdAt: new Date(), ...account,
+    });
+    expect(await status(requireAdminRouteAccess(req(await token('skillhubcore', 'shc-admin'), 'shc-admin')))).toBe(403);
+  });
+  it('returns 401 for a deleted SHC account', async () => {
+    vi.mocked(SHCAuthService.prototype.me).mockRejectedValueOnce(new UserNotFoundError('Missing'));
+    expect(await status(requireAdminRouteAccess(req(await token('skillhubcore', 'shc-admin'), 'shc-admin')))).toBe(401);
+  });
+  it('returns 503 when the current SHC account authority is unavailable', async () => {
+    vi.mocked(SHCAuthService.prototype.me).mockRejectedValueOnce(new Error('private database detail'));
+    expect(await status(requireAdminRouteAccess(req(await token('skillhubcore', 'shc-admin'), 'shc-admin')))).toBe(503);
+  });
+  it('removes stale super-admin privileges after current account demotion', async () => {
+    const signed = await tokens.generateAccessToken({ userId: 'admin', roles: ['super_admin'], brand: 'skillhubcore', tokenType: 'admin', isAdmin: true, aud: 'shc-admin' });
+    expect((await requireAdminRouteAccess(req(signed, 'shc-admin'))).roles).toEqual(['admin']);
+  });
+  it('does not elevate an admin token when the current account is super-admin', async () => {
+    const account = await SHCAuthService.prototype.me('admin');
+    vi.mocked(SHCAuthService.prototype.me).mockResolvedValueOnce({ ...account, role: 'super_admin' });
+    expect((await requireAdminRouteAccess(req(await token('skillhubcore', 'shc-admin'), 'shc-admin'))).roles).toEqual(['admin']);
+  });
+  it('preserves super-admin privileges when both token and current account authorize them', async () => {
+    const account = await SHCAuthService.prototype.me('admin');
+    vi.mocked(SHCAuthService.prototype.me).mockResolvedValueOnce({ ...account, role: 'super_admin' });
+    const signed = await tokens.generateAccessToken({ userId: 'admin', roles: ['super_admin'], brand: 'skillhubcore', tokenType: 'admin', isAdmin: true, aud: 'shc-admin' });
+    expect((await requireAdminRouteAccess(req(signed, 'shc-admin'))).roles).toEqual(['super_admin']);
   });
   it.each(['wrong-audience-admin', 'wrong-class-admin-audience'] as const)('rejects independently signed %s', async kind => {
     const { SignJWT } = await import('jose');

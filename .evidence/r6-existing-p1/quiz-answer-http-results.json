@@ -1,0 +1,136 @@
+{
+  "runId": "r6-96de35b0-5996-4bb7-844f-35b1eca1dbeb",
+  "timestamp": "2026-11-13T13:49:50.959Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup real answer-owner login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup owned populated exam answer succeeds",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "skillup allowed answer is persisted and evaluated",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "skillup foreign exam denied even with accepted idempotency key",
+      "expected": 403,
+      "actual": 403,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "skillup unrelated question denied even with accepted idempotency key",
+      "expected": 404,
+      "actual": 404,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "skillup completed exam rejects new answer despite earlier header cache",
+      "expected": 400,
+      "actual": 400,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "skillup accepted same-resource retry remains compatible",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "skillup answer hierarchy fixture cleanup",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "skillup exact run-owned remote answer-cache cleanup",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real answer-owner login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub owned populated exam answer succeeds",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "realtutorialhub allowed answer is persisted and evaluated",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub foreign exam denied even with accepted idempotency key",
+      "expected": 403,
+      "actual": 403,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "realtutorialhub unrelated question denied even with accepted idempotency key",
+      "expected": 404,
+      "actual": 404,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "realtutorialhub completed exam rejects new answer despite earlier header cache",
+      "expected": 400,
+      "actual": 400,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "realtutorialhub accepted same-resource retry remains compatible",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "route": "/api/quiz/answer",
+      "method": "POST"
+    },
+    {
+      "name": "realtutorialhub answer hierarchy fixture cleanup",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub exact run-owned remote answer-cache cleanup",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

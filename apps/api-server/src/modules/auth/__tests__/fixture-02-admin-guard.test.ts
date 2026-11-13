@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { container } from '@/modules/core/container';
 import { TokenService } from '../token.service';
 import { requireAdminRouteAccess } from '../admin-audience.util';
+import { SHCAuthService } from '../shc-auth.service';
 
 /**
  * FIXTURE-02: Real Admin-Guard Principal-Boundary Tests
@@ -99,6 +100,7 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     // Restore the precise container instance after every test
     container.register(TokenService, originalContainerTokenService);
   });
@@ -191,9 +193,10 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
 
     const req = createAdminRequest(promotedLearnerToken);
 
-    // Crucial isolation check: must reject with "Audience mismatch: expected admin, got user"
-    // rather than a signature error or DB query rejection!
-    await expect(requireAdminRouteAccess(req)).rejects.toThrow(/Audience mismatch: expected admin, got user/);
+    // Verify the precise cryptographic-policy boundary and the public guard contract.
+    await expect(sharedTokenService.verifyAdminAccessToken(promotedLearnerToken, { audience: 'admin' }))
+      .rejects.toThrow(/Audience mismatch: expected admin, got user/);
+    await expect(requireAdminRouteAccess(req)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
 
     // Invariant: Zero DB queries initiated. Promoted DB role is NEVER queried or consulted.
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
@@ -217,7 +220,9 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
     const req = createAdminRequest(wrongAudienceToken);
 
     // Signature passes; fails strictly at audience check
-    await expect(requireAdminRouteAccess(req)).rejects.toThrow(/Audience mismatch: expected admin, got shc-admin/);
+    await expect(distinctTokenService.verifyAdminAccessToken(wrongAudienceToken, { audience: 'admin' }))
+      .rejects.toThrow(/Audience mismatch: expected admin, got shc-admin/);
+    await expect(requireAdminRouteAccess(req)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
   });
 
@@ -238,7 +243,9 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
     const req = createAdminRequest(wrongClassToken);
 
     // Signature passes, audience passes; fails strictly on tokenType
-    await expect(requireAdminRouteAccess(req)).rejects.toThrow(/Invalid admin token type/);
+    await expect(distinctTokenService.verifyAdminAccessToken(wrongClassToken, { audience: 'admin' }))
+      .rejects.toThrow(/Invalid admin token type/);
+    await expect(requireAdminRouteAccess(req)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
   });
 
@@ -274,7 +281,11 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
   });
 
-  it('Control 8: Distinct contract: valid SHC admin token with x-portal-identity: shc-admin succeeds in-memory', async () => {
+  it('Control 8: valid SHC admin uses current PeopleDB authority with no tenant database query', async () => {
+    const currentAccount = vi.spyOn(SHCAuthService.prototype, 'me').mockResolvedValue({
+      id: 'usr-shc-1', email: 'governance@skillhubcore.test', role: 'admin',
+      platform: 'skillhubcore', isActive: true, createdAt: new Date(),
+    });
     const shcToken = await distinctTokenService.generateAccessToken({
       userId: 'usr-shc-1',
       shadowUserId: 'sh-shc-1',
@@ -292,7 +303,8 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
     expect(payload.userId).toBe('usr-shc-1');
     expect(payload.brand).toBe('skillhubcore');
     expect(payload.aud).toBe('shc-admin');
-    // Invariant: SHC governance check evaluates in-memory and NEVER queries tenant database
+    expect(currentAccount).toHaveBeenCalledWith('usr-shc-1');
+    // SHC governance uses the PeopleDB authority. Tenant data remains untouched.
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
   });
 
@@ -359,11 +371,7 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
   // Group 4: Fixture Sensitivity Check
   // =========================================================================
 
-  it('Control 12: Fixture sensitivity check: bypassing audience check allows promoted learner to reach DB query', async () => {
-    // Sensitivity demonstration:
-    // If a buggy verifier checked only signature and skipped audience enforcement,
-    // the promoted learner token would penetrate to _verifyAdmin and execute mockDbSelectEntry.
-    // Here we verify that with audience check active, mockDbSelectEntry is 0.
+  it('Control 12: independent admin class defense survives a faulty token verifier', async () => {
     container.register(TokenService, sharedTokenService);
 
     const promotedLearnerToken = await sharedTokenService.generateAccessToken({
@@ -379,17 +387,13 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
 
     const req = createAdminRequest(promotedLearnerToken);
 
-    // Assert that the audience defense stops the request before the DB query entry is called
-    let audienceCaught = false;
-    try {
-      await requireAdminRouteAccess(req);
-    } catch (err: any) {
-      if (err.message?.includes('Audience mismatch')) {
-        audienceCaught = true;
-      }
-    }
+    await expect(requireAdminRouteAccess(req)).rejects.toMatchObject({ status: 401, code: 'UNAUTHORIZED' });
+    expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
 
-    expect(audienceCaught).toBe(true);
+    // Fault injection verifies the separate RBAC class boundary after verification.
+    const learnerPayload = await sharedTokenService.verifyUserAccessToken(promotedLearnerToken);
+    vi.spyOn(sharedTokenService, 'verifyAdminAccessToken').mockResolvedValueOnce(learnerPayload);
+    await expect(requireAdminRouteAccess(req)).rejects.toMatchObject({ status: 403, code: 'FORBIDDEN' });
     expect(mockDbSelectEntry).toHaveBeenCalledTimes(0);
   });
 });

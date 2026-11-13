@@ -1,0 +1,5 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto');const root=process.cwd();
+const files=[];function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isDirectory())walk(file);else if(/\.(ts|tsx|json|md|csv)$/.test(file))files.push(file);}}
+for(const dir of ['apps/skillhubcore-admin/src','apps/skillup-web/src','apps/realtutorialhub-web/src','apps/api-server/src','packages/auth/src','packages/db-tutorial/src','docs/architecture/reviews'])walk(dir);
+const rows=files.map(file=>({path:path.relative(root,file).replaceAll('\\','/'),sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')}));
+fs.writeFileSync('.evidence/r6-existing-p1/baseline-source-hashes.json',JSON.stringify({baseline:'62f920f4782b8bbb277f88dc27930cd3b86f1b15',initialTree:'clean from initial read-only Git checks',deviation:'Read-only Git commands executed before literal R6 prohibition was read. Further provenance uses file hashes only.',files:rows},null,2));

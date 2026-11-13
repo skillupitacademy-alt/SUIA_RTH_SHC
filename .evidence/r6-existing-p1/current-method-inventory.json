@@ -1,0 +1,1374 @@
+{
+  "baseline": "62f920f4782b8bbb277f88dc27930cd3b86f1b15",
+  "timestamp": "2026-11-13T13:26:42.247Z",
+  "count": 195,
+  "added": [],
+  "removed": [],
+  "rows": [
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/auth/me/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "77dd1c3baec835af2a65477f9b8300969afd746fe9731db730c7e56660712003"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "e19a83fb020b2786acad417fcf66b5d65cf351e0c8e09ad39933d00a7e45ed47"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "e19a83fb020b2786acad417fcf66b5d65cf351e0c8e09ad39933d00a7e45ed47"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "c4dc8eb76641781e4dd74b9d63366437c34353323b03b59693bd32aa05d0d7ba"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "c4dc8eb76641781e4dd74b9d63366437c34353323b03b59693bd32aa05d0d7ba"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "c4dc8eb76641781e4dd74b9d63366437c34353323b03b59693bd32aa05d0d7ba"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "214a1d591caa77bf3989453810e69309e897556d757204aa4c4679f8bbcf3132"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "95d4fbb400a56bd68478f631c3b04eb79a7c19b7d7b3d14f459bec6804395487"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "95d4fbb400a56bd68478f631c3b04eb79a7c19b7d7b3d14f459bec6804395487"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "95d4fbb400a56bd68478f631c3b04eb79a7c19b7d7b3d14f459bec6804395487"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "95d4fbb400a56bd68478f631c3b04eb79a7c19b7d7b3d14f459bec6804395487"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "758d71299d0a86970815d73beb46c03ae189096f42db6157274115bcc68dc1bb"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "758d71299d0a86970815d73beb46c03ae189096f42db6157274115bcc68dc1bb"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "46995c5ac7e71a47442d979054584cc693ec16d9380d73c9d0b09f8e66463379"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/bulk/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "821c1818440d771bad7d65881790108c368b37d09902fefe2afa6338a4802139"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "5add335d10fd785900c2cba06dec4395b80df33e57f9ac7c91dbbda0c93d9e6e"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "5add335d10fd785900c2cba06dec4395b80df33e57f9ac7c91dbbda0c93d9e6e"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "0a4d8c52e2c3363b226629f81d8d4601f741ea785c1089f2f06d8bf9b1353dae"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "0a4d8c52e2c3363b226629f81d8d4601f741ea785c1089f2f06d8bf9b1353dae"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "0a4d8c52e2c3363b226629f81d8d4601f741ea785c1089f2f06d8bf9b1353dae"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "8c8612671ee6f62ebd8337912948af966a0bc800473876cf90e341a6e18fa7b1"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "0404c5a085f77bc8695740527de8c1ec908d1366be5541796d5987c2606da064"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "0404c5a085f77bc8695740527de8c1ec908d1366be5541796d5987c2606da064"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "0404c5a085f77bc8695740527de8c1ec908d1366be5541796d5987c2606da064"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "0404c5a085f77bc8695740527de8c1ec908d1366be5541796d5987c2606da064"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "a0a163130a44309211a7c5a46340c793a78368b488fe7e92837cd71c147d0402"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "a0a163130a44309211a7c5a46340c793a78368b488fe7e92837cd71c147d0402"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "430883adab9641d525391c3c584dbe2a3adebb97a8d7c8e5c8d67734b5ea3a82"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "b27d2a6200820668717e66f86e708d44beb1ecd3c89f02a66e1e91ae5a894869"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b27d2a6200820668717e66f86e708d44beb1ecd3c89f02a66e1e91ae5a894869"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "b27d2a6200820668717e66f86e708d44beb1ecd3c89f02a66e1e91ae5a894869"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "b27d2a6200820668717e66f86e708d44beb1ecd3c89f02a66e1e91ae5a894869"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "b7c62ed4e308ec788e5a76830ca8383d04ae28ba15a7245775613851a1406c00"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "b7c62ed4e308ec788e5a76830ca8383d04ae28ba15a7245775613851a1406c00"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "56c2f32d035ccdd2325fcd7f5d83078c033b5a4d91ce9c647e46ce118cc36cbd"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "d527a815c3ce4077263cf841acd52fc213d595ccca7b76c0764dbcbe4ea3393b"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "d527a815c3ce4077263cf841acd52fc213d595ccca7b76c0764dbcbe4ea3393b"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "d527a815c3ce4077263cf841acd52fc213d595ccca7b76c0764dbcbe4ea3393b"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "d527a815c3ce4077263cf841acd52fc213d595ccca7b76c0764dbcbe4ea3393b"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "5be5707720d1b4f49691b1df7eb7adc876c3b6256799007ae6e17c1fabd73f35"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "5be5707720d1b4f49691b1df7eb7adc876c3b6256799007ae6e17c1fabd73f35"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/batch-delete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "6a7b233b3fa2ccd9dcdd7c586208ba3eab6783b8b92934cd11cd77879aad3883"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "cc634497c5a68c088fa604364f3e99fbcd7c5bee4e3464f572ffbf937cfc1ed1"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "cc634497c5a68c088fa604364f3e99fbcd7c5bee4e3464f572ffbf937cfc1ed1"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "cc634497c5a68c088fa604364f3e99fbcd7c5bee4e3464f572ffbf937cfc1ed1"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "cc634497c5a68c088fa604364f3e99fbcd7c5bee4e3464f572ffbf937cfc1ed1"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "5bf0c2a216f2ad357497684d469a82d07fb3fe65ecc20537feb974c8e14fd656"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "5bf0c2a216f2ad357497684d469a82d07fb3fe65ecc20537feb974c8e14fd656"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "1b3cea9ea7c4ab0a9a91f6af4434fe2642b1c269c32c8b77a3c531901b0bbc51"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "1b3cea9ea7c4ab0a9a91f6af4434fe2642b1c269c32c8b77a3c531901b0bbc51"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "e81a008161774aa5bd15c8c484e706d968cc9121396de7267eafabb6a59c8a0f"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "95824eb560953b99a9bf48cb9be7f66766e5a0ac90b15b60bbbe68f9eb2266cf"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/auth/me/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "77dd1c3baec835af2a65477f9b8300969afd746fe9731db730c7e56660712003"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/factory/check-duplicates/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "6be0b498e8cb429bd104b1698b0375b1b91648cda5c73c9571b22c43520136e7"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/factory/save/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "4fe707581449ca167e59fd72c4790d79ff5a33e875ab22eb87078cf42ac15dd0"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/health/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "e270003814b3dcc5f646322629401e73632ec5c648b20590deaf54cba39fc1b5"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/logs/client/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "484dab03751ea017ab41d8b09a55cff40e51bd7cd0ac618c2eb8613a67ec1ad2"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/marketing/bootstrap/[brandId]/route.ts",
+      "method": "GET",
+      "scope": "OWNER HOLD",
+      "inventoryEvidence": "Prior exported-method inventory retained. Held source unread."
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/marketing/collector/observability/route.ts",
+      "method": "GET",
+      "scope": "OWNER HOLD",
+      "inventoryEvidence": "Prior exported-method inventory retained. Held source unread."
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/marketing/control-plane/[brandId]/route.ts",
+      "method": "GET",
+      "scope": "OWNER HOLD",
+      "inventoryEvidence": "Prior exported-method inventory retained. Held source unread."
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "54d0f8bbffeba1a098905ab1fe6c30b452661b83288ff3f421ecc723674de9fc"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "54d0f8bbffeba1a098905ab1fe6c30b452661b83288ff3f421ecc723674de9fc"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "PUT",
+      "scope": "INVENTORIED",
+      "sha256": "54d0f8bbffeba1a098905ab1fe6c30b452661b83288ff3f421ecc723674de9fc"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "54d0f8bbffeba1a098905ab1fe6c30b452661b83288ff3f421ecc723674de9fc"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "29d15efb39e03046ab9c21e33eb87c87bb52e31c51858a196fb7a3b3f7057a1c"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "fbac76f042cee4d3bb6fd235f5c03420d907456029e14ff3e8aaad9c3921c976"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c251cf6c4e035808c3ba9b5cdc72ff9bb565cf8c94f76a218afcc24053153a10"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "09a6b0a59e65b4f51699b9b1735bca53690dcab2138b7151d65097db499a34ee"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "d1f4fd5966492fa135c140b9068636085868d2c3dea8a8c9132a4f796576a0c0"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "d1f4fd5966492fa135c140b9068636085868d2c3dea8a8c9132a4f796576a0c0"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b0bde393f4de5e4469661317dc8491bb43ee4416267cd20d1ef8553e295c9a8e"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c55bac26b6a80eb9248a7a5f51a80af85fd214e2646681e44b7c6f0915c58ce5"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "4d73da0636d5f1bc449c7cfd10358e38f2af0b7e3564272ea29dc9678e879913"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "4d73da0636d5f1bc449c7cfd10358e38f2af0b7e3564272ea29dc9678e879913"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "4d73da0636d5f1bc449c7cfd10358e38f2af0b7e3564272ea29dc9678e879913"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b7201e1a467c4363a296ee7359224efc7e04f025027c6a61b4e461b152907936"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "cc8d6581c207bc5ed78a5335c303af45608ca7d0b8bb18e598c4bbcfd5da408e"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/navigation-nodes/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "21b49a5a2a67848d52e6cb65b9af95a54b03d11920973edf4f06240c545093d3"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "e26e8f17e3b76942846242611a7949f3f3fae3ba02d117e3bdad21d9d99323c8"
+    },
+    {
+      "app": "skillhubcore-admin",
+      "source": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "e26e8f17e3b76942846242611a7949f3f3fae3ba02d117e3bdad21d9d99323c8"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/forgot-password/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b9265c3c2dbf94ea87f48a984353581b4fd5e97f909e784eb7fb7cc6ea9d80c2"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "e56efa5159af25cca026ce57fe5691246be15ee0ed9c4bf96dcae8b0d61577bc"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "6969374793e5781e21a03fa9e5cec5b434db98c8b9cdb9680a8307a31fd5659b"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/placement-handoff/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c1b9c34f3192036567c6e9c345cb2d24cf2270167ac1094d6ca4d799fbb5afa7"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/refresh/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "8a8715008b82b603f3ce85662aa2d477e3ea284a2a09817e9fd64016dafe9701"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/reset-password/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "c4e91a65512fc6e40907072ae18b8b10aece08359b873dce5668a29ee245f51f"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/reset-password/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c4e91a65512fc6e40907072ae18b8b10aece08359b873dce5668a29ee245f51f"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/sessions/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "ede9c51fdec7b9e0123d899b760024dbe3829d6815c5dd787cf1e81fd477f7b7"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/sessions/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "ede9c51fdec7b9e0123d899b760024dbe3829d6815c5dd787cf1e81fd477f7b7"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/sessions/[sessionId]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "2681bcffe71f039c97659644c101e36a562be110adaa46282acf627ef4cee1a3"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/signup/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "9c64847e67134b723f34decefc508920a8b062a5df06b01d810fc64b0a95dee7"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/test-fixture-session/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "2e8697a5b6cb0a24c3ddc4c9467d4f299bc1b3332496981355a10e4fcb4f7e9f"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/auth/verify-email/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "64db680aa49e59663e777cad2617bdaa72ad2b85099ca3714b23d098284f1f12"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/batches/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "27ba4d86a4e4736bbc4ae8ffd3e28536a09ca556b7afc49da4b6bb92179e1c66"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/content-manager/add-section/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "5d49b02803b98bb767a5fd3aa56bebf4226a8b1f5e9626de5a64db1976c0cf7b"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "0329f151f7a6c40a315ff7b4b58518499153e241b6f9f32ff8fa5c06f163a1e5"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/healthz/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "2f4bb2b15bb754332a3911995b945e39b001db4a200d532cea4af1695a9905d5"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/onboarding/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "01aadd7af9c9bf6074d02c11c9a772ef4542fa1257265c63d423017b5ffcf56a"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/onboarding/session/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "81e7600be1a0f938519011e50c7661979106381c6c36bcd20a736b47e28b3411"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/profile/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "338fd37bde5d1c8c164d24af7712361d52a6ffcb8fad0d68fdfa05643f6338af"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/profile/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "338fd37bde5d1c8c164d24af7712361d52a6ffcb8fad0d68fdfa05643f6338af"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/programs/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "b5dcbdb1931666d24ced82e6131a63eddba71333c8109f1d2c50a987bd2b9edc"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "79b89462410e54ed1c55b3c12643f04535e71addfe604d8cc33a3b402c80de4a"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/active/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "7ff7ef754fb9690f3e7e4a2e6389cc9941824b5bbcc7e7409b03a32c408b6959"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/answer/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "9f79535e3e2389d33dc591cff01a56b26a34df4480d93395ff43018e9323376a"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/count/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "836a03ab4d43c6c4a23b6af03817d8d08444acbcc9a8dd52ca06069e9905f224"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/result/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "1a5bd759f7198a87f00d04e25e5e472e99e3b7a409efe58992bbc74bbf553f3a"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/start/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "1c337b5af37d418e36883cc5cc4767c0e3f1de7ab0c2240ac81586e766774535"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/state/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "095130972760dc2d9834111c369ed072ce088ec64f9c9955426fc0a296f6c2d8"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/quiz/submit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "47d74718e0f39ab70ce27f95f137cd4c16d106fc376fb9b8323c6800ab3e606c"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/student/attendance/route.ts",
+      "method": "GET",
+      "scope": "OWNER HOLD",
+      "inventoryEvidence": "Prior exported-method inventory retained. Held source unread."
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "de45de97517108e415f40e5ea1ed980fce84d1dc3c0e0425d540fe870d7a6e4f"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "ea2fd3fb0aaeec69dc59c8ce1021bf9c8085411351bc0f692baf979e714ccbe0"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/student/payments/route.ts",
+      "method": "GET",
+      "scope": "OWNER HOLD",
+      "inventoryEvidence": "Prior exported-method inventory retained. Held source unread."
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "c2a17a0031ebd904ce7c393abd125bd5bd141326065f11207e973525a6901eaf"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "5f61080653264c9d9dee9180500ac11e4aad650b8e4675849b8ffc63f10679b1"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "bad7711cc53a781004565eda0bbc0ec1f9fc0f07f9a5557821577c246e4bab9b"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "dbe0a14a20ebc9df5fc27668863ab6ed0ab416bf75582f3475d7f73a08067e00"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "3622562dec244bda4148b137a2a2609c6657c30fda936ce5bbdb87b7e0e33b05"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "66fdb716dfc766bc3855eccd557bfed3d1247298b1bed484b0864cd2cc2e8347"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c3364bcb98e7dfe8d15096f9d99a6d3ac81b5168954101890a6c270ffd34bcee"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "1bd5a1a20d43e3121ce3957bdde75accba6fffb9f9070c3a314e806f9160b147"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "7b258b62227fe2b95b17a7302062c00a75ccba170d5145dd5eb49c00dbc81084"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "d1fdecc1582f02d2d08958f9f9b8da7a2cb080ea73ff2082974448fec4663804"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "d8c67ce7764df07d82a3facd09188d3751f522e6d0891c2b3e3f5c5bea77b04b"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "d8c67ce7764df07d82a3facd09188d3751f522e6d0891c2b3e3f5c5bea77b04b"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "6b074fa57d861bc51dd7bf85c8282949ba1cbd3e3503e8aa71220152210811ff"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "6b074fa57d861bc51dd7bf85c8282949ba1cbd3e3503e8aa71220152210811ff"
+    },
+    {
+      "app": "skillup-web",
+      "source": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "53039cd244af951904ffa06db6cd8b91172161a9c395582a4a60aea07c098eff"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/ai-tutor/query/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "1edac11b1fdfad5f226dc2593dcde2023bd8b70743b179466e6f7ecb8b5e2c57"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/forgot-password/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "4f1b96e3ece5489bdd0ba0d0c72ac07aaa4a5c6dedd3a8b7f96766e99dea7527"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/login/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "1b95c278ca1a4141497cc4171649b0bbc5e9944145817c1a1c4ad0962281337e"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/logout/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "ee8fad92ca95595daac561e8d004098f970c0f0895b2fd60332af3e1a22464bd"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/placement-handoff/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "c0593b4bb6830d375c051100d83f435dc74ee86e3566c1af050ebf42c316f4bd"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/refresh/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b47edc8a6123429a42b5d188ed55e47d391b81a75d061f99a1b7579e006ca81d"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "9e88d655d026b18085cea580386e2fe094389192d0bb20ea4acbe6991ec58640"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "9e88d655d026b18085cea580386e2fe094389192d0bb20ea4acbe6991ec58640"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "1205d61663c7c9c319caa8295e47e249d39c400e7251fb6976c1eb7ed92ca85d"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "1205d61663c7c9c319caa8295e47e249d39c400e7251fb6976c1eb7ed92ca85d"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/sessions/[sessionId]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "8afb60760270572c924b979844b157b28db921ff78948120002baecc92692da7"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/signup/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "274f36615e9eb720d66e6f0969cba6a959dd05266498a38124fc8a8b6a95cdfb"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/auth/verify-email/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "f7d036893f1fcab1cc8b6020719071f9005d5cf57a0d0c61750987180d36eda6"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/certificates/verify/[verificationCode]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "e973c457fe8fc73e9f4311d768f9a2009aa7b6a8fd4cfa3a6bd8e101bb9a0bef"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/content-manager/add-section/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "5d49b02803b98bb767a5fd3aa56bebf4226a8b1f5e9626de5a64db1976c0cf7b"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/healthz/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "22f0478758dbecfc203bc448030229faab67bfad0a5aea8f8b09702687606482"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/onboarding/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "dd8bd25431cda2c89b2241af37a69777dfd0df74d65149a4a9b8d0501c00c1a1"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/onboarding/session/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "81e7600be1a0f938519011e50c7661979106381c6c36bcd20a736b47e28b3411"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "40268a691e3dd1571d5a98ebfde719b91e0b32c96ef9996ed1e35acaa0f136d3"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "method": "PATCH",
+      "scope": "INVENTORIED",
+      "sha256": "40268a691e3dd1571d5a98ebfde719b91e0b32c96ef9996ed1e35acaa0f136d3"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/active/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "0bd46eade0f92d34227395739351109e0b5437140bf7455b93b7810b8b7dba0a"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/answer/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "44889d16843268c6d56dbe2b5231d1a51519844d50054332aeed578669294492"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/count/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "502408747975a5739b246b7580158081835f9e61ca3afcd25a8591b91a8f63fe"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/result/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "8cfe596414c0714fce37d14b82ac0b889d041ea70061ccf70eca19e789f908a2"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/start/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "7f2597ecbb6fb457793bf873e100a305f74d8eceb4a62612a633860a1218eb94"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/state/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "11bdc999cc47cabf51ec4bdbae4663d0c875664b1360f5108b763abe7c2e502c"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/quiz/submit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "64ba067c5b1a5926492db71f142e04bc4ef37b72a58c50a93d38612a87c19913"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/test-deployment/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "44b408edbc806399e320bc3e72b4fafa13fa00d25ae2b801bebca09b6bc9e811"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "6c10f4e011efd5ec7c78b8e27da5cfb8b1f9793a9fdace5ed4fc49dafa10e6c1"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/complete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "70e646ecff8cb74e01adf234e1b75f2c66a02b7a136376e338503b7e12e46e3d"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "83e84d3e60f3f554dac9e78d0e330dfefa1301609e13443d03a4e17f17263125"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/start/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "812e6293a1e98896e37e29d2c1cb49f854870db12cd264fb8cd950b1a9116462"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "dbc193942e0a4a9f568a610b39ccfae786c6cec9cbf93e111386c2bb27cca730"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "3ed535307af774697f58aacb11b1b526feefa47cfe5c49228459886d61466a49"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "1aa95ad70d38e99525e6c311084cbda038f1925a5c346167151b0f420599c03d"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "67f7c616374f68bbc94918ef3e366f7c0d19c20a767e76ce78bb89b9df4a8ca5"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "32baae26f883b7eb7ccd64c44c0e2f0f068b169746b9c1a1f3fc30de2800f510"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "029836616c79e21e958b9331137096c5cdb57deec3c5aac7e1067de71c252765"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "9878958afde27c59e05976d5380fde5f471078a8de07a923e977e7aca272aa91"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "746c581396ad75e914d84236ea7baf23d8957497f08082b3f7763d162dc29852"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/ils/visit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "90ffe333aa2480cdfa85e08f087e121064a176d635dd3e95a945f6debe1dde3b"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "416299306a69513e38e525af97c4963b42919703aeb29c7960ae83de6996f57e"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "416299306a69513e38e525af97c4963b42919703aeb29c7960ae83de6996f57e"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/progress/mark-complete/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "95ffc4cf745221dba07b70cacd8e0cac67e57d9eb9ed4e0e62a153c93c375491"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "cfc56c883d13f3354c1fe9031ed8ca7d09c06a40dc2d8d95590f54b4491bc6ec"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "cfc56c883d13f3354c1fe9031ed8ca7d09c06a40dc2d8d95590f54b4491bc6ec"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submissions/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "959853572a7204c8d29315cb3fafd19c5fa2779532901f33b6e68be0c5dd5638"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submit/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "911301b9d2cf19211da8e774d010be9c75f387931df3e6b44e22df1c9b178bac"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/projects/[projectId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "05ca4f7fed4ac27af52d5207f8072edfeb9c4c61c13b21e2489a949801ef7d89"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "0cc94aaa28f1638de95d73340c466f7b67a2920c3af06514dd469884c627c9ed"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/[examResultId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "08406a066fee95c054db23513e61e17b0ff2957d023feaa614b38f39a6dd74cd"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "10a6066e5b4ea0fade2754b6cea2a53165034c1aa76f166baeb89bee9a81a6e4"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/my-requests/route.ts",
+      "method": "GET",
+      "scope": "INVENTORIED",
+      "sha256": "63408a1a94a5e25e7d1f091bd6b186c00dda6e2bb9cee4b1475b51156bbf79f4"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/request/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "08aa4c1882af38a98e93ec43f330c06046346fb01a7bf209f1a1456f20e4307b"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "method": "DELETE",
+      "scope": "INVENTORIED",
+      "sha256": "a81eb9970d8437fe2c03339fcea4b51fb1bf04314c605cdd0f70c02b4332b980"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "e7fe01d4df52840505a41b48d8707b3b35afb5e38d265ec8b58ff3040ff9b208"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/handle-exam-completed/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "51414212c16c3bfba457d65360cdf0f17ca08323c0c7c3212e01e70846adaf32"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "03ba3e0e80a572db5108c2d0627d3031acd01aeaf45b448943e045f92bd0038e"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/issue-certificate/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b233ab6610ba6b19ccf24b9a627d5278fd22970cfd07b904ad1273821d885902"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/notify-session-accepted/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "9073c23031a81cb4a321345b43d48a890554e70b56a8e5056b0664e8967f0477"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/notify-session-requested/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "b3dfcc881bc61c6d6b793798fb2f83410e50006b0ce4a74bb289a62e9294e262"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/notify-session-scheduled/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "620a6104a8984bbe850e1dcf55eb4511a3af4ec9b5b7c72123a7a5fe1f84159f"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/refresh-weak-areas-view/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "9e7dcecc0bebb5548763809b0421dcb2ba004151b39ecb44c9c4b384815d9ebd"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/review-project/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "ee7cbece45fa6470ee715db212fd1757e73ae602e9c9fc81eef1cfa682f2fa3b"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/send-remediation-notification/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "42073faa94b61dbdfb1331dae03336c29ed3e977e870c7c3d93f9e5025550dc5"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "source": "apps/realtutorialhub-web/src/app/api/workers/sync-hierarchy/route.ts",
+      "method": "POST",
+      "scope": "INVENTORIED",
+      "sha256": "55a91aef0c7e280248abdb564d45a9868d66bc0c5fffaf54de8176af0cd876ab"
+    }
+  ]
+}

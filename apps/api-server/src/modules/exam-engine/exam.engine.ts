@@ -1,6 +1,7 @@
 import { db, examBlueprints, examQuestions, exams, idempotencyKeys, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, withTimeout as dbWithTimeout } from '@quiz/db';
 import { eq, type InferSelectModel } from 'drizzle-orm';
 
+import { forbidden, notFound } from '@/lib/api-error';
 import { eventBus } from '@/lib/event-bus';
 import { AppEvents, type ExamStartedPayload } from '@/lib/events';
 import { logger } from '@/lib/logger';
@@ -258,6 +259,11 @@ export class ExamEngine {
   }
 
   async submitAnswer(examId: string, questionId: string, answer: string, userId: string, idempotencyKey?: string) {
+    const exam = await this.getAndCacheActiveExam(userId, examId, true);
+    if (exam.userId !== userId) throw forbidden('Unauthorized');
+    const examQuestion = await this.examRepo.findQuestionByExamAndQuestion(examId, questionId);
+    if (!examQuestion) throw notFound('Question in exam');
+
     if (idempotencyKey !== undefined && idempotencyKey !== null && idempotencyKey !== '') {
         const cacheKey = `idem:ans:${userId}:${idempotencyKey}`;
         const cache = await this.getCache();
@@ -265,9 +271,7 @@ export class ExamEngine {
         if (existing !== null) return; 
     }
 
-    const exam = await this.getAndCacheActiveExam(userId, examId);
     if (exam.status !== 'started') throw new Error('Exam is not active');
-    if (exam.userId !== userId) throw new Error('Unauthorized');
 
     this.checkExamTimeLimit(exam);
     const normalizedAnswer = isVersionedOptionIds(answer)
@@ -288,28 +292,22 @@ export class ExamEngine {
       await cache.set(`${liveStateKey}:q:${questionId}`, answerPayload, 1000 * 60 * 60 * 2).catch(() => null);
     }
     
-    // CRITICAL FIX: Save answer to database immediately (not just Redis)
-    // Fetch the exam question with question details
+    // Persist only the question already verified as belonging to this exam.
     try {
-      const examQuestion = await this.examRepo.findQuestionByExamAndQuestion(examId, questionId);
-      if (examQuestion) {
-        await this.updateExamResponse(
-          {
-            id: examId,
-            startedAt: exam.startedAt,
-            lastAnsweredAt: exam.lastAnsweredAt ?? null
-          },
-          {
-            id: examQuestion.id,
-            responseMetadata: (examQuestion.responseMetadata as Record<string, unknown> | null) ?? null,
-            question: examQuestion.question as ScorableQuestion
-          },
-          normalizedAnswer
-        );
-        this.log.info({ examId, questionId, isCorrect: examQuestion.isCorrect }, '[ExamEngine] Answer saved to database');
-      } else {
-        this.log.error({ examId, questionId }, '[ExamEngine] CRITICAL: examQuestion not found - answer NOT saved to database!');
-      }
+      await this.updateExamResponse(
+        {
+          id: examId,
+          startedAt: exam.startedAt,
+          lastAnsweredAt: exam.lastAnsweredAt ?? null
+        },
+        {
+          id: examQuestion.id,
+          responseMetadata: (examQuestion.responseMetadata as Record<string, unknown> | null) ?? null,
+          question: examQuestion.question as ScorableQuestion
+        },
+        normalizedAnswer
+      );
+      this.log.info({ examId, questionId, isCorrect: examQuestion.isCorrect }, '[ExamEngine] Answer saved to database');
     } catch (dbError) {
       this.log.error({ examId, questionId, error: dbError }, '[ExamEngine] CRITICAL: Failed to save answer to database!');
       throw dbError; // Don't silently fail - this is critical
@@ -366,11 +364,13 @@ export class ExamEngine {
     await this.examRepo.updateLastAnswered(exam.id);
   }
 
-  private async getAndCacheActiveExam(userId: string, examId: string) {
+  private async getAndCacheActiveExam(userId: string, examId: string, requireCurrentState = false) {
     const cacheKey = `exam-header:${userId}:${examId}`;
     type ExamWithBlueprint = InferSelectModel<typeof exams> & { blueprint?: InferSelectModel<typeof examBlueprints> | null };
     const cache = await this.getCache();
-    let exam: ExamWithBlueprint | null = (await cache.get<ExamWithBlueprint>(cacheKey).catch(() => null)) ?? null;
+    let exam: ExamWithBlueprint | null = requireCurrentState
+      ? null
+      : (await cache.get<ExamWithBlueprint>(cacheKey).catch(() => null)) ?? null;
 
     if (exam === null) {
       const dbExam = await withTimeout(

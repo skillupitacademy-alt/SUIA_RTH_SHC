@@ -1,0 +1,1 @@
+Interrupted concurrent API typecheck to reduce memory pressure. Completed exam test exit 0 retained. Will rerun sequentially after runtime fixtures are cleaned.

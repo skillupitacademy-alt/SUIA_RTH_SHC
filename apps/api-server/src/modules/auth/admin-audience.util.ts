@@ -2,12 +2,13 @@ import { requireAdminProfileManagementAuthority, type Role } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
 import type { NextRequest } from 'next/server';
 
-import { forbidden, unauthorized } from '@/lib/api-error';
+import { ApiError, forbidden, unauthorized } from '@/lib/api-error';
 import { recordCounter, recordTimer } from '@/lib/metrics';
 import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 
 import { _verifyActiveAccount, _verifyAdmin } from './rbac.service';
+import { SHCAuthService, UserNotFoundError } from './shc-auth.service';
 import { type TokenPayload, TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra' | 'shc-admin';
@@ -82,6 +83,21 @@ export async function requireAdminRouteAccess(_req: NextRequest) {
       recordTimer(METRICS.AUTH.FAILURE + '.duration', Date.now() - startedAt, { scope: audience, route, reason: 'rbac_denied' });
       throw forbidden('SkillHubCore admin access only');
     }
+    // Direct backend callers must satisfy the same current-account authority as
+    // SHC BFF callers. A stale signed role cannot preserve administrative access.
+    let currentAccount: Awaited<ReturnType<SHCAuthService['me']>>;
+    try {
+      currentAccount = await new SHCAuthService().me(payload.userId);
+    } catch (error) {
+      if (error instanceof UserNotFoundError) throw unauthorized('Administrator not found');
+      throw new ApiError(503, 'Administrator verification unavailable');
+    }
+    if (currentAccount.isActive !== true || currentAccount.platform !== 'skillhubcore' ||
+        (currentAccount.role !== 'admin' && currentAccount.role !== 'super_admin')) {
+      throw forbidden('Account is not eligible for administrative access');
+    }
+    payload.roles = currentAccount.role === 'super_admin' && roles.includes('super_admin')
+      ? ['super_admin'] : ['admin'];
   } else if (audience === 'infra') {
     if (route.startsWith('/api/factory') || route.startsWith('/api/analytics/admin')) {
       const isAccountActive = await _verifyActiveAccount(payload.userId, payload.brand ?? '');
