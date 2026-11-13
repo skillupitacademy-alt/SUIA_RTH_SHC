@@ -16,12 +16,23 @@ const publicAuth = new Set(['login','logout','signup','forgot-password','reset-p
 function isPublic(route, app) {
   if (route === '/api/health' || route === '/api/healthz') return true;
   if (route.startsWith('/api/programs') || route.startsWith('/api/certificates/verify/')) return true;
-  return app !== 'skillhubcore-admin' && route.startsWith('/api/auth/') && publicAuth.has(route.split('/')[3]);
+  if (app === 'skillhubcore-admin') return ['/api/auth/login','/api/auth/logout'].includes(route);
+  return route.startsWith('/api/auth/') && publicAuth.has(route.split('/')[3]);
 }
 async function main() {
+  for (const previous of results) {
+    if (previous.app === 'skillhubcore-admin' && ['/api/auth/login','/api/auth/logout'].includes(previous.route)) {
+      previous.publicOperation = true;
+      previous.expected = 'Public authentication handler validation';
+      previous.pass = [200,400,401,403,422,429].includes(previous.actual);
+      previous.classificationEvidence = 'Existing SHC login/logout source uses mutation-origin protection and public credential exchange.';
+    }
+  }
   for (const entry of source.inventory) {
+    if (process.env.R4_APP && process.env.R4_APP !== entry.app) continue;
     const route = entry.path.split('/src/app')[1].replace(/\/route\.ts$/, '').replace(/\[[^\]]+\]/g, fixtureId);
-    if (results.some(result => result.app === entry.app && result.method === entry.method && result.sourcePath === entry.path)) continue;
+    const previousIndex = results.findIndex(result => result.app === entry.app && result.method === entry.method && result.sourcePath === entry.path);
+    if (previousIndex >= 0 && (results[previousIndex].pass || results[previousIndex].disposition === 'HOLD')) continue;
     if (entry.app === 'skillhubcore-admin' && route.startsWith('/api/marketing')) {
       results.push({ app:entry.app, method:entry.method, route, sourcePath:entry.path, disposition:'HOLD', reason:'Owner Marketing exclusion' });
       continue;
@@ -29,7 +40,8 @@ async function main() {
     const [brand,port] = entry.app === 'skillhubcore-admin' ? ['skillhubcore',3007] : entry.app === 'skillup-web' ? ['skillup',3009] : ['realtutorialhub',3003];
     const base = `http://${brand}.localhost:${port}`;
     const publicOperation = isPublic(route, entry.app);
-    const record = { app:entry.app, method:entry.method, route, sourcePath:entry.path, publicOperation, expected:publicOperation ? 'Documented public/validation response' : '401/403 or retired 404/410', pass:false };
+    const retiredOperation = route.startsWith('/api/tutorial/content/');
+    const record = { app:entry.app, method:entry.method, route, sourcePath:entry.path, publicOperation, expected:publicOperation ? 'Documented public/validation response' : retiredOperation ? 'Retired 410 or authentication denial' : '401/403', pass:false };
     try {
       const response = await fetch(base + route, {
         method:entry.method, redirect:'manual', signal:AbortSignal.timeout(120000),
@@ -38,10 +50,13 @@ async function main() {
       });
       record.actual=response.status;
       record.cacheControl=response.headers.get('cache-control');
-      record.pass=publicOperation ? [200,201,204,400,401,403,404,410,422,429].includes(response.status) : [401,403,404,410].includes(response.status);
+      record.pass=publicOperation ? [200,201,204,400,401,403,404,410,422,429].includes(response.status) : (retiredOperation ? [401,403,410] : [401,403]).includes(response.status);
       await response.body?.cancel();
     } catch(error) {record.error=error.name;}
-    results.push(record);
+    if (previousIndex >= 0) {
+      record.previousAttempts = [...(results[previousIndex].previousAttempts || []), results[previousIndex]];
+      results[previousIndex] = record;
+    } else results.push(record);
     fs.writeFileSync(path.join(__dirname,'anonymous-method-matrix-results.json'),JSON.stringify({timestamp:new Date().toISOString(),boundary:'Actual local HTTP for every inventoried method except owner-held Marketing. No authentication or service secrets supplied. Forged identity headers, empty mutation bodies and run-random resource IDs only. Public validation is recorded separately. This proves selected anonymous denial behavior, with role/object/session cases covered by separate fixtures.',results},null,2));
     console.log(JSON.stringify(record));
   }

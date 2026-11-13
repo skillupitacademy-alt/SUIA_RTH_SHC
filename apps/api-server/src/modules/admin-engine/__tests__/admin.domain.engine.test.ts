@@ -1,8 +1,10 @@
+vi.mock('@/lib/hierarchy-deletion', () => ({ withHierarchyDeletionLocks: async (_kind: unknown, _ids: unknown, operation: (tx: unknown) => Promise<unknown>) => operation({}) }));
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { AdminDomainEngine } from '../admin.domain.engine';
 
 const mockRepository = {
+  withDb: () => mockRepository,
   findAll: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),

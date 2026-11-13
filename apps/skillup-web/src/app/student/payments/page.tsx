@@ -1,4 +1,4 @@
-import { fetchSkillupApi } from '@/lib/skillup-api';
+import { fetchSkillupApi, SkillupDataUnavailableError } from '@/lib/skillup-api';
 import { formatCurrency, formatDate, isPastDue } from '@/lib/skillup-format';
 
 type PaymentsResponse = {
@@ -13,7 +13,21 @@ type PaymentsResponse = {
 };
 
 export default async function PaymentsPage() {
-  const { installments } = await fetchSkillupApi<PaymentsResponse>('/api/student/payments');
+  let response: PaymentsResponse;
+  try {
+    response = await fetchSkillupApi<PaymentsResponse>('/api/student/payments');
+  } catch (error) {
+    if (!(error instanceof SkillupDataUnavailableError)) throw error;
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <h2 className="text-3xl font-bold text-slate-950">Fee history and upcoming installments</h2>
+        <p role="status" className="mt-4 text-slate-700">
+          Payment data is currently unavailable. Please try again later.
+        </p>
+      </section>
+    );
+  }
+  const { installments } = response;
 
   return (
     <section className="mx-auto max-w-7xl space-y-8 px-6 py-8 lg:py-10">

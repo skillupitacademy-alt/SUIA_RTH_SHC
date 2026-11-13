@@ -1,5 +1,6 @@
 import { db, topics } from '@quiz/db';
 
+import { withHierarchyDeletionLocks } from '@/lib/hierarchy-deletion';
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
 import { DrizzleTopicRepository } from "@/repositories/implementations/drizzle-topic.repository";
@@ -39,12 +40,12 @@ export class AdminTopicEngine {
 
   async deleteTopic(id: string, adminId: string) {
     await this.auditService.log({ userId: adminId, action: 'admin_delete_topic', metadata: { topicId: id } });
-    return await this.repository.delete(id);
+    return await withHierarchyDeletionLocks('topic', [id], tx => this.repository.withDb(tx as unknown as typeof db).delete(id));
   }
 
   async deleteTopicsBatch(ids: string[], adminId: string) {
     await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_topics', metadata: { count: ids.length } });
-    return await this.repository.deleteBatch(ids);
+    return await withHierarchyDeletionLocks('topic', ids, tx => this.repository.withDb(tx as unknown as typeof db).deleteBatch(ids));
   }
 
   async validateTopic(_topicId: string) {

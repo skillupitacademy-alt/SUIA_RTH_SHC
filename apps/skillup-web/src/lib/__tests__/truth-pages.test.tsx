@@ -3,7 +3,8 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const fetchData = vi.hoisted(() => vi.fn());
-vi.mock('../skillup-api', () => ({ fetchSkillupApi: fetchData }));
+vi.mock('../skillup-api', () => ({ fetchSkillupApi: fetchData, SkillupDataUnavailableError: class extends Error {} }));
+import { SkillupDataUnavailableError } from '../skillup-api';
 vi.mock('next/link', () => ({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 import BatchesPage from '../../app/batches/page';
 import MyBatchPage from '../../app/student/my-batch/page';
@@ -14,6 +15,16 @@ import AttendancePage from '../../app/student/attendance/page';
 import PaymentsPage from '../../app/student/payments/page';
 beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
 afterEach(() => { cleanup(); fetchData.mockReset(); vi.unstubAllGlobals(); });
+it.each([[AttendancePage, /Attendance data is currently unavailable/], [PaymentsPage, /Payment data is currently unavailable/]])('renders an honest unavailable state for a failed data dependency', async (Page, message) => {
+  fetchData.mockRejectedValue(new SkillupDataUnavailableError('Dependency unavailable'));
+  render(await Page());
+  expect(screen.getByRole('status').textContent).toMatch(message);
+});
+it.each([AttendancePage, PaymentsPage])('preserves an authorization denial instead of rendering data', async Page => {
+  const denied = new Error('Denied');
+  fetchData.mockRejectedValue(denied);
+  await expect(Page()).rejects.toBe(denied);
+});
 it('shows no enrollment in both batch entry pages', async () => {
   fetchData.mockResolvedValue({ batch: null, sessions: [] });
   const first = render(await BatchesPage());

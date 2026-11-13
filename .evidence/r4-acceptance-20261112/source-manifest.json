@@ -1,0 +1,181 @@
+{
+  "head": "bf1e39bc2d59e779a72629a28e7c55cf3b733492",
+  "files": [
+    {
+      "path": "apps/api-server/src/app/api/auth/me/route.ts",
+      "sha256": "8c781511680f810232ae7d965744c90bbf048519c1a2aa1d6c3c7ce9340c5f92"
+    },
+    {
+      "path": "apps/api-server/src/lib/auth-context.ts",
+      "sha256": "3964d853952d87174b3335f2592b469babf2b8d43e925401b2d23ac7cb0e204e"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/__tests__/admin.domain.engine.test.ts",
+      "sha256": "ac17ecc37379ed5ea724367bee8dd0aeaf05eff9fd67ee0b652f506e85c3c873"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/__tests__/admin.subject.engine.test.ts",
+      "sha256": "356f6413ba12fdfde0841e751707f2b1b8e9778c16d055efa688d9a1146f701a"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/__tests__/admin.subtopic.engine.test.ts",
+      "sha256": "50d41cd08f30b82bb3e1868be09cb5e68292a0748ff7b0c662207f489044275d"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/__tests__/admin.topic.engine.test.ts",
+      "sha256": "b6e65b2a94a5498adba6e13d62322aba7c51b505fbf2628fdd687fce3dcdf4c7"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/admin.domain.engine.ts",
+      "sha256": "a79a1de53ebdfabc771123e980a83267f2a726e073ea80ccc55d6013847b17fe"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/admin.subject.engine.ts",
+      "sha256": "90b41af3ffb9ae69a7b66361a0df767a43a7cf374732d90f2cf760fcd8b7f04d"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/admin.subtopic.engine.ts",
+      "sha256": "8fa6244be4993a4cceae0c38480ed977f9b43bdf0c8349245c67fc3a6ee32f5c"
+    },
+    {
+      "path": "apps/api-server/src/modules/admin-engine/admin.topic.engine.ts",
+      "sha256": "506d18d32d1ef27e515b279e2303cb49378e3aab35c28679a0832a2470ecee93"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/global-logout.ownership.test.ts",
+      "sha256": "e1bb0562431897b9a1142c1392fa11624d753bbf646890ee3dc870e06134953b"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/global-logout.service.tenant-isolation.test.ts",
+      "sha256": "4c547d6a899a373e8fd6178e2b78656402b101c23ac7811fd5f8a612e7366704"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "sha256": "d60b142c8774263882f3e3cb1dac4c44a4c6beb5beb5f908b36c855449241571"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/repositories/__tests__/token.repository.ownership.test.ts",
+      "sha256": "007bab21e4cdd3ae024540968fce4c4e776537eb3af90acaf70ff4bec5534497"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/repositories/__tests__/token.repository.test.ts",
+      "sha256": "49f24363c152ff7a5bd73f751fef18ea19355bc40f2c685ba277248dbbc6c47d"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/token-refresh.service.ts",
+      "sha256": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9"
+    },
+    {
+      "path": "apps/api-server/src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts",
+      "sha256": "66460eb26c86b787a2ebc2081de6eadcba1362181dd30c1be656f4abcccd1ac2"
+    },
+    {
+      "path": "apps/api-server/src/modules/hierarchy/hierarchy-sync.service.ts",
+      "sha256": "299a78c7e1e87a8b286f3b3ae2771eefbb7301de71161ceb166a4bfaf7dddae1"
+    },
+    {
+      "path": "apps/api-server/src/proxy.ts",
+      "sha256": "c1dbedc77d2e39581e2c7dac9d9021e78646750e23d0eae71623260b5c047a43"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/server/__tests__/hierarchy-sync.service.test.ts",
+      "sha256": "81e7908d9a8d4917d398358f5f12aa2a7f918b182c84e5103da517fb08706230"
+    },
+    {
+      "path": "apps/realtutorialhub-web/src/server/hierarchy-sync.service.ts",
+      "sha256": "f8a01ae513de34ffcee47a4e062809b8d359cd5f21483a988694d7781ff700d6"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/__tests__/sidebar-synchronization-resilience.test.ts",
+      "sha256": "9b445557a4e1c46e6a88bac5e5b03d3c294cd8f76db1865aea14d745a99311c1"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts",
+      "sha256": "e26e8f17e3b76942846242611a7949f3f3fae3ba02d117e3bdad21d9d99323c8"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/hierarchy/__tests__/academic-hierarchy-service.test.ts",
+      "sha256": "15605a825c516e2e8ef263d661b94b1a4d6f0649c8e27b2cbcc55a2344b379b1"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/hierarchy/academic-hierarchy.service.ts",
+      "sha256": "33febf74c51e73893aaa4d7bd25f49e3b90de81834ae0c0124ad9afa9033a5d6"
+    },
+    {
+      "path": "apps/skillup-web/src/app/student/attendance/page.tsx",
+      "sha256": "b67afe7f14166c969f43b9364652f644f92a767712989034113711fcaa12de97"
+    },
+    {
+      "path": "apps/skillup-web/src/app/student/payments/page.tsx",
+      "sha256": "acec16d3bae3aeaa529f5f227bf07220dc119a1aa0c59ee83c5dfa1ddcbf935c"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/__tests__/current-learner-session.test.ts",
+      "sha256": "0878c3c4ae308ccfdcf9ed9e77012b294056f85392dbaac7b943340e96a87ffb"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/__tests__/read-fallback-boundary.test.ts",
+      "sha256": "a79d8f8841eeff996138596ea6dadd14b553d4adb868e2e6a6fc1cedf4431b85"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/__tests__/truth-pages.test.tsx",
+      "sha256": "fe1ec64aa127a0e7c0ce5aeedd007acde30d59d086b99e4e31b6d5a733e849cf"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/skillup-api.ts",
+      "sha256": "992385fdc56eadf06dc0b3f4fa0efbf489412be6a30dfb68b6ebaf5cef55f2f4"
+    },
+    {
+      "path": "packages/auth/src/token.service.ts",
+      "sha256": "a55eaa911e1f0cbce16449ce7f355db2eafcb379340f255c2f65ee7180292df8"
+    },
+    {
+      "path": "packages/db-tutorial/src/index.ts",
+      "sha256": "96ebd1210ceba9149bdc617cb010260b2119291e8e552182c54c3fd887cf1e43"
+    },
+    {
+      "path": "packages/db-tutorial/src/repositories/tutorial-section.repository.ts",
+      "sha256": "04112f7bd4ae6927417a3509b91330b02f40e4ee5ee389108673fe5fbccccc3e"
+    },
+    {
+      "path": "src/share-branding/auth/currentLearnerSession.ts",
+      "sha256": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500"
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts",
+      "sha256": "61fa6bd21cdf8e9d4fe96a4f01169bbff1599e3ee327ec92b4adc522d2a06e71"
+    },
+    {
+      "path": "src/share-branding/middleware/__tests__/learner-mutation-origin.test.ts",
+      "sha256": "97be9bd21e71038cbfa5d8670880ec3c0fadd64bb725bed844b38fe49851e27e"
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "48db11179a9e50645f5e38534fa00ed202ef398eb73325fc1f7adb96bbb62706"
+    },
+    {
+      "path": "apps/api-server/src/app/api/auth/me/__tests__/device-session.test.ts",
+      "sha256": "3c3dfb3e4966354e6e7580acd02d7ac55d8a2a0d356e54f5017dd3ace7985af2"
+    },
+    {
+      "path": "apps/api-server/src/lib/__tests__/current-learner-context.test.ts",
+      "sha256": "1d4b0d208233e1e1e42edbbefcc770d5e950daa4b208e83c0d079aa7adff0ac9"
+    },
+    {
+      "path": "apps/api-server/src/lib/hierarchy-deletion.ts",
+      "sha256": "49116467c8937f12344c7d843efb8ad66901c1656a0c2ac0bde99c68c34873cd"
+    },
+    {
+      "path": "apps/skillhubcore-admin/src/lib/hierarchy/__tests__/r4-remote-hierarchy.integration.test.ts",
+      "sha256": "ce61f3f242d3e77f4481c5447fac6870d7010e77ec4b46bb7d878bde7df47bcf"
+    },
+    {
+      "path": "packages/db-tutorial/src/hierarchy-coordination.ts",
+      "sha256": "3899f2e0a296c32ebb01bce96f9a605039cf413f9820a24b0acde86430c6f4cf"
+    },
+    {
+      "path": "packages/db-tutorial/src/hierarchy-deletion.ts",
+      "sha256": "b446b1faaa52607a8c802ab005bfe0c155cdfe6a6278c8259d8ee8f2843ab082"
+    }
+  ]
+}

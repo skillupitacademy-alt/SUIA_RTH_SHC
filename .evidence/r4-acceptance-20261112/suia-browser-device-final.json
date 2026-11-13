@@ -1,0 +1,26 @@
+{
+  "runId": "r4-5c3b47c8-7961-46ee-bd3f-73cfb1f79bbb",
+  "timestamp": "2026-11-13T02:30:13.688Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup logged-out device access-only replay denied while another device remains active",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup other device remains authorized after device logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup learner-purpose session never gains newly assigned admin role",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

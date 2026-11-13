@@ -18,6 +18,7 @@ import {
   tutorialSidebarTreesV2,
   tutorialSubtopics,
   tutorialSections,
+  hasTutorialHierarchyDependents,
 } from '@quiz/db-tutorial';
 import { eq, inArray } from 'drizzle-orm';
 import { validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
@@ -56,9 +57,10 @@ export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
  * 4. Consequently, checkTopicDependencies and checkSubtopicDependencies query TutorialDB read-only
  *    to verify absence of dependent tutorial sections or sidebars. If TutorialDB is unreachable,
  *    the check fails closed with DependencyCheckUnavailableError (503).
- * 5. If concurrent creation occurs in TutorialDB during MainDB deletion, MainDB locks cannot block it.
- *    Any future strict distributed synchronization requires an explicit outbox or two-phase commit
- *    architecture, which is an OWNER DECISION REQUIRED item.
+ * 5. Canonical TutorialDB writers now hold the corresponding MainDB ancestor locks
+ *    through their TutorialDB commit/rollback. Deletion waits for those writers,
+ *    then checks physically retained mappings and records. Direct SQL maintenance
+ *    must follow that convention. Cross-database atomicity is not provided.
  */
 
 interface LockableQuery {
@@ -242,6 +244,9 @@ export async function checkDomainDependencies(
         dependents: { subjects: matching.length },
       };
     }
+    if (await hasTutorialHierarchyDependents('domain', [domainId])) {
+      return { entityType: 'domain', entityId: domainId, message: 'Retained tutorial hierarchy dependency', dependents: { tutorials: 1 } };
+    }
     return null;
   } catch (error) {
     if (error instanceof DependencyCheckUnavailableError) throw error;
@@ -278,6 +283,9 @@ export async function checkSubjectDependencies(
         message: `Cannot delete subject because ${matching.length} dependent topic(s) exist`,
         dependents: { topics: matching.length },
       };
+    }
+    if (await hasTutorialHierarchyDependents('subject', [subjectId])) {
+      return { entityType: 'subject', entityId: subjectId, message: 'Retained tutorial hierarchy dependency', dependents: { tutorials: 1 } };
     }
     return null;
   } catch (error) {
@@ -351,6 +359,7 @@ export async function checkTopicDependencies(
     // 4. Check tutorial sidebars in TutorialDB
     // Cross-database note: MainDB and TutorialDB are separate database instances without 2PC.
     // Preflight fail-closed check ensures cross-database referential integrity before MainDB deletion.
+    if (await hasTutorialHierarchyDependents('topic', [topicId])) dependents.tutorialHierarchy = 1;
     if (tutorialDb && tutorialSidebarTreesV2) {
       const sidebars = await tutorialDb
         .select({ topicId: tutorialSidebarTreesV2.topicId })
@@ -416,6 +425,7 @@ export async function checkSubtopicDependencies(
   try {
     // 2. Check tutorial sections in TutorialDB (linked via tutorialSubtopics.externalId)
     // Cross-database note: checks physical tutorial sections fail-closed.
+    if (await hasTutorialHierarchyDependents('subtopic', [subtopicId])) dependents.tutorialHierarchy = 1;
     if (tutorialDb && tutorialSubtopics && tutorialSections) {
       const [tutSubtopic] = await tutorialDb
         .select({ id: tutorialSubtopics.id, externalId: tutorialSubtopics.externalId })

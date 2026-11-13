@@ -1,0 +1,26 @@
+{
+  "runId": "r4-a1f33a54-550b-48d3-97b3-ce81be21182f",
+  "timestamp": "2026-11-13T02:29:44.290Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "realtutorialhub logged-out device access-only replay denied while another device remains active",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub other device remains authorized after device logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub learner-purpose session never gains newly assigned admin role",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

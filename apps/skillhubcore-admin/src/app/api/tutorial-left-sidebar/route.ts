@@ -6,7 +6,7 @@ import {
   requireSubtopicAccess,
 } from '@/lib/auth-helpers';
 import { NextRequest, NextResponse } from 'next/server';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import {
   db as tutorialDb,
@@ -15,6 +15,8 @@ import {
   tutorialSubjects,
   tutorialTopics,
   tutorialSubtopics,
+  withMainHierarchyLocks,
+  HierarchyCoordinationError,
 } from '@quiz/db-tutorial';
 import {
   domains as shcDomains,
@@ -920,58 +922,66 @@ export async function POST(request: NextRequest) {
 
     // CRITICAL: Ensure atomic TutorialDB hierarchy synchronization and sidebar publication
     let hierarchySyncResult: Awaited<ReturnType<typeof ensureTopicHierarchySynced>> | undefined;
-    let saved: typeof tutorialSidebarTreesV2.$inferSelect;
-
-    if (body.status === 'published') {
-      try {
-        const [savedRow, syncResult] = await tutorialDb.transaction(async (tx) => {
-          const syncRes = await ensureTopicHierarchySynced(body.topicId, tx);
-          const [publishedRow] = await tx
-            .insert(tutorialSidebarTreesV2)
-            .values(values)
-            .onConflictDoUpdate({
-              target: [
-                tutorialSidebarTreesV2.brandId,
-                tutorialSidebarTreesV2.topicId,
-              ],
-              set: {
-                ...values,
-                version: sql`${tutorialSidebarTreesV2.version} + 1`,
-              },
-            })
-            .returning();
-          return [publishedRow, syncRes];
-        });
-        saved = savedRow;
-        hierarchySyncResult = syncResult;
-        console.log('[Tutorial Left Sidebar API] Hierarchy synchronized and published atomically in TutorialDB:', {
-          topic: body.topicId,
-          subtopicsCount: hierarchySyncResult.subtopics.length,
-        });
-      } catch (syncError) {
-        console.error('[Tutorial Left Sidebar API] Hierarchy sync or publish failed, preventing publish:', syncError);
-        return NextResponse.json({
-          error: 'Tutorial hierarchy synchronization failed. Sidebar was not published.',
-          details: syncError instanceof Error ? syncError.message : 'Unknown sync error',
-        }, { status: 500 });
+    const saved = await withMainHierarchyLocks({ topicIds: [body.topicId] }, async () => {
+      let savedRecord: typeof tutorialSidebarTreesV2.$inferSelect;
+      // Preflight reads can become stale while waiting for the writer lock.
+      await getHierarchyNames(body.domainId, body.subjectId, body.topicId, body.activeSubtopicId ?? null);
+      // Tree node IDs identify navigation pages/groups, not academic subtopics.
+      const requestedSubtopics = body.activeSubtopicId ? [body.activeSubtopicId] : [];
+      if (requestedSubtopics.length > 0) {
+        const rows = await getDb().select({ id: shcSubtopics.id }).from(shcSubtopics)
+          .where(and(eq(shcSubtopics.topicId, body.topicId), isNull(shcSubtopics.deletedAt), inArray(shcSubtopics.id, requestedSubtopics)));
+        if (rows.length !== requestedSubtopics.length) throw new Error('Sidebar subtopic does not belong to the selected topic');
       }
-    } else {
-      const [savedDraft] = await tutorialDb
-        .insert(tutorialSidebarTreesV2)
-        .values(values)
-        .onConflictDoUpdate({
-          target: [
-            tutorialSidebarTreesV2.brandId,
-            tutorialSidebarTreesV2.topicId,
-          ],
-          set: {
-            ...values,
-            version: sql`${tutorialSidebarTreesV2.version} + 1`,
-          },
-        })
-        .returning();
-      saved = savedDraft;
-    }
+      if (body.status === 'published') {
+        try {
+          const [savedRow, syncResult] = await tutorialDb.transaction(async (tx) => {
+            const syncRes = await ensureTopicHierarchySynced(body.topicId, tx);
+            const [publishedRow] = await tx
+              .insert(tutorialSidebarTreesV2)
+              .values(values)
+              .onConflictDoUpdate({
+                target: [
+                  tutorialSidebarTreesV2.brandId,
+                  tutorialSidebarTreesV2.topicId,
+                ],
+                set: {
+                  ...values,
+                  version: sql`${tutorialSidebarTreesV2.version} + 1`,
+                },
+              })
+              .returning();
+            return [publishedRow, syncRes];
+          });
+          savedRecord = savedRow;
+          hierarchySyncResult = syncResult;
+          console.log('[Tutorial Left Sidebar API] Hierarchy synchronized and published atomically in TutorialDB:', {
+            topic: body.topicId,
+            subtopicsCount: hierarchySyncResult.subtopics.length,
+          });
+        } catch (syncError) {
+          console.error('[Tutorial Left Sidebar API] Hierarchy sync or publish failed, preventing publish:', syncError);
+          throw new Error('Tutorial hierarchy synchronization failed. Sidebar was not published.');
+        }
+      } else {
+        const [savedDraft] = await tutorialDb.transaction(tx => tx
+          .insert(tutorialSidebarTreesV2)
+          .values(values)
+          .onConflictDoUpdate({
+            target: [
+              tutorialSidebarTreesV2.brandId,
+              tutorialSidebarTreesV2.topicId,
+            ],
+            set: {
+              ...values,
+              version: sql`${tutorialSidebarTreesV2.version} + 1`,
+            },
+          })
+          .returning());
+        savedRecord = savedDraft;
+      }
+      return savedRecord;
+    });
 
     const sidebar = await responseFromRow(saved);
     const deliveryPath = sidebar.scope.activeSubtopicSlug
@@ -1019,17 +1029,10 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Internal server error',
-      // Include diagnostic info in development
-      ...(process.env.NODE_ENV === 'development' && error && typeof error === 'object' ? {
-        details: {
-          code: (error as any).code,
-          detail: (error as any).detail,
-          constraint: (error as any).constraint,
-        }
-      } : {})
     /* eslint-enable @typescript-eslint/no-explicit-any */
-    }, { status: 500 });
+    const unavailable = error instanceof HierarchyCoordinationError;
+    return NextResponse.json({
+      error: unavailable ? 'Hierarchy coordination unavailable' : 'Sidebar save failed',
+    }, { status: unavailable ? 503 : 500, headers: { 'Cache-Control': 'private, no-store' } });
   }
 }

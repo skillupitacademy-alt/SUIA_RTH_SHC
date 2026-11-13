@@ -10,6 +10,16 @@ it('returns successful upstream data without direct fallback', async () => {
   await expect(fetchSkillupApi('/api/programs')).resolves.toEqual({ programs: ['public-fixture'] });
   expect(calls.programs).not.toHaveBeenCalled();
 });
+it('uses the configured internal gateway credential for its own protected BFF', async () => {
+  vi.stubEnv('INTERNAL_GATEWAY_SECRET', 'internal-fixture-secret');
+  vi.stubEnv('GATEWAY_TRUST_SECRET', 'different-upstream-secret');
+  const fetchMock = vi.fn().mockResolvedValue(Response.json({ attendance: [] }));
+  vi.stubGlobal('fetch', fetchMock);
+  try {
+    await fetchSkillupApi('/api/student/attendance');
+    expect(fetchMock.mock.calls[0][1].headers.get('x-gateway-secret')).toBe('internal-fixture-secret');
+  } finally { vi.unstubAllEnvs(); }
+});
 it.each([['/api/programs', 401, calls.programs], ['/api/faculty', 403, calls.faculty]])('does not bypass HTTP %s denial', async (path, status, fallback) => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status })));
   await expect(fetchSkillupApi(path)).rejects.toThrow();

@@ -13,6 +13,7 @@
 import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import { VersionConflictError, type TutorialDocument } from '@quiz/types';
 import { db } from '../db';
+import { withMainHierarchyLocks } from '../hierarchy-coordination';
 import { tutorialSections, type TutorialSection, type NewTutorialSection } from '../schema/tutorial-sections';
 import { tutorialSubtopics } from '../schema/tutorial-subtopics';
 import { tutorialContentVersions } from '../schema/tutorial-content-versions';
@@ -357,13 +358,13 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
     });
 
     try {
-      const [row] = await this.runRead(
-        this.dbInstance
-          .insert(tutorialSections)
-          .values(values)
-          .returning(),
-        'TutorialSectionRepository.createTutorial'
-      );
+      const [parent] = await this.dbInstance.select({ externalId: tutorialSubtopics.externalId })
+        .from(tutorialSubtopics).where(and(eq(tutorialSubtopics.id, input.subtopicId), isNull(tutorialSubtopics.deletedAt)));
+      if (!parent) throw new Error('Tutorial subtopic is missing or deleted');
+      // Await the actual TutorialDB transaction, including rollback, before the
+      // MainDB parent lock can be released. A detached query timeout is unsafe.
+      const [row] = await withMainHierarchyLocks({ subtopicIds: [parent.externalId] }, () =>
+        this.dbInstance.transaction(tx => tx.insert(tutorialSections).values(values).returning()));
 
       console.log(`[${diagnosticId}] INSERT successful:`, {
         id: row.id,

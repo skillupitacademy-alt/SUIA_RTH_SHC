@@ -1,0 +1,143 @@
+{
+  "head": "bf1e39bc2d59e779a72629a28e7c55cf3b733492",
+  "results": [
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "started": "2026-11-13T01:59:12.372Z",
+      "finished": "2026-11-13T01:59:21.060Z",
+      "exitCode": 0
+    },
+    {
+      "name": "api-auth-source-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint src/lib/auth-context.ts src/app/api/auth/me/route.ts src/modules/auth/global-logout.service.ts src/modules/auth/repositories/token.repository.ts src/modules/auth/login.service.ts src/modules/auth/token-refresh.service.ts src/proxy.ts src/lib/hierarchy-deletion.ts src/modules/hierarchy/hierarchy-sync.service.ts src/modules/admin-engine/admin.domain.engine.ts src/modules/admin-engine/admin.subject.engine.ts src/modules/admin-engine/admin.topic.engine.ts src/modules/admin-engine/admin.subtopic.engine.ts --max-warnings=0",
+      "started": "2026-11-13T01:59:21.135Z",
+      "finished": "2026-11-13T01:59:31.156Z",
+      "exitCode": 0
+    },
+    {
+      "name": "db-tutorial-typecheck",
+      "command": "pnpm --filter @quiz/db-tutorial type-check",
+      "started": "2026-11-13T01:59:31.191Z",
+      "finished": "2026-11-13T01:59:36.721Z",
+      "exitCode": 0
+    },
+    {
+      "name": "auth-typecheck",
+      "command": "pnpm --filter @quiz/auth type-check",
+      "started": "2026-11-13T01:59:36.753Z",
+      "finished": "2026-11-13T01:59:39.279Z",
+      "exitCode": 0
+    },
+    {
+      "name": "suia-tests",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r4-acceptance-20261112/suia-tests.json",
+      "started": "2026-11-13T01:59:39.308Z",
+      "finished": "2026-11-13T01:59:54.798Z",
+      "exitCode": 0
+    },
+    {
+      "name": "rth-tests",
+      "command": "pnpm --filter @quiz/realtutorialhub-web exec vitest run --reporter=json --outputFile=../../.evidence/r4-acceptance-20261112/rth-tests.json",
+      "started": "2026-11-13T01:59:54.836Z",
+      "finished": "2026-11-13T02:00:46.407Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shared-proxy-tests",
+      "command": "pnpm exec vitest run src/share-branding/middleware/__tests__/learner-mutation-origin.test.ts src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts --exclude **/.worktrees/** --maxWorkers=1 --reporter=json --outputFile=.evidence/r4-acceptance-20261112/shared-proxy-tests.json",
+      "started": "2026-11-13T02:00:46.448Z",
+      "finished": "2026-11-13T02:00:50.145Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-security",
+      "command": "pnpm --filter @quiz/skillhubcore-admin test:security",
+      "started": "2026-11-13T02:00:50.196Z",
+      "finished": "2026-11-13T02:00:58.343Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shc-boundaries",
+      "command": "pnpm --filter @quiz/skillhubcore-admin check:boundaries",
+      "started": "2026-11-13T02:00:58.391Z",
+      "finished": "2026-11-13T02:00:59.696Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+      "started": "2026-11-13T02:00:59.735Z",
+      "finished": "2026-11-13T02:01:08.355Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "started": "2026-11-13T02:01:08.391Z",
+      "finished": "2026-11-13T02:01:19.322Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-typecheck",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-13T02:01:19.357Z",
+      "finished": "2026-11-13T02:01:28.964Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-lint",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "started": "2026-11-13T02:01:29.000Z",
+      "finished": "2026-11-13T02:01:36.318Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-typecheck",
+      "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+      "started": "2026-11-13T02:01:36.353Z",
+      "finished": "2026-11-13T02:01:46.920Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-lint",
+      "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+      "started": "2026-11-13T02:01:46.957Z",
+      "finished": "2026-11-13T02:01:55.222Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-build",
+      "command": "pnpm --filter @quiz/skillhubcore-admin build",
+      "started": "2026-11-13T02:01:55.258Z",
+      "finished": "2026-11-13T02:06:02.545Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-build",
+      "command": "pnpm --filter @quiz/skillup-web build",
+      "started": "2026-11-13T02:06:02.601Z",
+      "finished": "2026-11-13T02:09:41.426Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-build",
+      "command": "pnpm --filter @quiz/realtutorialhub-web build",
+      "started": "2026-11-13T02:09:41.542Z",
+      "finished": "2026-11-13T02:15:11.932Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-final-build-after-availability-correction",
+      "command": "pnpm --filter @quiz/skillup-web build",
+      "exitCode": 0,
+      "log": "skillup-web-final-build.log"
+    },
+    {
+      "name": "suia-final-availability-regressions",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/__tests__/truth-pages.test.tsx src/lib/__tests__/read-fallback-boundary.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "tests": 19
+    }
+  ]
+}

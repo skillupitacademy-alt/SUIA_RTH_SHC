@@ -9,6 +9,8 @@ import {
   tutorialTopics,
   tutorialSubtopics,
   withTimeout,
+  withMainHierarchyLocks,
+  assertMainHierarchyRelationship,
 } from '@quiz/db-tutorial';
 
 import { logger } from '@/lib/logger';
@@ -273,12 +275,15 @@ export class HierarchySyncService {
     const now = this.now();
 
     try {
-      await this.dbClient.transaction(async (tx) => {
-        const transactionalDb = tx as unknown as typeof db;
-        const domainDbId = await upsertDomain(transactionalDb, payload, now);
-        const subjectDbId = await upsertSubject(transactionalDb, payload, domainDbId, now);
-        const topicDbId = await upsertTopic(transactionalDb, payload, subjectDbId, now);
-        await upsertSubtopic(transactionalDb, payload, topicDbId, now);
+      await withMainHierarchyLocks({ subtopicIds: [payload.subtopicId] }, async () => {
+        await assertMainHierarchyRelationship(payload);
+        await this.dbClient.transaction(async (tx) => {
+          const transactionalDb = tx as unknown as typeof db;
+          const domainDbId = await upsertDomain(transactionalDb, payload, now);
+          const subjectDbId = await upsertSubject(transactionalDb, payload, domainDbId, now);
+          const topicDbId = await upsertTopic(transactionalDb, payload, subjectDbId, now);
+          await upsertSubtopic(transactionalDb, payload, topicDbId, now);
+        });
       });
 
       await Promise.all([

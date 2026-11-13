@@ -1,12 +1,13 @@
 import type { NextRequest } from 'next/server';
 
+import { ApiError } from '@/lib/api-error';
 import type { RequestBrand } from '@/lib/request-brand';
 import { validateRequest } from '@/middleware/internal-auth.middleware';
+import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
-import { UserRepository } from '@/modules/auth/repositories/user.repository';
-import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 
 /**
  * 🔐 CANONICAL ROLE NORMALIZER (STRICT UNIFICATION)
@@ -62,34 +63,48 @@ export interface AuthContext {
   roles?: string[]; // 🔥 ADD: Roles for RBAC
 }
 
-async function validateCurrentLearnerContext(context: AuthContext, request: NextRequest): Promise<AuthContext | null> {
+export async function validateCurrentLearnerContext(context: AuthContext, request: NextRequest): Promise<AuthContext | null> {
   if (context.brand !== 'skillup' && context.brand !== 'realtutorialhub') return context;
-  const brand = getAuthBrandContext(context.brand);
-  const users = container.get(UserRepository);
-  const tokens = container.get(TokenRepository);
-  const userRepository = shouldUseBrandBinding() ? users.withDb(brand.db, brand.tables) : users;
-  const tokenRepository = shouldUseBrandBinding() ? tokens.withDb(brand.db, { refreshTokens: brand.tables.refreshTokens }) : tokens;
-  const current = await userRepository.findActiveUserWithRoles(context.userId);
-  if (!current || current.deletedAt !== null || current.isBlocked) return null;
-  const currentRoles = canonicalizeRoles(current.roles);
-  const roles = canonicalizeRoles(context.roles).filter(role => currentRoles.includes(role));
-  if (roles.length === 0) return null;
+  try {
+    const brand = getAuthBrandContext(context.brand);
+    const users = container.get(UserRepository);
+    const tokens = container.get(TokenRepository);
+    const userRepository = shouldUseBrandBinding() ? users.withDb(brand.db, brand.tables) : users;
+    const tokenRepository = shouldUseBrandBinding() ? tokens.withDb(brand.db, { refreshTokens: brand.tables.refreshTokens }) : tokens;
+    const current = await userRepository.findActiveUserWithRoles(context.userId);
+    if (!current || current.deletedAt !== null || current.isBlocked) return null;
+    const currentRoles = canonicalizeRoles(current.roles);
+    const roles = canonicalizeRoles(context.roles).filter(role => currentRoles.includes(role));
+    if (roles.length === 0) return null;
 
-  // Trusted background service calls retain their existing principal contract.
-  // Browser/JWT requests must also satisfy the existing persisted session check.
-  const tokenService = container.get(TokenService);
-  if (tokenService.getAccessToken(request, { scope: 'user' })) {
-    const refresh = tokenService.getRefreshToken(request);
-    if (refresh) {
-      const session = await tokenRepository.findValidSession({
-        userId: context.userId, refreshTokenHash: await tokenService.hashToken(refresh),
-      });
-      if (!session) return null;
-    } else if ((await tokenRepository.getUserSessions(context.userId)).length === 0) {
-      return null;
+    // Trusted background service calls retain their existing principal contract.
+    // Browser/JWT requests must also satisfy the existing persisted session check.
+    const tokenService = container.get(TokenService);
+    const accessToken = tokenService.getAccessToken(request, { scope: 'user' });
+    if (typeof accessToken === 'string' && accessToken.length > 0) {
+      const refresh = tokenService.getRefreshToken(request);
+      if (typeof refresh === 'string' && refresh.length > 0) {
+        let payload;
+        try {
+          payload = await tokenService.verifyUserAccessToken(accessToken, { audience: 'user' });
+        } catch {
+          return null;
+        }
+        const refreshTokenHash = await tokenService.hashToken(refresh);
+        if (payload.userId !== context.userId || payload.brand !== context.brand ||
+            payload.sessionBinding !== refreshTokenHash) return null;
+        const session = await tokenRepository.findValidSession({
+          userId: context.userId, refreshTokenHash,
+        });
+        if (!session) return null;
+      } else {
+        return null;
+      }
     }
+    return { ...context, roles };
+  } catch {
+    throw new ApiError(503, 'Authentication unavailable');
   }
-  return { ...context, roles };
 }
 
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {

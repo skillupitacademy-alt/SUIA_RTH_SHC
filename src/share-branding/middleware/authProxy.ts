@@ -339,6 +339,12 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
         : NextResponse.next();
     }
 
+    if (isApiRoute && authResult.type === 'unauthenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, {
+        status: 401, headers: { 'Cache-Control': 'private, no-store' },
+      });
+    }
+
     // 🔥 CRITICAL: BFF's own API routes should NOT require gateway secret
     // Only external API calls (through gateway) need gateway secret
     // BFF internal routes like /api/profile, /api/auth/* are internal service calls

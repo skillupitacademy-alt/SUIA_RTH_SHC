@@ -1,0 +1,67 @@
+{
+  "boundary": "Actual production hierarchy service with real MainDB/TutorialDB connections. Provider injection selects real connections and explicit outage/rollback faults. Only run-created hierarchy, unpublished dependency fixtures and exact-UUID cleanup.",
+  "observations": [
+    {
+      "scenario": "empty topic deletion",
+      "status": 200
+    },
+    {
+      "scenario": "soft-deleted subtopic dependency",
+      "status": 409
+    },
+    {
+      "scenario": "empty subtopic deletion",
+      "status": 200
+    },
+    {
+      "scenario": "cross-database sidebar dependency",
+      "status": 409
+    },
+    {
+      "scenario": "cross-database retained section dependency",
+      "status": 409
+    },
+    {
+      "scenario": "TutorialDB outage retains MainDB parent",
+      "status": 503
+    },
+    {
+      "scenario": "MainDB rollback after TutorialDB preflight",
+      "status": 500
+    },
+    {
+      "scenario": "subtopic FK",
+      "status": 409
+    },
+    {
+      "scenario": "coordinated write-first commit blocks MainDB deletion",
+      "status": 409,
+      "mainParentPresent": true
+    },
+    {
+      "scenario": "delete-first prevents stale writer commit",
+      "status": 409
+    },
+    {
+      "scenario": "lock timeout fails closed and retry succeeds",
+      "status": 200
+    },
+    {
+      "scenario": "TutorialDB rollback finishes before parent lock release",
+      "status": 200
+    },
+    {
+      "scenario": "partial completion retains parent and committed dependency",
+      "status": 409
+    },
+    {
+      "scenario": "worker hierarchy relationship mismatch rejected",
+      "status": 409
+    },
+    {
+      "scenario": "alternate backend deletion respects TutorialDB retention",
+      "status": 409
+    }
+  ],
+  "cleanupVerified": true
+}

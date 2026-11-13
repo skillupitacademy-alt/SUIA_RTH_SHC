@@ -1,5 +1,6 @@
 import { db, domains } from '@quiz/db';
 
+import { withHierarchyDeletionLocks } from '@/lib/hierarchy-deletion';
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
 import { DrizzleDomainRepository } from "@/repositories/implementations/drizzle-domain.repository";
@@ -38,13 +39,13 @@ export class AdminDomainEngine {
   }
 
   async deleteDomain(id: string, adminId: string) {
-    const deleted = await this.repository.delete(id);
+    const deleted = await withHierarchyDeletionLocks('domain', [id], tx => this.repository.withDb(tx as unknown as typeof db).delete(id));
     await this.auditService.log({ userId: adminId, action: 'admin_delete_domain', metadata: { domainId: id } });
     return deleted;
   }
 
   async deleteDomainsBatch(ids: string[], adminId: string) {
-    const deleted = await this.repository.deleteBatch(ids);
+    const deleted = await withHierarchyDeletionLocks('domain', ids, tx => this.repository.withDb(tx as unknown as typeof db).deleteBatch(ids));
     await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_domains', metadata: { count: ids.length } });
     return deleted;
   }

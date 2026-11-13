@@ -95,6 +95,7 @@ vi.mock('@quiz/db', () => {
 });
 
 vi.mock('@quiz/db-tutorial', () => ({
+  hasTutorialHierarchyDependents: vi.fn(async () => false),
   db: {
     select: () => ({
       from: () => ({

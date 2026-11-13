@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const verify = vi.hoisted(() => vi.fn());
 vi.mock('@quiz/auth', () => ({ TokenService: { verifyUserAccessToken: verify } }));
+vi.mock('../../auth/currentLearnerSession', () => ({ requireCurrentLearnerSession: vi.fn().mockResolvedValue(null) }));
 
 beforeEach(() => {
   verify.mockResolvedValue({ userId: 'local', originalUserId: 'local', shadowUserId: 'local', brand: 'skillup', roles: ['student'] });

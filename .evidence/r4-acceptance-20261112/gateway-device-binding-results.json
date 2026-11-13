@@ -1,0 +1,320 @@
+{
+  "runId": "r4-e00d3490-e0b4-4b75-ad52-c64792ebf538",
+  "timestamp": "2026-11-13T02:02:06.570Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "name": "skillup real isolated gateway password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup real isolated gateway password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway device A active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway device B active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway protected profile accepts active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway protected session list accepts active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway access-only denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway cross-device cookie mixing denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway protected profile rejects cross-device cookie mixing",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway session list rejects access-only replay",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway independently signed positive control",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway signed expired access with active refresh denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway device A logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway logged-out A pair denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway stolen A access-only denied while B active",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway B survives A logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway B refresh rotates pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway B old pair denied after rotation",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway B successor pair allowed",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway B old access mixed with successor refresh denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway current blocked account denied despite valid pair",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway protected profile blocks current disabled account",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway current role removal denies valid pair",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway active account restored after bounded eligibility probe",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway persisted session expiry denies bound pair",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "skillup gateway revoked persisted session denies bound pair",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real isolated gateway password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub real isolated gateway password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway device A active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway device B active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway protected profile accepts active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway protected session list accepts active bound pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway access-only denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway cross-device cookie mixing denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway protected profile rejects cross-device cookie mixing",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway session list rejects access-only replay",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway independently signed positive control",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway signed expired access with active refresh denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway device A logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway logged-out A pair denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway stolen A access-only denied while B active",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway B survives A logout",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway B refresh rotates pair",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway B old pair denied after rotation",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway B successor pair allowed",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway B old access mixed with successor refresh denied",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway current blocked account denied despite valid pair",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway protected profile blocks current disabled account",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway current role removal denies valid pair",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway active account restored after bounded eligibility probe",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway persisted session expiry denies bound pair",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub gateway revoked persisted session denies bound pair",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    }
+  ],
+  "cleanupVerified": true
+}

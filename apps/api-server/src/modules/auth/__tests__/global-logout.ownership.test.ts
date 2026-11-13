@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  */
 const createMockTokenRepo = (tenantName: string) => ({
   _tenant: tenantName,
-  revokeById: vi.fn().mockResolvedValue(undefined),
+  revokeById: vi.fn().mockResolvedValue(true),
   revokeAll: vi.fn().mockResolvedValue(undefined),
   getUserSessions: vi.fn().mockResolvedValue([]),
   withDb: vi.fn(function(this: any, db: any, tables: any) {

@@ -66,6 +66,7 @@ vi.mock("@quiz/db", () => ({
 }));
 
 vi.mock("@quiz/db-tutorial", () => ({
+  withMainHierarchyLocks: async (_scope: unknown, operation: () => Promise<unknown>) => operation(),
   db: mocks.tutorialDb,
   tutorialDomains: { id: "tutorial-domain-id", externalId: "external_id", __name: "tutorial_domains" },
   tutorialSubjects: { id: "tutorial-subject-id", externalId: "external_id", __name: "tutorial_subjects" },

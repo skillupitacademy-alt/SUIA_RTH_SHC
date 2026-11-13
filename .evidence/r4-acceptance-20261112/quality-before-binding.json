@@ -1,0 +1,82 @@
+{
+  "head": "bf1e39bc2d59e779a72629a28e7c55cf3b733492",
+  "results": [
+    {
+      "name": "api-typecheck",
+      "command": "pnpm --filter @quiz/api-server exec tsc --noEmit",
+      "started": "2026-11-13T01:33:54.426Z",
+      "finished": "2026-11-13T01:36:27.021Z",
+      "exitCode": 1
+    },
+    {
+      "name": "api-auth-source-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint src/lib/auth-context.ts src/app/api/auth/me/route.ts src/modules/auth/global-logout.service.ts src/modules/auth/repositories/token.repository.ts --max-warnings=0",
+      "started": "2026-11-13T01:36:27.090Z",
+      "finished": "2026-11-13T01:38:27.506Z",
+      "exitCode": 1
+    },
+    {
+      "name": "suia-tests",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run --maxWorkers=1 --reporter=json --outputFile=../../.evidence/r4-acceptance-20261112/suia-tests.json",
+      "started": "2026-11-13T01:38:27.559Z",
+      "finished": "2026-11-13T01:39:39.987Z",
+      "exitCode": 0
+    },
+    {
+      "name": "rth-tests",
+      "command": "pnpm --filter @quiz/realtutorialhub-web exec vitest run --reporter=json --outputFile=../../.evidence/r4-acceptance-20261112/rth-tests.json",
+      "started": "2026-11-13T01:39:40.033Z",
+      "finished": "2026-11-13T01:40:32.638Z",
+      "exitCode": 0
+    },
+    {
+      "name": "shared-proxy-tests",
+      "command": "pnpm exec vitest run src/share-branding/middleware/__tests__/learner-mutation-origin.test.ts src/share-branding/middleware/__tests__/gateway-secret-configuration.test.ts --maxWorkers=1 --reporter=json --outputFile=.evidence/r4-acceptance-20261112/shared-proxy-tests.json",
+      "started": "2026-11-13T01:40:32.672Z",
+      "finished": "2026-11-13T01:43:07.323Z",
+      "exitCode": 1
+    },
+    {
+      "name": "skillhubcore-admin-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-admin type-check",
+      "started": "2026-11-13T01:43:07.373Z",
+      "finished": "2026-11-13T01:43:46.448Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillhubcore-admin-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-admin lint --max-warnings=0",
+      "started": "2026-11-13T01:43:46.524Z",
+      "finished": "2026-11-13T01:44:06.300Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-typecheck",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-13T01:44:06.337Z",
+      "finished": "2026-11-13T01:44:21.403Z",
+      "exitCode": 0
+    },
+    {
+      "name": "skillup-web-lint",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "started": "2026-11-13T01:44:21.438Z",
+      "finished": "2026-11-13T01:44:27.267Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-typecheck",
+      "command": "pnpm --filter @quiz/realtutorialhub-web type-check",
+      "started": "2026-11-13T01:44:27.297Z",
+      "finished": "2026-11-13T01:44:45.830Z",
+      "exitCode": 0
+    },
+    {
+      "name": "realtutorialhub-web-lint",
+      "command": "pnpm --filter @quiz/realtutorialhub-web lint --max-warnings=0",
+      "started": "2026-11-13T01:44:45.862Z",
+      "finished": "2026-11-13T01:44:52.412Z",
+      "exitCode": 0
+    }
+  ]
+}

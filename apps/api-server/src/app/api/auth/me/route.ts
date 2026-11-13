@@ -32,7 +32,6 @@ export const dynamic = 'force-dynamic';
  * DO NOT add business logic here - only user state retrieval
  */
 async function handler(req: NextRequest, obsCtx: { requestId: string }) {
-  const start = Date.now();
   const { requestId } = obsCtx; // 🔥 Observability context from withObservability
 
   try {
@@ -43,16 +42,16 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
 
     if (typeof accessToken !== 'string' || accessToken.length === 0) {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_token' });
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
     }
 
     // Verify token and extract payload
     let payload;
     try {
       payload = await tokenService.verifyAccessToken(accessToken);
-    } catch (error) {
+    } catch {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token' });
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
     }
 
     // 🔥 CRITICAL SECURITY FIX: Extract brand from JWT payload (NOT headers)
@@ -140,6 +139,11 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       if (typeof refreshToken === 'string' && refreshToken.length > 0) {
         // Hash the refresh token to match DB storage
         const refreshTokenHash = await tokenService.hashToken(refreshToken);
+        if (payload.isAdmin !== true &&
+            (brand === 'skillup' || brand === 'realtutorialhub') &&
+            payload.sessionBinding !== refreshTokenHash) {
+          return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
+        }
         
         // CRITICAL: Use the original user ID (not shadow) for session lookup
         const sessionUserId = payload.userId; // This is the original user ID used for storing tokens
@@ -153,10 +157,13 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
         
         if (!validSession) {
           recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'session_revoked' });
-          return NextResponse.json({ user: null }, { status: 401 });
+          return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
         }
         
       } else {
+        if (payload.isAdmin !== true && (brand === 'skillup' || brand === 'realtutorialhub')) {
+          return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
+        }
         // Fallback: Check if user has ANY active refresh tokens
         // This handles cases where refresh token cookie might be missing
         const sessionUserId = payload.userId;
@@ -165,13 +172,13 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
         
         if (activeTokens.length === 0) {
           recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_active_tokens' });
-          return NextResponse.json({ user: null }, { status: 401 });
+          return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
         }
         
       }
-    } catch (tokenCheckError) {
+    } catch {
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'session_check_error' });
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication unavailable' }, { status: 503, headers: { 'Cache-Control': 'private, no-store' } });
     }
     
 
@@ -185,6 +192,10 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       return NextResponse.json({ user: null }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
     }
     if (currentAccount.isBlocked || currentAccount.roles.length === 0) {
+      return NextResponse.json({ user: null }, { status: 403, headers: { 'Cache-Control': 'private, no-store' } });
+    }
+    const effectiveRoles = normalizedRoles.filter(role => currentAccount.roles.includes(role));
+    if (effectiveRoles.length === 0) {
       return NextResponse.json({ user: null }, { status: 403, headers: { 'Cache-Control': 'private, no-store' } });
     }
     
@@ -219,19 +230,15 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       },
     } satisfies Parameters<typeof toUserSummaryDTO>[0];
 
-    const roleNames = user.userRoles
-      .map((ur) => ur.role.name?.trim().toLowerCase())
-      .filter((role): role is string => typeof role === 'string' && role.length > 0);
-    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin') || roleNames.includes('infrastructure');
+    const roleNames = effectiveRoles;
+    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin');
 
     const userDto = {
       ...toUserSummaryDTO(authUserInput, isAdmin),
-      roles: currentAccount.roles,
-      role: currentAccount.roles[0],
+      roles: effectiveRoles,
+      role: effectiveRoles[0],
     };
 
-    const end = Date.now();
-    const durationMs = end - start;
 
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { operation: 'get_me' });
@@ -239,17 +246,15 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     return ApiResponse.success({
       user: userDto,
     }, 200, {
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
+      'Cache-Control': 'private, no-store',
+      'Vary': 'Cookie, Authorization',
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to get user';
+  } catch {
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'server_error' });
     
-    // TASK 5: Proper error handling - return 500 for server errors, not 401
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? message : 'Failed to get user'
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Authentication unavailable' }, {
+      status: 503, headers: { 'Cache-Control': 'private, no-store' },
+    });
   }
 }
 

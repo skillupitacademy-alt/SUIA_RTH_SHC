@@ -42,6 +42,8 @@ export type TokenPayload = JWTPayload & {
   role?: string;
   platforms?: Array<'realtutorialhub' | 'skillup'>;
   subscriptions?: string[];
+  /** SHA-256 of the exact issued refresh credential for a learner device pair. */
+  sessionBinding?: string;
   portalIdentity?: 'admin' | 'user' | 'faculty' | 'super_admin' | 'infrastructure';
 };
 

@@ -1,5 +1,7 @@
 /* istanbul ignore file */
 export * from './db';
+export * from './hierarchy-coordination';
+export * from './hierarchy-deletion';
 export * from './schema';
 export * from './repositories';
 export * from './live-session.service';

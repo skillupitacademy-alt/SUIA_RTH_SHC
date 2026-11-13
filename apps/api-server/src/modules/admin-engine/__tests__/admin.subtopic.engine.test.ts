@@ -1,9 +1,11 @@
+vi.mock('@/lib/hierarchy-deletion', () => ({ withHierarchyDeletionLocks: async (_kind: unknown, _ids: unknown, operation: (tx: unknown) => Promise<unknown>) => operation({}) }));
 import { describe, expect, it, vi } from 'vitest';
 
 import { AdminSubtopicEngine } from '../admin.subtopic.engine';
 
 describe('AdminSubtopicEngine', () => {
   const repository = {
+    withDb: () => repository,
     findAll: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),

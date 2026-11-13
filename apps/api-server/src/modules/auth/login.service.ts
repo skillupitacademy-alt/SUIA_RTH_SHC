@@ -224,12 +224,26 @@ export class LoginService {
 
     timings.afterShadowUser = Date.now();
 
+    const refreshToken = await this.tokenService.generateRefreshToken(
+      user.id,
+      isAdmin,
+      isAdmin ? 'admin' : 'user',
+      {
+        tokenType: isAdmin ? 'admin' : 'user',
+        brand,
+        originalUserId: user.id,
+        shadowUserId,
+      }
+    );
+    const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
+
     const accessToken = await this.tokenService.generateAccessToken({
       userId: user.id,
       originalUserId: user.id,
       shadowUserId,
       email: user.email,
       roles: roleNames,
+      ...(!isAdmin && (brand === 'skillup' || brand === 'realtutorialhub') ? { sessionBinding: refreshTokenHash } : {}),
       isAdmin,
       tokenType: isAdmin ? 'admin' : 'user',
       brand,
@@ -246,19 +260,6 @@ export class LoginService {
       roles: roleNames,
       timestamp: new Date().toISOString(),
     }));
-
-    const refreshToken = await this.tokenService.generateRefreshToken(
-      user.id,
-      isAdmin,
-      isAdmin ? 'admin' : 'user',
-      {
-        tokenType: isAdmin ? 'admin' : 'user',
-        brand,
-        originalUserId: user.id,
-        shadowUserId,
-      }
-    );
-    const refreshTokenHash = await this.tokenService.hashToken(refreshToken);
 
     timings.afterTokenGen = Date.now();
 

@@ -6,6 +6,7 @@ import {
   tutorialSubjects,
   tutorialSubtopics,
   tutorialTopics,
+  withMainHierarchyLocks,
   withTimeout,
 } from "@quiz/db-tutorial";
 import { and, eq, isNull } from "drizzle-orm";
@@ -254,6 +255,10 @@ export class HierarchySyncService {
     topic: { externalId: string; internalId: string };
     subtopics: Array<{ externalId: string; internalId: string; name: string }>;
   }> {
+    return withMainHierarchyLocks({ topicIds: [topicId] }, () => this.ensureLockedTopicHierarchySynced(topicId));
+  }
+
+  private static async ensureLockedTopicHierarchySynced(topicId: string) {
     const now = new Date();
 
     // Load MainDB topic with complete parent chain and ALL active subtopics
@@ -509,6 +514,14 @@ export class HierarchySyncService {
   }
 
   private static async executeSync(entityType: HierarchyEntityType, entityId: string, now: Date) {
+    const scopes = {
+      domain: { domainIds: [entityId] }, subject: { subjectIds: [entityId] },
+      topic: { topicIds: [entityId] }, subtopic: { subtopicIds: [entityId] },
+    };
+    return withMainHierarchyLocks(scopes[entityType], () => this.executeLockedSync(entityType, entityId, now));
+  }
+
+  private static async executeLockedSync(entityType: HierarchyEntityType, entityId: string, now: Date) {
     if (entityType === "domain") {
       await this.syncDomain(entityId, now);
       return;

@@ -1,5 +1,6 @@
 import { db, subtopics } from '@quiz/db';
 
+import { withHierarchyDeletionLocks } from '@/lib/hierarchy-deletion';
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
 import { DrizzleSubtopicRepository } from "@/repositories/implementations/drizzle-subtopic.repository";
@@ -38,13 +39,13 @@ export class AdminSubtopicEngine {
   }
 
   async deleteSubtopic(id: string, adminId: string) {
-    const res = await this.repository.delete(id);
+    const res = await withHierarchyDeletionLocks('subtopic', [id], tx => this.repository.withDb(tx as unknown as typeof db).delete(id));
     await this.auditService.log({ userId: adminId, action: 'admin_delete_subtopic', metadata: { subtopicId: id } });
     return res;
   }
 
   async deleteSubtopicsBatch(ids: string[], adminId: string) {
-    const res = await this.repository.deleteBatch(ids);
+    const res = await withHierarchyDeletionLocks('subtopic', ids, tx => this.repository.withDb(tx as unknown as typeof db).deleteBatch(ids));
     await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_subtopics', metadata: { count: ids.length } });
     return res;
   }

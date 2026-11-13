@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-12T18:31:12.794Z",
+  "timestamp": "2026-11-13T01:30:13.679Z",
   "boundary": "Actual local HTTP for every inventoried method except owner-held Marketing. No authentication or service secrets supplied. Forged identity headers, empty mutation bodies and run-random resource IDs only. Public validation is recorded separately. This proves selected anonymous denial behavior, with role/object/session cases covered by separate fixtures.",
   "results": [
     {
@@ -10,7 +10,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/auth/me/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -20,7 +21,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -30,7 +32,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/blueprints/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -40,7 +43,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -50,7 +54,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -60,7 +65,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/blueprints/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -70,7 +76,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -80,7 +87,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -90,7 +98,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -100,7 +109,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -110,7 +120,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -120,7 +131,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -130,7 +142,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/domains/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -140,7 +153,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -150,7 +164,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/bulk/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -160,7 +175,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -170,7 +186,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -180,7 +197,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -190,7 +208,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -200,7 +219,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/questions/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -210,7 +230,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -220,7 +241,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -230,7 +252,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -240,7 +263,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -250,7 +274,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -260,7 +285,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -270,7 +296,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/skills/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -280,7 +307,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -290,7 +318,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -300,7 +329,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -310,7 +340,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -320,7 +351,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -330,7 +362,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -340,7 +373,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subjects/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -350,7 +384,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -360,7 +395,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -370,7 +406,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -380,7 +417,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -390,7 +428,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -400,7 +439,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -410,7 +450,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/subtopics/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -420,7 +461,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/batch-delete/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -430,7 +472,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -440,7 +483,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -450,7 +494,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -460,7 +505,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -470,7 +516,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -480,7 +527,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -490,7 +538,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -500,27 +549,32 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/skills/route.ts"
     },
     {
       "app": "skillhubcore-admin",
       "method": "POST",
       "route": "/api/auth/login",
-      "publicOperation": false,
-      "expected": "401/403 or retired 404/410",
-      "pass": false,
+      "publicOperation": true,
+      "expected": "Public authentication handler validation",
+      "pass": true,
       "actual": 422,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/auth/login/route.ts",
+      "classificationEvidence": "Existing SHC login/logout source uses mutation-origin protection and public credential exchange."
     },
     {
       "app": "skillhubcore-admin",
       "method": "POST",
       "route": "/api/auth/logout",
-      "publicOperation": false,
-      "expected": "401/403 or retired 404/410",
-      "pass": false,
+      "publicOperation": true,
+      "expected": "Public authentication handler validation",
+      "pass": true,
       "actual": 200,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/auth/logout/route.ts",
+      "classificationEvidence": "Existing SHC login/logout source uses mutation-origin protection and public credential exchange."
     },
     {
       "app": "skillhubcore-admin",
@@ -530,7 +584,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/auth/me/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -540,7 +595,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/factory/check-duplicates/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -550,7 +606,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/factory/save/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -560,7 +617,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 200,
-      "cacheControl": null
+      "cacheControl": null,
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/health/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -570,28 +628,32 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/logs/client/route.ts"
     },
     {
       "app": "skillhubcore-admin",
       "method": "GET",
       "route": "/api/marketing/bootstrap/40207880-2d3e-4fca-89d7-6d445a12a845",
       "disposition": "HOLD",
-      "reason": "Owner Marketing exclusion"
+      "reason": "Owner Marketing exclusion",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/marketing/bootstrap/[brandId]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
       "method": "GET",
       "route": "/api/marketing/collector/observability",
       "disposition": "HOLD",
-      "reason": "Owner Marketing exclusion"
+      "reason": "Owner Marketing exclusion",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/marketing/collector/observability/route.ts"
     },
     {
       "app": "skillhubcore-admin",
       "method": "GET",
       "route": "/api/marketing/control-plane/40207880-2d3e-4fca-89d7-6d445a12a845",
       "disposition": "HOLD",
-      "reason": "Owner Marketing exclusion"
+      "reason": "Owner Marketing exclusion",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/marketing/control-plane/[brandId]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -601,7 +663,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -611,7 +674,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -621,7 +685,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -631,7 +696,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -641,7 +707,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -651,7 +718,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -661,7 +729,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -671,7 +740,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -681,7 +751,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -691,7 +762,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -701,7 +773,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -711,7 +784,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -721,7 +795,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -731,7 +806,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -741,7 +817,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -751,7 +828,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -761,7 +839,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -771,7 +850,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/navigation-nodes/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -781,7 +861,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts"
     },
     {
       "app": "skillhubcore-admin",
@@ -791,7 +872,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "private, no-store"
+      "cacheControl": "private, no-store",
+      "sourcePath": "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts"
     },
     {
       "app": "skillup-web",
@@ -801,7 +883,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 200,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/forgot-password/route.ts"
     },
     {
       "app": "skillup-web",
@@ -811,7 +894,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 422,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/login/route.ts"
     },
     {
       "app": "skillup-web",
@@ -821,7 +905,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 200,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/logout/route.ts"
     },
     {
       "app": "skillup-web",
@@ -831,7 +916,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": null
+      "cacheControl": null,
+      "sourcePath": "apps/skillup-web/src/app/api/auth/placement-handoff/route.ts"
     },
     {
       "app": "skillup-web",
@@ -841,7 +927,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 400,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/refresh/route.ts"
     },
     {
       "app": "skillup-web",
@@ -851,7 +938,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 400,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/reset-password/route.ts"
     },
     {
       "app": "skillup-web",
@@ -861,7 +949,8 @@
       "expected": "Documented public/validation response",
       "pass": true,
       "actual": 400,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/reset-password/route.ts"
     },
     {
       "app": "skillup-web",
@@ -871,7 +960,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/sessions/route.ts"
     },
     {
       "app": "skillup-web",
@@ -881,7 +971,8 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
-      "cacheControl": "no-store, no-cache, must-revalidate"
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/sessions/route.ts"
     },
     {
       "app": "skillup-web",
@@ -891,7 +982,1176 @@
       "expected": "401/403 or retired 404/410",
       "pass": true,
       "actual": 401,
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/sessions/[sessionId]/route.ts"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/signup",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/signup/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
       "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/test-fixture-session",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/test-fixture-session/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/auth/verify-email",
+      "sourcePath": "apps/skillup-web/src/app/api/auth/verify-email/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/batches",
+      "sourcePath": "apps/skillup-web/src/app/api/batches/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/content-manager/add-section",
+      "sourcePath": "apps/skillup-web/src/app/api/content-manager/add-section/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/faculty",
+      "sourcePath": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/healthz",
+      "sourcePath": "apps/skillup-web/src/app/api/healthz/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/onboarding",
+      "sourcePath": "apps/skillup-web/src/app/api/onboarding/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/onboarding/session",
+      "sourcePath": "apps/skillup-web/src/app/api/onboarding/session/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store",
+      "previousAttempts": [
+        {
+          "app": "skillup-web",
+          "method": "POST",
+          "route": "/api/onboarding/session",
+          "sourcePath": "apps/skillup-web/src/app/api/onboarding/session/route.ts",
+          "publicOperation": false,
+          "expected": "401/403",
+          "pass": false,
+          "actual": 500,
+          "cacheControl": null
+        }
+      ]
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/profile",
+      "sourcePath": "apps/skillup-web/src/app/api/profile/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "PATCH",
+      "route": "/api/profile",
+      "sourcePath": "apps/skillup-web/src/app/api/profile/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/programs",
+      "sourcePath": "apps/skillup-web/src/app/api/programs/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/programs/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/quiz/active",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/active/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/quiz/answer",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/answer/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/quiz/count",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/count/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/quiz/result",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/result/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/quiz/start",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/start/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/quiz/state",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/state/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/quiz/submit",
+      "sourcePath": "apps/skillup-web/src/app/api/quiz/submit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/student/attendance",
+      "sourcePath": "apps/skillup-web/src/app/api/student/attendance/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/student/dashboard",
+      "sourcePath": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/student/my-batch",
+      "sourcePath": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/student/payments",
+      "sourcePath": "apps/skillup-web/src/app/api/student/payments/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/student/placement",
+      "sourcePath": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/content/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "publicOperation": false,
+      "expected": "Retired 410 or authentication denial",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/active-time",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-active-time",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-completion",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-visit",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/complete-node",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/ils/navigation/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/ils/subtopic/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0/progress",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/visit",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/interactions/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/interactions/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 403,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/progress",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "POST",
+      "route": "/api/tutorial/progress",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "skillup-web",
+      "method": "GET",
+      "route": "/api/tutorial/sections/dbf2cf42-73e8-42a4-89dc-d8228e7c38e0",
+      "sourcePath": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/ai-tutor/query",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/ai-tutor/query/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/forgot-password",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/forgot-password/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/login",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/login/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 422,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/logout",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/logout/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/placement-handoff",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/placement-handoff/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/refresh",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/refresh/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/auth/reset-password",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/reset-password",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/reset-password/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/auth/sessions",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "DELETE",
+      "route": "/api/auth/sessions",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/sessions/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "DELETE",
+      "route": "/api/auth/sessions/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/sessions/[sessionId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/signup",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/signup/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/auth/verify-email",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/auth/verify-email/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 400,
+      "cacheControl": "no-store, no-cache, must-revalidate"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/certificates/verify/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/certificates/verify/[verificationCode]/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 404,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/content-manager/add-section",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/content-manager/add-section/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/healthz",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/healthz/route.ts",
+      "publicOperation": true,
+      "expected": "Documented public/validation response",
+      "pass": true,
+      "actual": 200,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/onboarding",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/onboarding/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/onboarding/session",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/onboarding/session/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/profile",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "PATCH",
+      "route": "/api/profile",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/profile/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/quiz/active",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/active/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/quiz/answer",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/answer/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/quiz/count",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/count/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/quiz/result",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/result/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/quiz/start",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/start/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/quiz/state",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/state/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/quiz/submit",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/quiz/submit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/test-deployment",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/test-deployment/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/assignments/help",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/help/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/assignments/1804fee7-57c2-4111-939b-a1ca65891c97/complete",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/complete/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/assignments/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/assignments/1804fee7-57c2-4111-939b-a1ca65891c97/start",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/start/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/content/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/content/[subtopicId]/route.ts",
+      "publicOperation": false,
+      "expected": "Retired 410 or authentication denial",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/active-time",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-active-time",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-completion",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/block-visit",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/complete-node",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/ils/navigation/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/ils/subtopic/1804fee7-57c2-4111-939b-a1ca65891c97/progress",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/ils/visit",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/ils/visit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/interactions/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/interactions/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/progress/mark-complete",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/progress/mark-complete/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/progress",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/progress",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/progress/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/projects/submissions",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submissions/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/projects/submit",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/projects/submit/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/projects/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/projects/[projectId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/remediation",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/remediation/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/remediation/[examResultId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/sections/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "GET",
+      "route": "/api/tutorial/sessions/my-requests",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/my-requests/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/tutorial/sessions/request",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/request/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "DELETE",
+      "route": "/api/tutorial/sessions/1804fee7-57c2-4111-939b-a1ca65891c97",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/tutorial/sessions/[requestId]/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/award-project-badge",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/award-project-badge/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/handle-exam-completed",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/handle-exam-completed/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/index-content-vector",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/issue-certificate",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/issue-certificate/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/notify-session-accepted",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/notify-session-accepted/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/notify-session-requested",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/notify-session-requested/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/notify-session-scheduled",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/notify-session-scheduled/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/refresh-weak-areas-view",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/refresh-weak-areas-view/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/review-project",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/review-project/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/send-remediation-notification",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/send-remediation-notification/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
+    },
+    {
+      "app": "realtutorialhub-web",
+      "method": "POST",
+      "route": "/api/workers/sync-hierarchy",
+      "sourcePath": "apps/realtutorialhub-web/src/app/api/workers/sync-hierarchy/route.ts",
+      "publicOperation": false,
+      "expected": "401/403",
+      "pass": true,
+      "actual": 401,
+      "cacheControl": null
     }
   ]
 }

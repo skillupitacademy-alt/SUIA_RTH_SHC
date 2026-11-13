@@ -99,7 +99,10 @@ const {
   selectWhereMock
 } = vi.hoisted(() => {
   const _updateWhereMock = vi.fn();
-  const _updateSetMock = vi.fn(() => ({ where: _updateWhereMock }));
+  const _updateSetMock = vi.fn(() => ({ where: (...arguments_: unknown[]) => {
+    const count = Promise.resolve(_updateWhereMock(...arguments_));
+    return Object.assign(count, { returning: async () => Array.from({ length: Number(await count) || 0 }, (_, index) => ({ id: String(index) })) });
+  } }));
   const _selectWhereMock = vi.fn();
   const _selectFromMock = vi.fn(() => ({ where: _selectWhereMock }));
   const _insertValuesMock = vi.fn().mockResolvedValue(undefined);

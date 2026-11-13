@@ -1,0 +1,48 @@
+{
+  "runId": "r4-b2053250-7cd7-484c-ac07-8630ebc090ec",
+  "timestamp": "2026-11-13T01:26:20.132Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard",
+      "size": "desktop",
+      "pass": true,
+      "status": 200,
+      "horizontalOverflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard",
+      "size": "mobile",
+      "pass": true,
+      "status": 200,
+      "horizontalOverflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard/profile",
+      "size": "desktop",
+      "pass": true,
+      "status": 200,
+      "horizontalOverflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    },
+    {
+      "brand": "realtutorialhub",
+      "route": "/dashboard/profile",
+      "size": "mobile",
+      "pass": true,
+      "status": 200,
+      "horizontalOverflow": false,
+      "keyboardTarget": "A",
+      "violations": []
+    }
+  ],
+  "cleanupVerified": true
+}

@@ -23,7 +23,7 @@ function record(name, expected, actual, details = {}) {
   return pass;
 }
 function save() {
-  fs.writeFileSync(path.join(__dirname, 'learner-lifecycle-results.json'), JSON.stringify({ runId, timestamp: new Date().toISOString(), boundary: 'Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.', results, cleanupVerified }, null, 2));
+  fs.writeFileSync(path.join(__dirname, process.env.R4_REPORT_NAME || 'learner-lifecycle-results.json'), JSON.stringify({ runId, timestamp: new Date().toISOString(), boundary: 'Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.', results, cleanupVerified }, null, 2));
 }
 async function request(context, fixture, route, method = 'GET', body, headers = {}) {
   const cookies = await context.cookies(fixture.base);
@@ -177,6 +177,146 @@ async function qualifyBrand(brand) {
     }
   } finally { await context.close(); }
 }
+
+async function qualifyAccessibility(brand) {
+  const { default: AxeBuilder } = require('@axe-core/playwright');
+  const fixture = await createFixture(brand, 'accessibility');
+  const context = await browser.newContext();
+  fs.mkdirSync(path.join(root,'.evidence/screenshots/r4-20261113'),{recursive:true});
+  try {
+    const authenticated = await login(context, fixture);
+    assert.equal(authenticated.status(),200,'Real login required before authenticated accessibility');
+    assert.equal((await request(context,fixture,'/api/profile')).status(),200,'Persisted session profile control required');
+    const routes = brand === 'realtutorialhub' ? ['/dashboard','/dashboard/profile'] : ['/student/attendance','/student/payments'];
+    for (const route of routes) for (const [size,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]) {
+      const page=await context.newPage();
+      await page.setViewportSize(viewport);
+      const result={brand,route,size,pass:false};
+      try {
+        const response=await page.goto(fixture.base+route,{waitUntil:'domcontentloaded',timeout:180000});
+        result.status=response.status();
+        assert.equal(result.status,200);
+        await page.locator('h1,h2').first().waitFor({state:'visible',timeout:60000});
+        assert.equal(new URL(page.url()).pathname,route);
+        result.horizontalOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+        for(let step=0;step<12;step++) {
+          await page.keyboard.press('Tab');
+          result.keyboardTarget=await page.evaluate(()=>document.activeElement?.tagName);
+          if(['A','BUTTON','INPUT','SELECT','TEXTAREA'].includes(result.keyboardTarget))break;
+        }
+        const report=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+        result.violations=report.violations.map(violation=>({id:violation.id,impact:violation.impact,targets:violation.nodes.map(node=>node.target)}));
+        await page.screenshot({path:path.join(root,'.evidence/screenshots/r4-20261113',`${brand}-${route.replace(/\//g,'-')}-${size}.png`),fullPage:true});
+        assert.equal(result.horizontalOverflow,false);
+        assert.ok(['A','BUTTON','INPUT','SELECT','TEXTAREA'].includes(result.keyboardTarget));
+        assert.equal(result.violations.filter(violation=>['critical','serious'].includes(violation.impact)).length,0);
+        result.pass=true;
+      } catch(error) {result.error=error.message.slice(0,300);}
+      finally { await page.close(); results.push(result); save(); console.log(JSON.stringify(result)); }
+    }
+  } finally {await context.close();}
+}
+
+async function qualifyDeviceRevocation(brand) {
+  const fixture=await createFixture(brand,'devices');
+  const first=await browser.newContext();
+  const second=await browser.newContext();
+  const replay=await browser.newContext();
+  try {
+    assert.equal((await login(first,fixture)).status(),200);
+    assert.equal((await login(second,fixture)).status(),200);
+    const access=(await first.cookies()).find(cookie=>cookie.name==='accessToken')?.value;
+    assert.ok(access);
+    assert.equal((await request(first,fixture,'/api/auth/logout','POST',{})).status(),200);
+    await replay.addCookies([{name:'accessToken',value:access,domain:`${brand}.localhost`,path:'/',httpOnly:true}]);
+    record(`${brand} logged-out device access-only replay denied while another device remains active`,401,(await request(replay,fixture,'/api/profile')).status());
+    record(`${brand} other device remains authorized after device logout`,200,(await request(second,fixture,'/api/profile')).status());
+    const administratorRole=(await pools[brand].query("SELECT id FROM roles WHERE name='admin'")).rows[0]?.id;
+    assert.ok(administratorRole);
+    await pools[brand].query('INSERT INTO user_roles(user_id,role_id) VALUES($1,$2)',[fixture.id,administratorRole]);
+    try {
+      const cookie=(await second.cookies()).map(item=>`${item.name}=${item.value}`).join('; ');
+      const response=await fetch('http://127.0.0.1:3000/api/auth/me',{headers:{cookie,'x-original-host':`${brand}.localhost`,'x-brand':brand},signal:AbortSignal.timeout(180000)});
+      const body=await response.json();
+      const current=body.user || body.data?.user;
+      record(`${brand} learner-purpose session never gains newly assigned admin role`,true,response.status===200 && current?.isAdmin===false && current?.roles?.length===1 && current.roles[0]==='student');
+    } finally { await pools[brand].query('DELETE FROM user_roles WHERE user_id=$1 AND role_id=$2',[fixture.id,administratorRole]); }
+  } finally { await Promise.all([first.close(),second.close(),replay.close()]); }
+}
+async function qualifyGatewayDeviceRevocation(brand) {
+  const fixture = await createFixture(brand, 'gateway-devices');
+  const endpoint = 'http://127.0.0.1:8787';
+  const gatewayEnvironment = require('dotenv').parse(fs.readFileSync(path.join(root,'services/api-gateway/.dev.vars')));
+  const call = async (route, pair = {}, method = 'GET', body) => {
+    const response = await fetch(endpoint + route, {
+      method, headers: {
+        'x-original-host': `${brand}.localhost`,
+        'x-internal-secret': gatewayEnvironment.INTERNAL_GATEWAY_SECRET,
+        origin: fixture.base,
+        cookie: Object.entries(pair).map(([name,value]) => `${name}=${value}`).join('; '),
+        ...(body !== undefined ? {'content-type':'application/json'} : {}),
+      },
+      ...(body !== undefined ? {body:JSON.stringify(body)} : {}),
+      signal: AbortSignal.timeout(180000), redirect:'manual',
+    });
+    const next = {...pair};
+    for (const cookie of response.headers.getSetCookie()) {
+      const match = /^(accessToken|refreshToken)=([^;]*)/.exec(cookie);
+      if (match) next[match[1]] = match[2];
+    }
+    return {response,pair:next};
+  };
+  const signIn = async () => {
+    const result = await call('/api/auth/login',{},'POST',{
+      email:fixture.email,password:fixture.password,platform:brand,
+    });
+    record(`${brand} real isolated gateway password login`,200,result.response.status);
+    assert.equal(result.response.status,200,'Real gateway login must succeed');
+    assert.ok(result.pair.accessToken && result.pair.refreshToken);
+    return result.pair;
+  };
+  const a = await signIn();
+  const b = await signIn();
+  record(`${brand} gateway device A active bound pair`,200,(await call('/api/auth/me',a)).response.status);
+  record(`${brand} gateway device B active bound pair`,200,(await call('/api/auth/me',b)).response.status);
+  record(`${brand} gateway protected profile accepts active bound pair`,200,(await call('/api/auth/profile',b)).response.status);
+  record(`${brand} gateway protected session list accepts active bound pair`,200,(await call('/api/auth/sessions',b)).response.status);
+  record(`${brand} gateway access-only denied`,401,(await call('/api/auth/me',{accessToken:a.accessToken})).response.status);
+  record(`${brand} gateway cross-device cookie mixing denied`,401,(await call('/api/auth/me',{accessToken:a.accessToken,refreshToken:b.refreshToken})).response.status);
+  record(`${brand} gateway protected profile rejects cross-device cookie mixing`,401,(await call('/api/auth/profile',{accessToken:a.accessToken,refreshToken:b.refreshToken})).response.status);
+  record(`${brand} gateway session list rejects access-only replay`,401,(await call('/api/auth/sessions',{accessToken:a.accessToken})).response.status);
+  const {SignJWT,decodeJwt}=await import('jose');
+  const backendEnvironment=require('dotenv').parse(fs.readFileSync(path.join(root,'apps/api-server/.env.local')));
+  const signingKey=new TextEncoder().encode(backendEnvironment.JWT_SECRET || environment.JWT_SECRET);
+  const signedControl=await new SignJWT(decodeJwt(b.accessToken)).setProtectedHeader({alg:'HS256'}).sign(signingKey);
+  record(`${brand} gateway independently signed positive control`,200,(await call('/api/auth/me',{...b,accessToken:signedControl})).response.status);
+  const expiredAccess=await new SignJWT({...decodeJwt(b.accessToken),exp:Math.floor(Date.now()/1000)-10}).setProtectedHeader({alg:'HS256'}).sign(signingKey);
+  record(`${brand} gateway signed expired access with active refresh denied`,401,(await call('/api/auth/me',{...b,accessToken:expiredAccess})).response.status);
+  record(`${brand} gateway device A logout`,200,(await call('/api/auth/logout',a,'POST',{})).response.status);
+  record(`${brand} gateway logged-out A pair denied`,401,(await call('/api/auth/me',a)).response.status);
+  record(`${brand} gateway stolen A access-only denied while B active`,401,(await call('/api/auth/me',{accessToken:a.accessToken})).response.status);
+  record(`${brand} gateway B survives A logout`,200,(await call('/api/auth/me',b)).response.status);
+  const rotation = await call('/api/auth/refresh',b,'POST',{});
+  record(`${brand} gateway B refresh rotates pair`,200,rotation.response.status);
+  record(`${brand} gateway B old pair denied after rotation`,401,(await call('/api/auth/me',b)).response.status);
+  record(`${brand} gateway B successor pair allowed`,200,(await call('/api/auth/me',rotation.pair)).response.status);
+  record(`${brand} gateway B old access mixed with successor refresh denied`,401,(await call('/api/auth/me',{accessToken:b.accessToken,refreshToken:rotation.pair.refreshToken})).response.status);
+  await pools[brand].query('UPDATE users SET is_blocked=true WHERE id=$1',[fixture.id]);
+  try {
+    record(`${brand} gateway current blocked account denied despite valid pair`,403,(await call('/api/auth/me',rotation.pair)).response.status);
+    record(`${brand} gateway protected profile blocks current disabled account`,401,(await call('/api/auth/profile',rotation.pair)).response.status);
+  } finally {await pools[brand].query('UPDATE users SET is_blocked=false WHERE id=$1',[fixture.id]);}
+  const role=(await pools[brand].query("SELECT id FROM roles WHERE name='student'")).rows[0].id;
+  await pools[brand].query('DELETE FROM user_roles WHERE user_id=$1 AND role_id=$2',[fixture.id,role]);
+  try {record(`${brand} gateway current role removal denies valid pair`,403,(await call('/api/auth/me',rotation.pair)).response.status);}
+  finally {await pools[brand].query('INSERT INTO user_roles(user_id,role_id) VALUES($1,$2)',[fixture.id,role]);}
+  record(`${brand} gateway active account restored after bounded eligibility probe`,200,(await call('/api/auth/me',rotation.pair)).response.status);
+  const hash = crypto.createHash('sha256').update(rotation.pair.refreshToken).digest('hex');
+  await pools[brand].query('UPDATE refresh_tokens SET expires_at = now() - interval \'1 minute\' WHERE user_id=$1 AND token=$2',[fixture.id,hash]);
+  record(`${brand} gateway persisted session expiry denies bound pair`,401,(await call('/api/auth/me',rotation.pair)).response.status);
+  await pools[brand].query('UPDATE refresh_tokens SET expires_at=now()+interval \'1 day\',revoked=true WHERE user_id=$1 AND token=$2',[fixture.id,hash]);
+  record(`${brand} gateway revoked persisted session denies bound pair`,401,(await call('/api/auth/me',rotation.pair)).response.status);
+}
 (async () => {
   for (const [name,key] of [['people','DATABASE_URL_PEOPLE'],['skillup','DATABASE_URL_SKILLUP'],['realtutorialhub','DATABASE_URL_RTH']]) {
     pools[name] = new Pool({connectionString:environment[key],max:2,connectionTimeoutMillis:10000,statement_timeout:15000});
@@ -184,7 +324,8 @@ async function qualifyBrand(brand) {
   browser = await chromium.launch({headless:true});
   try {
     for (const brand of ['skillup','realtutorialhub']) {
-      try { await qualifyBrand(brand); }
+      if(process.env.R4_BRAND && process.env.R4_BRAND!==brand)continue;
+      try { await (process.env.R4_GATEWAY_DEVICES === '1' ? qualifyGatewayDeviceRevocation(brand) : process.env.R4_DEVICES === '1' ? qualifyDeviceRevocation(brand) : process.env.R4_ACCESSIBILITY === '1' ? qualifyAccessibility(brand) : qualifyBrand(brand)); }
       catch(error) { record(`${brand} lifecycle execution`, 'completed', error.name, { code:error.code }); }
     }
   } finally {

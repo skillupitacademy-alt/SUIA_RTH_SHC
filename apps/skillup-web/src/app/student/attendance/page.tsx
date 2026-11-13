@@ -1,6 +1,6 @@
 import { CheckCircle2, Clock3, XCircle } from 'lucide-react';
 
-import { fetchSkillupApi } from '@/lib/skillup-api';
+import { fetchSkillupApi, SkillupDataUnavailableError } from '@/lib/skillup-api';
 
 type AttendanceResponse = {
   history: Array<{
@@ -11,7 +11,21 @@ type AttendanceResponse = {
 };
 
 export default async function AttendancePage() {
-  const { history } = await fetchSkillupApi<AttendanceResponse>('/api/student/attendance');
+  let response: AttendanceResponse;
+  try {
+    response = await fetchSkillupApi<AttendanceResponse>('/api/student/attendance');
+  } catch (error) {
+    if (!(error instanceof SkillupDataUnavailableError)) throw error;
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <h2 className="text-3xl font-bold text-slate-950">Attendance history</h2>
+        <p role="status" className="mt-4 text-slate-700">
+          Attendance data is currently unavailable. Please try again later.
+        </p>
+      </section>
+    );
+  }
+  const { history } = response;
   const summary = {
     presentDays: history.filter((entry) => entry.state === 'present').length,
     lateDays: history.filter((entry) => entry.state === 'late').length,

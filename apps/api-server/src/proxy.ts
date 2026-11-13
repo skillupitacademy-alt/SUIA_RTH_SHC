@@ -6,6 +6,8 @@ import crypto from 'crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { ApiError } from '@/lib/api-error';
+import { validateCurrentLearnerContext } from '@/lib/auth-context';
 import { container } from '@/modules/core/container';
 
 import {
@@ -81,7 +83,12 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (!isAuthRoute && !isGatewayExemptRoute) {
+  const isProtectedAuthRoute = ['/api/auth/sessions', '/api/auth/logout-all', '/api/auth/heartbeat',
+    '/api/auth/profile', '/api/auth/onboarding', '/api/auth/debug/profile-integrity']
+    .some(path => pathname === path || pathname.startsWith(`${path}/`));
+  const hasTutorialUserCredential = isTutorialRoute &&
+    (request.cookies.has('accessToken') || request.headers.has('authorization'));
+  if ((!isAuthRoute && !isGatewayExemptRoute) || isProtectedAuthRoute || hasTutorialUserCredential) {
     const pathname = request.nextUrl.pathname;
     const portalIdentity = request.headers.get('x-portal-identity') ?? 'user';
     let scope: 'admin' | 'user' | 'infrastructure' = 'user';
@@ -132,6 +139,18 @@ export async function proxy(request: NextRequest) {
         const _payload = isAdmin
           ? await tokenService.verifyAdminAccessToken(_token!, { audience: expectedAudience })
           : await tokenService.verifyUserAccessToken(_token!, { audience: expectedAudience });
+
+        if (scope === 'user' && (_payload.brand === 'skillup' || _payload.brand === 'realtutorialhub')) {
+          const current = await validateCurrentLearnerContext({
+            userId: _payload.userId, brand: _payload.brand, roles: _payload.roles,
+            source: 'jwt', correlationId: requestId, email: _payload.email,
+          }, request);
+          if (current === null) {
+            return corsMiddleware(request, NextResponse.json({ error: 'Authentication required' }, {
+              status: 401, headers: { 'Cache-Control': 'private, no-store', 'x-request-id': requestId },
+            }));
+          }
+        }
 
         const isAdministrativePath =
           pathname.startsWith('/api/admin') ||
@@ -236,8 +255,10 @@ export async function proxy(request: NextRequest) {
 
 
       } catch (_error: unknown) {
-        const errorMessage = _error instanceof Error ? _error.message : 'Authentication failed';
-        const res = NextResponse.json({ error: 'Invalid or expired token', message: errorMessage }, { status: 401 });
+        const unavailable = _error instanceof ApiError && _error.status === 503;
+        const res = NextResponse.json({ error: unavailable ? 'Authentication unavailable' : 'Invalid or expired token' }, {
+          status: unavailable ? 503 : 401, headers: { 'Cache-Control': 'private, no-store' },
+        });
         res.headers.set('x-request-id', requestId);
         return corsMiddleware(request, res);
       }

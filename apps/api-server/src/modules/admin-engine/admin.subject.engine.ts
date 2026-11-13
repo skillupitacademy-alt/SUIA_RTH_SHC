@@ -1,5 +1,6 @@
 import { db, subjects } from '@quiz/db';
 
+import { withHierarchyDeletionLocks } from '@/lib/hierarchy-deletion';
 import { AuditService } from "@/modules/auth/audit.service";
 import { container } from "@/modules/core/container";
 import { DrizzleSubjectRepository } from "@/repositories/implementations/drizzle-subject.repository";
@@ -39,11 +40,11 @@ export class AdminSubjectEngine {
 
   async deleteSubject(id: string, adminId: string) {
     await this.auditService.log({ userId: adminId, action: 'admin_delete_subject', metadata: { subjectId: id } });
-    return await this.repository.delete(id);
+    return await withHierarchyDeletionLocks('subject', [id], tx => this.repository.withDb(tx as unknown as typeof db).delete(id));
   }
 
   async deleteSubjectsBatch(ids: string[], adminId: string) {
     await this.auditService.log({ userId: adminId, action: 'admin_batch_delete_subjects', metadata: { count: ids.length } });
-    return await this.repository.deleteBatch(ids);
+    return await withHierarchyDeletionLocks('subject', ids, tx => this.repository.withDb(tx as unknown as typeof db).deleteBatch(ids));
   }
 }

@@ -58,6 +58,8 @@ vi.mock('@quiz/db', () => ({
 }));
 
 vi.mock('@quiz/db-tutorial', () => ({
+  HierarchyCoordinationError: class extends Error {},
+  withMainHierarchyLocks: async (_scope: unknown, operation: () => Promise<unknown>) => operation(),
   db: {
     select: () => ({
       from: () => ({
@@ -67,9 +69,6 @@ vi.mock('@quiz/db-tutorial', () => ({
       }),
     }),
     transaction: async (callback: (tx: unknown) => Promise<unknown>) => {
-      if (mockState.syncShouldFail) {
-        throw new Error('Database transaction rolled back: TutorialDB sync failure');
-      }
       const fakeTx = {
         select: () => ({
           from: () => ({
@@ -110,11 +109,13 @@ vi.mock('@quiz/db-tutorial', () => ({
             };
           }
           return {
-            values: () => ({
+            values: () => {
+              if (mockState.syncShouldFail) throw new Error('Database transaction rolled back: TutorialDB sync failure');
+              return ({
               onConflictDoUpdate: () => ({
                 returning: async () => [{ id: 'tx-synced-1' }],
               }),
-            }),
+            }); },
           };
         },
       };
@@ -332,7 +333,7 @@ random unformatted text
     expect(res.status).toBe(500);
 
     const body = await res.json();
-    expect(body.error).toContain('Tutorial hierarchy synchronization failed');
+    expect(body.error).toBe('Sidebar save failed');
     expect(mockState.insertCalled).toBe(false);
   });
 
@@ -347,8 +348,8 @@ random unformatted text
     expect(res.status).toBe(500);
 
     const body = await res.json();
-    expect(body.error).toContain('Tutorial hierarchy synchronization failed');
-    expect(body.details).toContain('Sidebar upsert constraint failure');
+    expect(body.error).toBe('Sidebar save failed');
+    expect(body.details).toBeUndefined();
   });
 
   it('successfully publishes and increments version when all validations and sync succeed', async () => {

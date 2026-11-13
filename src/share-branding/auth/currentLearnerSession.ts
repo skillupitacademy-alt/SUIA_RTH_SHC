@@ -14,6 +14,9 @@ export async function requireCurrentLearnerSession(
   const deny = (status: number, error: string) => NextResponse.json(
     { error }, { status, headers: { 'Cache-Control': 'private, no-store' } },
   );
+  if (!request.cookies.get('accessToken')?.value || !request.cookies.get('refreshToken')?.value) {
+    return deny(401, 'Authentication required');
+  }
   const gateway = process.env.GATEWAY_URL?.trim().replace(/\/+$/, '');
   const secret = process.env.INTERNAL_GATEWAY_SECRET;
   if (!gateway || !secret) return deny(503, 'Authentication unavailable');

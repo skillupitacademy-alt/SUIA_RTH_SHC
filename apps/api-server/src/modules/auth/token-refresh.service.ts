@@ -399,18 +399,6 @@ export class TokenRefreshService {
     }
 
     // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
-    const newAccessToken = await this.tokenService.generateAccessToken({
-      userId,
-      originalUserId,
-      shadowUserId,
-      email: freshEmail,
-      roles: successorRoles,
-      isAdmin: successorIsAdmin,
-      tokenType: successorTokenType,
-      brand,
-      aud: successorAudience,
-    });
-
     // Generate new refresh token
     const newRefreshToken = await this.tokenService.generateRefreshToken(
       userId,
@@ -425,6 +413,19 @@ export class TokenRefreshService {
     );
 
     const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
+
+    const newAccessToken = await this.tokenService.generateAccessToken({
+      userId,
+      originalUserId,
+      shadowUserId,
+      email: freshEmail,
+      roles: successorRoles,
+      ...(isScopedTenant && successorTokenType === 'user' ? { sessionBinding: newRefreshTokenHash } : {}),
+      isAdmin: successorIsAdmin,
+      tokenType: successorTokenType,
+      brand,
+      aud: successorAudience,
+    });
 
     // 🔐 STEP 4: ATOMIC TOKEN ROTATION (AUTH-47/48)
     // Revoke old token + store new token in a single DB transaction.

@@ -16,6 +16,11 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetAllMocks(); });
 
 describe('current learner session admission', () => {
+  it('rejects missing refresh cookie before an upstream request', async () => {
+    const missingPair = new NextRequest('http://skillup.localhost:3009/api/profile', {headers:{cookie:'accessToken=signed-access'}});
+    expect((await requireCurrentLearnerSession(missingPair, principal))?.status).toBe(401);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('uses the existing gateway identity route and actual Host with private cookies', async () => {
     fetchMock.mockResolvedValue(Response.json({ data: { user: { id: 'learner-a', roles: ['student'] } } }));
     expect(await requireCurrentLearnerSession(request(), principal)).toBeNull();

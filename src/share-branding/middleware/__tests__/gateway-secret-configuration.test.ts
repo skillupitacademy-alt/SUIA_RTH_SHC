@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { afterEach, expect, it, vi } from 'vitest';
 const verify = vi.hoisted(() => vi.fn());
 vi.mock('@quiz/auth', () => ({ TokenService: { verifyUserAccessToken: verify } }));
+vi.mock('../../auth/currentLearnerSession', () => ({ requireCurrentLearnerSession: vi.fn().mockResolvedValue(null) }));
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); vi.resetModules(); });
 async function proxyWithSecret(secret: string) {
   vi.resetModules(); vi.stubEnv('INTERNAL_GATEWAY_SECRET', secret);
@@ -25,5 +26,5 @@ it('does not forward an unauthenticated nonpublic API when gateway secret is unc
   vi.spyOn(console, 'log').mockImplementation(() => undefined);
   const proxy = await proxyWithSecret('');
   const response = await proxy(new NextRequest('https://user.skillupitacademy.com/api/private-fixture', { headers: { host: 'user.skillupitacademy.com' } }));
-  expect(response.status).toBe(403);
+  expect(response.status).toBe(401);
 });

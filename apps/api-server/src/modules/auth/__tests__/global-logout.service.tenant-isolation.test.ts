@@ -65,7 +65,7 @@ const { rthAdapter, suiaAdapter, rthTable, suiaTable } = vi.hoisted(() => {
       return {
         set(updates: Partial<SessionRow>) {
           return {
-            async where(predicate: any) {
+            where(predicate: any) {
               if (!predicate || predicate.op !== 'and') {
                 throw new Error('Expected AND predicate from revokeById');
               }
@@ -100,7 +100,9 @@ const { rthAdapter, suiaAdapter, rthTable, suiaTable } = vi.hoisted(() => {
                 }
               }
 
-              return affectedCount;
+              return Object.assign(Promise.resolve(affectedCount), {
+                returning: async () => Array.from({ length: affectedCount }, (_, index) => ({ id: String(index) })),
+              });
             }
           };
         }

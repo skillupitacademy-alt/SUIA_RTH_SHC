@@ -50,6 +50,8 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('@quiz/db-tutorial', () => ({
+  withMainHierarchyLocks: async (_scope: unknown, operation: () => Promise<unknown>) => operation(),
+  assertMainHierarchyRelationship: vi.fn(async () => undefined),
   db: mocks.dbClient,
   STANDARD_QUERY_TIMEOUT: 15_000,
   withTimeout: async <T>(promise: Promise<T>) => promise,

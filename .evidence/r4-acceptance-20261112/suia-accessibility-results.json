@@ -1,0 +1,40 @@
+{
+  "runId": "r4-696d6309-b4e4-4892-baa6-2a7a33444626",
+  "timestamp": "2026-11-13T01:35:44.935Z",
+  "boundary": "Actual local BFF/gateway/backend HTTP and headless Chromium with real password login, remote brand-local refresh session records and bounded synthetic identities. Secrets stay in memory. Database mutations and cleanup target only run-created UUIDs.",
+  "results": [
+    {
+      "brand": "skillup",
+      "route": "/student/attendance",
+      "size": "desktop",
+      "pass": false,
+      "status": 500,
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n"
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/attendance",
+      "size": "mobile",
+      "pass": false,
+      "status": 500,
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n"
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/payments",
+      "size": "desktop",
+      "pass": false,
+      "status": 500,
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n"
+    },
+    {
+      "brand": "skillup",
+      "route": "/student/payments",
+      "size": "mobile",
+      "pass": false,
+      "status": 500,
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n"
+    }
+  ],
+  "cleanupVerified": true
+}

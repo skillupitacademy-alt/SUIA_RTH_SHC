@@ -23,6 +23,7 @@ function toAbsoluteUrl(path: string): string {
 }
 
 class SkillupAuthorizationError extends Error {}
+export class SkillupDataUnavailableError extends Error {}
 
 export async function fetchSkillupApi<T>(path: string): Promise<T> {
   const forwardedHeaders = new Headers();
@@ -45,7 +46,7 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
     forwardedHeaders.set('x-platform', brand);
   }
   // u{1F512} SECURITY: Send gateway trust secret so API server can verify this BFF is trusted
-  const gatewaySecret = process.env.GATEWAY_TRUST_SECRET;
+  const gatewaySecret = process.env.INTERNAL_GATEWAY_SECRET;
   if (gatewaySecret) forwardedHeaders.set('x-gateway-secret', gatewaySecret);
 
   try {
@@ -81,7 +82,7 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
       path === '/api/student/placement' ||
       path === '/api/batches'
     ) {
-      throw new Error(`Protected SkillUp data fetch failed for ${path}`);
+      throw new SkillupDataUnavailableError(`Protected SkillUp data fetch failed for ${path}`);
     }
     if (path === '/api/faculty') return (await getSkillupFaculty()) as T;
 
