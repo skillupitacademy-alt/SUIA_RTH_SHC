@@ -1,0 +1,83 @@
+{
+  "timestamp": "2026-11-13T17:33:33.164Z",
+  "results": [
+    {
+      "name": "Current backend own started exam exits before scoring or report generation",
+      "result": "PASS",
+      "observed": {
+        "status": 202,
+        "calls": {
+          "queries": 1,
+          "scoring": 0,
+          "report": 0
+        }
+      }
+    },
+    {
+      "name": "Current backend foreign owner is denied before report/scoring",
+      "result": "PASS",
+      "observed": {
+        "status": 403,
+        "calls": {
+          "queries": 1,
+          "scoring": 0,
+          "report": 0
+        }
+      }
+    },
+    {
+      "name": "Generic database exception in result handler currently becomes HTTP400",
+      "result": "PASS",
+      "observed": {
+        "status": 400,
+        "publicCode": "INTERNAL_ERROR"
+      }
+    },
+    {
+      "name": "BFF preserves a successfully received backend202 response",
+      "result": "PASS",
+      "observed": {
+        "status": 202
+      }
+    },
+    {
+      "name": "BFF preserves a received gateway500 rather than identifying its cause",
+      "result": "PASS",
+      "observed": {
+        "status": 500
+      }
+    },
+    {
+      "name": "BFF fetch failure propagates uncaught to its framework boundary",
+      "result": "PASS",
+      "observed": {
+        "propagatedException": "TypeError",
+        "frameworkStatus": "Not executed by this isolated test"
+      }
+    },
+    {
+      "name": "BFF upstream response-body failure also propagates uncaught",
+      "result": "PASS",
+      "observed": {
+        "propagatedException": "TypeError",
+        "frameworkStatus": "Not executed by this isolated test"
+      }
+    },
+    {
+      "name": "Gateway proxy helper propagates an upstream transport failure",
+      "result": "PASS",
+      "observed": {
+        "propagatedException": "TypeError",
+        "gatewayCatch500": "Source-inspected in index.ts, not run here"
+      }
+    },
+    {
+      "name": "Shared fetch passes through transport failure without retry or taxonomy conversion",
+      "result": "PASS",
+      "observed": {
+        "propagatedException": "TypeError"
+      }
+    }
+  ],
+  "boundary": "Current source compiled in memory. No production/test source edits, HTTP request, database access, external provider, credentials or server restart. Dependency doubles control transport, verified identity, database and logging. Next.js runtime, gateway application catch, persisted sessions and actual cold start are not exercised."
+}

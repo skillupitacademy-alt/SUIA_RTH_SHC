@@ -1,0 +1,296 @@
+{
+  "captured": "2026-11-13T18:24:29.172Z",
+  "ownerReportedCommit": "bc5a4b1452c6489e18844ac9548923bc69d258c1",
+  "callers": [
+    {
+      "source": "apps/skillup-web/src/app/api/batches/route.ts",
+      "mode": "people",
+      "identity": "peoplePersonId, live PeopleDB id/externalId/platform mapping",
+      "consumer": "Existing PeopleDB profile/enrollment relationship",
+      "change": "Explicit people mode and peoplePersonId argument"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "Catalogue/faculty authentication only. No account ID passed to catalogue query.",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/programs/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "Catalogue/faculty authentication only. No account ID passed to catalogue query.",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "Catalogue/faculty authentication only. No account ID passed to catalogue query.",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/student/attendance/route.ts",
+      "mode": "OWNER HOLD",
+      "identity": "PeopleDB via deprecated default userId alias",
+      "consumer": "Held business boundary. Endpoint bytes preserved.",
+      "change": "No held source change. Common helper requires a valid signed person UUID and matching active SkillUp projection."
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "mode": "people",
+      "identity": "peoplePersonId, live PeopleDB id/externalId/platform mapping",
+      "consumer": "Existing PeopleDB profile/enrollment relationship",
+      "change": "Explicit people mode and peoplePersonId argument"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "mode": "people",
+      "identity": "peoplePersonId, live PeopleDB id/externalId/platform mapping",
+      "consumer": "Existing PeopleDB profile/enrollment relationship",
+      "change": "Explicit people mode and peoplePersonId argument"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/student/payments/route.ts",
+      "mode": "OWNER HOLD",
+      "identity": "PeopleDB via deprecated default userId alias",
+      "consumer": "Held business boundary. Endpoint bytes preserved.",
+      "change": "No held source change. Common helper requires a valid signed person UUID and matching active SkillUp projection."
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "mode": "people",
+      "identity": "peoplePersonId, live PeopleDB id/externalId/platform mapping",
+      "consumer": "Existing placement profile person reference",
+      "change": "Explicit people mode and peoplePersonId argument"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    },
+    {
+      "source": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "mode": "learner",
+      "identity": "learnerUserId, verified payload.userId",
+      "consumer": "TutorialDB/API learner ownership",
+      "change": "Explicit learner mode and learnerUserId forwarding/auth context"
+    }
+  ],
+  "changed": [
+    {
+      "path": "apps/skillup-web/src/app/api/batches/route.ts",
+      "before": "27ba4d86a4e4736bbc4ae8ffd3e28536a09ca556b7afc49da4b6bb92179e1c66",
+      "after": "a0091bc80252b449c015ab504b8dd67b8b703732372332ec26c8c8db82205c8b"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "before": "0329f151f7a6c40a315ff7b4b58518499153e241b6f9f32ff8fa5c06f163a1e5",
+      "after": "ebfd41f1c1a01dfe6740548549f81861bb8bb4a3ff3b90c47a417c5f5402327a"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/route.ts",
+      "before": "b5dcbdb1931666d24ced82e6131a63eddba71333c8109f1d2c50a987bd2b9edc",
+      "after": "8916a0a2d7734a605bf8344fb1d3914008626cc338d5abbe12167e2383dd62b4"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "before": "79b89462410e54ed1c55b3c12643f04535e71addfe604d8cc33a3b402c80de4a",
+      "after": "ff88a9cb986c9a0dda47b99deb128c38d7c14e33392865d12eb6fa145b0ab660"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "before": "de45de97517108e415f40e5ea1ed980fce84d1dc3c0e0425d540fe870d7a6e4f",
+      "after": "2f8f4c99d80c9fe3ebc97d91fb81ddbb4aca1cf00ef8ad31e49f3abc4a3c83a8"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "before": "ea2fd3fb0aaeec69dc59c8ce1021bf9c8085411351bc0f692baf979e714ccbe0",
+      "after": "37b8e8152c168ac67b1b7bf16a0a1e6d60db8838f9b8d4efbf471fdc4b5eb161"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "before": "c2a17a0031ebd904ce7c393abd125bd5bd141326065f11207e973525a6901eaf",
+      "after": "a023938647e082d330b261baf9f438c354e2d081776a0456580c7d9c12393737"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/__tests__/private-cache.test.ts",
+      "before": "95511884ef7103cb072ea3c19ea02a0e126e6fbd31ed1f8d34b08f22116fe699",
+      "after": "cddba1dced245d7c1e3dfee20ef13ff20f8a9800c2f8a70855208483874bc0ab"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "before": "bad7711cc53a781004565eda0bbc0ec1f9fc0f07f9a5557821577c246e4bab9b",
+      "after": "e6e176ce747c179ebc8deb9687c5be2f9595d9e5de38982e2f4d4535700ac7bb"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "before": "dbe0a14a20ebc9df5fc27668863ab6ed0ab416bf75582f3475d7f73a08067e00",
+      "after": "1002585ea362bfb7f331f542505823f1a322cbadfb597f3a863c1695624ca49c"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.test.ts",
+      "before": "dd43e6df0018f68a6caa8c8ae314e35f78a1f7a0200a92cec16bd51eccd3752e",
+      "after": "2856a6854a1d34625a4eb0c7163f2c3a92eea86a8e9b5d0728a464e6b0e848c2"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "before": "3622562dec244bda4148b137a2a2609c6657c30fda936ce5bbdb87b7e0e33b05",
+      "after": "09ff6f5809b97db275722638ddd87db03c6f6a006e8d01f83412ad3ac208b0b5"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "before": "66fdb716dfc766bc3855eccd557bfed3d1247298b1bed484b0864cd2cc2e8347",
+      "after": "bd9044a11288c99ef1ef9b7f4e48e1a97e1f4f7e8546d821efe3ed03a9e4e830"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "before": "c3364bcb98e7dfe8d15096f9d99a6d3ac81b5168954101890a6c270ffd34bcee",
+      "after": "00d825fe331811b525fc954787b2516715258364893817336c7da2f964f85c70"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "before": "1bd5a1a20d43e3121ce3957bdde75accba6fffb9f9070c3a314e806f9160b147",
+      "after": "768f0883ab4f1b70eadf021fcadbbae0ab2bcc7517de5def028133cf3dbfccce"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/__tests__/boundary.test.ts",
+      "before": "3f401b25b1af99297e3a069b4247753b580ad70cb665f37857309549a03cdd33",
+      "after": "3e2d5c3c26a603cc1a265105a5b17bb67a9ed145822c44bcea521085ec94dd73"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "before": "7b258b62227fe2b95b17a7302062c00a75ccba170d5145dd5eb49c00dbc81084",
+      "after": "15812e9a1dbe629637d3b961bbd68f9ae4349c7af7c72764e567b48b90d2a3ba"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/__tests__/boundary.test.ts",
+      "before": "1bbbf8e697c303e893a645c6a37ffd0f1b885a03a71f0c4b229defaacbb291bc",
+      "after": "8595c159d13baf7a132181ebb0a238454063bf083ad2f7ca73c196f891a40f1f"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "before": "d1fdecc1582f02d2d08958f9f9b8da7a2cb080ea73ff2082974448fec4663804",
+      "after": "a1ee28be8a7092f9553edf85ab836ecfe0ddd0e1884a5faee378b6d6b723ac5e"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "before": "d8c67ce7764df07d82a3facd09188d3751f522e6d0891c2b3e3f5c5bea77b04b",
+      "after": "c78c92475a241d50a8bef1a7edb94b6d0720bacc02a91711bf67bf6b91fb2898"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.test.ts",
+      "before": "979f2d3f2e7733e67a50e155dd7958b930e1cde935fdd22bfec0584763df2060",
+      "after": "bcbb2fcf31a6621657e4a3e83b08db659e96ba28969e657d4c6a378c770fc665"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "before": "6b074fa57d861bc51dd7bf85c8282949ba1cbd3e3503e8aa71220152210811ff",
+      "after": "3c8ce082bf38e7cbd8926bb7643006f617f77388207ed18d2155a1584db0aabf"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "before": "53039cd244af951904ffa06db6cd8b91172161a9c395582a4a60aea07c098eff",
+      "after": "e49c21c0a9dfd6e24ae20a74b2bec41a2f494510fd1893646ee6c1dd1b56f1ef"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/__tests__/routes.test.ts",
+      "before": "d9aeea3a3a26187992a867d5ee2f5ab97ec7919aa762b3c51c934bb689a74ff7",
+      "after": "0d2d7e213ba270f15d97239fb36a19c57dc9d1334c95085dcb0548be2211629c"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.test.ts",
+      "before": "d4cba8285bf8447b1d99a231902f6918895db816473984f4563030e182a4f1c6",
+      "after": "c6e23ea9467a54b48e146f0033f810dd673c70e096008c4e442e884c8d3d8bbf"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "before": "e3f0037d7c71300cb44e10eaffc33e70b53045f33cfce2e9eb2e8e5d5710f2c9",
+      "after": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b"
+    }
+  ],
+  "additions": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth-callers.test.ts",
+      "sha256": "2843d110b0056e57fd665c69c314abf23a79d8eb64cb626b10ee874d3ff52ec6"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth-token-contract.test.ts",
+      "sha256": "896e729c98c74cbf4d2c80b1f94ee56d972cb005883cdc601daea6bccf7bf244"
+    }
+  ],
+  "protectedChanges": [],
+  "heldEndpointChanges": [],
+  "identityCounts": {
+    "people": 4,
+    "learner": 14,
+    "OWNER HOLD": 2
+  },
+  "scope": "Recorded baseline file comparison. Source hashes, no Git CLI. Only shared mock fixture shapes were adjusted in existing suites containing incidental HOLD tests."
+}

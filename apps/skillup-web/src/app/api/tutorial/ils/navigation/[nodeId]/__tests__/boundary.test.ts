@@ -5,7 +5,7 @@ import { GET } from '../route';
 const id = '11111111-1111-4111-8111-111111111111';
 const req = (subtopic = id) => new Request(`https://fixture.invalid/?subtopicId=${subtopic}`) as Parameters<typeof GET>[0];
 const ctx = (nodeId: string) => ({ params: Promise.resolve({ nodeId }) });
-beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, userId: 'fixture' }); vi.stubGlobal('fetch', vi.fn()); });
+beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: '22222222-2222-4222-8222-222222222222' }); vi.stubGlobal('fetch', vi.fn()); });
 it('forwards an ordinary slug and preserves data', async () => {
   vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ progress: 1 }), { status: 200 }));
   const response = await GET(req(), ctx('what-is-java'));

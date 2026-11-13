@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     // Authenticate user (SkillUp-specific)
     // console.log('[ILS-DEBUG][BFF][block-visit] Calling requireStudentAuth()');
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     
     if (!authResult.ok) {
       // console.warn('[ILS-DEBUG][BFF][block-visit][AUTH-FAILED]', {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
     
     // console.log('[ILS-DEBUG][BFF][block-visit][AUTH-SUCCESS]', {
-    //   userId: authResult.userId
+    //   userId: authResult.learnerUserId
     // });
     
     // Parse request body
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     //   hasInternalKey: !!process.env.INTERNAL_API_KEY,
     //   hasSessionId: !!request.headers.get('x-session-id'),
     //   brand: 'skillup',
-    //   userId: authResult.userId
+    //   userId: authResult.learnerUserId
     // });
     
     // Phase 4.4: Log proxy target for diagnostics
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'X-Brand': 'skillup',
-        'X-User-ID': authResult.userId,
+        'X-User-ID': authResult.learnerUserId,
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
         'x-internal-key': process.env.INTERNAL_API_KEY || '',
         'x-session-id': request.headers.get('x-session-id') || '', // Forward learning session ID

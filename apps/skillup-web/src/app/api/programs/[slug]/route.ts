@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, context: { params: Promise<unkno
     let auth = hasCookiesApi ? await extractAuthFromRequest(request) : { isAuthenticated: false };
 
     if (!auth || !auth.userId) {
-      const studentAuth = await requireStudentAuth(request);
+      const studentAuth = await requireStudentAuth(request, { identity: 'learner' });
       if (studentAuth.ok === false) {
         return NextResponse.json(
           { error: 'Unauthorized', reason: 'authentication_required' },
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, context: { params: Promise<unkno
       }
       auth = {
         isAuthenticated: true,
-        userId: studentAuth.userId,
+        userId: studentAuth.learnerUserId,
         brand: (studentAuth.payload?.brand as 'skillup' | undefined) ?? 'skillup',
       };
     }

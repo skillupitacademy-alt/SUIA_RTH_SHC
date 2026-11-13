@@ -1,0 +1,71 @@
+{
+  "time": "2026-11-13T17:30:52.592Z",
+  "ownerReportedCommit": "bc5a4b1452c6489e18844ac9548923bc69d258c1",
+  "provenance": "Owner-reported GitHub baseline. Local source bytes independently hashed. No Git CLI or local HEAD assertion.",
+  "files": [
+    {
+      "path": "apps/skillup-web/src/app/api/quiz/result/route.ts",
+      "sha256": "1a5bd759f7198a87f00d04e25e5e472e99e3b7a409efe58992bbc74bbf553f3a"
+    },
+    {
+      "path": "apps/skillup-web/src/proxy.ts",
+      "sha256": "3b7de85d941941431eacec0b83c1d7a955ed25c96a012fd5e1bc3b5966d4dc76"
+    },
+    {
+      "path": "src/share-branding/auth/authBffRoute.ts",
+      "sha256": "b8591fb050064657ed18bd5b044be5bcac45a93ecfe4c0e230b26f7f17437550"
+    },
+    {
+      "path": "src/share-branding/lib/unifiedFetch.ts",
+      "sha256": "af165d5f7364085792dd3dc1930b24733a461600404f063e1b6fc50f1c8b6e4e"
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c"
+    },
+    {
+      "path": "src/share-branding/auth/currentLearnerSession.ts",
+      "sha256": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500"
+    },
+    {
+      "path": "services/api-gateway/src/index.ts",
+      "sha256": "6f00f9f4f4e5e74a06f9549b39806b4b13d6e733dba9d66915d27b9ab65658d8"
+    },
+    {
+      "path": "services/api-gateway/src/lib/proxy.ts",
+      "sha256": "11408d5b28363e9717a6359314ec704815740230c93aa6eeda20681a3633c54a"
+    },
+    {
+      "path": "services/api-gateway/src/routes/routing-table.ts",
+      "sha256": "230f8f932edd9635db7a8fa89c9d572b55d9693a61fe552ef6ec8e3bf5edbc76"
+    },
+    {
+      "path": "apps/api-server/src/app/api/quiz/result/route.ts",
+      "sha256": "827a0d60e8a066f48401b9a52bc5957953bf484368414d246cf03ad0aea85c28"
+    },
+    {
+      "path": "apps/api-server/src/lib/api-error.ts",
+      "sha256": "131da6deb019945ffc8313ec49c439c8cd5beddc0cd4e525b942bba155b9bebe"
+    },
+    {
+      "path": "apps/api-server/src/lib/api-response.ts",
+      "sha256": "74f10668e36e5b2fc6349544899854ccc3df49639d2cd07400970bff98a1d28c"
+    },
+    {
+      "path": "apps/api-server/src/lib/withLogging.ts",
+      "sha256": "3544c42d6eb962532d963285366102aa240d21d06f25c3130e23964ce9f6f2f6"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e"
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+    }
+  ]
+}

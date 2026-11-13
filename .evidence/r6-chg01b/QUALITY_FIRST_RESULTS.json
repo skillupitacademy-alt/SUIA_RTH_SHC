@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "name": "targeted-final",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts src/lib/__tests__/current-learner-session.test.ts src/lib/__tests__/read-fallback-boundary.test.ts src/__tests__/proxy.test.ts src/app/api/__tests__/routes.test.ts src/app/api/student/__tests__/private-cache.test.ts src/app/api/tutorial/progress/route.test.ts src/app/api/tutorial/ils/block-completion/route.test.ts src/app/api/tutorial/ils/navigation/[nodeId]/__tests__/boundary.test.ts src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/__tests__/boundary.test.ts --pool=threads --maxWorkers=1 --reporter=verbose",
+      "started": "2026-11-13T18:19:33.671Z",
+      "finished": "2026-11-13T18:19:37.408Z",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck-final",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-13T18:19:37.412Z",
+      "finished": "2026-11-13T18:19:41.422Z",
+      "exitCode": 0
+    }
+  ],
+  "boundary": "Mocked tests and static gates. Shared existing app suites incidentally cover held cases through controlled doubles. No live database/provider calls authorized."
+}

@@ -16,7 +16,7 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     if (!authResult.ok) {
       return authResult.response;
     }
@@ -31,7 +31,7 @@ export async function GET(
     const response = await fetch(url, {
       headers: {
         'X-Brand': 'skillup',
-        'X-User-ID': authResult.userId,
+        'X-User-ID': authResult.learnerUserId,
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
       },
       cache: 'no-store'

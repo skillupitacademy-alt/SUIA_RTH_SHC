@@ -5,7 +5,7 @@ import { GET } from '../route';
 const id = '11111111-1111-4111-8111-111111111111';
 const request = new Request('https://fixture.invalid/progress') as Parameters<typeof GET>[0];
 const context = (subtopicId: string) => ({ params: Promise.resolve({ subtopicId }) });
-beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, userId: 'fixture-user' }); vi.stubGlobal('fetch', vi.fn()); });
+beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: '22222222-2222-4222-8222-222222222222' }); vi.stubGlobal('fetch', vi.fn()); });
 it('forwards a valid ID and returns successful progress', async () => {
   vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ progress: [] }), { status: 200 }));
   const response = await GET(request, context(id));

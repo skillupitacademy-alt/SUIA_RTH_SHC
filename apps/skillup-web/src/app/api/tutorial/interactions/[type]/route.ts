@@ -22,7 +22,7 @@ export async function POST(
     return NextResponse.json({ error: 'Unsupported interaction type' }, { status: 404 });
   }
 
-  const authResult = await requireStudentAuth(request);
+  const authResult = await requireStudentAuth(request, { identity: 'learner' });
   if (!authResult.ok) return authResult.response;
 
   const response = await fetch(buildApiUrl(params.type, request.url), {
@@ -30,7 +30,7 @@ export async function POST(
     headers: {
       'Content-Type': request.headers.get('content-type') || 'application/json',
       'X-Brand': 'skillup',
-      'X-User-ID': authResult.userId,
+      'X-User-ID': authResult.learnerUserId,
       'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
     },
     body: await request.text(),
@@ -50,13 +50,13 @@ export async function GET(
     return NextResponse.json({ error: 'Unsupported interaction type' }, { status: 404 });
   }
 
-  const authResult = await requireStudentAuth(request);
+  const authResult = await requireStudentAuth(request, { identity: 'learner' });
   if (!authResult.ok) return authResult.response;
 
   const response = await fetch(buildApiUrl(params.type, request.url), {
     headers: {
       'X-Brand': 'skillup',
-      'X-User-ID': authResult.userId,
+      'X-User-ID': authResult.learnerUserId,
       'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
     },
     cache: 'no-store',

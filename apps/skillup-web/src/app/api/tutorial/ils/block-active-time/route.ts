@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user (SkillUp-specific)
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     if (!authResult.ok) {
       return authResult.response;
     }
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'X-Brand': 'skillup',
-        'X-User-ID': authResult.userId,
+        'X-User-ID': authResult.learnerUserId,
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
         'x-internal-key': process.env.INTERNAL_API_KEY || ''
       },

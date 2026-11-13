@@ -1,20 +1,25 @@
 import { TokenService, type UserTokenPayload } from '@quiz/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 
 // 🔥 CRITICAL FIX: All roles must be lowercase to prevent security bypass
 const ALLOWED_ROLES = new Set(['student', 'admin', 'super_admin', 'faculty']);
 
-type StudentAuthResult =
-  | {
-      ok: true;
-      userId: string;
-      payload: UserTokenPayload;
-    }
-  | {
-      ok: false;
-      response: NextResponse;
-    };
+type StudentAuthFailure = { ok: false; response: NextResponse };
+type LearnerIdentity = {
+  ok: true;
+  learnerUserId: string;
+  peoplePersonId: string | null;
+  payload: UserTokenPayload;
+};
+type PeopleIdentity = LearnerIdentity & {
+  peoplePersonId: string;
+  /** @deprecated PeopleDB primary key only. Use peoplePersonId explicitly. */
+  userId: string;
+};
+type StudentAuthResult = LearnerIdentity | PeopleIdentity | StudentAuthFailure;
+const personIdSchema = z.string().uuid();
 
 function getRequestToken(request: NextRequest): string | null {
   const cookieToken = request.cookies.get('accessToken')?.value;
@@ -67,7 +72,13 @@ function hasSkillupAccess(payload: UserTokenPayload): boolean {
   return payload.brand === 'skillup';
 }
 
-export async function requireStudentAuth(request: NextRequest): Promise<StudentAuthResult> {
+export function requireStudentAuth(request: NextRequest): Promise<PeopleIdentity | StudentAuthFailure>;
+export function requireStudentAuth(request: NextRequest, options: { identity: 'people' }): Promise<PeopleIdentity | StudentAuthFailure>;
+export function requireStudentAuth(request: NextRequest, options: { identity: 'learner' }): Promise<LearnerIdentity | StudentAuthFailure>;
+export async function requireStudentAuth(
+  request: NextRequest,
+  options: { identity: 'learner' | 'people' } = { identity: 'people' },
+): Promise<StudentAuthResult> {
   // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Starting authentication');
   
   const token = getRequestToken(request);
@@ -91,19 +102,12 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
     // });
     
     const roles = getPayloadRoles(payload);
-    const userId =
-      typeof payload.shadowUserId === 'string' && payload.shadowUserId.trim().length > 0
-        ? payload.shadowUserId.trim()
-        : typeof payload.userId === 'string' && payload.userId.trim().length > 0
-          ? payload.userId.trim()
-          : null;
+    const learnerUserId = typeof payload.userId === 'string' && payload.userId.trim().length > 0
+      ? payload.userId.trim() : null;
+    const shadow = personIdSchema.safeParse(payload.shadowUserId);
+    const peoplePersonId = shadow.success ? shadow.data : null;
 
-    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Extracted identity', {
-    //   userId,
-    //   roles
-    // });
-
-    if (userId === null) {
+    if (learnerUserId === null) {
       // console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] No userId in payload');
       return {
         ok: false,
@@ -136,8 +140,48 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
       };
     }
 
-    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
-    return { ok: true, userId, payload };
+    if (options.identity === 'learner') {
+      // This mode deliberately does not resolve a PeopleDB relationship.
+      return { ok: true, learnerUserId, peoplePersonId: null, payload };
+    }
+    if (peoplePersonId === null) {
+      return {
+        ok: false,
+        response: NextResponse.json({ error: 'Access denied' }, {
+          status: 403, headers: { 'Cache-Control': 'private, no-store' },
+        }),
+      };
+    }
+    try {
+      // PeopleDB consumers require the signed person ID to map to this exact
+      // brand-local subject. Equal UUID values alone never establish the link.
+      const [{ db, users }, { and, eq, isNull }] = await Promise.all([
+        import('@quiz/db-people'), import('drizzle-orm'),
+      ]);
+      const person = await db.query.users.findFirst({
+        columns: { id: true },
+        where: and(
+          eq(users.id, peoplePersonId), eq(users.externalId, learnerUserId),
+          eq(users.platform, 'skillup'), eq(users.isActive, true), isNull(users.deletedAt),
+        ),
+      });
+      if (!person || person.id !== peoplePersonId) {
+        return {
+          ok: false,
+          response: NextResponse.json({ error: 'Access denied' }, {
+            status: 403, headers: { 'Cache-Control': 'private, no-store' },
+          }),
+        };
+      }
+    } catch {
+      return {
+        ok: false,
+        response: NextResponse.json({ error: 'Account verification unavailable' }, {
+          status: 503, headers: { 'Cache-Control': 'private, no-store' },
+        }),
+      };
+    }
+    return { ok: true, learnerUserId, peoplePersonId, userId: peoplePersonId, payload };
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[SkillUp learner auth] token verification failed', {

@@ -5,7 +5,7 @@ vi.mock('@/lib/skillup-data', () => ({ getSkillupStudentDashboard: f.dashboard, 
 import { GET as dashboard } from '../dashboard/route';
 import { GET as attendance } from '../attendance/route';
 const req = new Request('https://fixture.invalid') as Parameters<typeof dashboard>[0];
-beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, userId: 'fixture' }); f.dashboard.mockReset().mockResolvedValue({ count: 0 }); f.attendance.mockReset().mockResolvedValue({ records: [] }); });
+beforeEach(() => { f.auth.mockReset().mockResolvedValue({ ok: true, userId: 'fixture', learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: 'fixture' }); f.dashboard.mockReset().mockResolvedValue({ count: 0 }); f.attendance.mockReset().mockResolvedValue({ records: [] }); });
 it.each([[dashboard, f.dashboard], [attendance, f.attendance]])('sets private no-store for authenticated data', async (handler, data) => {
   const response = await handler(req);
   expect(response.headers.get('cache-control')).toBe('private, no-store');

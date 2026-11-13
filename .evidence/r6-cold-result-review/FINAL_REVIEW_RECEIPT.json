@@ -1,0 +1,43 @@
+{
+  "time": "2026-11-13T17:33:49.276Z",
+  "classification": "Investigation complete. Incident root cause UNPROVEN and acceptance OPEN.",
+  "testCommand": "node .evidence/r6-cold-result-review/isolated-path-probes.cjs",
+  "testExitCode": 0,
+  "checks": 9,
+  "passed": 9,
+  "allRecordedSourceAndLedgerBytesPreserved": true,
+  "files": [
+    {
+      "path": ".evidence/r6-cold-result-review/collect-evidence.cjs",
+      "sha256": "0bf9c2070d8617f7e55698ff4ce842efde26892cbbcf24f4be0a80a0cb3cbb98"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/EVIDENCE_AND_SOURCE_COMPARISON.json",
+      "sha256": "3f957fab6ca133e3b61915e3ffe3dcec0c30fbcfe5859919dfcd475f8567faa9"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/isolated-path-probes.cjs",
+      "sha256": "51e0451b6cf6facc5be6442fe30e2711eb2f84719a54b02b34af8e7dd66992d9"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/isolated-path-probes.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/isolated-path-probes.log",
+      "sha256": "f5ab4809f48f103a7d5ce78df1128f9e6efb0a3ea525ac15742ab0f7f2f8a40c"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/ISOLATED_PATH_RESULTS.json",
+      "sha256": "39dcf774e222dfb6c64a941bd7cd4072f52de512cf8fd1737900ca882b3b4233"
+    },
+    {
+      "path": ".evidence/r6-cold-result-review/SOURCE_BASELINE.json",
+      "sha256": "8b227a603f9ebf4fe23aee7ceaa00b1fbfd96fa5d46fb7ba593d9180cb527fd8"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/SOL_R6_A_SUIA_COLD_START_RESULT_INVESTIGATION.md",
+      "sha256": "cc1c81301b678b8266fef3530901fd76dbee450948dfe5be55fc858af44f91b8"
+    }
+  ]
+}

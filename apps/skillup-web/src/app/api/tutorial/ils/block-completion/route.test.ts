@@ -9,7 +9,7 @@ const request = () => new NextRequest('https://user.skillupitacademy.com/api/tut
   method: 'POST', body: '{}',
 });
 beforeEach(() => {
-  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'synthetic-learner', payload: {} as never });
+  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: '22222222-2222-4222-8222-222222222222', payload: {} as never });
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.clearAllMocks(); });

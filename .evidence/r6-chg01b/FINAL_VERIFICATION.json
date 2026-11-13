@@ -1,0 +1,293 @@
+{
+  "captured": "2026-11-13T18:24:29.232Z",
+  "ownerReportedCommit": "bc5a4b1452c6489e18844ac9548923bc69d258c1",
+  "exactChangedSourceAndTests": [
+    {
+      "path": "apps/skillup-web/src/app/api/batches/route.ts",
+      "before": "27ba4d86a4e4736bbc4ae8ffd3e28536a09ca556b7afc49da4b6bb92179e1c66",
+      "after": "a0091bc80252b449c015ab504b8dd67b8b703732372332ec26c8c8db82205c8b"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/faculty/route.ts",
+      "before": "0329f151f7a6c40a315ff7b4b58518499153e241b6f9f32ff8fa5c06f163a1e5",
+      "after": "ebfd41f1c1a01dfe6740548549f81861bb8bb4a3ff3b90c47a417c5f5402327a"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/route.ts",
+      "before": "b5dcbdb1931666d24ced82e6131a63eddba71333c8109f1d2c50a987bd2b9edc",
+      "after": "8916a0a2d7734a605bf8344fb1d3914008626cc338d5abbe12167e2383dd62b4"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/programs/[slug]/route.ts",
+      "before": "79b89462410e54ed1c55b3c12643f04535e71addfe604d8cc33a3b402c80de4a",
+      "after": "ff88a9cb986c9a0dda47b99deb128c38d7c14e33392865d12eb6fa145b0ab660"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/dashboard/route.ts",
+      "before": "de45de97517108e415f40e5ea1ed980fce84d1dc3c0e0425d540fe870d7a6e4f",
+      "after": "2f8f4c99d80c9fe3ebc97d91fb81ddbb4aca1cf00ef8ad31e49f3abc4a3c83a8"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/my-batch/route.ts",
+      "before": "ea2fd3fb0aaeec69dc59c8ce1021bf9c8085411351bc0f692baf979e714ccbe0",
+      "after": "37b8e8152c168ac67b1b7bf16a0a1e6d60db8838f9b8d4efbf471fdc4b5eb161"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/placement/route.ts",
+      "before": "c2a17a0031ebd904ce7c393abd125bd5bd141326065f11207e973525a6901eaf",
+      "after": "a023938647e082d330b261baf9f438c354e2d081776a0456580c7d9c12393737"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/student/__tests__/private-cache.test.ts",
+      "before": "95511884ef7103cb072ea3c19ea02a0e126e6fbd31ed1f8d34b08f22116fe699",
+      "after": "cddba1dced245d7c1e3dfee20ef13ff20f8a9800c2f8a70855208483874bc0ab"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/active-time/route.ts",
+      "before": "bad7711cc53a781004565eda0bbc0ec1f9fc0f07f9a5557821577c246e4bab9b",
+      "after": "e6e176ce747c179ebc8deb9687c5be2f9595d9e5de38982e2f4d4535700ac7bb"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-active-time/route.ts",
+      "before": "dbe0a14a20ebc9df5fc27668863ab6ed0ab416bf75582f3475d7f73a08067e00",
+      "after": "1002585ea362bfb7f331f542505823f1a322cbadfb597f3a863c1695624ca49c"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.test.ts",
+      "before": "dd43e6df0018f68a6caa8c8ae314e35f78a1f7a0200a92cec16bd51eccd3752e",
+      "after": "2856a6854a1d34625a4eb0c7163f2c3a92eea86a8e9b5d0728a464e6b0e848c2"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-completion/route.ts",
+      "before": "3622562dec244bda4148b137a2a2609c6657c30fda936ce5bbdb87b7e0e33b05",
+      "after": "09ff6f5809b97db275722638ddd87db03c6f6a006e8d01f83412ad3ac208b0b5"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/block-visit/route.ts",
+      "before": "66fdb716dfc766bc3855eccd557bfed3d1247298b1bed484b0864cd2cc2e8347",
+      "after": "bd9044a11288c99ef1ef9b7f4e48e1a97e1f4f7e8546d821efe3ed03a9e4e830"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts",
+      "before": "c3364bcb98e7dfe8d15096f9d99a6d3ac81b5168954101890a6c270ffd34bcee",
+      "after": "00d825fe331811b525fc954787b2516715258364893817336c7da2f964f85c70"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts",
+      "before": "1bd5a1a20d43e3121ce3957bdde75accba6fffb9f9070c3a314e806f9160b147",
+      "after": "768f0883ab4f1b70eadf021fcadbbae0ab2bcc7517de5def028133cf3dbfccce"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/navigation/[nodeId]/__tests__/boundary.test.ts",
+      "before": "3f401b25b1af99297e3a069b4247753b580ad70cb665f37857309549a03cdd33",
+      "after": "3e2d5c3c26a603cc1a265105a5b17bb67a9ed145822c44bcea521085ec94dd73"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/route.ts",
+      "before": "7b258b62227fe2b95b17a7302062c00a75ccba170d5145dd5eb49c00dbc81084",
+      "after": "15812e9a1dbe629637d3b961bbd68f9ae4349c7af7c72764e567b48b90d2a3ba"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/__tests__/boundary.test.ts",
+      "before": "1bbbf8e697c303e893a645c6a37ffd0f1b885a03a71f0c4b229defaacbb291bc",
+      "after": "8595c159d13baf7a132181ebb0a238454063bf083ad2f7ca73c196f891a40f1f"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/ils/visit/route.ts",
+      "before": "d1fdecc1582f02d2d08958f9f9b8da7a2cb080ea73ff2082974448fec4663804",
+      "after": "a1ee28be8a7092f9553edf85ab836ecfe0ddd0e1884a5faee378b6d6b723ac5e"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/interactions/[type]/route.ts",
+      "before": "d8c67ce7764df07d82a3facd09188d3751f522e6d0891c2b3e3f5c5bea77b04b",
+      "after": "c78c92475a241d50a8bef1a7edb94b6d0720bacc02a91711bf67bf6b91fb2898"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.test.ts",
+      "before": "979f2d3f2e7733e67a50e155dd7958b930e1cde935fdd22bfec0584763df2060",
+      "after": "bcbb2fcf31a6621657e4a3e83b08db659e96ba28969e657d4c6a378c770fc665"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/progress/route.ts",
+      "before": "6b074fa57d861bc51dd7bf85c8282949ba1cbd3e3503e8aa71220152210811ff",
+      "after": "3c8ce082bf38e7cbd8926bb7643006f617f77388207ed18d2155a1584db0aabf"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+      "before": "53039cd244af951904ffa06db6cd8b91172161a9c395582a4a60aea07c098eff",
+      "after": "e49c21c0a9dfd6e24ae20a74b2bec41a2f494510fd1893646ee6c1dd1b56f1ef"
+    },
+    {
+      "path": "apps/skillup-web/src/app/api/__tests__/routes.test.ts",
+      "before": "d9aeea3a3a26187992a867d5ee2f5ab97ec7919aa762b3c51c934bb689a74ff7",
+      "after": "0d2d7e213ba270f15d97239fb36a19c57dc9d1334c95085dcb0548be2211629c"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.test.ts",
+      "before": "d4cba8285bf8447b1d99a231902f6918895db816473984f4563030e182a4f1c6",
+      "after": "c6e23ea9467a54b48e146f0033f810dd673c70e096008c4e442e884c8d3d8bbf"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "before": "e3f0037d7c71300cb44e10eaffc33e70b53045f33cfce2e9eb2e8e5d5710f2c9",
+      "after": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b"
+    }
+  ],
+  "addedSecurityTests": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth-callers.test.ts",
+      "sha256": "2843d110b0056e57fd665c69c314abf23a79d8eb64cb626b10ee874d3ff52ec6"
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth-token-contract.test.ts",
+      "sha256": "896e729c98c74cbf4d2c80b1f94ee56d972cb005883cdc601daea6bccf7bf244"
+    }
+  ],
+  "report": {
+    "path": "docs/architecture/reviews/SHC/SOL_R6_B_CHG01B_SUIA_IDENTITY_BOUNDARY_REVIEW.md",
+    "sha256": "06c92ee8afb7f9640afa8853de0ffc63ce49ddb03711a28765f9b324beda48a2"
+  },
+  "callerCounts": {
+    "people": 4,
+    "learner": 14,
+    "OWNER HOLD": 2
+  },
+  "protectedChanges": [],
+  "heldEndpointChanges": [],
+  "completedGates": [
+    {
+      "name": "targeted-final",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts src/lib/__tests__/current-learner-session.test.ts src/lib/__tests__/read-fallback-boundary.test.ts src/__tests__/proxy.test.ts src/app/api/__tests__/routes.test.ts src/app/api/student/__tests__/private-cache.test.ts src/app/api/tutorial/progress/route.test.ts src/app/api/tutorial/ils/block-completion/route.test.ts src/app/api/tutorial/ils/navigation/[nodeId]/__tests__/boundary.test.ts src/app/api/tutorial/ils/subtopic/[subtopicId]/progress/__tests__/boundary.test.ts --pool=threads --maxWorkers=1 --reporter=verbose",
+      "started": "2026-11-13T18:22:15.877Z",
+      "finished": "2026-11-13T18:22:19.746Z",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck-final",
+      "command": "pnpm --filter @quiz/skillup-web type-check",
+      "started": "2026-11-13T18:22:19.750Z",
+      "finished": "2026-11-13T18:22:23.847Z",
+      "exitCode": 0
+    },
+    {
+      "name": "lint-final",
+      "command": "pnpm --filter @quiz/skillup-web lint --max-warnings=0",
+      "started": "2026-11-13T18:22:23.849Z",
+      "finished": "2026-11-13T18:22:29.836Z",
+      "exitCode": 0
+    }
+  ],
+  "configuredCredentialLeaks": [],
+  "receipts": [
+    {
+      "file": "BASELINE.json",
+      "sha256": "a0d75c7ed885bd41cb891408d5f36b8133b8a7e13dd8c7a79d0bceaa63b11358"
+    },
+    {
+      "file": "caller-tests-initial.log",
+      "sha256": "e037f3d97592ac80c70fc288f26e2b7616adb63454a1ff3269d2311317f70312"
+    },
+    {
+      "file": "caller-tests.exit",
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "file": "caller-tests.log",
+      "sha256": "e037f3d97592ac80c70fc288f26e2b7616adb63454a1ff3269d2311317f70312"
+    },
+    {
+      "file": "CALLER_INVENTORY.csv",
+      "sha256": "e24b48cc5b4024e197d01e59e16d9ee071007b0fe088a740615ec2723150a742"
+    },
+    {
+      "file": "graphify-update-final.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "graphify-update-final.log",
+      "sha256": "a6907351ba3765bba4b7b53a28169a8df22baa5ceda41694ca1671edcb275c15"
+    },
+    {
+      "file": "graphify-update.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "graphify-update.log",
+      "sha256": "2425071c207e80c8a5ef073361b6eaa27d409bfad8866ff15bce2f6bbcb5f643"
+    },
+    {
+      "file": "helper-tests.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "helper-tests.log",
+      "sha256": "5e9c462cafdbb22043f743920dcbd012f4d2300f7bd4c14294a877238110144e"
+    },
+    {
+      "file": "lint-final.log",
+      "sha256": "485fcbc064e7348ffa5ff5d19f976ae67ac7e33b326489e638674cec5f49dd12"
+    },
+    {
+      "file": "lint-prior-pass.log",
+      "sha256": "485fcbc064e7348ffa5ff5d19f976ae67ac7e33b326489e638674cec5f49dd12"
+    },
+    {
+      "file": "QUALITY_FIRST_RESULTS.json",
+      "sha256": "e487a6fb2e116c0f431b46103277b209078e9cc25dc999622cd13fe768340c45"
+    },
+    {
+      "file": "QUALITY_PRIOR_PASS.json",
+      "sha256": "b911dd35174aae740b580b6a1a9c51ad42f77b5a8ee706724d37e781c04c5244"
+    },
+    {
+      "file": "QUALITY_RESULTS.json",
+      "sha256": "7a5b49eed3e4c0db05236b81738ac3f77c7380e7043b7ddaf52d3ee7d5916013"
+    },
+    {
+      "file": "signed-token-tests.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "signed-token-tests.log",
+      "sha256": "1a2cebc502c0a03d224c69b2c167ab8244b83098db8c00483385d9fe06db7d4a"
+    },
+    {
+      "file": "SOURCE_AND_CALLERS.json",
+      "sha256": "a168c5df271e7d3afd3907f560d54d8bdd404989d661d2fe01e7162f84b41cc7"
+    },
+    {
+      "file": "targeted-final.log",
+      "sha256": "6ecc504a079bae46b44da695e0462eb922dff93e9d2bfd046f21e289bd03de83"
+    },
+    {
+      "file": "targeted-prior-pass.log",
+      "sha256": "051c8d1bfe219c8032b65221d8b96cdc6692afca033e6a44d9077b0c7a5d92e6"
+    },
+    {
+      "file": "targeted-tests.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "targeted-tests.log",
+      "sha256": "690c8f447889d00464bb7af0428b319b62e90906d866e621bfbdc52950e5d9c2"
+    },
+    {
+      "file": "typecheck-final.log",
+      "sha256": "54e613789843329df160124f718b5bc4a3002a5ce19df5655ec581dac2b3c0e8"
+    },
+    {
+      "file": "typecheck.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "file": "typecheck.log",
+      "sha256": "673575211afa85afd8635083ed3db21ee4326a6987ee4485f69cf63e70793d86"
+    }
+  ],
+  "limitations": [
+    "Mocked database and HTTP boundaries, plus four real-signature verification tests.",
+    "Real tokens missing shadowUserId retain the existing 401 verifier contract.",
+    "Remote projection completeness and end-to-end database/browser qualification remain unexecuted.",
+    "Source comparison covers recorded baseline files and added tests, without Git CLI or a whole-worktree status claim."
+  ]
+}

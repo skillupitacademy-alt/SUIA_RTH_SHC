@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     let auth = hasCookiesApi ? await extractAuthFromRequest(effectiveReq) : { isAuthenticated: false };
 
     if (!auth || !auth.userId) {
-      const studentAuth = await requireStudentAuth(effectiveReq);
+      const studentAuth = await requireStudentAuth(effectiveReq, { identity: 'learner' });
       if (studentAuth.ok === false) {
         return NextResponse.json(
           { error: 'Unauthorized', reason: 'authentication_required' },
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       }
       auth = {
         isAuthenticated: true,
-        userId: studentAuth.userId,
+        userId: studentAuth.learnerUserId,
         brand: (studentAuth.payload?.brand as 'skillup' | undefined) ?? 'skillup',
       };
     }

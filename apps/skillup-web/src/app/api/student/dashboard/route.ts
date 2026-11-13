@@ -4,10 +4,10 @@ import { getSkillupStudentDashboard } from '@/lib/skillup-data';
 import { requireStudentAuth } from '@/lib/student-auth';
 
 export async function GET(request: NextRequest) {
-  const auth = await requireStudentAuth(request);
+  const auth = await requireStudentAuth(request, { identity: 'people' });
   if (auth.ok === false) {
     return auth.response;
   }
 
-  return NextResponse.json(await getSkillupStudentDashboard(auth.userId), { headers: { 'Cache-Control': 'private, no-store' } });
+  return NextResponse.json(await getSkillupStudentDashboard(auth.peoplePersonId), { headers: { 'Cache-Control': 'private, no-store' } });
 }

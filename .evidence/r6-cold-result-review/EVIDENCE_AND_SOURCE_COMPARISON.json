@@ -1,0 +1,241 @@
+{
+  "captured": "2026-11-13T17:33:32.657Z",
+  "originalRun": "r6-55b77b9d-2f52-4daa-bc58-ddbec15e0451",
+  "originalFailure": [
+    {
+      "name": "skillup own started exam result positive",
+      "expected": 202,
+      "actual": 500,
+      "pass": false,
+      "route": "/api/quiz/result",
+      "method": "GET"
+    }
+  ],
+  "originalFailureCaptureLimits": [
+    "No per-case timestamp",
+    "No own exam UUID in failure row",
+    "No response body or content type",
+    "No response request/correlation ID or server headers",
+    "No original matching gateway log"
+  ],
+  "backendResultAccessLines": [
+    {
+      "line": 514,
+      "text": " GET /api/quiz/result?examId=04d0b6a3-0e4a-4068-86ee-4cbbee021c78 403 in 18.2s (compile: 17.5s, proxy.ts: 13ms, render: 631ms)"
+    },
+    {
+      "line": 572,
+      "text": " GET /api/quiz/result?examId=04d0b6a3-0e4a-4068-86ee-4cbbee021c78 403 in 166ms (compile: 11ms, proxy.ts: 10ms, render: 145ms)"
+    },
+    {
+      "line": 1854,
+      "text": " GET /api/quiz/result?examId=1a3a691d-0479-4652-a721-21eff65bc64c 202 in 465ms (compile: 7ms, proxy.ts: 9ms, render: 449ms)"
+    },
+    {
+      "line": 1903,
+      "text": " GET /api/quiz/result?examId=e4e7f032-2ca0-4b75-ad9c-8d97fa4a266d 403 in 100ms (compile: 9ms, proxy.ts: 7ms, render: 84ms)"
+    },
+    {
+      "line": 1961,
+      "text": " GET /api/quiz/result?examId=e4e7f032-2ca0-4b75-ad9c-8d97fa4a266d 403 in 123ms (compile: 30ms, proxy.ts: 12ms, render: 81ms)"
+    },
+    {
+      "line": 3243,
+      "text": " GET /api/quiz/result?examId=e4547ce5-d25f-48f4-aa5a-97289434d0b8 202 in 521ms (compile: 9ms, proxy.ts: 13ms, render: 499ms)"
+    },
+    {
+      "line": 3354,
+      "text": " GET /api/quiz/result?examId=230d2a67-65be-4859-a186-d21b64e25843 202 in 116ms (compile: 10ms, proxy.ts: 9ms, render: 97ms)"
+    }
+  ],
+  "backendResult500AccessLines": [],
+  "firstBackendResultCompileLine": 513,
+  "warmedResultAssertions": [
+    {
+      "name": "skillup real password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "skillup warmed own started quiz result",
+      "expected": 202,
+      "actual": 202,
+      "pass": true,
+      "route": "/api/quiz/result",
+      "method": "GET",
+      "requestId": "bff7c770-0908-4066-97be-fc2bc177bf37"
+    },
+    {
+      "name": "realtutorialhub real password login",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "name": "realtutorialhub warmed own started quiz result",
+      "expected": 202,
+      "actual": 202,
+      "pass": true,
+      "route": "/api/quiz/result",
+      "method": "GET",
+      "requestId": "16ae591b-10ee-4e1a-ab04-60a441a9b2de"
+    }
+  ],
+  "receiptHashes": [
+    {
+      "path": ".evidence/r6-existing-p1/api-local-dev.log",
+      "sha256": "e6b0e3a248394dfcf78d32347d9a5c0a0491a67d0b6db4d998ad25b1bab774ff"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/authenticated-http-results.json",
+      "sha256": "d2ed17ed99314f8f4057a4aa80ec600e540c55fa540457a8a59c33aadfb2dbbc"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/authenticated-after.log",
+      "sha256": "89776e6cfbbf5d8820cd033a881b494be4b761d7b528f25d257ca0df81f3da6d"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/authenticated-http.cjs",
+      "sha256": "2219c469d7ab7109320857a041e888af07d87659ee082825d7897edcec946a26"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/quiz-positive-http-results.json",
+      "sha256": "3c4c88726bb47770e6f366863a1fb826b5ff8faca7a97cba45f6e251520dc41f"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/quiz-positive-http.cjs",
+      "sha256": "d951ec1c22f05b11297f7130b3b7463066bdf2b16e0aa49e21a24b3f0311538a"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/QUALITY_INTERRUPTED_RESULTS.json",
+      "sha256": "bdf6a7a61ad0eef65bc21de7e1178274d441709210058a84e1e8473c5d906824"
+    },
+    {
+      "path": ".evidence/r6-existing-p1/quality-interruption.txt",
+      "sha256": "c5b84e0a6d03215e01885e3bb922299ec13864680790a70af47e49601d4cf897"
+    },
+    {
+      "path": ".evidence/r6-report-p0/QUALITY_RESULTS.json",
+      "sha256": "8aebe69e36ff696889d733df4699be108432ebc73bdb84ca5601bf433be85181"
+    },
+    {
+      "path": ".evidence/r6-report-p0/BUILD_RESULT.json",
+      "sha256": "6da658cfb996b54055825181676201384036ca0a3aaa54c6921eaed5fb3cc8a4"
+    }
+  ],
+  "sourceComparison": [
+    {
+      "path": "apps/skillup-web/src/app/api/quiz/result/route.ts",
+      "sha256": "1a5bd759f7198a87f00d04e25e5e472e99e3b7a409efe58992bbc74bbf553f3a",
+      "currentSha256": "1a5bd759f7198a87f00d04e25e5e472e99e3b7a409efe58992bbc74bbf553f3a",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "apps/skillup-web/src/proxy.ts",
+      "sha256": "3b7de85d941941431eacec0b83c1d7a955ed25c96a012fd5e1bc3b5966d4dc76",
+      "currentSha256": "3b7de85d941941431eacec0b83c1d7a955ed25c96a012fd5e1bc3b5966d4dc76",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "src/share-branding/auth/authBffRoute.ts",
+      "sha256": "b8591fb050064657ed18bd5b044be5bcac45a93ecfe4c0e230b26f7f17437550",
+      "currentSha256": "b8591fb050064657ed18bd5b044be5bcac45a93ecfe4c0e230b26f7f17437550",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "src/share-branding/lib/unifiedFetch.ts",
+      "sha256": "af165d5f7364085792dd3dc1930b24733a461600404f063e1b6fc50f1c8b6e4e",
+      "currentSha256": "af165d5f7364085792dd3dc1930b24733a461600404f063e1b6fc50f1c8b6e4e",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "src/share-branding/middleware/authProxy.ts",
+      "sha256": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "currentSha256": "1056f7d2d41328445e26a2c75794b1fe6bbd2c05b8c37cc211c1447ed9baa23c",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "src/share-branding/auth/currentLearnerSession.ts",
+      "sha256": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500",
+      "currentSha256": "8811ec586bf2c8e80cb56a5bf24040434456e0f97120f9d560945d0398947500",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "services/api-gateway/src/index.ts",
+      "sha256": "6f00f9f4f4e5e74a06f9549b39806b4b13d6e733dba9d66915d27b9ab65658d8",
+      "currentSha256": "6f00f9f4f4e5e74a06f9549b39806b4b13d6e733dba9d66915d27b9ab65658d8",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "services/api-gateway/src/lib/proxy.ts",
+      "sha256": "11408d5b28363e9717a6359314ec704815740230c93aa6eeda20681a3633c54a",
+      "currentSha256": "11408d5b28363e9717a6359314ec704815740230c93aa6eeda20681a3633c54a",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "services/api-gateway/src/routes/routing-table.ts",
+      "sha256": "230f8f932edd9635db7a8fa89c9d572b55d9693a61fe552ef6ec8e3bf5edbc76",
+      "currentSha256": "230f8f932edd9635db7a8fa89c9d572b55d9693a61fe552ef6ec8e3bf5edbc76",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    },
+    {
+      "path": "apps/api-server/src/app/api/quiz/result/route.ts",
+      "sha256": "827a0d60e8a066f48401b9a52bc5957953bf484368414d246cf03ad0aea85c28",
+      "currentSha256": "827a0d60e8a066f48401b9a52bc5957953bf484368414d246cf03ad0aea85c28",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "apps/api-server/src/lib/api-error.ts",
+      "sha256": "131da6deb019945ffc8313ec49c439c8cd5beddc0cd4e525b942bba155b9bebe",
+      "currentSha256": "131da6deb019945ffc8313ec49c439c8cd5beddc0cd4e525b942bba155b9bebe",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "apps/api-server/src/lib/api-response.ts",
+      "sha256": "74f10668e36e5b2fc6349544899854ccc3df49639d2cd07400970bff98a1d28c",
+      "currentSha256": "74f10668e36e5b2fc6349544899854ccc3df49639d2cd07400970bff98a1d28c",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "apps/api-server/src/lib/withLogging.ts",
+      "sha256": "3544c42d6eb962532d963285366102aa240d21d06f25c3130e23964ce9f6f2f6",
+      "currentSha256": "3544c42d6eb962532d963285366102aa240d21d06f25c3130e23964ce9f6f2f6",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "currentSha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": false
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "currentSha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "currentSha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "unchangedDuringInvestigation": true,
+      "recordedIncidentBaselineMatch": "Not captured in the incident baseline manifest"
+    }
+  ]
+}

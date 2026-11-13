@@ -17,7 +17,7 @@ export async function GET(
     const params = await context.params;
     
     // Authenticate user (SkillUp-specific)
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     if (!authResult.ok) {
       return authResult.response;
     }
@@ -36,7 +36,7 @@ export async function GET(
     const response = await fetch(url.toString(), {
       headers: {
         'X-Brand': 'skillup',                    // Brand context
-        'X-User-ID': authResult.userId,          // SkillUp user ID
+        'X-User-ID': authResult.learnerUserId,          // SkillUp user ID
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
       },
       cache: 'no-store'

@@ -10,7 +10,7 @@ it.each(['http://localhost:3000', 'http://localhost:3000/api', 'http://localhost
   'normalizes the progress upstream and forwards internal authentication: %s', async base => {
     vi.stubEnv('INTERNAL_API_URL', base);
     vi.stubEnv('INTERNAL_API_KEY', 'test-internal-key');
-    vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'learner', payload: {} as never });
+    vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: '22222222-2222-4222-8222-222222222222', payload: {} as never });
     const upstream = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ data: {} }), { status: 200 }));
     vi.stubGlobal('fetch', upstream);
     const id = '11111111-1111-4111-8111-111111111111';
@@ -33,7 +33,7 @@ it('never proxies unauthenticated progress requests', async () => {
 
 it('forwards the exact access and refresh cookie pair with CSRF proof', async () => {
   vi.stubEnv('INTERNAL_API_URL', 'http://localhost:3000');
-  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'learner', payload: {} as never });
+  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, learnerUserId: '11111111-1111-4111-8111-111111111111', peoplePersonId: '22222222-2222-4222-8222-222222222222', payload: {} as never });
   const upstream = vi.fn().mockResolvedValue(Response.json({ data: {} }));
   vi.stubGlobal('fetch', upstream);
   const request = new NextRequest('http://skillup.localhost/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111', {

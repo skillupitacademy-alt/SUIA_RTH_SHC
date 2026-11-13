@@ -45,11 +45,11 @@ const postBodySchema = z.object({
  */
 async function getHandler(request: NextRequest) {
   try {
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     if (!authResult.ok) {
       return authResult.response;
     }
-    const user = { userId: authResult.payload.userId };
+    const user = { userId: authResult.learnerUserId };
     const parsed = getQuerySchema.safeParse({
       subtopicId: request.nextUrl.searchParams.get('subtopicId') ?? undefined,
     });
@@ -94,11 +94,11 @@ async function getHandler(request: NextRequest) {
  */
 async function postHandler(request: NextRequest) {
   try {
-    const authResult = await requireStudentAuth(request);
+    const authResult = await requireStudentAuth(request, { identity: 'learner' });
     if (!authResult.ok) {
       return authResult.response;
     }
-    const user = { userId: authResult.payload.userId };
+    const user = { userId: authResult.learnerUserId };
 
     let body: unknown;
     try {
