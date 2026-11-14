@@ -97,3 +97,96 @@ The source baseline is 4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f. All changes in 
 The existing governance documents and latest owner decisions control this task. Attendance, payments, Marketing, broad accessibility/performance, MainDB ownership migration, deployment and Git publication retain their HOLD/approval boundaries.
 
 Before shared migration approval, the owner needs a disposition for the fresh historical replay failure, independently reviewed exact migration artifacts, a current shared backup/recovery plan and an explicit shared execution decision. The proposed uniqueness and existing identity code passed the bounded physical tests. Overall migration readiness remains NOT READY until those recorded blockers are resolved.
+
+
+## Owner migration disposition and deferred security governance, 14 November 2026
+
+This documentation-only investigation uses evidence commit `8ca7ad05e04cf15f6cdce16afb4ad8a84852ee68`. No database connection or execution occurred during this disposition task. Prior qualification receipts retain their dates, source baseline and outcomes.
+
+| Item | Current evidence/workflow state |
+|---|---|
+| PeopleDB identity implementation | IMPLEMENTED, bounded real PostgreSQL behaviors VERIFIED in earlier qualification. |
+| Qualification outcome | VERIFIED 9 scenario groups PASS and 1 FAIL. Overall R6-B NOT READY. |
+| Fresh historical replay | FAILED with SQLSTATE 42710. Correction BLOCKED pending owner design approval. |
+| Existing-baseline pending upgrade | VERIFIED in disposable schema-matched fixture, 0009 followed by candidate and idempotent repeat. |
+| Replay compatibility correction below | PROPOSED, NOT IMPLEMENTED. New verification plan NOT TESTED. |
+| Shared PeopleDB migration | HOLD. |
+| Known credential incident R6B-SEC-01 | DEFERRED — OWNER DECISION, security risk OPEN. |
+| Project-wide rotation governance | PLANNED FOR LATER SECURITY PHASE after current documentation/architecture work. |
+| Q48 | OPEN. |
+
+### Exact replay root cause and additional overlaps
+
+The normal disposable replay reached 0007 and failed while adding the foreign key already installed by 0006. The source comparison identifies five overlaps. All five definitions have equivalent objects/semantics after excluding the CREATE IF NOT EXISTS guard. Only the first foreign-key collision was physically executed before the transaction aborted. The remaining collisions are verified SQL-source findings and need the planned replay tests.
+
+| Object | 0006 line | 0007 line | Source definition and mismatch |
+|---|---|---|---|
+| subscription_features_plan_id_subscription_plans_id_fk | 30 | 44 | subscription_features(plan_id) references public.subscription_plans(id), ON DELETE CASCADE, ON UPDATE NO ACTION. 0006 catches duplicate_object in its DO block. 0007 adds the constraint unconditionally. |
+| user_features_cache_user_id_users_id_fk | 35 | 45 | user_features_cache(user_id) references public.users(id), ON DELETE CASCADE, ON UPDATE NO ACTION. Same guarding difference. |
+| idx_subscription_features_plan | 40 | 46 | Nonunique btree on subscription_features(plan_id, feature_key). 0006 uses IF NOT EXISTS, 0007 is unconditional. |
+| idx_subscription_plans_active | 39 | 47 | Nonunique btree on subscription_plans(is_active, name). Same guarding difference. |
+| idx_user_features_cache_user | 41 | 48 | Nonunique btree on user_features_cache(user_id, cached_at). Same guarding difference. |
+
+The affected files are `packages/db-people/migrations/0006_skillhubcore_subscription_schema.sql` and `packages/db-people/migrations/0007_long_sentinels.sql`. For both foreign keys, source defaults imply non-deferrable immediate enforcement, MATCH SIMPLE and ordinary validated constraints. Source ON DELETE/ON UPDATE semantics match exactly. The three ordinary indexes have the same tables, key order and btree method. MIGRATION_SOURCE_COMPARISON.json preserves the exact statements, line numbers, journal order and source hashes.
+
+The shared journal lists 0000 through 0009 with strictly increasing timestamps, including 0006 before 0007. It accurately orders the existing files. Reordering 0006/0007 would also change historical interpretation and leave overlaps, so ordering alone is not the correction. The requested clean replay must include prerequisite 0000, which creates the initial types/tables, before 0001 through 0009. Starting from 0001 on an empty database is insufficient.
+
+### History and existing-installation compatibility
+
+The inherited PeopleDB ledger captured during qualification records both 0006 and 0007 with hashes matching current SQL files. These are recorded-applied facts from the branch copy. This task has not queried protected environments afresh, and their current state or original execution procedure remains unverified. In particular, recorded-applied hashes do not explain how the historical overlap was resolved when that environment was built. A current protected read-only preflight and original execution provenance need separate review before shared DDL approval.
+
+The installed Drizzle reader computes SHA-256 over each SQL file and supplies that hash with its journal timestamp. The ORM PostgreSQL migrator used in qualification stores hash/created_at in drizzle.__drizzle_migrations but selects work by the most recent timestamp. Its inspected implementation does not compare each applied hash with the current source on every run. Therefore editing historical SQL can silently create conflicting source/ledger histories even when an existing upgrade skips that file. The package db:migrate command uses drizzle-kit migrate. Its precise behavior must be included in implementation verification rather than inferred solely from the tested ORM migrator.
+
+The fresh replay fails before 0009. The existing-baseline upgrade passed because its prior ledger caused 0006/0007 to be skipped, then applied 0009 and the test uniqueness candidate. Environments pending 0007 or partially created outside a successful migration transaction require their own preflight and remain BLOCKED. A later migration cannot fix an earlier abort because the runner never reaches it.
+
+### Proposed minimal correction under immutable-history requirements
+
+**Recommendation for owner approval** is a narrowly scoped replay compatibility change at the existing PeopleDB migration command boundary. Retain every historical SQL file, journal timestamp, snapshot and applied ledger row. Limit compatibility handling to the five exact overlapping 0007 statements listed above and the pinned SHA-256 of that historical input. A changed or unknown source hash must fail closed.
+
+The implementation would load the unmodified migration files, preserve their original content hashes, and execute an explicitly reviewed compatibility representation of only those five statements. It must compare structured PostgreSQL catalogs for the target objects before executing them. This is an execution-contract change requiring owner approval. It is not implemented by this documentation task.
+
+1. For an absent expected object, execute the original DDL to create it.
+2. For an existing object with the expected identity and equivalent definition, record an explicit equivalent-object no-op in the redacted execution receipt and continue.
+3. For a same-name object with any definition mismatch, invalid/unvalidated state, wrong table/schema, key order, FK target, referential action, deferrability, uniqueness, predicate, collation/operator-class or access-method mismatch, abort. No generic exception handler may swallow 42710/42P07.
+4. Serialize the migration operation through the approved existing execution boundary. Catalog comparison and DDL must share the same transaction and qualified namespace. A duplicate race must trigger revalidation or abort, never silent success.
+5. Leave all other 0007 statements and later migrations unchanged. Preserve full transaction rollback and append the usual ledger entry only after the migration succeeds.
+6. Record the original migration-file hash plus the compatibility revision, executed statement/projection hash, catalog equivalence results and exact SQLSTATE outcome in the execution artifact. The stored original hash identifies immutable source, while the separate receipt makes the reviewed execution variation explicit. No fake applied rows or historical hash substitution is allowed.
+7. Wire the approved behavior through the supported existing db:migrate entry point and its tested harness. An isolated helper that leaves the supported clean-install command failing does not satisfy acceptance. Raw historical replay remains the preserved failure reproduction, and supported compatibility replay must be clearly named and documented.
+
+Potential source locations after approval are the existing `packages/db-people/package.json` migration command and its approved execution entry point, with focused tests/evidence. No alternative service, schema table or background mechanism is required. Detailed runner/Drizzle compatibility must be reviewed before implementation because the current command delegates to drizzle-kit.
+
+This approach adds explicit handling only where the immutable chain conflicts with a clean installation. An owner-approved versioned bootstrap/baseline generation is an alternative if a compatibility runner is rejected, but it requires a larger provenance design. It must not invent applied historical rows. Editing 0007 in place, broadly catching duplicate_object, dropping foreign keys, or appending a later fix that fresh replay cannot reach are not approved corrections. HOLD remains the default until a concrete design is approved and verified.
+
+### Controlled disposable verification plan, execution NOT TESTED in this task
+
+| Case | Required evidence and pass criterion |
+|---|---|
+| Target preflight | Approved disposable project/branch/database IDs verified server-side and compared with protected targets. Fresh disposable credential supplied through a protected mechanism because current incident credential use is deferred. No fallback connection. |
+| Raw failure reproduction | Unmodified 0000–0009 replay reproduces the known first collision on a disposable empty database. Preserve SQLSTATE and transaction/ledger result. |
+| Supported clean installation | Approved compatibility entry point applies 0000 then 0001–0009 from empty and reaches the expected schema. All five overlaps handled with explicit equivalent-object decisions. |
+| FK definitions | Inspect both constraints for exact referencing/referenced ordered columns, CASCADE/NO ACTION actions, MATCH SIMPLE, validation and deferrability. Insert orphan fixture rows and expect 23503. Verify approved delete semantics using owned fixture parents only. |
+| Index definitions | Verify all three ordinary indexes and the external-ID/platform unique index. Check key order, btree method, uniqueness, predicates, collation/operator classes and validity. |
+| Mismatch negatives | Seed same-name wrong FK action/target or wrong/invalid index in disposable fixtures. Every mismatch must abort without silently dropping or accepting it. |
+| Absent-object paths | Exercise each exact guarded statement with its object absent and prerequisites present, demonstrating correct creation. |
+| Existing-baseline upgrade | Restore a schema-matched 0000–0008 fixture with authentic inherited ledger/provenance, then apply pending 0009 followed by the separately reviewed uniqueness candidate. Preserve all original ledger rows and hashes. |
+| Ledger and compatibility evidence | Compare original file hashes with baseline, normal appended entries, timestamp order and execution-representation receipts. Unknown hash or unsupported entry point fails closed. |
+| Repeat execution | Rerun the supported migrator. No schema, row or ledger changes beyond explicitly approved no-op evidence. |
+| Failure/rollback | Inject a statement failure after a compatibility decision. Demonstrate transaction rollback and no premature ledger advancement. Inspect lock timeout and uncertain-commit outcomes before retry. |
+| Concurrency | Competing migration attempts serialize or fail safely within bounds. Catalog checks cannot race an uncoordinated object change into false acceptance. |
+| Identity regression | Reuse R6-B same-email independence, normalized duplicate denial, bridge concurrency/rollback, grant revocation, SHC authority, UUID reporting and tenant-isolation requirements with owned synthetic fixtures. |
+| Recovery | Verify schema/data/ledger logical restore on synthetic-only databases, record exact tested guarantees, and assess protected backup/recovery separately before any shared execution decision. |
+| Evidence and cleanup | Preserve command, start/end time, source and compatibility hashes, SQLSTATE, before/after catalogs, failed attempts and owned-resource cleanup. Record any retained branch. Protect credentials before writing diagnostics. |
+
+No executable correction or test operation is authorized by this plan alone. The qualification branch and historic receipts remain reference evidence. Fresh protected deployment status, new correction behavior and current credential containment are NOT TESTED here.
+
+### Credential incident and governance disposition
+
+The owner defers the project-wide credential program until the current development, architecture and relevant Markdown/CSV work completes. R6B-SEC-01 remains a known exposure with OPEN risk and workflow state DEFERRED — OWNER DECISION. The existing Security Hardening Plan records incident scope, unknown impact, containment options, future program requirements and closure evidence. The existing Risk Register and canonical requirement CSV notes link to that record.
+
+All 41 added/modified blobs in evidence commit 8ca7ad05 were scanned non-destructively with redacted output for known Neon credentials, credential-bearing PostgreSQL URLs, signed JWTs, private keys and selected provider-key formats. There were zero matches. This is a bounded committed-file check. It does not establish absence of every secret format, remove the incident from tool history or close the known disclosure. The lost diagnostic log remains a documented evidence limitation. No credential values were displayed, recovered or reconstructed by this task.
+
+The incident's later rotation/revocation and validation remain required for closure. Current work uses source/receipts without further database access. Existing artifacts may be access-restricted through owner-controlled tools, and the retained disposable branch may be removed after dependency/evidence review. These containment measures were identified, with no live configuration or credential change performed.
+
+### Owner decisions required after this report
+
+Approve or reject the exact-object, pinned-history compatibility design before source implementation. A subsequent execution approval must identify disposable targets, credentials and synthetic scope. Protected PeopleDB migration remains HOLD until corrected clean installation, existing upgrade, provenance and recovery gates are accepted. Project-wide credential remediation remains deferred under the owner decision and the known incident stays OPEN. Q48 remains OPEN.

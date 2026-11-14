@@ -1,0 +1,44 @@
+[
+  {
+    "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+    "id": "SHCA-U07",
+    "field": "verification_notes",
+    "beforeSha256": "87933234c4ba11b32dccf50e5b4176866da9cfbb9198943d1ea49fe54f93b54b",
+    "appendedNote": "2026-11-14 owner decision at 8ca7ad05: R6B-SEC-01 known Neon qualification-credential exposure is OPEN/HIGH; remediation workflow DEFERRED \u2014 OWNER DECISION until current architecture/Markdown/CSV work completes. See docs/security/SECURITY_HARDENING_PLAN.md and docs/risk/RISK_REGISTER.md. Committed evidence scan covers 41 blobs with zero known-format findings, without incident closure. No new authentication acceptance or credential action."
+  },
+  {
+    "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+    "id": "SHCA-U08",
+    "field": "verification_notes",
+    "beforeSha256": "08c8c1638496d15bc4b5dd86b8afa8df7c76bf6d79eaf4de959fbc7fa3c092f0",
+    "appendedNote": "2026-11-14 bounded PeopleDB disposition at 8ca7ad05: qualification remains 9 PASS/1 FAIL and NOT READY. Fresh replay FAILED 42710; source comparison identifies two identical foreign keys and three indexes overlapping 0006/0007. Existing-baseline 0009/candidate upgrade previously VERIFIED. Shared migration HOLD; pinned-history exact-object compatibility is PROPOSED/NOT IMPLEMENTED, new plan NOT TESTED. See SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md owner disposition section."
+  },
+  {
+    "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+    "id": "SHCA-U09",
+    "field": "verification_notes",
+    "beforeSha256": "07d779a4e4c11675af523741c1b7614d9e45e60d4de13eff7b0c49c657b0dd83",
+    "appendedNote": "2026-11-14 R6B-SEC-01: driver diagnostic serialized a credential; raw initial log lost during redaction, reconstruction summary and failed execution receipt retained. OPEN risk, owner-deferred remediation. Disclosure concerns qualification tooling; whole application resilience acceptance remains unqualified. See existing Security Hardening Plan and Neon qualification report."
+  },
+  {
+    "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+    "id": "SHCA-D04",
+    "field": "verification_notes",
+    "beforeSha256": "46ab07365503d8c65d2b8dfcbad50ecddb2b8e997c0faf30d9b1290189461f9b",
+    "appendedNote": "2026-11-14 scoped evidence only: prior disposable synthetic pg_dump/pg_restore and pending upgrade PASSED, fresh full-chain replay FAILED. Protected backup/recovery and current protected deployment state remain NOT TESTED in this documentation task. Original hashes/journal/ledger preserved, shared PeopleDB migration HOLD. Exact overlap comparison and approval-gated verification plan are in .evidence/r6-migration-disposition and existing Neon qualification report."
+  },
+  {
+    "path": "audit/Canonical_Root_Cause_Register.csv",
+    "id": "RC-DB-01",
+    "field": "acceptance_evidence_required",
+    "beforeSha256": "43746d2768ff5a7ca1f8b7a43525767bab466d59e72e1c1372cc7aee8366424e",
+    "appendedNote": "2026-11-14 R6-B remains NOT READY with 9 PASS/1 FAIL; fresh PeopleDB replay FAILED 42710 on overlapping 0006/0007 definitions. Pending upgrade passed only in disposable qualification. Exact-object pinned-history compatibility design requires owner approval and new isolated verification before shared migration HOLD can be reconsidered. See existing SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md."
+  },
+  {
+    "path": "audit/Canonical_Root_Cause_Register.csv",
+    "id": "RC-OBS-01",
+    "field": "acceptance_evidence_required",
+    "beforeSha256": "72abc8c06f09fb1242c25b77c2d310bff05792b058b7ce75e34a750802b660ad",
+    "appendedNote": "2026-11-14 R6B-SEC-01 known Neon diagnostic exposure OPEN/HIGH; remediation DEFERRED \u2014 OWNER DECISION. Project-wide credential policy/program planned after current documentation and architecture milestone. Existing docs/security/SECURITY_HARDENING_PLAN.md defines incident/closure evidence and provider inventory. Raw-log loss disclosed; committed 8ca7ad05 evidence scan found no known-format credentials. No security closure or execution waiver."
+  }
+]

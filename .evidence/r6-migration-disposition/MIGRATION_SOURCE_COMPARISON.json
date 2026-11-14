@@ -1,0 +1,119 @@
+{
+  "baseline": "8ca7ad05e04cf15f6cdce16afb4ad8a84852ee68",
+  "overlaps": [
+    {
+      "name": "subscription_features_plan_id_subscription_plans_id_fk",
+      "migration0006Line": 30,
+      "migration0007Line": 44,
+      "statement0006": "ALTER TABLE \"subscription_features\" ADD CONSTRAINT \"subscription_features_plan_id_subscription_plans_id_fk\" FOREIGN KEY (\"plan_id\") REFERENCES \"public\".\"subscription_plans\"(\"id\") ON DELETE cascade ON UPDATE no action;",
+      "statement0007": "ALTER TABLE \"subscription_features\" ADD CONSTRAINT \"subscription_features_plan_id_subscription_plans_id_fk\" FOREIGN KEY (\"plan_id\") REFERENCES \"public\".\"subscription_plans\"(\"id\") ON DELETE cascade ON UPDATE no action;",
+      "equivalentDefinitionIgnoringCreateGuard": true,
+      "expectedFailure": "42710",
+      "verification": "SQL-source comparison; only first constraint collision executed in prior fresh replay"
+    },
+    {
+      "name": "user_features_cache_user_id_users_id_fk",
+      "migration0006Line": 35,
+      "migration0007Line": 45,
+      "statement0006": "ALTER TABLE \"user_features_cache\" ADD CONSTRAINT \"user_features_cache_user_id_users_id_fk\" FOREIGN KEY (\"user_id\") REFERENCES \"public\".\"users\"(\"id\") ON DELETE cascade ON UPDATE no action;",
+      "statement0007": "ALTER TABLE \"user_features_cache\" ADD CONSTRAINT \"user_features_cache_user_id_users_id_fk\" FOREIGN KEY (\"user_id\") REFERENCES \"public\".\"users\"(\"id\") ON DELETE cascade ON UPDATE no action;",
+      "equivalentDefinitionIgnoringCreateGuard": true,
+      "expectedFailure": "42710",
+      "verification": "SQL-source comparison; only first constraint collision executed in prior fresh replay"
+    },
+    {
+      "name": "idx_subscription_features_plan",
+      "migration0006Line": 40,
+      "migration0007Line": 46,
+      "statement0006": "CREATE INDEX IF NOT EXISTS \"idx_subscription_features_plan\" ON \"subscription_features\" USING btree (\"plan_id\",\"feature_key\");",
+      "statement0007": "CREATE INDEX \"idx_subscription_features_plan\" ON \"subscription_features\" USING btree (\"plan_id\",\"feature_key\");",
+      "equivalentDefinitionIgnoringCreateGuard": true,
+      "expectedFailure": "42P07",
+      "verification": "SQL-source comparison; only first constraint collision executed in prior fresh replay"
+    },
+    {
+      "name": "idx_subscription_plans_active",
+      "migration0006Line": 39,
+      "migration0007Line": 47,
+      "statement0006": "CREATE INDEX IF NOT EXISTS \"idx_subscription_plans_active\" ON \"subscription_plans\" USING btree (\"is_active\",\"name\");",
+      "statement0007": "CREATE INDEX \"idx_subscription_plans_active\" ON \"subscription_plans\" USING btree (\"is_active\",\"name\");",
+      "equivalentDefinitionIgnoringCreateGuard": true,
+      "expectedFailure": "42P07",
+      "verification": "SQL-source comparison; only first constraint collision executed in prior fresh replay"
+    },
+    {
+      "name": "idx_user_features_cache_user",
+      "migration0006Line": 41,
+      "migration0007Line": 48,
+      "statement0006": "CREATE INDEX IF NOT EXISTS \"idx_user_features_cache_user\" ON \"user_features_cache\" USING btree (\"user_id\",\"cached_at\");",
+      "statement0007": "CREATE INDEX \"idx_user_features_cache_user\" ON \"user_features_cache\" USING btree (\"user_id\",\"cached_at\");",
+      "equivalentDefinitionIgnoringCreateGuard": true,
+      "expectedFailure": "42P07",
+      "verification": "SQL-source comparison; only first constraint collision executed in prior fresh replay"
+    }
+  ],
+  "journalOrder": [
+    {
+      "path": "packages/db-people/migrations/0000_perpetual_microbe.sql",
+      "tag": "0000_perpetual_microbe",
+      "when": 1774191220131,
+      "sha256": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c"
+    },
+    {
+      "path": "packages/db-people/migrations/0001_abnormal_gamma_corps.sql",
+      "tag": "0001_abnormal_gamma_corps",
+      "when": 1774536900897,
+      "sha256": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f"
+    },
+    {
+      "path": "packages/db-people/migrations/0002_low_captain_midlands.sql",
+      "tag": "0002_low_captain_midlands",
+      "when": 1774537191952,
+      "sha256": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7"
+    },
+    {
+      "path": "packages/db-people/migrations/0003_massive_kitty_pryde.sql",
+      "tag": "0003_massive_kitty_pryde",
+      "when": 1774538285178,
+      "sha256": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9"
+    },
+    {
+      "path": "packages/db-people/migrations/0004_amusing_kang.sql",
+      "tag": "0004_amusing_kang",
+      "when": 1774541869102,
+      "sha256": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56"
+    },
+    {
+      "path": "packages/db-people/migrations/0005_people_perf_indexes.sql",
+      "tag": "0005_people_perf_indexes",
+      "when": 1774550945793,
+      "sha256": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5"
+    },
+    {
+      "path": "packages/db-people/migrations/0006_skillhubcore_subscription_schema.sql",
+      "tag": "0006_skillhubcore_subscription_schema",
+      "when": 1774591239501,
+      "sha256": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184"
+    },
+    {
+      "path": "packages/db-people/migrations/0007_long_sentinels.sql",
+      "tag": "0007_long_sentinels",
+      "when": 1774935418558,
+      "sha256": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6"
+    },
+    {
+      "path": "packages/db-people/migrations/0008_common_zodiak.sql",
+      "tag": "0008_common_zodiak",
+      "when": 1774938098054,
+      "sha256": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9"
+    },
+    {
+      "path": "packages/db-people/migrations/0009_student_invitations.sql",
+      "tag": "0009_student_invitations",
+      "when": 1791600000000,
+      "sha256": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+    }
+  ],
+  "timestampsStrictlyIncreasing": true,
+  "executionThisTask": "NOT TESTED; previous Neon receipts reused; no database connections"
+}

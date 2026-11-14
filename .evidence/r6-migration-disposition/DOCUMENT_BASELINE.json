@@ -1,0 +1,7 @@
+{
+  "docs/security/SECURITY_HARDENING_PLAN.md": "5d3c9af4675bbb5859152c67312a714e2b8442b7d988367b7b363be8042c7d16",
+  "docs/risk/RISK_REGISTER.md": "f25bc1d85530eaa4280ec9a452e90748c790c03142fa8f8715050502c0a2a1c2",
+  "audit/Canonical_Root_Cause_Register.csv": "63c49451f0f996766ce9e693f8f1774c78ca2ea505213d36c130e650e3571f18",
+  "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+  "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md": "e0ff7ebf1fe175e3d0018d0edeb80ee6a5a7a5ea8e2b30a70c8337e4383da8d7"
+}

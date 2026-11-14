@@ -1,0 +1,64 @@
+{
+  "capturedUtc": "2026-11-14T03:03:43.709457+00:00",
+  "head": "8ca7ad05e04cf15f6cdce16afb4ad8a84852ee68",
+  "scope": "Documentation, existing register annotations, offline source/commit inspection only",
+  "qualification": "NOT READY",
+  "sharedPeopleDbMigration": "HOLD",
+  "freshMigrationReplay": "FAILED; correction BLOCKED pending owner approval",
+  "credentialIncident": "R6B-SEC-01 OPEN; DEFERRED \u2014 OWNER DECISION",
+  "databaseConnectionsThisTask": 0,
+  "credentialActionsThisTask": 0,
+  "sourceAndHistoricalMigrationChanges": 0,
+  "csvChecks": [
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "rows": 62,
+      "identifiersPreserved": true,
+      "statusFieldsPreserved": true,
+      "onlyAppendedEvidenceNotesChanged": true,
+      "changedRows": [
+        "SHCA-U07",
+        "SHCA-U08",
+        "SHCA-U09",
+        "SHCA-D04"
+      ]
+    },
+    {
+      "path": "audit/Canonical_Root_Cause_Register.csv",
+      "rows": 12,
+      "identifiersPreserved": true,
+      "statusFieldsPreserved": true,
+      "onlyAppendedEvidenceNotesChanged": true,
+      "changedRows": [
+        "RC-DB-01",
+        "RC-OBS-01"
+      ]
+    }
+  ],
+  "secretScanMatches": [],
+  "changedDocuments": [
+    {
+      "path": "audit/Canonical_Root_Cause_Register.csv",
+      "sha256": "c6f52fe2dc5a89fe2ab53190d2864bb26645d0d4ee0dc2cf647060160a7b4685"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "bd7f3b8d7f40c1dbf45229c03ee876493f4665911591ac85e43e44cb88af5c83"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "bfe86321361ae5ec58d424a0794720f1272341448fb19382d4c03c7044748603"
+    },
+    {
+      "path": "docs/risk/RISK_REGISTER.md",
+      "sha256": "9c389eb65bf8a87f1f05fadc2aef925cc33c25708da3ef61ceaeb1e92df97168"
+    },
+    {
+      "path": "docs/security/SECURITY_HARDENING_PLAN.md",
+      "sha256": "d06abfba27240d4854853400674eb0b058be80678c1830fda221ae5e21365ffe"
+    }
+  ],
+  "migrationHashesPreserved": true,
+  "verificationPlanExecution": "NOT TESTED; prior Neon receipts reused",
+  "proposalImplementation": "NOT IMPLEMENTED"
+}
