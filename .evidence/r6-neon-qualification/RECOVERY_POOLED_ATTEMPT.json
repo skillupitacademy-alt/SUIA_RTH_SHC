@@ -1,0 +1,74 @@
+{
+  "run": "r6b_recovery_aca09a7a75",
+  "started": "2026-11-14T01:30:45.865Z",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26"
+  },
+  "recoveryMethod": "PostgreSQL pg_dump custom-format logical backup and pg_restore of a schema-matched synthetic-only database",
+  "commands": [
+    {
+      "utility": "pg_dump",
+      "args": [
+        "--schema-only",
+        "--no-owner",
+        "--no-acl",
+        "--file",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_aca09a7a75-MP8HTU\\schema.sql"
+      ],
+      "database": "people_prod",
+      "started": "2026-11-14T01:30:46.784Z",
+      "finished": "2026-11-14T01:30:52.417Z",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "utility": "psql",
+      "args": [
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-f",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_aca09a7a75-MP8HTU\\schema.sql"
+      ],
+      "database": "r6b_recovery_aca09a7a75_source",
+      "started": "2026-11-14T01:30:52.426Z",
+      "finished": "2026-11-14T01:31:07.211Z",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "resources": [
+    {
+      "database": "r6b_recovery_aca09a7a75_source",
+      "created": true,
+      "cleanupError": {
+        "code": "55006",
+        "message": "database \"r6b_recovery_aca09a7a75_source\" is being accessed by other users"
+      }
+    },
+    {
+      "database": "r6b_recovery_aca09a7a75_restore",
+      "created": true,
+      "deleted": true
+    }
+  ],
+  "status": "FAIL",
+  "limitations": [
+    "No Neon snapshot/PITR operation executed",
+    "No shared database backup or restoration executed",
+    "Synthetic recovery database contains inherited schema definitions and only synthetic data plus copied migration hashes"
+  ],
+  "schemaDumpSha256": "1caf607ed1024667800b4ffb60b68296263be237d11e2cc61a265bd8736463fd",
+  "error": {
+    "code": "42P01",
+    "message": "relation \"users\" does not exist"
+  },
+  "remainingCreatedDatabases": [
+    {
+      "datname": "r6b_recovery_aca09a7a75_source"
+    }
+  ],
+  "finished": "2026-11-14T01:31:13.942Z",
+  "localSyntheticBackupFilesRemoved": true
+}

@@ -1,0 +1,67 @@
+{
+  "run": "r6b_recovery_d39ce572fc",
+  "started": "2026-11-14T01:33:03.033Z",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26"
+  },
+  "recoveryMethod": "PostgreSQL pg_dump custom-format logical backup and pg_restore of a schema-matched synthetic-only database",
+  "commands": [
+    {
+      "utility": "pg_dump",
+      "args": [
+        "--schema-only",
+        "--no-owner",
+        "--no-acl",
+        "--file",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_d39ce572fc-F3LGkJ\\schema.sql"
+      ],
+      "database": "people_prod",
+      "started": "2026-11-14T01:33:03.943Z",
+      "finished": "2026-11-14T01:33:09.556Z",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "utility": "psql",
+      "args": [
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-f",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_d39ce572fc-F3LGkJ\\schema.sql"
+      ],
+      "database": "r6b_recovery_d39ce572fc_source",
+      "started": "2026-11-14T01:33:09.564Z",
+      "finished": "2026-11-14T01:33:21.768Z",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "resources": [
+    {
+      "database": "r6b_recovery_d39ce572fc_source",
+      "created": true,
+      "deleted": true
+    },
+    {
+      "database": "r6b_recovery_d39ce572fc_restore",
+      "created": true,
+      "deleted": true
+    }
+  ],
+  "status": "FAIL",
+  "limitations": [
+    "No Neon snapshot/PITR operation executed",
+    "No shared database backup or restoration executed",
+    "Synthetic recovery database contains inherited schema definitions and only synthetic data plus copied migration hashes"
+  ],
+  "schemaDumpSha256": "8cd6486bccd53b8833b8b5670d9e548bd7bb5b4282ed9c6c76fc5ccd7e752b95",
+  "error": {
+    "code": "42P08",
+    "message": "inconsistent types deduced for parameter $4"
+  },
+  "remainingCreatedDatabases": [],
+  "finished": "2026-11-14T01:33:23.674Z",
+  "localSyntheticBackupFilesRemoved": true
+}

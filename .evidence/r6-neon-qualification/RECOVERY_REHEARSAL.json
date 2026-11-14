@@ -1,0 +1,318 @@
+{
+  "run": "r6b_recovery_22a785857d",
+  "started": "2026-11-14T01:33:43.161Z",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26"
+  },
+  "recoveryMethod": "PostgreSQL pg_dump custom-format logical backup and pg_restore of a schema-matched synthetic-only database",
+  "commands": [
+    {
+      "utility": "pg_dump",
+      "args": [
+        "--schema-only",
+        "--no-owner",
+        "--no-acl",
+        "--file",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_22a785857d-bIGEBU\\schema.sql"
+      ],
+      "database": "people_prod",
+      "started": "2026-11-14T01:33:43.941Z",
+      "finished": "2026-11-14T01:33:49.533Z",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "utility": "psql",
+      "args": [
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-f",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_22a785857d-bIGEBU\\schema.sql"
+      ],
+      "database": "r6b_recovery_22a785857d_source",
+      "started": "2026-11-14T01:33:49.541Z",
+      "finished": "2026-11-14T01:34:03.218Z",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "utility": "pg_dump",
+      "args": [
+        "--format=custom",
+        "--no-owner",
+        "--no-acl",
+        "--file",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_22a785857d-bIGEBU\\synthetic.dump"
+      ],
+      "database": "r6b_recovery_22a785857d_source",
+      "started": "2026-11-14T01:34:05.468Z",
+      "finished": "2026-11-14T01:34:15.576Z",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "utility": "pg_restore",
+      "args": [
+        "--no-owner",
+        "--no-acl",
+        "--exit-on-error",
+        "--dbname",
+        "r6b_recovery_22a785857d_restore",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_22a785857d-bIGEBU\\synthetic.dump"
+      ],
+      "database": "r6b_recovery_22a785857d_restore",
+      "started": "2026-11-14T01:34:15.578Z",
+      "finished": "2026-11-14T01:34:31.278Z",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "resources": [
+    {
+      "database": "r6b_recovery_22a785857d_source",
+      "created": true,
+      "deleted": true
+    },
+    {
+      "database": "r6b_recovery_22a785857d_restore",
+      "created": true,
+      "deleted": true
+    }
+  ],
+  "status": "PASS",
+  "limitations": [
+    "No Neon snapshot/PITR operation executed",
+    "No shared database backup or restoration executed",
+    "Synthetic recovery database contains inherited schema definitions and only synthetic data plus copied migration hashes"
+  ],
+  "schemaDumpSha256": "9ca9d4af292643dd2d76b2e14b8fc3fa72e2e1a9037aa71910d342c015f2ace0",
+  "before": {
+    "users": {
+      "hash": "639bec89a3876fcaed7f0925f2291e83",
+      "count": 2
+    },
+    "grants": {
+      "hash": "bca904db722b5a8920906752a9553c36",
+      "count": 2
+    },
+    "audit": {
+      "hash": "b50c2df0882437c2bbc38e7f00340273",
+      "count": 1
+    },
+    "ledger": [
+      {
+        "id": 1,
+        "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+        "created_at": "1774191220131"
+      },
+      {
+        "id": 2,
+        "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+        "created_at": "1774536900897"
+      },
+      {
+        "id": 3,
+        "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+        "created_at": "1774537191952"
+      },
+      {
+        "id": 4,
+        "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+        "created_at": "1774538285178"
+      },
+      {
+        "id": 5,
+        "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+        "created_at": "1774541869102"
+      },
+      {
+        "id": 6,
+        "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+        "created_at": "1774550945793"
+      },
+      {
+        "id": 7,
+        "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+        "created_at": "1774591239501"
+      },
+      {
+        "id": 8,
+        "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+        "created_at": "1774935418558"
+      },
+      {
+        "id": 9,
+        "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+        "created_at": "1774938098054"
+      },
+      {
+        "id": 10,
+        "hash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+        "created_at": "1791600000000"
+      },
+      {
+        "id": 11,
+        "hash": "1349ebfbc7e969526e2885770c6ccfd38ae7802057985828151ec8a1970e616e",
+        "created_at": "1794618000000"
+      }
+    ],
+    "indexes": [
+      {
+        "indexname": "idx_users_email_platform",
+        "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "indexname": "idx_users_external_id_platform",
+        "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+      },
+      {
+        "indexname": "platform_access_pkey",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+      },
+      {
+        "indexname": "platform_access_user_platform_unique",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+      },
+      {
+        "indexname": "student_invitations_pkey",
+        "indexdef": "CREATE UNIQUE INDEX student_invitations_pkey ON public.student_invitations USING btree (id)"
+      },
+      {
+        "indexname": "student_invitations_token_hash_unq",
+        "indexdef": "CREATE UNIQUE INDEX student_invitations_token_hash_unq ON public.student_invitations USING btree (token_hash)"
+      },
+      {
+        "indexname": "student_invitations_user_platform_status_idx",
+        "indexdef": "CREATE INDEX student_invitations_user_platform_status_idx ON public.student_invitations USING btree (user_id, platform, status)"
+      },
+      {
+        "indexname": "uniq_users_email_platform",
+        "indexdef": "CREATE UNIQUE INDEX uniq_users_email_platform ON public.users USING btree (lower(TRIM(BOTH FROM email)), platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "indexname": "users_pkey",
+        "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+      }
+    ]
+  },
+  "backup": {
+    "sha256": "fed5e4d22efe35638be86dd8cfdd5a90c400aca6327ffcfa0d05e437e59c161c",
+    "bytes": 77608,
+    "sourceRows": 2
+  },
+  "after": {
+    "users": {
+      "hash": "639bec89a3876fcaed7f0925f2291e83",
+      "count": 2
+    },
+    "grants": {
+      "hash": "bca904db722b5a8920906752a9553c36",
+      "count": 2
+    },
+    "audit": {
+      "hash": "b50c2df0882437c2bbc38e7f00340273",
+      "count": 1
+    },
+    "ledger": [
+      {
+        "id": 1,
+        "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+        "created_at": "1774191220131"
+      },
+      {
+        "id": 2,
+        "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+        "created_at": "1774536900897"
+      },
+      {
+        "id": 3,
+        "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+        "created_at": "1774537191952"
+      },
+      {
+        "id": 4,
+        "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+        "created_at": "1774538285178"
+      },
+      {
+        "id": 5,
+        "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+        "created_at": "1774541869102"
+      },
+      {
+        "id": 6,
+        "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+        "created_at": "1774550945793"
+      },
+      {
+        "id": 7,
+        "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+        "created_at": "1774591239501"
+      },
+      {
+        "id": 8,
+        "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+        "created_at": "1774935418558"
+      },
+      {
+        "id": 9,
+        "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+        "created_at": "1774938098054"
+      },
+      {
+        "id": 10,
+        "hash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+        "created_at": "1791600000000"
+      },
+      {
+        "id": 11,
+        "hash": "1349ebfbc7e969526e2885770c6ccfd38ae7802057985828151ec8a1970e616e",
+        "created_at": "1794618000000"
+      }
+    ],
+    "indexes": [
+      {
+        "indexname": "idx_users_email_platform",
+        "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "indexname": "idx_users_external_id_platform",
+        "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+      },
+      {
+        "indexname": "platform_access_pkey",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+      },
+      {
+        "indexname": "platform_access_user_platform_unique",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+      },
+      {
+        "indexname": "student_invitations_pkey",
+        "indexdef": "CREATE UNIQUE INDEX student_invitations_pkey ON public.student_invitations USING btree (id)"
+      },
+      {
+        "indexname": "student_invitations_token_hash_unq",
+        "indexdef": "CREATE UNIQUE INDEX student_invitations_token_hash_unq ON public.student_invitations USING btree (token_hash)"
+      },
+      {
+        "indexname": "student_invitations_user_platform_status_idx",
+        "indexdef": "CREATE INDEX student_invitations_user_platform_status_idx ON public.student_invitations USING btree (user_id, platform, status)"
+      },
+      {
+        "indexname": "uniq_users_email_platform",
+        "indexdef": "CREATE UNIQUE INDEX uniq_users_email_platform ON public.users USING btree (lower(TRIM(BOTH FROM email)), platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "indexname": "users_pkey",
+        "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+      }
+    ]
+  },
+  "fingerprintsMatch": true,
+  "remainingCreatedDatabases": [],
+  "finished": "2026-11-14T01:34:32.355Z",
+  "localSyntheticBackupFilesRemoved": true
+}

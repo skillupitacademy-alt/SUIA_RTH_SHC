@@ -1,0 +1,11 @@
+{
+  "run": "r6b_880384b992",
+  "syntheticUsersDeleted": 13,
+  "remainingSyntheticUsers": 0,
+  "inheritedUserDigestMatches": true,
+  "syntheticSchemasDropped": [
+    "r6b_880384b992_skillup",
+    "r6b_880384b992_rth"
+  ],
+  "branchSchemaRehearsalRetained": true
+}

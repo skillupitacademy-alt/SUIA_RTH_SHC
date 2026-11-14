@@ -1,0 +1,20 @@
+{
+  "capturedUtc": "2026-11-14T01:37:28.809Z",
+  "identity": {
+    "database": "people_prod",
+    "role": "neondb_owner",
+    "branch_id": "br-young-silence-a1b1ta26",
+    "project_id": "bitter-tree-18287476",
+    "endpoint_id": "ep-fragrant-brook-a1mhx5dm",
+    "transaction_read_only": "on"
+  },
+  "inheritedUserDigestMatches": true,
+  "originalLedgerRowsMatch": true,
+  "ledgerCount": 11,
+  "remainingSyntheticPeople": 0,
+  "remainingSyntheticSchemas": [],
+  "remainingSyntheticFunctions": [],
+  "remainingScratchDatabases": [],
+  "branchCleanup": "Owner-created qualification branch retained for review; management session unavailable; manual deletion by owner required",
+  "candidateSchema": "0009 and candidate unique index retained only on disposable branch"
+}

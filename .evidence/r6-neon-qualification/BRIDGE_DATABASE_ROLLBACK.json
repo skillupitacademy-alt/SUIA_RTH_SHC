@@ -1,0 +1,13 @@
+{
+  "run": "r6b_rollback_77292a0b46",
+  "status": "PASS",
+  "identity": {
+    "database": "people_prod",
+    "branch": "br-young-silence-a1b1ta26",
+    "project": "bitter-tree-18287476"
+  },
+  "personInsertRolledBack": true,
+  "postFailureRetryPassed": true,
+  "injectedSQLSTATE": "P0001",
+  "remainingPeople": 0
+}

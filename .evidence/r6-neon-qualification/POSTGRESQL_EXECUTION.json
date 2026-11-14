@@ -1,0 +1,7 @@
+{
+  "baseline": "4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f",
+  "command": "pnpm exec vitest run --config .evidence/r6-neon-qualification/neon.vitest.config.mts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=.evidence/r6-neon-qualification/POSTGRESQL_TEST_RESULTS.json",
+  "started": "2026-11-14T01:28:40.493Z",
+  "finished": "2026-11-14T01:29:06.788Z",
+  "exitCode": 0
+}

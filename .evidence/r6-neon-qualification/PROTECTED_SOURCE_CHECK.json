@@ -1,0 +1,90 @@
+{
+  "allMatch": true,
+  "comparisons": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "sha256": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "expected": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b"
+    },
+    {
+      "path": "apps/skillup-web/next-env.d.ts",
+      "sha256": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc",
+      "expected": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/skillup-admin-data.ts",
+      "sha256": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d",
+      "expected": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "sha256": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "expected": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts",
+      "sha256": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994",
+      "expected": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts",
+      "sha256": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b",
+      "expected": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "sha256": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c",
+      "expected": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "expected": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/token-refresh.service.ts",
+      "sha256": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9",
+      "expected": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "sha256": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970",
+      "expected": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "expected": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e"
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "expected": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+    },
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "sha256": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99",
+      "expected": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99"
+    },
+    {
+      "path": "packages/identity-bridge/src/logger.ts",
+      "sha256": "ffdd28b30afebe30b7ea3b1fa8fe57b932316cf99af5c768bf3b0f426465eb08",
+      "expected": "ffdd28b30afebe30b7ea3b1fa8fe57b932316cf99af5c768bf3b0f426465eb08"
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "sha256": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e",
+      "expected": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e"
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "sha256": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739",
+      "expected": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739"
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "sha256": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17",
+      "expected": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17"
+    }
+  ]
+}

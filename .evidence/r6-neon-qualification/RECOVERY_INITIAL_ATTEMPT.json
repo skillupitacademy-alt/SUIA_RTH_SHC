@@ -1,0 +1,51 @@
+{
+  "run": "r6b_recovery_586564bc56",
+  "started": "2026-11-14T01:30:25.634Z",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26"
+  },
+  "recoveryMethod": "PostgreSQL pg_dump custom-format logical backup and pg_restore of a schema-matched synthetic-only database",
+  "commands": [
+    {
+      "utility": "pg_dump",
+      "args": [
+        "--schema-only",
+        "--no-owner",
+        "--no-acl",
+        "--file",
+        "C:\\Users\\REALTU~1\\AppData\\Local\\Temp\\r6b_recovery_586564bc56-N5RNqn\\schema.sql"
+      ],
+      "database": "people_prod",
+      "started": "2026-11-14T01:30:28.487Z",
+      "finished": "2026-11-14T01:30:28.766Z",
+      "exitCode": 1,
+      "stderr": "pg_dump: error: connection to server at \"ep-fragrant-brook-a1mhx5dm-pooler.ap-southeast-1.aws.neon.tech\" (52.220.170.93), port 5432 failed: root certificate file \"C:\\Users\\RealTutorialHub\\AppData\\Roaming/postgresql/root.crt\" does not exist\r\nEither provide the file, use the system's trusted roots with sslrootcert=system, or change sslmode to disable server certificate verification.\r\n"
+    }
+  ],
+  "resources": [
+    {
+      "database": "r6b_recovery_586564bc56_source",
+      "created": true,
+      "deleted": true
+    },
+    {
+      "database": "r6b_recovery_586564bc56_restore",
+      "created": true,
+      "deleted": true
+    }
+  ],
+  "status": "FAIL",
+  "limitations": [
+    "No Neon snapshot/PITR operation executed",
+    "No shared database backup or restoration executed",
+    "Synthetic recovery database contains inherited schema definitions and only synthetic data plus copied migration hashes"
+  ],
+  "error": {
+    "code": "Error",
+    "message": "Recovery utility failed: pg_dump"
+  },
+  "remainingCreatedDatabases": [],
+  "finished": "2026-11-14T01:30:29.154Z",
+  "localSyntheticBackupFilesRemoved": true
+}

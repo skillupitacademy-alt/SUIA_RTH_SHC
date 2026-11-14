@@ -1,0 +1,6 @@
+{
+  "command": "pnpm exec vitest run --config .evidence/r6-neon-qualification/neon.vitest.config.mts --maxWorkers=1 --reporter=verbose",
+  "started": "2026-11-14T01:33:31.298Z",
+  "finished": "2026-11-14T01:33:37.801Z",
+  "exitCode": 0
+}

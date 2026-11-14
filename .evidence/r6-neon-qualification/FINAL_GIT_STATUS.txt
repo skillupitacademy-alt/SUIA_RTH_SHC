@@ -1,0 +1,2 @@
+?? .evidence/r6-neon-qualification/
+?? docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md

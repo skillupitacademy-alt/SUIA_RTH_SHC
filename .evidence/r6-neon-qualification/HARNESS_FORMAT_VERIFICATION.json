@@ -1,0 +1,37 @@
+[
+  {
+    "path": ".evidence\\r6-neon-qualification\\migration-rehearsal.cjs",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\neon.crossdb.test.ts",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\neon.integration.test.ts",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\neon.rollback.test.ts",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\neon.vitest.config.mts",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\recovery.cjs",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  },
+  {
+    "path": ".evidence\\r6-neon-qualification\\upgrade-rehearsal.cjs",
+    "syntaxValid": true,
+    "emittedRuntimeTokensIdentical": true
+  }
+]

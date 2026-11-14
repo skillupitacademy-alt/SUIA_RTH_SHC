@@ -1,0 +1,18 @@
+{
+  "identity": {
+    "branch": "br-young-silence-a1b1ta26",
+    "project": "bitter-tree-18287476"
+  },
+  "targets": [
+    {
+      "database": "r6b_recovery_aca09a7a75_source",
+      "created": true,
+      "cleanupError": {
+        "code": "55006",
+        "message": "database \"r6b_recovery_aca09a7a75_source\" is being accessed by other users"
+      },
+      "deletedAfterVerifiedRetry": true
+    }
+  ],
+  "remaining": []
+}

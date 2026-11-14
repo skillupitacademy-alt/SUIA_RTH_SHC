@@ -1,0 +1,110 @@
+{
+  "run": "r6b_880384b992",
+  "target": {
+    "projectId": "bitter-tree-18287476",
+    "branchId": "br-young-silence-a1b1ta26",
+    "database": "people_prod",
+    "endpoint": "ep-fragrant-brook-a1mhx5dm-pooler.ap-southeast-1.aws.neon.tech"
+  },
+  "receipts": [
+    {
+      "name": "01 global email constraint",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:46.950Z",
+      "finished": "2026-11-14T01:28:47.095Z",
+      "detail": {
+        "SQLSTATE": "23505",
+        "constraint": "users_email_unique",
+        "syntheticId": "1190975d-a7b6-41fe-8900-6fda6b590ffd"
+      }
+    },
+    {
+      "name": "02 migration order and candidate index",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:47.648Z",
+      "finished": "2026-11-14T01:28:51.640Z",
+      "detail": {
+        "duplicateGroups": 0,
+        "migration9AppliedBeforeCandidate": true,
+        "failedDdlTransactionRolledBack": true,
+        "SQLSTATE": "22012",
+        "originalLedgerRowsPreserved": true
+      }
+    },
+    {
+      "name": "03 independent same-email identities",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:51.718Z",
+      "finished": "2026-11-14T01:28:52.708Z",
+      "detail": {
+        "independentPeopleUuids": true,
+        "independentLocalUuids": true,
+        "ambiguousSelectionDenied": true,
+        "normalizedConflictSQLSTATE": "23505"
+      }
+    },
+    {
+      "name": "04 bridge concurrency and retry",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:52.807Z",
+      "finished": "2026-11-14T01:28:55.865Z",
+      "detail": {
+        "parallelRequests": 8,
+        "people": 1,
+        "grants": 1
+      }
+    },
+    {
+      "name": "05 grant recovery and revocation",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:55.936Z",
+      "finished": "2026-11-14T01:28:57.503Z",
+      "detail": {
+        "authorizedMissingGrantRepaired": true,
+        "softDeletedGrantPreserved": true,
+        "crossBrandDenied": true,
+        "hardDeletedGrantHistory": "Absence cannot distinguish interrupted creation from intentional hard deletion; existing approved reconciliation authority remains a required operating contract"
+      }
+    },
+    {
+      "name": "06 partial failures and linking",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:57.574Z",
+      "finished": "2026-11-14T01:28:59.608Z",
+      "detail": {
+        "rollbackObserved": true,
+        "conflictingLinkRetained": true,
+        "peopleCommitRetainedAfterBrandFailure": true,
+        "conditionalBrandRetryPassed": true,
+        "isolation": "Two schema-qualified synthetic brand fixture stores on the verified disposable branch; separate database/server outages not qualified"
+      }
+    },
+    {
+      "name": "07 SSO authorization locks and audit rollback",
+      "result": "PASS",
+      "started": "2026-11-14T01:28:59.678Z",
+      "finished": "2026-11-14T01:29:05.233Z",
+      "detail": {
+        "samePlatformGrantRevoke": true,
+        "crossPlatformDenied": true,
+        "missingPermissionDenied": true,
+        "disabledActorDenied": true,
+        "lockTimeoutSQLSTATE": "55P03",
+        "grantRolledBackOnAuditFailure": true,
+        "implicitRestoreDenied": true
+      }
+    },
+    {
+      "name": "08 seed target compatibility",
+      "result": "PASS",
+      "started": "2026-11-14T01:29:05.318Z",
+      "finished": "2026-11-14T01:29:05.648Z",
+      "detail": {
+        "exactExpressionAccepted": true,
+        "repeatNoop": true,
+        "otherBrandPreserved": true,
+        "credentialOverwritePrevented": true
+      }
+    }
+  ]
+}

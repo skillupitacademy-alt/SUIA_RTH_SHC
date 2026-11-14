@@ -1,0 +1,64 @@
+{
+  "run": "r6b_crossdb_94bf9e99d8",
+  "resources": [
+    {
+      "database": "r6b_crossdb_94bf9e99d8_skillup",
+      "created": true,
+      "deleted": true
+    },
+    {
+      "database": "r6b_crossdb_94bf9e99d8_rth",
+      "created": true,
+      "deleted": true
+    }
+  ],
+  "receipts": [
+    {
+      "connectionVerified": {
+        "database": "people_prod",
+        "branch": "br-young-silence-a1b1ta26",
+        "project": "bitter-tree-18287476"
+      }
+    },
+    {
+      "connectionVerified": {
+        "database": "r6b_crossdb_94bf9e99d8_skillup",
+        "branch": "br-young-silence-a1b1ta26",
+        "project": "bitter-tree-18287476"
+      }
+    },
+    {
+      "connectionVerified": {
+        "database": "r6b_crossdb_94bf9e99d8_rth",
+        "branch": "br-young-silence-a1b1ta26",
+        "project": "bitter-tree-18287476"
+      }
+    },
+    {
+      "connectionVerified": {
+        "database": "r6b_crossdb_94bf9e99d8_rth",
+        "branch": "br-young-silence-a1b1ta26",
+        "project": "bitter-tree-18287476"
+      }
+    },
+    {
+      "result": "PASS",
+      "collidingLocalUuid": true,
+      "independentPeopleUuids": true,
+      "realDatabases": {
+        "skillup": "r6b_crossdb_94bf9e99d8_skillup",
+        "realtutorialhub": "r6b_crossdb_94bf9e99d8_rth"
+      },
+      "peopleCommitRetainedOnBrandClientFailure": true,
+      "conditionalLinkRecovery": true,
+      "foreignPersonLinkDenied": true
+    },
+    {
+      "cleanup": {
+        "inheritedDigestMatches": true,
+        "remainingOwnedDatabases": [],
+        "remainingSyntheticPeople": 0
+      }
+    }
+  ]
+}

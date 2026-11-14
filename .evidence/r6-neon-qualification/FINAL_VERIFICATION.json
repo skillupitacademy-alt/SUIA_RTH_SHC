@@ -1,0 +1,345 @@
+{
+  "capturedUtc": "2026-11-14T01:41:44.961249+00:00",
+  "baseline": "4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f",
+  "scenarioSummary": {
+    "passed": 9,
+    "failed": 1,
+    "recommendation": "NOT READY",
+    "sharedPeopleDbMigration": "HOLD"
+  },
+  "executedFinalVitestTests": 10,
+  "protectedSourceComparisons": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "sha256": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "matchesPrior": true
+    },
+    {
+      "path": "apps/skillup-web/next-env.d.ts",
+      "sha256": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc",
+      "matchesPrior": true
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/skillup-admin-data.ts",
+      "sha256": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d",
+      "matchesPrior": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "sha256": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "matchesPrior": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts",
+      "sha256": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994",
+      "matchesPrior": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts",
+      "sha256": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b",
+      "matchesPrior": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "sha256": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c",
+      "matchesPrior": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "matchesPrior": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/token-refresh.service.ts",
+      "sha256": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9",
+      "matchesPrior": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "sha256": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970",
+      "matchesPrior": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "matchesPrior": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "matchesPrior": true
+    },
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "sha256": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99",
+      "matchesPrior": true
+    },
+    {
+      "path": "packages/identity-bridge/src/logger.ts",
+      "sha256": "ffdd28b30afebe30b7ea3b1fa8fe57b932316cf99af5c768bf3b0f426465eb08",
+      "matchesPrior": true
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "sha256": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e",
+      "matchesPrior": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "sha256": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739",
+      "matchesPrior": true
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "sha256": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17",
+      "matchesPrior": true
+    }
+  ],
+  "trackedSourceDiffEmpty": true,
+  "credentialScanMatches": [],
+  "rawLogLossDisclosed": true,
+  "qualifierBranchRetainedForOwnerReview": true,
+  "resourceCleanup": {
+    "capturedUtc": "2026-11-14T01:37:28.809Z",
+    "identity": {
+      "database": "people_prod",
+      "role": "neondb_owner",
+      "branch_id": "br-young-silence-a1b1ta26",
+      "project_id": "bitter-tree-18287476",
+      "endpoint_id": "ep-fragrant-brook-a1mhx5dm",
+      "transaction_read_only": "on"
+    },
+    "inheritedUserDigestMatches": true,
+    "originalLedgerRowsMatch": true,
+    "ledgerCount": 11,
+    "remainingSyntheticPeople": 0,
+    "remainingSyntheticSchemas": [],
+    "remainingSyntheticFunctions": [],
+    "remainingScratchDatabases": [],
+    "branchCleanup": "Owner-created qualification branch retained for review; management session unavailable; manual deletion by owner required",
+    "candidateSchema": "0009 and candidate unique index retained only on disposable branch"
+  },
+  "evidenceFiles": [
+    {
+      "path": ".evidence/r6-neon-qualification/BRANCH_DATABASE_INVENTORY.json",
+      "sha256": "14bdfda1ae516217ae9d5d627a97a21553b8492433d604015ee6d2433be55e9d",
+      "bytes": 9937
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/bridge-rollback.log",
+      "sha256": "0b02368965c623be9be7ac5e25f08942edf0ce5fd51d0e1752c5a0ef67cdf971",
+      "bytes": 215
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/BRIDGE_DATABASE_ROLLBACK.json",
+      "sha256": "eaabcbd0d4674e1be4f08d2cc53ed0098041ab4c5b54fff2468a95ef544dd180",
+      "bytes": 314
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/BRIDGE_ROLLBACK_EXECUTION.json",
+      "sha256": "01fc45e047b2546205a76a9c17dad03aee9b1f153ed34ab559deef5f93b22ed6",
+      "bytes": 218
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CANDIDATE_UNIQUENESS_REHEARSAL.sql",
+      "sha256": "1349ebfbc7e969526e2885770c6ccfd38ae7802057985828151ec8a1970e616e",
+      "bytes": 179
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CLIENT_UTILITIES.json",
+      "sha256": "0ba69b3e48aaed7f758a595b0c7de2543c4638777a2b836bd3bac10b1fb35ba0",
+      "bytes": 1214
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/crossdb-initial-summary.txt",
+      "sha256": "a764d431a4a779a32a3379deceb67b7c9686e40abbf9aa38ff1b6fb809ec528d",
+      "bytes": 438
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/crossdb-tests.log",
+      "sha256": "ef1644b5d88d085daea0882df8f297cfcfb022eab2263a441a623ac97c0ecfad",
+      "bytes": 399
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CROSS_DATABASE_EXECUTION.json",
+      "sha256": "c114547d720f4f2ddd83a1406c4d71440333ed48884f9e5b6a141090deea5a5e",
+      "bytes": 237
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CROSS_DATABASE_INITIAL_EXECUTION.json",
+      "sha256": "0e7cf614ed627b53baa2fb8c544cb35dce9c872a8fa9129a855e8bac12f031db",
+      "bytes": 237
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CROSS_DATABASE_INITIAL_RESULTS.json",
+      "sha256": "83ca60f9b4afd2294044db447e4d494716241fa8e50bd906d713d0ace64cf814",
+      "bytes": 1585
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/CROSS_DATABASE_RESULTS.json",
+      "sha256": "ef47c3991874586b72544c16232f38cae522bf693b7f063cd9bc4b05cfde50d6",
+      "bytes": 1585
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/FINAL_DATABASE_STATE.json",
+      "sha256": "dc47a4353465d117c9fcb33edaf018aa2a955e07e9d803c814353f159c296748",
+      "bytes": 767
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/graphify-update-final.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+      "bytes": 3
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/graphify-update-final.log",
+      "sha256": "8f6ae4b9e300a3e642afa7174072d9dd766fad86e0db746b8f592ded7e99a73a",
+      "bytes": 1872
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/graphify-update.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+      "bytes": 3
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/graphify-update.log",
+      "sha256": "fd6c95e5b9ada0047540419bc85271f3f8e0a240027c21818e758877f193a493",
+      "bytes": 1697
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/HARNESS_FORMAT_VERIFICATION.json",
+      "sha256": "a6c348f2092b325dbd691b25776d9b8f5b5499e6a83d9d3d52a64caa07315547",
+      "bytes": 1027
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/ISOLATION_PREFLIGHT.json",
+      "sha256": "a76486c6e35d5d958f16eedd6fb1ec074b06cb1a9caf94098112974ed0f25d32",
+      "bytes": 1552
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/migration-rehearsal.cjs",
+      "sha256": "56b32a487d2366a40298e919246a5f770ef7352904327433c329ae1ccd9d677c",
+      "bytes": 5418
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/MIGRATION_AFTER.json",
+      "sha256": "87665131a7f96f2b0021ce0bf9cd207ae85964580dcaaec25b6a92cef483b38b",
+      "bytes": 2876
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/MIGRATION_BASELINE.json",
+      "sha256": "44355686145e8b5a8702fbe01e2c66856f5461544e1bd063d192eb13e0d79672",
+      "bytes": 5015
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/neon-tests.log",
+      "sha256": "6d1a5cd928f327e0fe75fd4c9869a37a5acbca5ca2225d4c0a9fa85e4fe63ae1",
+      "bytes": 2140
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/neon.crossdb.test.ts",
+      "sha256": "a7062ccc717c3dc9def8fc4ac679b1c3590acb5cb6aa5c812d73b4bd0c5a490e",
+      "bytes": 6761
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/neon.integration.test.ts",
+      "sha256": "6146ec8251877d41eda9bb876c2775d51b3b1fb6da9bfd240b29c9d9ea885337",
+      "bytes": 22400
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/neon.rollback.test.ts",
+      "sha256": "6ff953fcfeae2cc7cc4928e9fa050c948e0392f7cb87be5822e3014c92fed62e",
+      "bytes": 3783
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/neon.vitest.config.mts",
+      "sha256": "8630a8c6e5ee49b33a65e9983a87a4da284f1f11976928bdfe3e26cb164d6e0b",
+      "bytes": 971
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/NORMAL_MIGRATOR_REHEARSAL.json",
+      "sha256": "bce9152c6c3ed95d89d0fa0672e6f9469a5a7d7d940d3b7945726d66c8b17ea7",
+      "bytes": 663
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/PENDING_UPGRADE_REHEARSAL.json",
+      "sha256": "843000f9def6c8760673be8ee97fb0e3e1eb524a37c8a39c262a55cb31df161c",
+      "bytes": 5892
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/POSTGRESQL_EXECUTION.json",
+      "sha256": "bafbbec909e040b6627fe3b19e718604f53579e6f3022b850cd32038b0fa95c4",
+      "bytes": 385
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/POSTGRESQL_SCENARIOS.json",
+      "sha256": "54cace4729d11dc94cf60847132fe32d96491590182c280580547fb3800c86c6",
+      "bytes": 3571
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/POSTGRESQL_TEST_RESULTS.json",
+      "sha256": "b3bccbffd84fe2b5649ce2c202089339b09e6a9873767a7e0afe755c471bed4a",
+      "bytes": 4206
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/PROTECTED_SOURCE_CHECK.json",
+      "sha256": "cbedd2cd35b240fb899f744ab6de37da117ee897e959324518204e4e059048ff",
+      "bytes": 4327
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/recovery.cjs",
+      "sha256": "82e2623d94388338dc644f8685608eb05af7022b8fd4e510f2d8f5d685c61885",
+      "bytes": 8757
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/RECOVERY_INITIAL_ATTEMPT.json",
+      "sha256": "eef913a4bdfb3230060c07c56a03534ba7726b7e870b3e16b9184547ae4a58a1",
+      "bytes": 1863
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/RECOVERY_PARAMETER_ATTEMPT.json",
+      "sha256": "d011c9987becf92cbec91d53f3b139c96e8298ec84a0970f400989df4bb6f751",
+      "bytes": 1978
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/RECOVERY_POOLED_ATTEMPT.json",
+      "sha256": "584144d0e8bbb5f2d175252965a4674e60b9ee59bf98d9d1b40d8da36764599a",
+      "bytes": 2166
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/RECOVERY_POOLED_CLEANUP.json",
+      "sha256": "269175a9a1291310be719f57a8d3b21971e5f00e4643faf188b8c85626507414",
+      "bytes": 426
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/RECOVERY_REHEARSAL.json",
+      "sha256": "1138981a13028465fa086cb0315521173ffd6c825830ee6fbaad38d902efa0b9",
+      "bytes": 10674
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/SUPPLIED_TARGET_READONLY_CHECK.json",
+      "sha256": "178fc55a46bb535692aa4bc61be2aef3b9bbe2d060090c00ed47f9fbc4850a5a",
+      "bytes": 578
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/SYNTHETIC_CLEANUP.json",
+      "sha256": "3bcb62a20c0cdd77140d57282240194999f6e9be39839e4b4722c814b34bebcc",
+      "bytes": 262
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/TEN_SCENARIO_REGISTER.json",
+      "sha256": "61ed971ebed532ab8ebae19a6f509f432344aa982c2eff393a8cc9e33e785738",
+      "bytes": 3831
+    },
+    {
+      "path": ".evidence/r6-neon-qualification/upgrade-rehearsal.cjs",
+      "sha256": "0c4d52cba04f328222f42483d5f0dfa0f6954a8b1135d7a58fc17fa2bd641ba8",
+      "bytes": 9953
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "e0ff7ebf1fe175e3d0018d0edeb80ee6a5a7a5ea8e2b30a70c8337e4383da8d7",
+      "bytes": 13986
+    }
+  ],
+  "graphifyFinalExit": 0
+}

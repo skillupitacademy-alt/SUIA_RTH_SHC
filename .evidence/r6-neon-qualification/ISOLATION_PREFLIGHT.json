@@ -1,0 +1,45 @@
+{
+  "capturedUtc": "2026-11-14T01:15:23.378Z",
+  "baseline": "4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f",
+  "status": "BLOCKED_MANAGEMENT_AUTHENTICATION",
+  "protectedTargets": [
+    {
+      "key": "DATABASE_URL",
+      "hostname": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "database": "quiz_platform_prod"
+    },
+    {
+      "key": "DATABASE_URL_RTH",
+      "hostname": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "database": "rth_prod"
+    },
+    {
+      "key": "DATABASE_URL_SKILLUP",
+      "hostname": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "database": "skillup_prod"
+    },
+    {
+      "key": "DATABASE_URL_TUTORIAL",
+      "hostname": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "database": "tutorial_prod"
+    },
+    {
+      "key": "DATABASE_URL_PEOPLE",
+      "hostname": "ep-young-wildflower-a1frkuuj-pooler.ap-southeast-1.aws.neon.tech",
+      "database": "people_prod"
+    }
+  ],
+  "neonManagementConnectorAvailable": false,
+  "neonManagementCredentialInInspectedEnvironment": false,
+  "neonCliOnPath": false,
+  "neonCliConfiguration": "Existing .config/neonctl directory contains no files",
+  "browserConsoleState": "Redirected to Neon authentication, no authenticated management session",
+  "projectId": null,
+  "disposableBranchId": null,
+  "disposableEndpoint": null,
+  "databaseConnectionsMade": 0,
+  "databaseWritesExecuted": 0,
+  "branchResourcesCreated": 0,
+  "sourceFilesChanged": 0,
+  "sharedMigrationDecision": "HOLD"
+}

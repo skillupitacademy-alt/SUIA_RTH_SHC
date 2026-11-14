@@ -1,0 +1,104 @@
+{
+  "sourceBaseline": "4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f",
+  "passed": 9,
+  "failed": 1,
+  "scenarios": [
+    {
+      "scenario": 1,
+      "name": "Existing global-email uniqueness",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json"
+      ],
+      "finding": "Original users_email_unique rejected synthetic cross-brand duplicate with SQLSTATE 23505."
+    },
+    {
+      "scenario": 2,
+      "name": "Platform-qualified normalized uniqueness",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json",
+        "MIGRATION_AFTER.json"
+      ],
+      "finding": "Candidate expression/partial unique index accepted independent platforms and rejected same-platform case/space variants. Injected DDL failure 22012 rolled back."
+    },
+    {
+      "scenario": 3,
+      "name": "Independent SUIA/RTH identities",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json",
+        "CROSS_DATABASE_RESULTS.json"
+      ],
+      "finding": "Distinct person UUIDs and correct platform-qualified selection. Separate synthetic brand databases additionally used colliding local UUIDs."
+    },
+    {
+      "scenario": 4,
+      "name": "Bridge concurrent writes and retries",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json"
+      ],
+      "finding": "Eight concurrent sync calls and repeat reconciliation produced one person and one grant."
+    },
+    {
+      "scenario": 5,
+      "name": "Grant recovery and revocation",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json"
+      ],
+      "finding": "Authorized missing own-platform grant recovered. Soft-deleted grant restoration and cross-platform access were denied."
+    },
+    {
+      "scenario": 6,
+      "name": "Shadow links and interrupted operations",
+      "result": "PASS",
+      "evidence": [
+        "CROSS_DATABASE_RESULTS.json",
+        "BRIDGE_DATABASE_ROLLBACK.json"
+      ],
+      "finding": "Foreign link denied, people commit retained across brand client failure, retry recovered. PostgreSQL trigger failure P0001 rolled back bridge person insertion."
+    },
+    {
+      "scenario": 7,
+      "name": "SSO authorization, locks and audit rollback",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json"
+      ],
+      "finding": "Real repository same-platform grant/revoke passed. Wrong role/brand and disabled actor denied. Lock timeout 55P03 and transactional audit-failure rollback verified."
+    },
+    {
+      "scenario": 8,
+      "name": "Seed conflict expression",
+      "result": "PASS",
+      "evidence": [
+        "POSTGRESQL_SCENARIOS.json"
+      ],
+      "finding": "Exact target expression upsert passed, repeat was a no-op and retained original synthetic credential hash."
+    },
+    {
+      "scenario": 9,
+      "name": "Migration chain and 0009 ordering",
+      "result": "FAIL",
+      "evidence": [
+        "NORMAL_MIGRATOR_REHEARSAL.json",
+        "PENDING_UPGRADE_REHEARSAL.json"
+      ],
+      "finding": "Normal pending upgrade from inherited 0000-0008 baseline through 0009 then candidate passed and repeated idempotently. Fresh full historical replay failed at duplicate 0006/0007 foreign key, SQLSTATE 42710."
+    },
+    {
+      "scenario": 10,
+      "name": "Recovery and cleanup",
+      "result": "PASS",
+      "evidence": [
+        "RECOVERY_REHEARSAL.json",
+        "FINAL_DATABASE_STATE.json"
+      ],
+      "finding": "Real pg_dump/pg_restore synthetic-only logical recovery matched data/index/ledger fingerprints. Scratch resources cleaned. Owner-created branch retained for manual owner cleanup."
+    }
+  ],
+  "recommendation": "NOT READY",
+  "sharedPeopleDbMigration": "HOLD"
+}
