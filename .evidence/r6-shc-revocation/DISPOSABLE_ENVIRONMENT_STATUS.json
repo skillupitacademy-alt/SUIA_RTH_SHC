@@ -1,0 +1,11 @@
+{
+  "status": "BLOCKED",
+  "reason": "No approved disposable connection reference found in process/User environment or inspected local env files",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26",
+    "database": "people_prod"
+  },
+  "requiredEnvironmentKey": "R6_NEON_TEST_URL",
+  "writesAttempted": false
+}

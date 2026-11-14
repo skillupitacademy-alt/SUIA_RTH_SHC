@@ -1,11 +1,11 @@
+import { type AdminTokenPayload,ConfigurationError } from '@quiz/auth';
 import { type NextRequest } from 'next/server';
 
-import { ConfigurationError, type AdminTokenPayload } from '@quiz/auth';
 import { ApiError, unauthorized } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { withObservability } from '@/middleware/observability.middleware';
-import { SHCAuthService, UserNotFoundError } from '@/modules/auth/shc-auth.service';
+import { SHCAuthService, ShcSessionInvalidError, UserNotFoundError } from '@/modules/auth/shc-auth.service';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
@@ -59,6 +59,7 @@ async function handler(req: NextRequest) {
 
   // 1. Verify token cryptographic validity and claims via verifyAdminAccessToken (R6-06 to R6-09)
   let payload: AdminTokenPayload;
+  let principalId: string;
   try {
     payload = await tokenService.verifyAdminAccessToken(accessToken, {
       audience: 'shc-admin',
@@ -74,7 +75,7 @@ async function handler(req: NextRequest) {
     if (payload.iss !== 'skillhubcore.in') {
       return ApiResponse.error(unauthorized('Invalid issuer claim'), 401, undefined, SENSITIVE_CACHE_HEADERS);
     }
-    const audList = Array.isArray(payload.aud) ? payload.aud : (payload.aud ? [payload.aud] : []);
+    const audList = Array.isArray(payload.aud) ? payload.aud : (typeof payload.aud === 'string' && payload.aud.length > 0 ? [payload.aud] : []);
     if (!audList.includes('shc-admin')) {
       return ApiResponse.error(unauthorized('Invalid audience claim'), 401, undefined, SENSITIVE_CACHE_HEADERS);
     }
@@ -87,10 +88,11 @@ async function handler(req: NextRequest) {
     if (payload.nbf !== undefined && (typeof payload.nbf !== 'number' || !Number.isFinite(payload.nbf) || payload.nbf > now)) {
       return ApiResponse.error(unauthorized('Token not yet valid'), 401, undefined, SENSITIVE_CACHE_HEADERS);
     }
-    const principalId = payload.userId || (payload as any).sub;
-    if (!principalId || typeof principalId !== 'string' || principalId.trim().length === 0) {
+    const candidateId = payload.userId !== undefined && payload.userId !== null && payload.userId !== '' ? payload.userId : payload.sub;
+    if (typeof candidateId !== 'string' || candidateId.trim().length === 0) {
       return ApiResponse.error(unauthorized('Missing or invalid principal identity'), 401, undefined, SENSITIVE_CACHE_HEADERS);
     }
+    principalId = candidateId;
   } catch (err) {
     if (err instanceof ConfigurationError) {
       return ApiResponse.error(
@@ -106,10 +108,10 @@ async function handler(req: NextRequest) {
   // 2. Query authoritative identity store and enforce current account eligibility (R6-01 to R6-03)
   try {
     const shcAuthService = new SHCAuthService();
-    const principalId = payload.userId || (payload as any).sub;
+    await shcAuthService.requireSession({ userId: principalId, sessionBinding: payload.sessionBinding });
     const user = await shcAuthService.me(principalId);
 
-    if (!user) {
+    if (user === null || user === undefined) {
       return ApiResponse.error(new ApiError(404, 'Administrator not found', 'NOT_FOUND'), 404, undefined, SENSITIVE_CACHE_HEADERS);
     }
 
@@ -142,6 +144,9 @@ async function handler(req: NextRequest) {
       expiresAt: null, // SHC tokens don't have explicit expiry in response
     }, 200, SENSITIVE_CACHE_HEADERS);
   } catch (error) {
+    if (error instanceof ShcSessionInvalidError) {
+      return ApiResponse.error(unauthorized('Administrator session is no longer valid'), 401, undefined, SENSITIVE_CACHE_HEADERS);
+    }
     // 🔒 R5-17: Typed domain error for absent account
     if (error instanceof UserNotFoundError) {
       return ApiResponse.error(new ApiError(404, 'Administrator not found', 'NOT_FOUND'), 404, undefined, SENSITIVE_CACHE_HEADERS);

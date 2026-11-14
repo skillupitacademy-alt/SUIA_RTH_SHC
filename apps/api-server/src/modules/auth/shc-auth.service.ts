@@ -1,11 +1,11 @@
-import { db, users } from '@quiz/db-people';
+import { db, ssoSessions, users } from '@quiz/db-people';
 import bcrypt from 'bcryptjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { ApiError } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
 import { AuditService } from '@/modules/auth/audit.service';
-import { TokenRepository } from '@/modules/auth/repositories/token.repository';
-import { TokenService } from '@/modules/auth/token.service';
+import { type AdminTokenPayload, TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
 /**
@@ -16,6 +16,13 @@ export class UserNotFoundError extends Error {
   constructor(message: string = 'User not found') {
     super(message);
     this.name = 'UserNotFoundError';
+  }
+}
+
+export class ShcSessionInvalidError extends Error {
+  constructor() {
+    super('Administrator session is no longer valid');
+    this.name = 'ShcSessionInvalidError';
   }
 }
 
@@ -113,6 +120,16 @@ export class SHCAuthService {
     // Generate tokens
     const tokenService = container.get(TokenService);
 
+    const refreshToken = await tokenService.generateRefreshToken(
+      user.id,
+      true,
+      'shc-admin',
+      {
+        tokenType: 'admin', brand: 'skillhubcore',
+        originalUserId: user.id, shadowUserId: user.id,
+      }
+    );
+    const sessionBinding = await tokenService.hashToken(refreshToken);
     const accessToken = await tokenService.generateAccessToken({
       userId: user.id,
       originalUserId: user.id,
@@ -123,23 +140,17 @@ export class SHCAuthService {
       tokenType: 'admin',
       brand: 'skillhubcore',
       aud: 'shc-admin',
+      sessionBinding,
     });
-
-    const refreshToken = await tokenService.generateRefreshToken(
-      user.id,
-      true,
-      'shc-admin',
-      {
-        tokenType: 'admin',
-        brand: 'skillhubcore',
-        originalUserId: user.id,
-        shadowUserId: user.id,
-      }
-    );
-
-    // Note: We're not storing refresh tokens in people_db
-    // They'll be stored in the default database for now
-    // This is acceptable since refresh tokens are short-lived
+    // SHC principals belong to PeopleDB. Persist only the credential digest in
+    // its existing session store before returning either credential.
+    try {
+      await db.insert(ssoSessions).values({
+        userId: user.id, platform: 'skillhubcore', jwtFamily: sessionBinding,
+      });
+    } catch {
+      throw new ApiError(503, 'Administrator session storage unavailable');
+    }
 
     await container.get(AuditService).log({
       userId: user.id,
@@ -203,31 +214,44 @@ export class SHCAuthService {
     };
   }
 
+  async requireSession(payload: Pick<AdminTokenPayload, 'userId' | 'sessionBinding'>): Promise<void> {
+    if (typeof payload.userId !== 'string' || payload.userId.trim().length === 0 ||
+        typeof payload.sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(payload.sessionBinding)) {
+      throw new ShcSessionInvalidError();
+    }
+    const sessions = await db.select({ id: ssoSessions.id }).from(ssoSessions).where(and(
+      eq(ssoSessions.userId, payload.userId),
+      eq(ssoSessions.platform, 'skillhubcore'),
+      eq(ssoSessions.jwtFamily, payload.sessionBinding),
+      isNull(ssoSessions.revokedAt), isNull(ssoSessions.deletedAt),
+    )).limit(1).catch(() => { throw new ApiError(503, 'Administrator session storage unavailable'); });
+    if (sessions.length !== 1) throw new ShcSessionInvalidError();
+  }
+
   /**
    * Logout SHC admin
    * 
-   * @param userId - User ID
+   * @param payload - Verified SHC administrator and issued session binding
    * @param ip - Client IP
    */
-  async logout(userId: string, ip?: string) {
-    await container.get(AuditService).log({
-      userId,
-      action: 'shc_logout',
-      ip,
-      brand: 'skillhubcore',
-    });
-
-    this.logInstance.info({ userId }, 'SHC admin logout');
-
-    // U+1F512 SECURITY FIX (SHC-01): Revoke ALL active refresh tokens for this user.
-    // SHC uses people_db (defaultDb) for token storage.
+  async logout(payload: Pick<AdminTokenPayload, 'userId' | 'sessionBinding'>, ip?: string) {
+    if (typeof payload.userId !== 'string' || payload.userId.trim().length === 0 ||
+        typeof payload.sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(payload.sessionBinding)) {
+      throw new ShcSessionInvalidError();
+    }
+    // Revocation failures propagate. Other sessions and brands are untouched.
+    await db.update(ssoSessions).set({ revokedAt: new Date() }).where(and(
+      eq(ssoSessions.userId, payload.userId),
+      eq(ssoSessions.platform, 'skillhubcore'),
+      eq(ssoSessions.jwtFamily, payload.sessionBinding),
+      isNull(ssoSessions.revokedAt), isNull(ssoSessions.deletedAt),
+    )).catch(() => { throw new ApiError(503, 'Administrator session storage unavailable'); });
     try {
-      const tokenRepo = container.get(TokenRepository);
-      await tokenRepo.revokeAll(userId);
-      this.logInstance.info({ userId }, 'SHC admin tokens revoked');
-    } catch (err) {
-      // Log but don't fail the logout — cookies are still cleared by the BFF
-      this.logInstance.error({ userId, err }, 'Failed to revoke SHC admin tokens');
+      await container.get(AuditService).log({
+        userId: payload.userId, action: 'shc_logout', ip, brand: 'skillhubcore',
+      });
+    } catch {
+      this.logInstance.warn('SHC logout audit unavailable after session revocation');
     }
   }
 }

@@ -86,6 +86,7 @@ describe('FIXTURE-02: Real Admin-Guard Principal-Boundary Tests', () => {
   let sharedTokenService: TokenService;
 
   beforeEach(() => {
+    vi.spyOn(SHCAuthService.prototype, 'requireSession').mockResolvedValue();
     vi.clearAllMocks();
     mockSelectUsers.mockReset();
     mockSelectRoles.mockReset();

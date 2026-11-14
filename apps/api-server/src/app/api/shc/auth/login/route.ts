@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 
-import { badRequest, validationError } from '@/lib/api-error';
+import { ApiError, badRequest, validationError } from '@/lib/api-error';
 import { ApiResponse } from '@/lib/api-response';
 import { resolveRequestHostnameFromHeaders } from '@/lib/request-brand';
 import { withLogging } from '@/lib/withLogging';
@@ -54,6 +54,7 @@ async function handler(req: NextRequest) {
 
     return response;
   } catch (error) {
+    if (error instanceof ApiError) return ApiResponse.error(error);
     const message = error instanceof Error ? error.message : 'Login failed';
     console.error('[SHC_AUTH] Login error:', message);
     return ApiResponse.error(badRequest(message));

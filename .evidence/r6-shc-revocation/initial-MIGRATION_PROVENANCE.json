@@ -1,0 +1,55 @@
+{
+  "historicalSQL": [
+    {
+      "path": "packages/db-people/migrations/0000_perpetual_microbe.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0001_abnormal_gamma_corps.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0002_low_captain_midlands.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0003_massive_kitty_pryde.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0004_amusing_kang.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0005_people_perf_indexes.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0006_skillhubcore_subscription_schema.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0007_long_sentinels.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0008_common_zodiak.sql",
+      "unchanged": true
+    },
+    {
+      "path": "packages/db-people/migrations/0009_student_invitations.sql",
+      "unchanged": true
+    }
+  ],
+  "allHistoricalSQLUnchanged": true,
+  "historicalJournalPrefixUnchanged": true,
+  "snapshot0009Unchanged": false,
+  "registeredMigration": {
+    "idx": 10,
+    "version": "7",
+    "when": 1794629868483,
+    "tag": "0010_normalized_platform_email",
+    "breakpoints": true
+  },
+  "registeredSQLHash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+}

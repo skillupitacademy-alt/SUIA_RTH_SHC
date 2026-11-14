@@ -8,7 +8,7 @@ import { hasConflictingRequestTenantContext } from '@/lib/request-brand';
 import { container } from '@/modules/core/container';
 
 import { _verifyActiveAccount, _verifyAdmin } from './rbac.service';
-import { SHCAuthService, UserNotFoundError } from './shc-auth.service';
+import { SHCAuthService, ShcSessionInvalidError, UserNotFoundError } from './shc-auth.service';
 import { type TokenPayload, TokenService } from './token.service';
 
 type Audience = 'admin' | 'infra' | 'shc-admin';
@@ -55,6 +55,14 @@ export async function verifyAdminOrInfraToken(_req: NextRequest, token?: string)
       reason: error instanceof Error ? error.message : 'token_invalid',
     });
     throw unauthorized('Unauthorized');
+  }
+  if (expectedAud === 'shc-admin') {
+    try {
+      await new SHCAuthService().requireSession(payload);
+    } catch (error) {
+      if (error instanceof ShcSessionInvalidError) throw unauthorized('Administrator session is no longer valid');
+      throw new ApiError(503, 'Administrator session verification unavailable');
+    }
   }
   recordCounter(METRICS.AUTH.LOGIN + '.verify', 1, { scope: expectedAud, route, outcome: 'success' });
   recordTimer(METRICS.AUTH.LOGIN + '.verify.duration', Date.now() - startedAt, { scope: expectedAud, route, outcome: 'success' });

@@ -1,0 +1,69 @@
+{
+  "network": "Transport blocked by inherited preload",
+  "results": [
+    {
+      "name": "api-typecheck",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "cwd": "apps\\api-server",
+      "started": "2026-11-14T04:27:11.241Z",
+      "finished": "2026-11-14T04:27:15.683Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-typecheck",
+      "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+      "cwd": "packages\\db-people",
+      "started": "2026-11-14T04:27:15.782Z",
+      "finished": "2026-11-14T04:27:21.738Z",
+      "exitCode": 2
+    },
+    {
+      "name": "api-lint",
+      "command": "node node_modules/eslint/bin/eslint.js --max-warnings=0 src/modules/auth/shc-auth.service.ts src/modules/auth/admin-audience.util.ts src/app/api/shc/auth/me/route.ts src/app/api/shc/auth/logout/route.ts",
+      "cwd": "apps\\api-server",
+      "started": "2026-11-14T04:27:21.852Z",
+      "finished": "2026-11-14T04:27:28.594Z",
+      "exitCode": 0
+    },
+    {
+      "name": "changed-test-lint",
+      "command": "node node_modules/eslint/bin/eslint.js --no-ignore --max-warnings=0 src/modules/auth/__tests__/batch-08-shc-session-binding.test.ts src/modules/auth/__tests__/batch-08-admin-verification.test.ts src/modules/auth/__tests__/fixture-02-admin-guard.test.ts src/app/api/shc/auth/me/__tests__/route.test.ts src/app/api/shc/auth/logout/__tests__/route.test.ts",
+      "cwd": "apps\\api-server",
+      "started": "2026-11-14T04:27:28.595Z",
+      "finished": "2026-11-14T04:27:30.545Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-test-lint",
+      "command": "node node_modules/eslint/bin/eslint.js --no-ignore --max-warnings=0 src/__tests__/normalized-email-migration.test.ts",
+      "cwd": "packages\\db-people",
+      "started": "2026-11-14T04:27:30.546Z",
+      "finished": "2026-11-14T04:27:31.885Z",
+      "exitCode": 0
+    },
+    {
+      "name": "migration-metadata",
+      "command": "node node_modules/drizzle-kit/bin.cjs check",
+      "cwd": "packages\\db-people",
+      "started": "2026-11-14T04:27:31.886Z",
+      "finished": "2026-11-14T04:27:35.113Z",
+      "exitCode": 0
+    },
+    {
+      "name": "people-build",
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+      "cwd": "packages\\db-people",
+      "started": "2026-11-14T04:27:35.114Z",
+      "finished": "2026-11-14T04:27:36.445Z",
+      "exitCode": 1
+    },
+    {
+      "name": "api-build",
+      "command": "node node_modules/next/dist/bin/next build --webpack",
+      "cwd": "apps\\.r6-shc-build-f8b178dfba",
+      "started": "2026-11-14T04:27:52.670Z",
+      "finished": "2026-11-14T04:31:07.585Z",
+      "exitCode": 1
+    }
+  ]
+}

@@ -137,3 +137,66 @@ Before shared execution, the owner must approve the exact backup/recovery point 
 The prompt calls 0009 the uniqueness migration. The actual journal identifies **0009_student_invitations**. The proposed normalized uniqueness change remains a rehearsal artifact requiring its own reviewed append-only journal entry after 0009. Applying the currently registered 0009 would create invitation objects and retain the global email constraint. Approval must name the actual SQL artifacts individually.
 
 Canonical acceptance statuses and the original Q-register retain their existing states. This bounded runtime delta is recorded in the existing readiness report and receipts. Full three-app acceptance and Q48 remain OPEN. Documentation/evidence changes are committed locally under the owner's task authorization. Shared migration, deployment and credential remediation retain their recorded approval gates.
+
+## SHC revocation correction and registered uniqueness migration
+
+The owner authorized focused source remediation, isolated verification, migration registration and a local commit after checkpoint `47fae536265d4bd8da3f2510d7c3ec40ea66c7b4`. R6-B migration replay technical qualification remains accepted PASS. The release recommendation remains **HOLD** while the runtime and recovery conditions below are pending.
+
+### Root cause and existing-source correction
+
+SHC login issued refresh credentials without storing the issued session. Logout called the default MainDB refresh-token repository even though its principal was owned by PeopleDB. The SHC identity and backend admin boundaries validated the current account and JWT without checking a persisted session. Logout also returned successful responses when revocation failed. The preceding localhost receipts demonstrate the resulting old-cookie replay failure.
+
+`SHCAuthService` now uses the existing PeopleDB `sso_sessions` table. Login stores the SHA-256 digest of the issued refresh credential in the existing `jwt_family` field and includes that digest as the signed access token's `sessionBinding`. Each issued refresh credential has its existing random JWT identifier, allowing independent sessions. Only digest values are stored. Login returns credentials after the session insert succeeds. Storage failure returns a sanitized 503.
+
+The existing `/api/shc/auth/me` handler and `verifyAdminOrInfraToken()` enforce that the signed binding belongs to an active, non-deleted `skillhubcore` session for the signed principal. Current account eligibility, privilege ceilings and action RBAC continue through their existing checks. Missing bindings, revoked rows and wrong owner/platform rows fail closed. This means legacy SHC access tokens require a fresh login when this correction is activated.
+
+The existing SHC logout endpoint verifies the SHC admin token policy and revokes the exact principal/platform/session binding. A successful logout preserves other active sessions. Repeated logout is safe. Persistence failure produces a non-success 503, and audit failure after successful revocation is logged without credentials. The BFF's existing cookie clearing remains in place.
+
+| Existing source changed | Bounded result |
+|---|---|
+| `apps/api-server/src/modules/auth/shc-auth.service.ts` | Existing PeopleDB session persistence, lookup and exact-session revocation with sanitized storage errors. |
+| `apps/api-server/src/modules/auth/admin-audience.util.ts` | Shared backend SHC admin verification now requires the persisted session. |
+| `apps/api-server/src/app/api/shc/auth/me/route.ts` | Session validation precedes current-account admission, with 401 for revoked/unbound sessions and 503 for unavailable authority. Typed principal handling replaces existing untyped casts. |
+| `apps/api-server/src/app/api/shc/auth/logout/route.ts` | Signed SHC admin scope and truthful revocation response. |
+| `apps/api-server/src/app/api/shc/auth/login/route.ts` | Propagates typed, sanitized session-storage failures. |
+
+### Verification and remaining runtime gap
+
+The focused API/SHC selection passed **65/65** tests. This includes the actual SHC service against controlled persistence, real JWT signing/verification, persisted digest matching, pre-logout binding rejection after logout, separate-session preservation, fresh login, wrong-owner/platform and deleted/unbound denial, storage outages, backend guard rejection and identity/logout handler behavior. Existing broader signed-token/current-role tests retain their negative assertions with an explicit session-authority fixture where that independent boundary is under test.
+
+Existing SHC BFF boundary/proxy regressions passed **65/65** behind the transport guard. Registered migration, seed-conflict and normalization regressions passed **27/27**. These are controlled tests. The previously accepted 24 physical migration tests and 25 regressions were reused for their original source boundary.
+
+API and PeopleDB typechecks passed. Changed source and test-file lint passed with zero warnings. Drizzle metadata validation and the PeopleDB build passed. The prepared disposable verification script also typechecked successfully. Exact commands, timestamps, exit codes and initial failures are retained in `.evidence/r6-shc-revocation`.
+
+The first isolated API build copy lacked app workspace dependency links. That attempt failed module resolution. The corrected copy linked the existing app dependencies, compiled and generated all static pages, then reached its execution timeout before completion. The final retry used two workers in its temporary configuration and completed the full API production build with exit 0. The original app configuration and running localhost build directory remained outside the temporary build work. Initial failed receipts and the successful final receipt are retained. Existing Sentry instrumentation warnings appeared during the build and remain visible in its log.
+
+**Post-fix PostgreSQL and browser replay are PENDING.** The approved disposable branch connection was absent from the inspected process/User environment and local env files. The prepared `verify-disposable.mts` exited 2 with a BLOCKED receipt before opening a database connection. Its accepted target is project `bitter-tree-18287476`, branch `br-young-silence-a1b1ta26`, endpoint `ep-fragrant-brook-a1mhx5dm`, database `people_prod`. A secure local `R6_NEON_TEST_URL` reference is required to continue. Existing shared credentials provide no fallback for these writes.
+
+The prepared script creates one uniquely named scratch database only after server-side branch verification, tests registered 0010 failure/rollback and upgrade/repeat paths, then tests the actual SHC service and authoritative handlers against disposable PostgreSQL. It supplies a controlled audit adapter to avoid MainDB writes. It records schema prerequisites and deletes only its own positively identified scratch database. Browser replay still requires an isolated backend/gateway binding to that target and an approved synthetic SHC identity. Source tests do not close that runtime gate.
+
+### Refresh and compatibility disposition
+
+The current SHC Admin app has login, logout and identity routes but no BFF refresh route. The generic backend refresh operation uses the existing tenant/admin refresh contracts and default/brand refresh repository. Dedicated SHC login previously persisted no refresh row there. Successful SHC session renewal therefore lacks an established runtime positive control in the current implementation.
+
+This correction does not add an endpoint or silently redirect SHC refresh into a different identity authority. Revoked/unbound access credentials are rejected at SHC authority boundaries in controlled tests. Verification that revoked refresh credentials cannot mint new access, together with a legitimate SHC renewal positive control, remains a separate contract and runtime gap. The owner must approve the exact existing-path renewal correction if that capability is required. Fresh-login and other-active-session preservation are covered by the controlled tests.
+
+### Registered migration
+
+The authoritative journal ends at `0009_student_invitations`. The new append-only entry is **`0010_normalized_platform_email`**, with SQL in `packages/db-people/migrations/0010_normalized_platform_email.sql` and linked metadata in `meta/0010_snapshot.json`.
+
+The new SQL creates `uniq_users_email_platform` over `(LOWER(TRIM(email)), platform) WHERE deleted_at IS NULL` before dropping `users_email_unique`. Execution uses the existing supported transaction and exact-object compatibility runner. The registered source reader, index expression/predicate metadata and snapshot ancestry passed focused tests and `drizzle-kit check`. The SQL's actual application is still pending disposable verification.
+
+All ten historical SQL files retain their recorded SHA-256 hashes. The journal retains its exact historical entry prefix. The 0009 snapshot retains its canonical Git blob. An initial raw working-file/blob comparison differed due to Windows line endings. The corrected canonical comparison is recorded, with the initial receipt preserved. Snapshot metadata changes are limited to adding the new unique index and removing the old global unique-constraint declaration. Existing ordinary indexes are retained.
+
+`MIGRATION_PROVENANCE.json` records the exact new SQL hash and journal timestamp. Pending 0009 remains the invitation migration. An eventual shared execution decision must authorize 0009 and 0010 individually and compare the complete pending batch against its reviewed source.
+
+### Minimum remaining operational approvals
+
+1. Supply the approved disposable connection securely and complete the focused real-PostgreSQL verification, isolated post-fix browser replay and cleanup receipts.
+2. Resolve the existing SHC renewal path and prove a legitimate renewal positive control plus revoked-refresh denial if renewal is part of final acceptance.
+3. Identify the protected PeopleDB backup/recovery point, retention, coverage, restore operator and recovery window. The existing host backup script covers configuration. Prior synthetic logical restore remains the bounded recovery proof.
+4. Approve protected-data restoration into a specified disposable recovery target. Compare schema, constraints, migration hashes and account/admin dependency fingerprints, measure restoration duration and record cleanup. Shared-branch restoration is outside this rehearsal.
+5. Review the final 0009/0010 bytes and ledger hashes, repeat the read-only protected target/duplicate preflight in the execution window, and approve the exact shared migration operation separately.
+6. Resolve the production risk decision for R6B-SEC-01. The incident stays **OPEN — REMEDIATION DEFERRED BY OWNER**.
+
+The SHCA-A01 evidence note records this source correction and its pending runtime status. All 62 criterion IDs and acceptance statuses are preserved. Q48 remains OPEN. Prior SUIA/RTH runtime evidence remains linked to its tested source boundary. Current changed-file scope leaves those learner authorities untouched. The local commit records the source/tests and explicit pending receipts for owner review.

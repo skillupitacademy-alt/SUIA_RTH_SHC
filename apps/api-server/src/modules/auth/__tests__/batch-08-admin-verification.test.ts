@@ -6,7 +6,7 @@ import { container } from '@/modules/core/container';
 import { TokenService } from '../token.service';
 import { requireAdminRouteAccess, verifyAdminOrInfraToken } from '../admin-audience.util';
 import { _verifyActiveAccount, _verifyAdmin } from '../rbac.service';
-import { SHCAuthService, UserNotFoundError } from '../shc-auth.service';
+import { SHCAuthService, ShcSessionInvalidError, UserNotFoundError } from '../shc-auth.service';
 
 vi.mock('../rbac.service', () => ({ _verifyActiveAccount: vi.fn(async () => true), _verifyAdmin: vi.fn(async () => true) }));
 const key = new TextEncoder().encode('admin-helper-disposable-key-32bytes!');
@@ -24,12 +24,20 @@ describe('admin credential verification boundary', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     container.register(TokenService, tokens);
+    vi.spyOn(SHCAuthService.prototype, 'requireSession').mockResolvedValue();
     vi.spyOn(SHCAuthService.prototype, 'me').mockResolvedValue({
       id: 'admin', email: 'fixture@example.invalid', role: 'admin',
       platform: 'skillhubcore', isActive: true, createdAt: new Date(),
     });
   });
   afterEach(() => { vi.restoreAllMocks(); container.register(TokenService, previous); });
+  it('denies revoked SHC sessions and fails closed on session-store outage', async () => {
+    const value = await token('skillhubcore', 'shc-admin');
+    vi.mocked(SHCAuthService.prototype.requireSession).mockRejectedValueOnce(new ShcSessionInvalidError());
+    expect(await status(requireAdminRouteAccess(req(value, 'shc-admin')))).toBe(401);
+    vi.mocked(SHCAuthService.prototype.requireSession).mockRejectedValueOnce(new Error('private store outage'));
+    expect(await status(requireAdminRouteAccess(req(value, 'shc-admin')))).toBe(503);
+  });
   it.each(['missing', 'malformed', 'expired', 'wrong-signature', 'wrong-audience'] as const)('rejects %s before RBAC', async kind => {
     const other = new TextEncoder().encode('wrong-admin-signature-key-32bytes');
     const value = kind === 'missing' ? undefined : kind === 'malformed' ? 'invalid' : await token('skillup', kind === 'wrong-audience' ? 'user' : 'admin', kind === 'expired' ? '-1h' : undefined, kind === 'wrong-signature' ? new TokenService(other, other, other) : tokens);

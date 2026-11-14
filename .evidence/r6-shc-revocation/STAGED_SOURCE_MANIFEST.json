@@ -1,0 +1,143 @@
+{
+  "baseline": "47fae536265d4bd8da3f2510d7c3ec40ea66c7b4",
+  "files": [
+    {
+      "file": ".evidence/r6-shc-revocation/CSV_NOTE_DELTA.json",
+      "stagedSha256": "43ef91495e07b70dde7f0d30701ea02bf17abbf268b6fdf751fbac936bf3bf54"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/DISPOSABLE_ENVIRONMENT_STATUS.json",
+      "stagedSha256": "0255c0cb92c3866b01bcb232175e8e1a437bfa7d7cdea39ec0a7e468e7604e90"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/DISPOSABLE_RESULTS.json",
+      "stagedSha256": "28719095bddc75da3abc5b5a37b571658c050b3b9a9636d4d7fb8e6f75004ac1"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/FINAL_RESULTS.json",
+      "stagedSha256": "f0430157e7a4cf2684adc3620b94b5d410e8b626c9bed4e7fe7c1bbd3d572e61"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/MIGRATION_PROVENANCE.json",
+      "stagedSha256": "d7db43db91279ef616b54dbc0df47df21da7f697dd23b999fc61a65ab06b382b"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/QUALITY_RESULTS.json",
+      "stagedSha256": "e0d4920819261eb20ee97d4f642aff4ee0926bf546da8b258e9f2b13d56e1c90"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/SECRET_SCAN.json",
+      "stagedSha256": "6f065c942b28509dec599d6a33c46173b0d27362825bdd2c3c0c9f3fc555ef37"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/initial-MIGRATION_PROVENANCE.json",
+      "stagedSha256": "4fbef1655318f159f4fe3e045b8d8036c68e2e62aa0c46cd4aa1eefc54eaa838"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/initial-QUALITY_RESULTS.json",
+      "stagedSha256": "cb6629cde621fe438e54b768cadb4b4ac55446d2b5a81f3f733e2f9657b304be"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/migration-regressions.json",
+      "stagedSha256": "8678caddbf71d653738d865446380009a5471e82325fa1c44ad001a058399755"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/run-quality.cjs",
+      "stagedSha256": "6e147bbaf74b838896b1e355aa71fe299b94baedf460f93d238dc7560ca19b58"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/second-QUALITY_RESULTS.json",
+      "stagedSha256": "2b85547b23ccec45229d23b729a4764881e4d01d501fc3044a12998d9f344229"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/shc-bff-regressions.json",
+      "stagedSha256": "5b6fb002398aff82f545becce6010075980c2854e2f83d179e4fac20bc1e581f"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/targeted-direct.json",
+      "stagedSha256": "c05e23f872b85d31a8de812bdb486ab888e5482bf97b7ab83544378d5c149352"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/targeted-final.json",
+      "stagedSha256": "a476196cc149a282dd9d6ceea72cf8ff60acac249b5022443d6f081c15dcc790"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/targeted-initial.json",
+      "stagedSha256": "5e0b122d70b0eacb764bcee340b2b32607fbcadad97ab4c519084d9a0c09065e"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/tsconfig.verification.json",
+      "stagedSha256": "27321a9b246b52d62c7a5be8a3fab4e4e1d41bcbbad8b863f02ddabc9f0af67d"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/verify-disposable.mts",
+      "stagedSha256": "3fe48a0f1622a177c975a4074ec05f812a673684e5126c0da0dc4f72abe6ee98"
+    },
+    {
+      "file": "apps/api-server/src/app/api/shc/auth/login/route.ts",
+      "stagedSha256": "36a30b3a0b71c1530fa5500ecd123d2f4a9982da2f84b110066cc0cf368f972b"
+    },
+    {
+      "file": "apps/api-server/src/app/api/shc/auth/logout/__tests__/route.test.ts",
+      "stagedSha256": "c115c4300710cf4f256ac8f1245bf052286284fdced972d9675bbaf111a0732a"
+    },
+    {
+      "file": "apps/api-server/src/app/api/shc/auth/logout/route.ts",
+      "stagedSha256": "f78d522b5f09037c361888f067215fc38d96f658ddb497b5fc7eea7026aa419f"
+    },
+    {
+      "file": "apps/api-server/src/app/api/shc/auth/me/__tests__/route.test.ts",
+      "stagedSha256": "ee2028bc1909d0006857c69580e5409df7b5d271a312bc7387b87365c0f9ae47"
+    },
+    {
+      "file": "apps/api-server/src/app/api/shc/auth/me/route.ts",
+      "stagedSha256": "8b4bc79d1ed0a345c3637e926cb6c8b4e8339be9a48ebf3f3e70d025e07e840c"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/__tests__/batch-08-admin-verification.test.ts",
+      "stagedSha256": "b1aa2cadfda30363ded4b1ba70e752b8822d285cc1796a2740f8c23ab9fe6a1d"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/__tests__/batch-08-shc-session-binding.test.ts",
+      "stagedSha256": "a7be195d55e6da5e72cbc84bddaa47db90094230f12ae45a59a554b7e78e12dd"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/__tests__/fixture-02-admin-guard.test.ts",
+      "stagedSha256": "fae7dc8e03a934856c5d44ecfee8a3978e667494fb39259b339e930abda326bc"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/admin-audience.util.ts",
+      "stagedSha256": "5f3b85f299d06340ff5e3df788d89240cc529815f2448ad29c687ecaad0a2039"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "stagedSha256": "85814bcb63d2518bdfb6a19edd306114e2ec19c4398dac5e2d5686341bea9aba"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "stagedSha256": "486d08385de3c32d8ff08e7d5191f326a0c29e81e7c3b1ebe1adf48fb2f2d112"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "stagedSha256": "fd092e61663de44f955fb609bbc57c8658a5e5b59967faa2436cd62db861cd92"
+    },
+    {
+      "file": "packages/db-people/migrations/0010_normalized_platform_email.sql",
+      "stagedSha256": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+    },
+    {
+      "file": "packages/db-people/migrations/meta/0010_snapshot.json",
+      "stagedSha256": "16802db165768303c0453e67316893f5b7ae212dd7ba380acb6b749b6b89fd6f"
+    },
+    {
+      "file": "packages/db-people/migrations/meta/_journal.json",
+      "stagedSha256": "5d77bca0dee0989a9e3bfb401ae43da5b26fb348b4c60d54ad444fb7c321ce50"
+    },
+    {
+      "file": "packages/db-people/src/__tests__/normalized-email-migration.test.ts",
+      "stagedSha256": "b17c86657166d95e2731704ae8473ca8ce68b7b9b5c0326eae5959e447c72a44"
+    }
+  ],
+  "knownCredentialMatches": 0,
+  "selfExcluded": true
+}

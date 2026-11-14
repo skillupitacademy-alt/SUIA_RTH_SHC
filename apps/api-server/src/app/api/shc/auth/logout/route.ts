@@ -1,10 +1,11 @@
+import { type AdminTokenPayload,ConfigurationError } from '@quiz/auth';
 import { type NextRequest } from 'next/server';
 
 import { ApiResponse } from '@/lib/api-response';
 import { withLogging } from '@/lib/withLogging';
 import { withObservability } from '@/middleware/observability.middleware';
 import { getClientIp } from '@/modules/auth/client-ip';
-import { SHCAuthService } from '@/modules/auth/shc-auth.service';
+import { SHCAuthService, ShcSessionInvalidError } from '@/modules/auth/shc-auth.service';
 import { TokenService } from '@/modules/auth/token.service';
 
 export const dynamic = 'force-dynamic';
@@ -15,38 +16,31 @@ export const dynamic = 'force-dynamic';
  * Logout endpoint for SHC admins.
  */
 async function handler(req: NextRequest) {
+  const headers = { 'Cache-Control': 'private, no-store' };
+  let tokenService: TokenService;
+  let payload: AdminTokenPayload;
   try {
-    const tokenService = new TokenService();
-    const accessToken = tokenService.getAccessToken(req);
-
-    let userId: string | undefined;
-
-    if (accessToken !== null && accessToken !== undefined && accessToken !== '') {
-      try {
-        const payload = await tokenService.verifyAccessToken(accessToken);
-        userId = payload.userId;
-      } catch {
-        // Token invalid or expired, continue with logout anyway
-      }
+    tokenService = new TokenService();
+    const accessToken = tokenService.getAccessToken(req, { scope: 'admin' });
+    if (typeof accessToken !== 'string' || accessToken.length === 0) return ApiResponse.error('Authentication required', 401, undefined, headers);
+    payload = await tokenService.verifyAdminAccessToken(accessToken, {
+      audience: 'shc-admin', issuer: 'skillhubcore.in', algorithms: ['HS256'],
+    });
+    if (payload.brand !== 'skillhubcore' || payload.tokenType !== 'admin') {
+      return ApiResponse.error('Authentication required', 401, undefined, headers);
     }
-
-    const ip = getClientIp(req);
-
-    if (userId !== null && userId !== undefined && userId !== '') {
-      const shcAuthService = new SHCAuthService();
-      await shcAuthService.logout(userId, ip);
-    } else {
-    }
-
-    // Return success message
-    // The SHC admin app proxy will handle clearing cookies
-    return ApiResponse.success({ message: 'Logged out successfully' });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Logout failed';
-    console.error('[SHC_AUTH] Logout error:', message);
-    
-    // Return success even if logout fails
-    return ApiResponse.success({ message: 'Logged out' });
+    const status = error instanceof ConfigurationError ? 503 : 401;
+    return ApiResponse.error(status === 503 ? 'Authentication unavailable' : 'Authentication required', status, undefined, headers);
+  }
+  try {
+    await new SHCAuthService().logout(payload, getClientIp(req));
+    return ApiResponse.success({ message: 'Logged out successfully' }, 200, headers);
+  } catch (error) {
+    if (error instanceof ShcSessionInvalidError) {
+      return ApiResponse.error('Administrator session is no longer valid', 401, undefined, headers);
+    }
+    return ApiResponse.error('Session revocation unavailable', 503, undefined, headers);
   }
 }
 

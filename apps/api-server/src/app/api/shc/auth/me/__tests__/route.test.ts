@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { SignJWT } from 'jose';
 import { ConfigurationError } from '@quiz/auth';
-import { UserNotFoundError } from '@/modules/auth/shc-auth.service';
+import { ShcSessionInvalidError, UserNotFoundError } from '@/modules/auth/shc-auth.service';
 import { TokenService } from '@/modules/auth/token.service';
 
 async function createValidAdminToken(overrides: Record<string, unknown> = {}, signKey = TokenService.ADMIN_SECRET) {
@@ -47,12 +47,14 @@ async function createValidAdminToken(overrides: Record<string, unknown> = {}, si
   return builder.sign(signKey);
 }
 
-const { MockSHCAuthService, mockMe } = vi.hoisted(() => {
+const { MockSHCAuthService, mockMe, mockSession } = vi.hoisted(() => {
   const mockMe = vi.fn();
+  const mockSession = vi.fn();
   class MockSHCAuthService {
     me = mockMe;
+    requireSession = mockSession;
   }
-  return { MockSHCAuthService, mockMe };
+  return { MockSHCAuthService, mockMe, mockSession };
 });
 
 vi.mock('@/modules/auth/shc-auth.service', async () => {
@@ -71,6 +73,17 @@ describe('GET /api/shc/auth/me (R6 Master Verification Suite)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
+    mockSession.mockResolvedValue(undefined);
+  });
+
+  it('rejects a revoked session before querying current account eligibility', async () => {
+    mockSession.mockRejectedValueOnce(new ShcSessionInvalidError());
+    const token = await createValidAdminToken();
+    const response = await GET(new NextRequest('http://localhost/api/shc/auth/me', {
+      headers: { authorization: `Bearer ${token}` },
+    }));
+    expect(response.status).toBe(401);
+    expect(mockMe).not.toHaveBeenCalled();
   });
 
   // =========================================================================

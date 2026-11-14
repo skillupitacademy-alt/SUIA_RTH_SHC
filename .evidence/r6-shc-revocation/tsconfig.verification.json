@@ -1,0 +1,10 @@
+{
+  "extends": "../../apps/api-server/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": ["verify-disposable.mts"],
+  "exclude": ["../../node_modules"]
+}
