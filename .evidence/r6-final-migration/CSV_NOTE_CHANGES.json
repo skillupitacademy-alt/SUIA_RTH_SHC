@@ -1,0 +1,9 @@
+{
+  "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv": [
+    "SHCA-U08",
+    "SHCA-D04"
+  ],
+  "audit/Canonical_Root_Cause_Register.csv": [
+    "RC-DB-01"
+  ]
+}

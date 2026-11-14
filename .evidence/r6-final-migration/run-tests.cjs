@@ -1,0 +1,15 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
+const { spawn } = require('node:child_process');
+const env = { ...process.env, NODE_ENV: 'test', NEXT_TELEMETRY_DISABLED: '1' };
+for (const key of Object.keys(env)) if (/DATABASE|UPSTASH|QSTASH|REDIS|SMTP|RESEND|OPENAI|GEMINI/.test(key)) delete env[key];
+env.R6_NEON_TEST_URL = process.env.R6_NEON_TEST_URL;
+if (!env.R6_NEON_TEST_URL) throw new Error('Explicit disposable test URL required');
+const password = decodeURIComponent(new URL(env.R6_NEON_TEST_URL).password);
+const args = ['exec','vitest','run','--config','.evidence/r6-final-migration/vitest.config.mts','--maxWorkers=1','--reporter=verbose','--reporter=json','--outputFile=.evidence/r6-final-migration/TEST_RESULTS.json'];
+let output = '';
+const started = new Date().toISOString();
+const child = spawn(process.execPath, [path.join(os.homedir(),'AppData/Roaming/npm/node_modules/pnpm/bin/pnpm.cjs'), ...args], { env, windowsHide:true, stdio:['ignore','pipe','pipe'] });
+child.stdout.on('data', data=>output+=data); child.stderr.on('data',data=>output+=data);
+child.on('exit',code=>{ fs.writeFileSync('.evidence/r6-final-migration/tests.log', output.replaceAll(password,'[REDACTED]')); fs.writeFileSync('.evidence/r6-final-migration/EXECUTION.json',JSON.stringify({command:'pnpm '+args.join(' '),started,finished:new Date().toISOString(),exitCode:code},null,2)); console.log('Final migration tests exit '+code); });

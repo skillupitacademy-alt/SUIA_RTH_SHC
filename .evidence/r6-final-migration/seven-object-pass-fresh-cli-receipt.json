@@ -1,0 +1,86 @@
+{
+  "compatibilityRevision": "people-0007-exact-objects-v1",
+  "committed": true,
+  "executed": [
+    {
+      "tag": "0000_perpetual_microbe",
+      "originalHash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "executedHash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c"
+    },
+    {
+      "tag": "0001_abnormal_gamma_corps",
+      "originalHash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "executedHash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f"
+    },
+    {
+      "tag": "0002_low_captain_midlands",
+      "originalHash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "executedHash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7"
+    },
+    {
+      "tag": "0003_massive_kitty_pryde",
+      "originalHash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "executedHash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9"
+    },
+    {
+      "tag": "0004_amusing_kang",
+      "originalHash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "executedHash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56"
+    },
+    {
+      "tag": "0005_people_perf_indexes",
+      "originalHash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "executedHash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5"
+    },
+    {
+      "tag": "0006_skillhubcore_subscription_schema",
+      "originalHash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "executedHash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184"
+    },
+    {
+      "tag": "0007_long_sentinels",
+      "originalHash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "executedHash": "96b27c7fbc6be5c30400b93c64d116607403b4cb3db63d2a053402a199a47cca"
+    },
+    {
+      "tag": "0008_common_zodiak",
+      "originalHash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "executedHash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9"
+    },
+    {
+      "tag": "0009_student_invitations",
+      "originalHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+      "executedHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+    }
+  ],
+  "decisions": [
+    {
+      "object": "subscription_features_plan_id_subscription_plans_id_fk",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "user_features_cache_user_id_users_id_fk",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "idx_subscription_features_plan",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "idx_subscription_plans_active",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "idx_user_features_cache_user",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "idx_subscriptions_user_active",
+      "decision": "equivalent_existing"
+    },
+    {
+      "object": "idx_sso_sessions_family",
+      "decision": "equivalent_existing"
+    }
+  ]
+}

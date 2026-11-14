@@ -1,0 +1,359 @@
+{
+  "capturedUtc": "2026-11-14T03:22:40.844676+00:00",
+  "baseline": "3358fe9b1f61dd75fa5adaeb4710c8b94ca940b4",
+  "recommendation": "PASS \u2014 subject to owner evidence review",
+  "sharedMigration": "HOLD",
+  "credentialExposure": "OPEN \u2014 REMEDIATION DEFERRED BY OWNER",
+  "sourceFiles": [
+    {
+      "path": "audit/Canonical_Root_Cause_Register.csv",
+      "sha256": "d23c2be5baa928091f44e1c45ffd1d171a3eb6c37333e03a05ed6fba7705e0b7"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "7c66c6311dee44093b27711680d8a8786d282faa178a3790ab7e068b91cee5ed"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "f61cb38e00ab5cdfe07fc6676827d166f0365d4d1ed9a22f9f4acf43d558bdbc"
+    },
+    {
+      "path": "docs/risk/RISK_REGISTER.md",
+      "sha256": "2482d7bee553d09335e8498caa68d08ec6dbe4690621188db64422be2df8583f"
+    },
+    {
+      "path": "packages/db-people/package.json",
+      "sha256": "9263e29e13dbf1cd38644c1c6e682f2b942339efaaad6569ef39e24890e486ea"
+    },
+    {
+      "path": "packages/db-people/scripts/migrate.mts",
+      "sha256": "1abc1b24a49f9654d0befa335efbff5de8b21ca5a2794303eaff05ef941a211d"
+    },
+    {
+      "path": "packages/db-people/src/migration-compatibility.ts",
+      "sha256": "eeae69b49865cdb36e0c31ab3ce2aff8236f72173c9fb4ea2097a298f3641c33"
+    }
+  ],
+  "protectedSources": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "unchanged": true,
+      "sha256": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b"
+    },
+    {
+      "path": "apps/skillup-web/next-env.d.ts",
+      "unchanged": true,
+      "sha256": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/skillup-admin-data.ts",
+      "unchanged": true,
+      "sha256": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "unchanged": true,
+      "sha256": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts",
+      "unchanged": true,
+      "sha256": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts",
+      "unchanged": true,
+      "sha256": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "unchanged": true,
+      "sha256": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "unchanged": true,
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/token-refresh.service.ts",
+      "unchanged": true,
+      "sha256": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "unchanged": true,
+      "sha256": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970"
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "unchanged": true,
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+    },
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "unchanged": true,
+      "sha256": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99"
+    },
+    {
+      "path": "packages/identity-bridge/src/logger.ts",
+      "unchanged": true,
+      "sha256": "ffdd28b30afebe30b7ea3b1fa8fe57b932316cf99af5c768bf3b0f426465eb08"
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "unchanged": true,
+      "sha256": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e"
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "unchanged": true,
+      "sha256": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739"
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "unchanged": true,
+      "sha256": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17"
+    }
+  ],
+  "csvValidation": [
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "rows": 62,
+      "identifiersAndStatusesPreserved": true
+    },
+    {
+      "path": "audit/Canonical_Root_Cause_Register.csv",
+      "rows": 12,
+      "identifiersAndStatusesPreserved": true
+    }
+  ],
+  "historicalMigrationDiffEmpty": true,
+  "secretScanFindings": [],
+  "quality": {
+    "environment": "Network transport blocked; no database/provider calls",
+    "results": [
+      {
+        "name": "package-typecheck",
+        "command": "pnpm --filter @quiz/db-people type-check",
+        "started": "2026-11-14T03:19:01.056Z",
+        "finished": "2026-11-14T03:19:03.835Z",
+        "exitCode": 0
+      },
+      {
+        "name": "cli-typecheck",
+        "command": "pnpm exec tsc --noEmit -p .evidence/r6-final-migration/tsconfig.cli.json",
+        "started": "2026-11-14T03:19:03.872Z",
+        "finished": "2026-11-14T03:19:06.394Z",
+        "exitCode": 0
+      },
+      {
+        "name": "affected-lint",
+        "command": "pnpm --filter @quiz/db-people exec eslint --no-ignore --max-warnings=0 --parser-options {\"project\":\"../../.evidence/r6-final-migration/tsconfig.cli.json\"} src/migration-compatibility.ts scripts/migrate.mts",
+        "started": "2026-11-14T03:19:06.402Z",
+        "finished": "2026-11-14T03:19:11.137Z",
+        "exitCode": 0
+      },
+      {
+        "name": "focused-regressions",
+        "command": "pnpm --filter @quiz/db-people exec vitest run src/__tests__/seed-user-conflict.test.ts src/utils/__tests__/email-normalization.test.ts --maxWorkers=1",
+        "started": "2026-11-14T03:19:11.139Z",
+        "finished": "2026-11-14T03:19:15.602Z",
+        "exitCode": 0
+      },
+      {
+        "name": "package-build",
+        "command": "pnpm --filter @quiz/db-people build",
+        "started": "2026-11-14T03:19:15.605Z",
+        "finished": "2026-11-14T03:19:18.595Z",
+        "exitCode": 0
+      }
+    ]
+  },
+  "physicalTests": 24,
+  "focusedRegressions": 25,
+  "scopeAddition": "Two further exact duplicate indexes from 0005/0007 discovered by mandatory fresh replay; same compatibility strategy applied",
+  "evidenceFiles": [
+    {
+      "path": ".evidence/r6-final-migration/affected-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".evidence/r6-final-migration/CLEANUP.json",
+      "sha256": "b9df837f7e8ba8f627da69436ef014c557812582a488973a26d0776d907a1af0"
+    },
+    {
+      "path": ".evidence/r6-final-migration/cli-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".evidence/r6-final-migration/CSV_NOTE_CHANGES.json",
+      "sha256": "e8db13cfcd856b38e7e33f5227bb2937f06a3c851f939ca37bcc01fb9d93674c"
+    },
+    {
+      "path": ".evidence/r6-final-migration/EXECUTION.json",
+      "sha256": "1dab46b57cca1e5980bdf5d1cd3518c6378ffcbfa61281cb141ecd63af394f00"
+    },
+    {
+      "path": ".evidence/r6-final-migration/final.test.ts",
+      "sha256": "ab64a0acdac9e5691d83dac3c1773f91599cb89a82dbb622dc14bf80366c24ee"
+    },
+    {
+      "path": ".evidence/r6-final-migration/FINAL_DATABASE_STATE.json",
+      "sha256": "17aeed2c6407899e7a590e55be94b8826e61ec3c1f22addea43a83d203f2b846"
+    },
+    {
+      "path": ".evidence/r6-final-migration/focused-regressions.log",
+      "sha256": "64bebf9556120a56e742fb664631eeb0209249df13e16ae454d44cd449b15cac"
+    },
+    {
+      "path": ".evidence/r6-final-migration/fresh-cli-receipt.json",
+      "sha256": "1ab67230609f07b25c61f96041d108836a486da13bd78bda76fd79ab76216a21"
+    },
+    {
+      "path": ".evidence/r6-final-migration/fresh-cli.log",
+      "sha256": "fefeb6c6332f7c3fe604cf70f0489ea74f440db5ec06d9b145cd3a50fec3f6d1"
+    },
+    {
+      "path": ".evidence/r6-final-migration/HISTORICAL_HASH_VERIFICATION.json",
+      "sha256": "e3444be80d7213b4367a5b679e1bc3044c5dc2447ede9a25ca95f89f03e84c55"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-CLEANUP.json",
+      "sha256": "dcae78ae85ef5a36dd9f5b9788f95acefdbb90c7fa3cab42682ae0b5625dde52"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-EXECUTION.json",
+      "sha256": "50c8a8ea336eecb73698fb2a9e46cc0ace401ad36b842bdbbd481db3ab552638"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-fresh-cli.log",
+      "sha256": "b58c93501ad004c2c2f4934f344669420e31112357a56c7dce99cf5edb50b8eb"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-SCENARIOS.json",
+      "sha256": "ab4a67a22253da8a2038f405ddaafd93dd7f0767ba15aaff041ed454214cd227"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-tests.log",
+      "sha256": "d261d9dfa6ae6cf2940e1695e73841e9eec8824321e7f237e83097c3225e0015"
+    },
+    {
+      "path": ".evidence/r6-final-migration/initial-TEST_RESULTS.json",
+      "sha256": "e53af6f83f6ab89fee1c89417b50e83226cdd15aa4540cf5e8cbb3b5226868f7"
+    },
+    {
+      "path": ".evidence/r6-final-migration/MANDATORY_RESULTS.json",
+      "sha256": "edee0027f4be76008267d9ff07b87fad55f8afc685981897de0e5d1726546aae"
+    },
+    {
+      "path": ".evidence/r6-final-migration/offline-guard.cjs",
+      "sha256": "cf0fe688c72c37b3c3531fe6982c6b1c78826d4dba61027a218e62dfad98ca3a"
+    },
+    {
+      "path": ".evidence/r6-final-migration/package-build.log",
+      "sha256": "5b8e298c2a03efa003d16b33845245037fc990b63a72141a1d3d5813a136321f"
+    },
+    {
+      "path": ".evidence/r6-final-migration/package-typecheck.log",
+      "sha256": "4465be3f068160ac33b8f09ca0a97906912759a73676c985fdcd4813c3298b29"
+    },
+    {
+      "path": ".evidence/r6-final-migration/QUALITY_RESULTS.json",
+      "sha256": "cab6b87da7f2f212caf89e50dbc780d5d0321312a434761678bc3f83a9904258"
+    },
+    {
+      "path": ".evidence/r6-final-migration/repeat-cli-receipt.json",
+      "sha256": "953c087970a9c8abc3b472141f0e78ece8208114a1d174fd2b24b67373900c36"
+    },
+    {
+      "path": ".evidence/r6-final-migration/repeat-cli.log",
+      "sha256": "eb5e636720e0d75a0bc78be3688ad3c23f18777297b4d6d555fd9abb3f64810f"
+    },
+    {
+      "path": ".evidence/r6-final-migration/run-quality.cjs",
+      "sha256": "3d7c1d70730fdfe493276266ea9b6565d608b4649a6398be9e7a150729e5c5fa"
+    },
+    {
+      "path": ".evidence/r6-final-migration/run-tests.cjs",
+      "sha256": "caf9caee039f0a2d291d02e670fba0487a077462a7bdaf9a631bd70033e1ad35"
+    },
+    {
+      "path": ".evidence/r6-final-migration/SCENARIOS.json",
+      "sha256": "008fa738aad1629f5338d54014b1acbfaa1d0fb553e1ad4a3741c9dff7e89c3e"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-CLEANUP.json",
+      "sha256": "34ab02bffe75c3d019be96026f1a0cd97c6f56674c553af4ef83b392c361a7ca"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-EXECUTION.json",
+      "sha256": "d316a36bce00c2d28018f16523aee8d8369265ea7fe301ba1f86dadbdc4c441c"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-fresh-cli.log",
+      "sha256": "2ac116596f2d0779583f3e58f31d7e3ea14007932983b1c7a9d2bc3be37afbba"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-SCENARIOS.json",
+      "sha256": "363f77c1ecb8a3ea96ff8d9720d887be01b58e149c65395b61bab8ad6d363224"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-tests.log",
+      "sha256": "2a99b4eee00729434ceceacb93d1d00bf5263b93d603b4c4e617efcd44cf316f"
+    },
+    {
+      "path": ".evidence/r6-final-migration/second-TEST_RESULTS.json",
+      "sha256": "faac9823d7302f09fb5ae0dddd9b415bf2d616dc9d0e507f150bdefa9a2ac235"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-CLEANUP.json",
+      "sha256": "b05c6be394207dd2ae898536aed3f1bf99f296b534a4eb5157f074bc5b109812"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-EXECUTION.json",
+      "sha256": "037d4653bca758a41e2510a6df606b745441ee85ed72a28cdb6d44e5e028ce48"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-fresh-cli-receipt.json",
+      "sha256": "1ab67230609f07b25c61f96041d108836a486da13bd78bda76fd79ab76216a21"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-fresh-cli.log",
+      "sha256": "43229d75dba3c5766b06fea00f5aafb320652598ca43968e0936cb6b47b10c60"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-repeat-cli-receipt.json",
+      "sha256": "2ede1dc37d8cc4af796100038652a4302afa36f2dc9bd75993f93fc6f7d8a1e0"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-SCENARIOS.json",
+      "sha256": "51ab1ce4c042a8a90b88b77be7a77e035dd65aa1fed7c2fc9338946c8890b83a"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-tests.log",
+      "sha256": "fff50c2e649b1c65512ce7bfdb6376b9cfd78c8e394fe73f1d2659853467e3e0"
+    },
+    {
+      "path": ".evidence/r6-final-migration/seven-object-pass-TEST_RESULTS.json",
+      "sha256": "b0bad378a2ab1a10698692d3c19a1e3fd209c1371db393a32e7b43df3bbd2a0b"
+    },
+    {
+      "path": ".evidence/r6-final-migration/tests.log",
+      "sha256": "4650c98a68da9801d7806be8ea235d2c98330059523380e8fefef6370087beb8"
+    },
+    {
+      "path": ".evidence/r6-final-migration/TEST_RESULTS.json",
+      "sha256": "38525c29185bec508370f6cc8edefb1c6e047092ee7175702235160bc270f9d0"
+    },
+    {
+      "path": ".evidence/r6-final-migration/tsconfig.cli.json",
+      "sha256": "c4e2477b44c26938b9d360072f49ba81aef096ff602e054739129c9198431185"
+    },
+    {
+      "path": ".evidence/r6-final-migration/vitest.config.mts",
+      "sha256": "cb1028cdd438e1ddb08f82438d7bbf47425a23cf26b8ba9a7589a2ba379403e5"
+    }
+  ],
+  "graphifyExit": 0
+}

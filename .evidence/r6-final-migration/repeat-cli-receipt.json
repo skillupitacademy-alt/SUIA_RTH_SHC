@@ -1,0 +1,35 @@
+{
+  "compatibilityRevision": "people-0007-exact-objects-v1",
+  "committed": true,
+  "executed": [],
+  "decisions": [
+    {
+      "object": "subscription_features_plan_id_subscription_plans_id_fk",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "user_features_cache_user_id_users_id_fk",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscription_features_plan",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscription_plans_active",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_user_features_cache_user",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscriptions_user_active",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_sso_sessions_family",
+      "decision": "validated_applied"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # R6-B Remote Neon PostgreSQL Qualification
 
+> Latest technical closure, 14 November 2026 — the corrected supported PeopleDB migration command passes all mandatory disposable checks. Recommendation PASS for the R6-B migration technical blocker, subject to owner evidence review. Shared PeopleDB execution remains HOLD. Credential exposure remains OPEN — REMEDIATION DEFERRED BY OWNER. Earlier NOT READY/9-PASS/1-FAIL sections below retain their historical provenance and are superseded for this technical blocker by the final closure section.
+
 Completed 14 November 2026 against local main `4c73b83f31b38ee86fc84862d49d2c2ae8f5f79f`.
 
 **Recommendation — NOT READY for shared PeopleDB migration.** Nine scenario groups pass. Migration-chain qualification remains FAIL because fresh historical replay raises SQLSTATE 42710. The pending upgrade from the inherited baseline passes, including 0009 ordering and an idempotent repeat. The shared PeopleDB uniqueness migration remains HOLD.
@@ -190,3 +192,60 @@ The incident's later rotation/revocation and validation remain required for clos
 ### Owner decisions required after this report
 
 Approve or reject the exact-object, pinned-history compatibility design before source implementation. A subsequent execution approval must identify disposable targets, credentials and synthetic scope. Protected PeopleDB migration remains HOLD until corrected clean installation, existing upgrade, provenance and recovery gates are accepted. Project-wide credential remediation remains deferred under the owner decision and the known incident stays OPEN. Q48 remains OPEN.
+
+
+## Final controlled implementation and qualification closure, 14 November 2026
+
+Owner approval authorized the documented exact-object compatibility correction, focused disposable verification and a local commit. Implementation baseline is `3358fe9b1f61dd75fa5adaeb4710c8b94ca940b4`, following qualification commit `8ca7ad05`. Final source hashes and receipts are under `.evidence/r6-final-migration`. The new local commit SHA is reported after committing this evidence.
+
+**Technical recommendation PASS**, subject to owner evidence review, for closing the R6-B fresh migration replay blocker. The final run passed 24/24 physical PostgreSQL tests. Focused existing seed-conflict/email-normalization regressions passed 25/25. Package typecheck, explicit CLI typecheck, zero-warning affected lint and package build all exited 0. Earlier nine passing qualification groups are reused unchanged. Protected database execution and deployment retain their separate approvals, and the credential incident remains OPEN with remediation deferred by the owner.
+
+### Implemented existing migration command
+
+| Changed source | Result |
+|---|---|
+| `packages/db-people/src/migration-compatibility.ts` | Pinned migration bytes/timestamps, exact catalog guards, applied-prefix hash validation, transaction/advisory lock, bounded timeout, original-hash ledger entries and redacted compatibility receipts. |
+| `packages/db-people/scripts/migrate.mts` | Supported CLI uses existing PeopleDB configuration loading and Neon WebSocket driver, reports sanitized failures and emits optional JSON receipts. |
+| `packages/db-people/package.json` | Existing db:migrate now invokes the controlled CLI through tsx. |
+
+Historical migration SQL, journal order, snapshots and original hashes remain byte-identical. The reader uses existing Drizzle migration metadata. Pending statements, appended original-hash ledger receipts and compatibility checks execute in one PostgreSQL transaction, under a migration advisory lock and exclusive ledger lock. Existing ledger rows must match the source prefix. For already-applied 0007, definition validation rejects absent/drifted objects instead of silently repairing them.
+
+The exact catalogs verify table/schema identity, ordered FK columns and referenced relation, CASCADE/NO ACTION actions, MATCH SIMPLE, validation and deferrability. Index checks cover table, btree method, key order/count, included/expressional keys, uniqueness, predicate, default operator classes, collation, ordering and valid/ready/live state. Missing pending objects are created and then validated. A mismatch raises P0001 and rolls back. The correction does not catch duplicate-object errors indiscriminately.
+
+### Two additional conflicts found by mandatory replay
+
+The first corrected full replay reached two more unconditional indexes in 0007 that duplicate `0005_people_perf_indexes.sql`. The earlier five-object inventory missed them. Under the owner's instruction to correct specific mandatory-test failures, the same exact-object strategy now also covers `idx_subscriptions_user_active` on subscriptions(user_id,status) WHERE status='active', and `idx_sso_sessions_family` on sso_sessions(jwt_family,revoked_at). The source hash/timestamp pin includes 0005 as well as 0006/0007. These are the only scope additions, and both received absent-object and deliberate-mismatch tests. All seven compatibility decisions are recorded with original source hashes and executed representation hashes.
+
+### Final mandatory results
+
+| Check | Result |
+|---|---|
+| Fresh supported pnpm db:migrate command, including prerequisite 0000 then 0001–0009 | PASS, 10 migration entries with original hashes/timestamps |
+| Both foreign keys, three documented indexes and two additional 0005 indexes | PASS, equivalent existing objects and absent-object creation paths |
+| Deliberate mismatch for each of seven objects | FAIL CLOSED, P0001 |
+| Already-applied object-definition drift | FAIL CLOSED at the supported runner boundary |
+| Pending 0009 existing-baseline upgrade | PASS, original nine ledger entries preserved, one appended 0009 entry |
+| Repeat supported CLI and repeat upgrade | PASS, no ledger advancement |
+| FK and index definitions plus orphan rejection | PASS, 23503 for both foreign-key controls |
+| Historical file/journal hashes, applied ledger hashes and ordering | PASS |
+| Pinned source alteration and corrupted applied hash | FAIL CLOSED before migration advancement |
+| Injected pending DDL failure | PASS rollback, SQLSTATE 22012, marker table absent and ledger unchanged |
+| Concurrent migration attempts | PASS, bounded 55P03 rejection or serialized completion, safe subsequent no-op retry |
+| Disposable normalized uniqueness candidate | PASS, same-email independent brands, same-platform normalization conflict 23505 |
+| Existing platform-access unique/FK constraints | PASS, duplicate 23505 and orphan 23503 |
+
+The supported command is `pnpm --filter @quiz/db-people db:migrate`. The command's original historical SQL files remain preserved, so raw unsupported replay through an unwrapped historical reader retains the recorded failure. Current acceptance applies to the corrected supported entry point. The uniqueness candidate was exercised only as the existing disposable evidence artifact. No shared migration file was added or executed.
+
+### Verification history and limits
+
+Initial correction runs exposed CLI ESM/config resolution and a reserved SQL alias issue. Both were corrected in the migration source. The next replay exposed the two 0005 index overlaps. Failed attempts, SQLSTATEs and their successful scratch cleanup are retained with initial-/second- receipt prefixes. An intermediate seven-object run passed before the applied-definition drift check and final hash-drift control were added. The final 24-test run includes those controls. No failing test was skipped or suppressed.
+
+Mandatory execution used the previously verified disposable Neon project `bitter-tree-18287476`, branch `br-young-silence-a1b1ta26`, direct/pooled endpoint `ep-fragrant-brook-a1mhx5dm`. Every scratch database was verified server-side before tests. Only assignment-owned database names were dropped. The existing test-branch PeopleDB ledger and inherited user digest matched their prior qualification values. FINAL_DATABASE_STATE.json and CLEANUP.json show zero remaining final scratch databases. The manually created qualification branch remains for owner review.
+
+The owner deferred rotation and authorized this bounded verification with the supplied disposable connection. The known incident remains OPEN. Credentials were passed in process environment, redacted from test output and excluded from tracked artifacts. No rotation, new security phase or incident closure occurred.
+
+Package and CLI source were typechecked. Relevant lint passed with max-warnings=0. Existing controlled regression tests ran behind a transport guard. Final physical tests used the production Neon WebSocket driver and direct PostgreSQL catalog/assertion clients. Browser, deployed authentication, protected backup and shared production migration were not requalified by these focused tests. Previous logical recovery receipts remain historical evidence.
+
+### Acceptance and remaining owner gates
+
+The supported fresh-replay migration blocker is technically resolved and recommended for closure after owner evidence review. Canonical CSV notes link this bounded result while preserving unrelated criterion statuses. Shared PeopleDB migration, rollout and the wider Q48 acceptance remain owner-controlled. The credential-exposure incident stays OPEN — REMEDIATION DEFERRED BY OWNER, and retained-branch cleanup remains an owner action after review. Further protected SQL or GitHub publication requires separate approval.

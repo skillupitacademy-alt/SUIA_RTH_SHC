@@ -1,0 +1,10 @@
+{
+  "extends": "../../packages/db-people/tsconfig.json",
+  "compilerOptions": { "rootDir": "../../packages/db-people", "incremental": false },
+  "include": [
+    "../../packages/db-people/src/migration-compatibility.ts",
+    "../../packages/db-people/scripts/migrate.mts",
+    "../../packages/db-people/drizzle.config.ts"
+  ],
+  "exclude": ["../../node_modules"]
+}

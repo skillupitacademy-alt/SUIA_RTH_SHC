@@ -1,0 +1,40 @@
+{
+  "environment": "Network transport blocked; no database/provider calls",
+  "results": [
+    {
+      "name": "package-typecheck",
+      "command": "pnpm --filter @quiz/db-people type-check",
+      "started": "2026-11-14T03:19:01.056Z",
+      "finished": "2026-11-14T03:19:03.835Z",
+      "exitCode": 0
+    },
+    {
+      "name": "cli-typecheck",
+      "command": "pnpm exec tsc --noEmit -p .evidence/r6-final-migration/tsconfig.cli.json",
+      "started": "2026-11-14T03:19:03.872Z",
+      "finished": "2026-11-14T03:19:06.394Z",
+      "exitCode": 0
+    },
+    {
+      "name": "affected-lint",
+      "command": "pnpm --filter @quiz/db-people exec eslint --no-ignore --max-warnings=0 --parser-options {\"project\":\"../../.evidence/r6-final-migration/tsconfig.cli.json\"} src/migration-compatibility.ts scripts/migrate.mts",
+      "started": "2026-11-14T03:19:06.402Z",
+      "finished": "2026-11-14T03:19:11.137Z",
+      "exitCode": 0
+    },
+    {
+      "name": "focused-regressions",
+      "command": "pnpm --filter @quiz/db-people exec vitest run src/__tests__/seed-user-conflict.test.ts src/utils/__tests__/email-normalization.test.ts --maxWorkers=1",
+      "started": "2026-11-14T03:19:11.139Z",
+      "finished": "2026-11-14T03:19:15.602Z",
+      "exitCode": 0
+    },
+    {
+      "name": "package-build",
+      "command": "pnpm --filter @quiz/db-people build",
+      "started": "2026-11-14T03:19:15.605Z",
+      "finished": "2026-11-14T03:19:18.595Z",
+      "exitCode": 0
+    }
+  ]
+}

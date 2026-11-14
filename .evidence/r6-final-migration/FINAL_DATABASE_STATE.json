@@ -1,0 +1,15 @@
+{
+  "identity": {
+    "database": "people_prod",
+    "branch": "br-young-silence-a1b1ta26",
+    "project": "bitter-tree-18287476",
+    "read_only": "on"
+  },
+  "inheritedUserDigestMatches": true,
+  "originalLedgerRowsMatch": true,
+  "testBranchPeopleDbLedgerRows": 11,
+  "remainingFinalScratchDatabases": [],
+  "branchRetained": true,
+  "credentialIncident": "OPEN — REMEDIATION DEFERRED BY OWNER",
+  "sharedMigration": "HOLD"
+}

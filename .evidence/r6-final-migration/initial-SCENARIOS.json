@@ -1,0 +1,136 @@
+{
+  "baseline": "3358fe9b1f61dd75fa5adaeb4710c8b94ca940b4",
+  "prefix": "r6b_final_48a561b901",
+  "resources": [
+    {
+      "database": "r6b_final_48a561b901_fresh",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_upgrade",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_rollback",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_concurrent",
+      "deleted": true
+    }
+  ],
+  "receipts": [
+    {
+      "name": "Fresh CLI replay",
+      "started": "2026-11-14T03:13:42.638Z",
+      "result": "FAIL",
+      "message": "expected 1 to be +0 // Object.is equality"
+    },
+    {
+      "name": "Repeated CLI",
+      "started": "2026-11-14T03:13:46.707Z",
+      "result": "FAIL",
+      "message": "relation \"drizzle.__drizzle_migrations\" does not exist"
+    },
+    {
+      "name": "Definition and integrity checks",
+      "started": "2026-11-14T03:13:46.802Z",
+      "result": "FAIL",
+      "message": "relation \"subscription_features\" does not exist"
+    },
+    {
+      "name": "Absent subscription_features_plan_id_subscription_plans_id_fk",
+      "started": "2026-11-14T03:13:47.307Z",
+      "result": "FAIL",
+      "message": "relation \"subscription_features\" does not exist"
+    },
+    {
+      "name": "Mismatch subscription_features_plan_id_subscription_plans_id_fk",
+      "started": "2026-11-14T03:13:48.006Z",
+      "result": "FAIL",
+      "message": "relation \"subscription_features\" does not exist"
+    },
+    {
+      "name": "Absent user_features_cache_user_id_users_id_fk",
+      "started": "2026-11-14T03:13:48.235Z",
+      "result": "FAIL",
+      "message": "relation \"user_features_cache\" does not exist"
+    },
+    {
+      "name": "Mismatch user_features_cache_user_id_users_id_fk",
+      "started": "2026-11-14T03:13:48.468Z",
+      "result": "FAIL",
+      "message": "relation \"user_features_cache\" does not exist"
+    },
+    {
+      "name": "Absent idx_subscription_features_plan",
+      "started": "2026-11-14T03:13:48.946Z",
+      "result": "FAIL",
+      "message": "index \"idx_subscription_features_plan\" does not exist"
+    },
+    {
+      "name": "Mismatch idx_subscription_features_plan",
+      "started": "2026-11-14T03:13:49.175Z",
+      "result": "FAIL",
+      "message": "index \"idx_subscription_features_plan\" does not exist"
+    },
+    {
+      "name": "Absent idx_subscription_plans_active",
+      "started": "2026-11-14T03:13:49.415Z",
+      "result": "FAIL",
+      "message": "index \"idx_subscription_plans_active\" does not exist"
+    },
+    {
+      "name": "Mismatch idx_subscription_plans_active",
+      "started": "2026-11-14T03:13:49.642Z",
+      "result": "FAIL",
+      "message": "index \"idx_subscription_plans_active\" does not exist"
+    },
+    {
+      "name": "Absent idx_user_features_cache_user",
+      "started": "2026-11-14T03:13:49.870Z",
+      "result": "FAIL",
+      "message": "index \"idx_user_features_cache_user\" does not exist"
+    },
+    {
+      "name": "Mismatch idx_user_features_cache_user",
+      "started": "2026-11-14T03:13:50.113Z",
+      "result": "FAIL",
+      "message": "index \"idx_user_features_cache_user\" does not exist"
+    },
+    {
+      "name": "Pending 0009 upgrade",
+      "started": "2026-11-14T03:13:50.342Z",
+      "result": "FAIL",
+      "message": "PeopleDB migration failed (42601); transaction rolled back"
+    },
+    {
+      "name": "Candidate uniqueness and access",
+      "started": "2026-11-14T03:14:04.421Z",
+      "result": "FAIL",
+      "message": "PeopleDB migration failed (42601); transaction rolled back"
+    },
+    {
+      "name": "Pinned source mismatch",
+      "started": "2026-11-14T03:14:15.699Z",
+      "finished": "2026-11-14T03:14:15.742Z",
+      "result": "PASS",
+      "detail": {
+        "databaseExecution": false,
+        "failedClosed": true
+      }
+    },
+    {
+      "name": "Atomic failure rollback",
+      "started": "2026-11-14T03:14:15.745Z",
+      "result": "FAIL",
+      "message": "PeopleDB migration failed (42601); transaction rolled back"
+    },
+    {
+      "name": "Concurrent migration admission",
+      "started": "2026-11-14T03:14:27.741Z",
+      "result": "FAIL",
+      "message": "PeopleDB migration failed (55P03); transaction rolled back"
+    }
+  ]
+}

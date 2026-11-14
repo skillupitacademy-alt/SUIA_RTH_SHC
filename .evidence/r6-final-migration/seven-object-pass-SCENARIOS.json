@@ -1,0 +1,370 @@
+{
+  "baseline": "3358fe9b1f61dd75fa5adaeb4710c8b94ca940b4",
+  "prefix": "r6b_final_f3023e8a0b",
+  "resources": [
+    {
+      "database": "r6b_final_f3023e8a0b_fresh",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_f3023e8a0b_upgrade",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_f3023e8a0b_rollback",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_f3023e8a0b_concurrent",
+      "deleted": true
+    }
+  ],
+  "receipts": [
+    {
+      "name": "Fresh CLI replay",
+      "started": "2026-11-14T03:16:44.278Z",
+      "finished": "2026-11-14T03:16:59.398Z",
+      "result": "PASS",
+      "detail": {
+        "command": "pnpm --filter @quiz/db-people db:migrate",
+        "exitCode": 0,
+        "ledgerCount": 10,
+        "decisions": [
+          {
+            "object": "subscription_features_plan_id_subscription_plans_id_fk",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "user_features_cache_user_id_users_id_fk",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "idx_subscription_features_plan",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "idx_subscription_plans_active",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "idx_user_features_cache_user",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "idx_subscriptions_user_active",
+            "decision": "equivalent_existing"
+          },
+          {
+            "object": "idx_sso_sessions_family",
+            "decision": "equivalent_existing"
+          }
+        ],
+        "representationHashes": [
+          {
+            "tag": "0000_perpetual_microbe",
+            "originalHash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+            "executedHash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c"
+          },
+          {
+            "tag": "0001_abnormal_gamma_corps",
+            "originalHash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+            "executedHash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f"
+          },
+          {
+            "tag": "0002_low_captain_midlands",
+            "originalHash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+            "executedHash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7"
+          },
+          {
+            "tag": "0003_massive_kitty_pryde",
+            "originalHash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+            "executedHash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9"
+          },
+          {
+            "tag": "0004_amusing_kang",
+            "originalHash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+            "executedHash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56"
+          },
+          {
+            "tag": "0005_people_perf_indexes",
+            "originalHash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+            "executedHash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5"
+          },
+          {
+            "tag": "0006_skillhubcore_subscription_schema",
+            "originalHash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+            "executedHash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184"
+          },
+          {
+            "tag": "0007_long_sentinels",
+            "originalHash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+            "executedHash": "96b27c7fbc6be5c30400b93c64d116607403b4cb3db63d2a053402a199a47cca"
+          },
+          {
+            "tag": "0008_common_zodiak",
+            "originalHash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+            "executedHash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9"
+          },
+          {
+            "tag": "0009_student_invitations",
+            "originalHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+            "executedHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Repeated CLI",
+      "started": "2026-11-14T03:16:59.401Z",
+      "finished": "2026-11-14T03:17:01.925Z",
+      "result": "PASS",
+      "detail": {
+        "exitCode": 0,
+        "changedMigrations": 0
+      }
+    },
+    {
+      "name": "Definition and integrity checks",
+      "started": "2026-11-14T03:17:01.928Z",
+      "finished": "2026-11-14T03:17:03.458Z",
+      "result": "PASS",
+      "detail": {
+        "constraints": [
+          {
+            "conname": "subscription_features_plan_id_subscription_plans_id_fk",
+            "definition": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE",
+            "convalidated": true,
+            "condeferrable": false
+          },
+          {
+            "conname": "user_features_cache_user_id_users_id_fk",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+            "convalidated": true,
+            "condeferrable": false
+          }
+        ],
+        "indexes": [
+          {
+            "indexname": "idx_sso_sessions_family",
+            "indexdef": "CREATE INDEX idx_sso_sessions_family ON public.sso_sessions USING btree (jwt_family, revoked_at)"
+          },
+          {
+            "indexname": "idx_subscription_features_plan",
+            "indexdef": "CREATE INDEX idx_subscription_features_plan ON public.subscription_features USING btree (plan_id, feature_key)"
+          },
+          {
+            "indexname": "idx_subscription_plans_active",
+            "indexdef": "CREATE INDEX idx_subscription_plans_active ON public.subscription_plans USING btree (is_active, name)"
+          },
+          {
+            "indexname": "idx_subscriptions_user_active",
+            "indexdef": "CREATE INDEX idx_subscriptions_user_active ON public.subscriptions USING btree (user_id, status) WHERE (status = 'active'::people_subscription_status)"
+          },
+          {
+            "indexname": "idx_user_features_cache_user",
+            "indexdef": "CREATE INDEX idx_user_features_cache_user ON public.user_features_cache USING btree (user_id, cached_at)"
+          }
+        ],
+        "orphanDenialSQLSTATE": "23503"
+      }
+    },
+    {
+      "name": "Absent subscription_features_plan_id_subscription_plans_id_fk",
+      "started": "2026-11-14T03:17:03.462Z",
+      "finished": "2026-11-14T03:17:03.747Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch subscription_features_plan_id_subscription_plans_id_fk",
+      "started": "2026-11-14T03:17:03.750Z",
+      "finished": "2026-11-14T03:17:03.978Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent user_features_cache_user_id_users_id_fk",
+      "started": "2026-11-14T03:17:03.982Z",
+      "finished": "2026-11-14T03:17:04.263Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch user_features_cache_user_id_users_id_fk",
+      "started": "2026-11-14T03:17:04.275Z",
+      "finished": "2026-11-14T03:17:04.501Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent idx_subscription_features_plan",
+      "started": "2026-11-14T03:17:04.504Z",
+      "finished": "2026-11-14T03:17:04.788Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch idx_subscription_features_plan",
+      "started": "2026-11-14T03:17:04.790Z",
+      "finished": "2026-11-14T03:17:05.016Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent idx_subscription_plans_active",
+      "started": "2026-11-14T03:17:05.019Z",
+      "finished": "2026-11-14T03:17:05.302Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch idx_subscription_plans_active",
+      "started": "2026-11-14T03:17:05.305Z",
+      "finished": "2026-11-14T03:17:05.534Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent idx_user_features_cache_user",
+      "started": "2026-11-14T03:17:05.537Z",
+      "finished": "2026-11-14T03:17:05.819Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch idx_user_features_cache_user",
+      "started": "2026-11-14T03:17:05.822Z",
+      "finished": "2026-11-14T03:17:06.049Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent idx_subscriptions_user_active",
+      "started": "2026-11-14T03:17:06.052Z",
+      "finished": "2026-11-14T03:17:06.333Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch idx_subscriptions_user_active",
+      "started": "2026-11-14T03:17:06.336Z",
+      "finished": "2026-11-14T03:17:06.564Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Absent idx_sso_sessions_family",
+      "started": "2026-11-14T03:17:06.566Z",
+      "finished": "2026-11-14T03:17:06.849Z",
+      "result": "PASS",
+      "detail": {
+        "createdAndDefinitionValidated": true,
+        "fixtureMutationRolledBack": true
+      }
+    },
+    {
+      "name": "Mismatch idx_sso_sessions_family",
+      "started": "2026-11-14T03:17:06.852Z",
+      "finished": "2026-11-14T03:17:07.079Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "P0001"
+      }
+    },
+    {
+      "name": "Pending 0009 upgrade",
+      "started": "2026-11-14T03:17:07.082Z",
+      "finished": "2026-11-14T03:17:25.425Z",
+      "result": "PASS",
+      "detail": {
+        "originalLedgerPreserved": true,
+        "executed": [
+          {
+            "tag": "0009_student_invitations",
+            "originalHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+            "executedHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+          }
+        ],
+        "afterCount": 10
+      }
+    },
+    {
+      "name": "Candidate uniqueness and access",
+      "started": "2026-11-14T03:17:25.428Z",
+      "finished": "2026-11-14T03:17:28.030Z",
+      "result": "PASS",
+      "detail": {
+        "sameEmailIndependentBrands": true,
+        "normalizedUniquenessSQLSTATE": "23505",
+        "grantUniquenessSQLSTATE": "23505",
+        "grantForeignKeySQLSTATE": "23503",
+        "candidateSourceHash": "1349ebfbc7e969526e2885770c6ccfd38ae7802057985828151ec8a1970e616e"
+      }
+    },
+    {
+      "name": "Pinned source mismatch",
+      "started": "2026-11-14T03:17:28.033Z",
+      "finished": "2026-11-14T03:17:28.078Z",
+      "result": "PASS",
+      "detail": {
+        "databaseExecution": false,
+        "failedClosed": true
+      }
+    },
+    {
+      "name": "Atomic failure rollback",
+      "started": "2026-11-14T03:17:28.082Z",
+      "finished": "2026-11-14T03:17:42.411Z",
+      "result": "PASS",
+      "detail": {
+        "failedClosedSQLSTATE": "22012",
+        "ledgerUnchanged": true,
+        "ddlRolledBack": true
+      }
+    },
+    {
+      "name": "Concurrent migration admission",
+      "started": "2026-11-14T03:17:42.415Z",
+      "finished": "2026-11-14T03:17:55.827Z",
+      "result": "PASS",
+      "detail": {
+        "executionCounts": [
+          10
+        ],
+        "boundedLockTimeouts": 1,
+        "finalLedgerRows": 10,
+        "safeRetry": true
+      }
+    }
+  ]
+}

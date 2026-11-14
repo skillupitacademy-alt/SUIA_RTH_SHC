@@ -1,0 +1,63 @@
+{
+  "technicalRecommendation": "PASS",
+  "subjectToOwnerEvidenceReview": true,
+  "sharedMigration": "HOLD",
+  "credentialExposure": "OPEN \u2014 REMEDIATION DEFERRED BY OWNER",
+  "mandatory": [
+    {
+      "test": "Fresh supported replay 0000 prerequisite and 0001-0009",
+      "result": "PASS"
+    },
+    {
+      "test": "Both approved duplicate foreign-key cases",
+      "result": "PASS"
+    },
+    {
+      "test": "Three approved duplicate indexes",
+      "result": "PASS"
+    },
+    {
+      "test": "Two additional 0005/0007 duplicate indexes",
+      "result": "PASS"
+    },
+    {
+      "test": "Pending 0009 upgrade from recorded 0000-0008 baseline",
+      "result": "PASS"
+    },
+    {
+      "test": "Repeated supported execution",
+      "result": "PASS"
+    },
+    {
+      "test": "Constraint/index comparison and FK integrity",
+      "result": "PASS"
+    },
+    {
+      "test": "Historical hashes and migration-ledger consistency",
+      "result": "PASS"
+    },
+    {
+      "test": "Every mismatched duplicate object",
+      "result": "FAIL CLOSED"
+    },
+    {
+      "test": "Already-applied definition drift",
+      "result": "FAIL CLOSED"
+    },
+    {
+      "test": "Pinned-input and ledger-hash drift",
+      "result": "FAIL CLOSED"
+    },
+    {
+      "test": "Injected DDL failure rollback and bounded concurrent migration",
+      "result": "PASS"
+    },
+    {
+      "test": "Candidate normalized uniqueness and platform-access constraints",
+      "result": "PASS"
+    }
+  ],
+  "finalPhysicalTests": 24,
+  "focusedRegressions": 25,
+  "priorNinePassingQualificationGroups": "Preserved at 8ca7ad05; reused without broad rerun"
+}

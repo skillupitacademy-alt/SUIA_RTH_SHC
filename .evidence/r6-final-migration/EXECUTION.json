@@ -1,0 +1,6 @@
+{
+  "command": "pnpm exec vitest run --config .evidence/r6-final-migration/vitest.config.mts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=.evidence/r6-final-migration/TEST_RESULTS.json",
+  "started": "2026-11-14T03:18:21.254Z",
+  "finished": "2026-11-14T03:19:45.621Z",
+  "exitCode": 0
+}

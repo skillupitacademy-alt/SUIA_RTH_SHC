@@ -1,0 +1,8 @@
+ M audit/Canonical_Root_Cause_Register.csv
+ M docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv
+ M docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md
+ M docs/risk/RISK_REGISTER.md
+ M packages/db-people/package.json
+?? .evidence/r6-final-migration/
+?? packages/db-people/scripts/
+?? packages/db-people/src/migration-compatibility.ts

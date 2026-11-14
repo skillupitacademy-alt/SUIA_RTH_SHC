@@ -1,0 +1,22 @@
+{
+  "resources": [
+    {
+      "database": "r6b_final_48a561b901_fresh",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_upgrade",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_rollback",
+      "deleted": true
+    },
+    {
+      "database": "r6b_final_48a561b901_concurrent",
+      "deleted": true
+    }
+  ],
+  "remaining": [],
+  "branchRetained": true
+}
