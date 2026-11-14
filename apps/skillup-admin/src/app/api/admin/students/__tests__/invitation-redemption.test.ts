@@ -1,14 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import bcrypt from 'bcryptjs';
+import { NextRequest } from 'next/server';
 
 import {
   clearStudentInvitationsForTests,
-  createIsolatedTestInvitationRepository,
   issueStudentInvitation,
-  normalizeStudentEmail,
   STUDENT_INVITATION_TTL_HOURS,
   STUDENT_INVITATION_TTL_MS,
 } from '@/lib/student-invitation';
+
+type InvitationPort = import('@/lib/student-invitation').IsolatedTestInvitationRepositoryPort;
+
+interface MockWriteValues {
+  email?: string;
+  passwordHash?: string;
+  role?: string;
+  platform?: string;
+  isActive?: boolean;
+  fullName?: string;
+  enquiryId?: string;
+  studentUserId?: string;
+  userId?: string;
+  name?: string;
+  documents?: unknown;
+}
 
 interface MockUser {
   id: string;
@@ -22,15 +37,15 @@ interface MockUser {
 
 const mocks = vi.hoisted(() => {
   const mockUsers: MockUser[] = [];
-  const mockAdmissions: any[] = [];
-  const mockEnquiries: any[] = [];
-  const mockProfiles: any[] = [];
+  const mockAdmissions: Array<MockWriteValues & { id: string }> = [];
+  const mockEnquiries: Array<MockWriteValues & { id: string }> = [];
+  const mockProfiles: MockWriteValues[] = [];
   const flags = {
     nextUserUpdateShouldThrow: false,
     nextUserUpdateZeroRows: false,
   };
 
-  const mockDb: any = {
+  const mockDb = {
     select: vi.fn(() => ({
       from: vi.fn(() => ({
         where: vi.fn(() => ({
@@ -39,7 +54,7 @@ const mocks = vi.hoisted(() => {
       })),
     })),
     insert: vi.fn(() => ({
-      values: vi.fn((vals: any) => ({
+      values: vi.fn((vals: MockWriteValues) => ({
         returning: vi.fn(async () => {
           if (vals.email && vals.passwordHash) {
             const newUser: MockUser = {
@@ -73,7 +88,7 @@ const mocks = vi.hoisted(() => {
       })),
     })),
     update: vi.fn(() => ({
-      set: vi.fn((updateVals: any) => ({
+      set: vi.fn((updateVals: MockWriteValues) => ({
         where: vi.fn(() => ({
           returning: vi.fn(async () => {
             if (updateVals.passwordHash) {
@@ -103,29 +118,29 @@ const mocks = vi.hoisted(() => {
         })),
       })),
     })),
-    createInvitation: vi.fn(async (input: any) => {
+    createInvitation: vi.fn(async (input: Parameters<InvitationPort['createInvitation']>[0]) => {
       const { issueStudentInvitation } = await import('@/lib/student-invitation');
       return issueStudentInvitation(input);
     }),
-    claimForRedemption: vi.fn(async (input: any) => {
+    claimForRedemption: vi.fn(async (input: Parameters<InvitationPort['claimForRedemption']>[0]) => {
       const { claimStudentInvitationForRedemption } = await import('@/lib/student-invitation');
       return claimStudentInvitationForRedemption(input);
     }),
-    redeemAtomic: vi.fn(async (input: any) => {
+    redeemAtomic: vi.fn(async (input: Parameters<InvitationPort['redeemAtomic']>[0]) => {
       const { commitStudentInvitationRedemption } = await import('@/lib/student-invitation');
       return commitStudentInvitationRedemption(input);
     }),
-    releaseClaim: vi.fn(async (input: any) => {
+    releaseClaim: vi.fn(async (input: Parameters<InvitationPort['releaseClaim']>[0]) => {
       const { releaseStudentInvitationClaim } = await import('@/lib/student-invitation');
       return releaseStudentInvitationClaim(input);
     }),
-    transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(mockDb)),
+    transaction: vi.fn(async <T>(cb: (tx: object) => Promise<T>): Promise<T> => cb(mockDb)),
   };
 
   return { mockUsers, mockAdmissions, mockEnquiries, mockProfiles, flags, mockDb };
 });
 
-const { mockUsers, mockAdmissions, mockEnquiries, mockProfiles, flags, mockDb } = mocks;
+const { mockUsers, mockAdmissions, mockEnquiries, mockProfiles, flags } = mocks;
 
 vi.mock('@quiz/events', () => ({
   PlatformEventTypes: {
@@ -164,7 +179,7 @@ import { POST as postCreateStudent } from '../route';
 import { POST as postRedeemInvitation } from '../invite/redeem/route';
 
 const makeAdminRequest = (url: string, body: unknown) =>
-  new Request(`http://localhost${url}`, {
+  new NextRequest(`http://localhost${url}`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -174,7 +189,7 @@ const makeAdminRequest = (url: string, body: unknown) =>
   });
 
 const makePublicRequest = (url: string, body: unknown) =>
-  new Request(`http://localhost${url}`, {
+  new NextRequest(`http://localhost${url}`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -203,7 +218,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       batchName: 'Batch 2026 A',
     });
 
-    const res = await postCreateStudent(req as any);
+    const res = await postCreateStudent(req);
     expect(res.status).toBe(201);
     const { data: body } = await res.json();
 
@@ -250,7 +265,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       batchName: 'Batch 2026 B',
     });
 
-    const res = await postCreateStudent(req as any);
+    const res = await postCreateStudent(req);
     expect(res.status).toBe(409);
     const body = await res.json();
     expect(body.error).toContain('active SkillUp account already exists');
@@ -268,7 +283,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       newPassword: 'SkillUp@2025', // Prohibited static default password
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(JSON.stringify(body)).toContain('Static default passwords are prohibited');
@@ -286,7 +301,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       newPassword: 'Short1!',
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(JSON.stringify(body)).toContain('at least 10 characters');
@@ -315,7 +330,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       newPassword: strongPassword,
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(200);
     const { data: body } = await res.json();
     expect(body.status).toBe('activated');
@@ -342,7 +357,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       email: 'student4.test@skillup.org',
       newPassword: strongPassword,
     });
-    const res1 = await postRedeemInvitation(req1 as any);
+    const res1 = await postRedeemInvitation(req1);
     expect(res1.status).toBe(200);
 
     // Second redemption attempt with same token must be rejected with 409
@@ -351,7 +366,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       email: 'student4.test@skillup.org',
       newPassword: 'AnotherStrongPassword2026!',
     });
-    const res2 = await postRedeemInvitation(req2 as any);
+    const res2 = await postRedeemInvitation(req2);
     expect(res2.status).toBe(409);
     const body2 = await res2.json();
     expect(body2.error).toContain('already-redeemed');
@@ -371,7 +386,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       newPassword: 'Strong-User-Password-2026!',
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(410);
     const body = await res.json();
     expect(body.error).toContain('expired');
@@ -384,7 +399,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       newPassword: 'Strong-User-Password-2026!',
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(401);
     const body = await res.json();
     expect(body.error).toContain('invalid-token');
@@ -403,7 +418,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       platform: 'realtutorialhub', // Cross-tenant attempt
     });
 
-    const res = await postRedeemInvitation(req as any);
+    const res = await postRedeemInvitation(req);
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.error).toContain('Cross-tenant');
@@ -439,7 +454,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       email: 'atomic.student@skillup.org',
       newPassword: 'Strong-User-Password-2026!',
     });
-    const zeroRowRes = await postRedeemInvitation(zeroRowReq as any);
+    const zeroRowRes = await postRedeemInvitation(zeroRowReq);
     expect(zeroRowRes.status).toBe(404);
     expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('pending');
 
@@ -450,7 +465,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       email: 'atomic.student@skillup.org',
       newPassword: 'Strong-User-Password-2026!',
     });
-    await expect(postRedeemInvitation(throwReq as any)).rejects.toThrow('Simulated DB password update failure');
+    await expect(postRedeemInvitation(throwReq)).rejects.toThrow('Simulated DB password update failure');
     expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('pending');
 
     // 4. Subsequent retry succeeds with 200 and commits status = 'redeemed'
@@ -459,7 +474,7 @@ describe('TC08 / FND11 / FND16 — Student Invitation Provisioning & Single-Use 
       email: 'atomic.student@skillup.org',
       newPassword: 'Strong-User-Password-2026!',
     });
-    const retryRes = await postRedeemInvitation(retryReq as any);
+    const retryRes = await postRedeemInvitation(retryReq);
     expect(retryRes.status).toBe(200);
     expect(freshInvitationLib.getStudentInvitationById(issued.record.invitationId)?.status).toBe('redeemed');
   });

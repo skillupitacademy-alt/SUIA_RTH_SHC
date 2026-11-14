@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-interface MockUserRow {
+interface MockPredicateMetadata {
+  op: string;
+  col?: string;
+  val?: unknown;
+}
+
+type MockPredicate = ((row: Record<string, unknown>) => boolean) & {
+  meta?: MockPredicateMetadata;
+  preds?: MockPredicateMetadata[];
+};
+
+interface MockTable {
+  __table: string;
+}
+
+interface MockUserRow extends Record<string, unknown> {
   id: string;
   email: string;
   platform: string;
@@ -37,9 +52,9 @@ vi.mock('drizzle-orm', () => ({
     fn.meta = { op: 'isNull', col: col.col };
     return fn;
   },
-  sql: (strings: TemplateStringsArray, ...values: any[]) => {
+  sql: (strings: TemplateStringsArray, ...values: Array<{ col: string } | string>) => {
     const raw = strings.join('');
-    const colObj = values[0];
+    const colObj = typeof values[0] === 'object' ? values[0] : undefined;
     const targetVal = values[1];
     const fn = (row: Record<string, unknown>) => {
       if (raw.includes('lower(trim(') && colObj?.col) {
@@ -50,8 +65,8 @@ vi.mock('drizzle-orm', () => ({
     fn.meta = { op: 'lower_trim_eq', col: colObj?.col, val: targetVal };
     return fn;
   },
-  and: (...preds: any[]) => {
-    const validPreds = preds.filter(Boolean);
+  and: (...preds: Array<MockPredicate | undefined>) => {
+    const validPreds = preds.filter((predicate): predicate is MockPredicate => Boolean(predicate));
     const fn = (row: Record<string, unknown>) => validPreds.every((p) => p(row));
     fn.preds = validPreds.map((p) => p.meta ?? { op: 'unknown' });
     return fn;
@@ -93,13 +108,13 @@ vi.mock('@quiz/db-people', async (importOriginal) => {
 
   const createQueryBuilder = () => {
     let currentTable = '';
-    let currentWhere: any = null;
+    let currentWhere: MockPredicate | null = null;
     const builder = {
-      from: (table: any) => {
+      from: (table: MockTable) => {
         currentTable = table?.__table ?? '';
         return builder;
       },
-      where: (pred: any) => {
+      where: (pred: MockPredicate) => {
         currentWhere = pred;
         if (currentTable === 'users' && pred?.preds) {
           f.lastUserPredicates = pred.preds;
@@ -112,14 +127,15 @@ vi.mock('@quiz/db-people', async (importOriginal) => {
         if (currentTable === 'users') {
           f.lastUserLimit = n;
         }
-        const filtered = currentWhere ? dataset.filter((row) => currentWhere(row)) : dataset;
+        const predicate = currentWhere;
+        const filtered = predicate ? dataset.filter((row) => predicate(row)) : dataset;
         return filtered.slice(0, n);
       },
     };
     return builder;
   };
 
-  const insert = (table: any) => ({
+  const insert = (table: MockTable) => ({
     values: (val: Record<string, unknown>) => {
       const tableName = table?.__table;
       if (tableName === 'userProfiles') f.insertedProfiles.push(val);
@@ -128,13 +144,13 @@ vi.mock('@quiz/db-people', async (importOriginal) => {
       return {
         onConflictDoNothing: async () => undefined,
         returning: () => ({
-          then: async (resolve: any) => resolve([{ id: `${tableName}-new-id`, ...val }]),
+          then: async (resolve: (rows: Array<Record<string, unknown>>) => unknown) => resolve([{ id: `${tableName}-new-id`, ...val }]),
         }),
       };
     },
   });
 
-  const update = (table: any) => ({
+  const update = (table: MockTable) => ({
     set: (val: Record<string, unknown>) => ({
       where: async () => {
         if (table?.__table === 'enquiries') f.updatedEnquiries.push(val);
@@ -149,7 +165,7 @@ vi.mock('@quiz/db-people', async (importOriginal) => {
       select: () => createQueryBuilder(),
       insert,
       update,
-      transaction: async (fn: any) => {
+      transaction: async <T>(fn: (tx: { select: typeof createQueryBuilder; insert: typeof insert; update: typeof update }) => Promise<T>) => {
         f.txWrites();
         return await fn({
           select: () => createQueryBuilder(),

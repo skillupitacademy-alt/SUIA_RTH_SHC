@@ -1,0 +1,147 @@
+{
+  "capturedUtc": "2026-11-14T00:57:55.440526+00:00",
+  "baseline": "2abe642a314863aa75617b9f0a51fcdcea958876",
+  "changedSources": [
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts",
+      "before": "35ac4b7b4291b4906fb5a0caa5e80f949fabc786f33dc4374ea503fc3c2940b3",
+      "after": "0d5f609b05bfcbadf955de39784e778e2940e24d1c5c659af0a1bdfa8f155e3a"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts",
+      "before": "e80d5d72ab8ec6797049b0de7632e40083681a73fedb890cc8e925b06e08b64c",
+      "after": "4b0d2f668692cdc4b7fcb5e51469c4e84100966f31812dbba8de98a297a4bcba"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/student-invitation.ts",
+      "before": "08bbac174309cce684a70bd4e37698eda58ba1a7a09895d1790e6b6da4a21322",
+      "after": "0b38dffbf4a0ab19e90c296852823f5d98b8fce35bca59cacdacfdbbf4194f1f"
+    }
+  ],
+  "protectedSources": [
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b"
+    },
+    {
+      "path": "apps/skillup-web/next-env.d.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/skillup-admin-data.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c"
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/token-refresh.service.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "7627793b134bc96dbb49fa9c9b01684e0541375f5490f36612dc073f3913baa9"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970"
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "matchesPriorProtectedHash": true,
+      "sha256": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e"
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "matchesPriorProtectedHash": true,
+      "sha256": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+    },
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99"
+    },
+    {
+      "path": "packages/identity-bridge/src/logger.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "ffdd28b30afebe30b7ea3b1fa8fe57b932316cf99af5c768bf3b0f426465eb08"
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e"
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739"
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "matchesPriorProtectedHash": true,
+      "sha256": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17"
+    }
+  ],
+  "beforeWarnings": 45,
+  "afterWarnings": 0,
+  "afterErrors": 0,
+  "comparisonCommand": {
+    "command": "node .evidence/r6-admin-lint-closure/compare-lint.cjs",
+    "exitCode": 0
+  },
+  "assertionCommand": {
+    "command": "node .evidence/r6-admin-lint-closure/check-assertions.cjs",
+    "exitCode": 0
+  },
+  "rawLogs": [
+    {
+      "path": ".evidence/r6-admin-lint-closure/admin-lint.log",
+      "sha256": "641d06b73f9723524fc1e186ce5db1bcea4ccb369ddd91c36483b2ea6adea239"
+    },
+    {
+      "path": ".evidence/r6-admin-lint-closure/admin-typecheck.log",
+      "sha256": "179493585217991824b0d89da967b207fa5e5eb761460916d25d90263370c1ec"
+    },
+    {
+      "path": ".evidence/r6-admin-lint-closure/fixture-typecheck-initial.log",
+      "sha256": "17afd8e6ac9ac9f0b33c68bdc0f6c9ea8aa0ef4a3b7094bbbae39d0c39c9f46c"
+    },
+    {
+      "path": ".evidence/r6-admin-lint-closure/fixture-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".evidence/r6-admin-lint-closure/graphify-update.log",
+      "sha256": "4fd1bafc4ae07bd94ba59ca71d8950664b101efd861f085c483096480f630bcf"
+    },
+    {
+      "path": ".evidence/r6-admin-lint-closure/invitation-admission-tests.log",
+      "sha256": "c2d59f2d2fba711ebfbb859d66ee38e0f127579ca31448e0a8e4e15a348fcff0"
+    }
+  ],
+  "sensitiveLogMatches": [],
+  "graphifyExit": 0
+}

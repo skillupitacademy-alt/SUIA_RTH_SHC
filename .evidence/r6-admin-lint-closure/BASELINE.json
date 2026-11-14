@@ -1,0 +1,8 @@
+{
+  "head": "2abe642a314863aa75617b9f0a51fcdcea958876",
+  "sourceHashes": {
+    "apps/skillup-admin/src/lib/student-invitation.ts": "08bbac174309cce684a70bd4e37698eda58ba1a7a09895d1790e6b6da4a21322",
+    "apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts": "e80d5d72ab8ec6797049b0de7632e40083681a73fedb890cc8e925b06e08b64c",
+    "apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts": "35ac4b7b4291b4906fb5a0caa5e80f949fabc786f33dc4374ea503fc3c2940b3"
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "file": "apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts",
+    "beforeCount": 38,
+    "afterCount": 38,
+    "assertionsIdentical": true
+  },
+  {
+    "file": "apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts",
+    "beforeCount": 26,
+    "afterCount": 26,
+    "assertionsIdentical": true
+  }
+]

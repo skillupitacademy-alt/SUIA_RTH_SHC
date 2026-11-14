@@ -1,0 +1,13 @@
+{
+  "baseline": "2abe642a314863aa75617b9f0a51fcdcea958876",
+  "results": [
+    {
+      "name": "fixture-typecheck",
+      "command": "pnpm exec tsc --noEmit -p .evidence/r6-admin-lint-closure/tests.tsconfig.json",
+      "started": "2026-11-14T00:55:32.766Z",
+      "finished": "2026-11-14T00:55:36.319Z",
+      "exitCode": 2
+    }
+  ],
+  "environment": "Cleared database/provider environment; network transport blocked by inherited Node preload; controlled persistence"
+}

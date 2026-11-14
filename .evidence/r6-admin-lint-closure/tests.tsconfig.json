@@ -1,0 +1,10 @@
+{
+  "extends": "../../apps/skillup-admin/tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "../../apps/skillup-admin/src/lib/student-invitation.ts",
+    "../../apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts",
+    "../../apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts"
+  ],
+  "exclude": ["../../node_modules"]
+}

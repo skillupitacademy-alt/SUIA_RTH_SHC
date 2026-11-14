@@ -1,0 +1,5 @@
+{
+  "file": "apps/skillup-admin/src/lib/student-invitation.ts",
+  "identicalRuntimeTokens": true,
+  "normalization": "Ignore comments/whitespace and redundant parentheses around the existing peopleDb namespace reference"
+}
