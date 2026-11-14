@@ -1,0 +1,44 @@
+{
+  "sourceCommit": "37c482c2599a10ce802397b3e37452f445cb7e4f",
+  "recommendation": "HOLD",
+  "technicalQualification": "PASS accepted without rerun",
+  "loginPositiveControls": [
+    {
+      "brand": "skillup",
+      "loginStatus": 200,
+      "ownPrivateStatus": 200,
+      "dashboardStatus": 200,
+      "logoutStatus": 200,
+      "oldCookieReplayStatus": 401,
+      "foreignBrandStatus": 403
+    },
+    {
+      "brand": "realtutorialhub",
+      "loginStatus": 200,
+      "ownPrivateStatus": 200,
+      "dashboardStatus": 200,
+      "logoutStatus": 200,
+      "oldCookieReplayStatus": 401,
+      "foreignBrandStatus": 403
+    },
+    {
+      "brand": "skillhubcore",
+      "loginStatus": 200,
+      "ownPrivateStatus": 200,
+      "dashboardStatus": 200,
+      "logoutStatus": 200,
+      "oldCookieReplayStatus": 200,
+      "foreignBrandStatus": null
+    }
+  ],
+  "backup": "Protected backup/recoverable point and restore authorization pending",
+  "migrationNumbering": "0009 is student invitations. Normalized uniqueness is an unregistered candidate after 0009.",
+  "exposure": "OPEN - remediation deferred by owner",
+  "normalApplicationEffects": "Login/logout sessions and audit effects through approved test identities",
+  "directDatabaseOperations": "READ ONLY transactions ending ROLLBACK",
+  "checks": {
+    "scriptSyntax": 0,
+    "knownCredentialPatternMatches": 0,
+    "productionSourceChanges": 0
+  }
+}

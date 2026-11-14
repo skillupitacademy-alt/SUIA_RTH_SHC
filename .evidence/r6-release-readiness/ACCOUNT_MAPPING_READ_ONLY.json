@@ -1,0 +1,22 @@
+{
+  "capturedUtc": "2026-11-14T04:03:01.069Z",
+  "mode": "READ ONLY",
+  "accounts": [
+    {
+      "brand": "skillup",
+      "error": "SANITIZED_READ_ONLY_QUERY_FAILURE",
+      "sqlstate": "42703"
+    },
+    {
+      "brand": "realtutorialhub",
+      "error": "SANITIZED_READ_ONLY_QUERY_FAILURE",
+      "sqlstate": "42703"
+    },
+    {
+      "brand": "skillhubcore",
+      "peopleAccountMatches": 1,
+      "activePeopleAccount": true,
+      "activeOwnPlatformGrant": false
+    }
+  ]
+}

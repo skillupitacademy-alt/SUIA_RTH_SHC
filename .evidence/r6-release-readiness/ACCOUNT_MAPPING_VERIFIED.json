@@ -1,0 +1,29 @@
+{
+  "capturedUtc": "2026-11-14T04:03:26.991Z",
+  "mode": "READ ONLY",
+  "initialAttempt": "ACCOUNT_MAPPING_READ_ONLY.json used an unsupported is_active column on brand users and failed with 42703; this query uses existing deleted_at and shadow_user_id",
+  "accounts": [
+    {
+      "brand": "skillup",
+      "brandAccountMatches": 1,
+      "brandAccountNotDeleted": true,
+      "peopleAccountMatches": 1,
+      "activePeopleAccount": true,
+      "activeOwnPlatformGrant": true,
+      "externalIdMatchesBrandUser": true,
+      "shadowLinkMatchesPerson": true,
+      "personIdDistinctFromLearner": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "brandAccountMatches": 1,
+      "brandAccountNotDeleted": true,
+      "peopleAccountMatches": 1,
+      "activePeopleAccount": true,
+      "activeOwnPlatformGrant": true,
+      "externalIdMatchesBrandUser": true,
+      "shadowLinkMatchesPerson": true,
+      "personIdDistinctFromLearner": false
+    }
+  ]
+}

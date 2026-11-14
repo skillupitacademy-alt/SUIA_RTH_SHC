@@ -1,0 +1,34 @@
+{
+  "startedUtc": "2026-11-14T04:04:07.981Z",
+  "mode": "Existing approved identities, localhost UI login and single-session logout only",
+  "originalHarness": {
+    "exitCode": 1,
+    "discovered": 0,
+    "outcome": "Collection failed before execution; safe reporter suppressed detailed diagnostics"
+  },
+  "results": [
+    {
+      "brand": "skillhubcore",
+      "origin": "http://skillhubcore.localhost:3007",
+      "credentialReferenceAvailable": true,
+      "anonymousPrivateStatus": 401,
+      "loginStatus": 200,
+      "landingPath": "/dashboard",
+      "accessCookieEstablished": true,
+      "refreshCookieEstablished": true,
+      "tokenBrandMatches": true,
+      "distinctPersonClaim": false,
+      "authenticatedPrivateStatus": 200,
+      "ownEmailMatches": true,
+      "dashboardStatus": 200,
+      "dashboardRedirectPath": null,
+      "adminReadStatus": 200,
+      "logoutStatus": 200,
+      "afterLogoutPrivateStatus": 401,
+      "authCookiesCleared": true,
+      "revokedSessionReplayStatus": 200,
+      "revokedSessionAdminReadStatus": 200
+    }
+  ],
+  "finishedUtc": "2026-11-14T04:04:15.561Z"
+}
