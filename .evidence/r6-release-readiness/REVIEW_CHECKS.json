@@ -1,0 +1,143 @@
+{
+  "time": "2026-11-14T03:54:29.358Z",
+  "sourceChecks": [
+    {
+      "path": "audit/Canonical_Root_Cause_Register.csv",
+      "match": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "match": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "match": true
+    },
+    {
+      "path": "docs/risk/RISK_REGISTER.md",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/package.json",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/scripts/migrate.mts",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/src/migration-compatibility.ts",
+      "match": true
+    }
+  ],
+  "localHttp": [
+    {
+      "url": "http://skillhubcore.localhost:3007/login",
+      "status": 200,
+      "location": null,
+      "tested": "anonymous login-page GET"
+    },
+    {
+      "url": "http://skillup.localhost:3009/login",
+      "status": 200,
+      "location": null,
+      "tested": "anonymous login-page GET"
+    },
+    {
+      "url": "http://realtutorialhub.localhost:3003/login",
+      "status": 200,
+      "location": null,
+      "tested": "anonymous login-page GET"
+    }
+  ],
+  "credentialReferences": [
+    {
+      "file": ".project-ai/learner-runtime.env",
+      "present": true,
+      "keys": []
+    },
+    {
+      "file": ".project-ai/learner-fixtures.json",
+      "present": true,
+      "topLevelKeys": [
+        "project-llm-learner-runtime"
+      ]
+    },
+    {
+      "file": ".env.local",
+      "present": true,
+      "keys": [
+        "DATABASE_URL_PEOPLE",
+        "DATABASE_DIRECT_URL_PEOPLE",
+        "EMAIL_FROM",
+        "EMAIL_PROVIDER",
+        "GATEWAY_URL_SKILLUP",
+        "GATEWAY_URL_SKILLHUBCORE",
+        "GATEWAY_URL",
+        "INTERNAL_GATEWAY_SECRET",
+        "EMAIL_FROM_RTH",
+        "EMAIL_FROM_SKILLUP",
+        "RBAC_RTH_USER_EMAIL",
+        "RBAC_RTH_USER_PASSWORD",
+        "RBAC_SKILLUP_STUDENT_EMAIL",
+        "RBAC_SKILLUP_STUDENT_PASSWORD",
+        "AUTH_AUDIT_RTH_EMAIL",
+        "AUTH_AUDIT_RTH_PASSWORD",
+        "AUTH_AUDIT_SKILLUP_EMAIL",
+        "AUTH_AUDIT_SKILLUP_PASSWORD",
+        "AUTH_DIAGNOSTIC_RTH_EMAIL",
+        "AUTH_DIAGNOSTIC_RTH_PASSWORD",
+        "AUTH_DIAGNOSTIC_SKILLUP_EMAIL",
+        "AUTH_DIAGNOSTIC_SKILLUP_PASSWORD",
+        "AUTH_SAFETY_RTH_EMAIL",
+        "AUTH_SAFETY_RTH_PASSWORD",
+        "AUTH_SAFETY_SKILLUP_EMAIL",
+        "AUTH_SAFETY_SKILLUP_PASSWORD",
+        "RTH_TEST_EMAIL",
+        "RTH_TEST_PASSWORD",
+        "SKILLUP_TEST_EMAIL",
+        "SKILLUP_TEST_PASSWORD",
+        "SUIA_EMAIL",
+        "SUIA_PASSWORD",
+        "RTH_EMAIL",
+        "RTH_PASSWORD"
+      ]
+    },
+    {
+      "file": "apps/api-server/.env.local",
+      "present": true,
+      "keys": [
+        "DATABASE_URL_PEOPLE",
+        "DATABASE_DIRECT_URL_PEOPLE",
+        "EMAIL_FROM",
+        "EMAIL_PROVIDER",
+        "GATEWAY_URL",
+        "GATEWAY_URL_SKILLUP",
+        "GATEWAY_URL_SKILLHUBCORE",
+        "INTERNAL_GATEWAY_SECRET",
+        "EMAIL_FROM_RTH",
+        "EMAIL_FROM_SKILLUP",
+        "RBAC_RTH_USER_EMAIL",
+        "RBAC_RTH_USER_PASSWORD",
+        "RBAC_SKILLUP_STUDENT_EMAIL",
+        "RBAC_SKILLUP_STUDENT_PASSWORD",
+        "AUTH_AUDIT_RTH_EMAIL",
+        "AUTH_AUDIT_RTH_PASSWORD",
+        "AUTH_AUDIT_SKILLUP_EMAIL",
+        "AUTH_AUDIT_SKILLUP_PASSWORD",
+        "AUTH_DIAGNOSTIC_RTH_EMAIL",
+        "AUTH_DIAGNOSTIC_RTH_PASSWORD",
+        "AUTH_DIAGNOSTIC_SKILLUP_EMAIL",
+        "AUTH_DIAGNOSTIC_SKILLUP_PASSWORD",
+        "AUTH_SAFETY_RTH_EMAIL",
+        "AUTH_SAFETY_RTH_PASSWORD",
+        "AUTH_SAFETY_SKILLUP_EMAIL",
+        "AUTH_SAFETY_SKILLUP_PASSWORD",
+        "RTH_TEST_EMAIL",
+        "RTH_TEST_PASSWORD",
+        "SKILLUP_TEST_EMAIL",
+        "SKILLUP_TEST_PASSWORD"
+      ]
+    }
+  ]
+}

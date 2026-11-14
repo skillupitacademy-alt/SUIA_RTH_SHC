@@ -1,0 +1,107 @@
+{
+  "capturedUtc": "2026-11-14T03:54:55.550Z",
+  "mode": "READ ONLY",
+  "endpoint": "ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech",
+  "database": "people_prod",
+  "identity": [
+    {
+      "database": "people_prod",
+      "role": "neondb_owner",
+      "version": "17.12 (14c6cec)",
+      "project": "bitter-tree-18287476",
+      "branch": "br-misty-wildflower-a1jalxmd"
+    }
+  ],
+  "ledger": [
+    {
+      "id": 1,
+      "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "created_at": "1774191220131"
+    },
+    {
+      "id": 2,
+      "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "created_at": "1774536900897"
+    },
+    {
+      "id": 3,
+      "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "created_at": "1774537191952"
+    },
+    {
+      "id": 25,
+      "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "created_at": "1774538285178"
+    },
+    {
+      "id": 26,
+      "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "created_at": "1774541869102"
+    },
+    {
+      "id": 27,
+      "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "created_at": "1774550945793"
+    },
+    {
+      "id": 29,
+      "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "created_at": "1774591239501"
+    },
+    {
+      "id": 30,
+      "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "created_at": "1774935418558"
+    },
+    {
+      "id": 31,
+      "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "created_at": "1774938098054"
+    }
+  ],
+  "emailIndexes": [
+    {
+      "indexname": "users_email_unique",
+      "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+    },
+    {
+      "indexname": "idx_users_email_platform",
+      "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+    },
+    {
+      "indexname": "idx_users_external_id_platform",
+      "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+    }
+  ],
+  "emailConstraints": [
+    {
+      "conname": "users_email_unique",
+      "definition": "UNIQUE (email)"
+    }
+  ],
+  "platforms": [
+    {
+      "enumlabel": "realtutorialhub"
+    },
+    {
+      "enumlabel": "skillup"
+    },
+    {
+      "enumlabel": "both"
+    },
+    {
+      "enumlabel": "skillhubcore"
+    }
+  ],
+  "duplicates": [
+    {
+      "normalized_same_platform_duplicate_groups": 0
+    }
+  ],
+  "invitations": [
+    {
+      "exists": false
+    }
+  ],
+  "success": true
+}

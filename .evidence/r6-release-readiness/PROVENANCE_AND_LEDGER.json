@@ -1,0 +1,151 @@
+{
+  "sourceCommit": "4913531c444995680d2e8e052e8777c727e2685c",
+  "ledger": [
+    {
+      "position": 0,
+      "tag": "0000_perpetual_microbe",
+      "match": true
+    },
+    {
+      "position": 1,
+      "tag": "0001_abnormal_gamma_corps",
+      "match": true
+    },
+    {
+      "position": 2,
+      "tag": "0002_low_captain_midlands",
+      "match": true
+    },
+    {
+      "position": 3,
+      "tag": "0003_massive_kitty_pryde",
+      "match": true
+    },
+    {
+      "position": 4,
+      "tag": "0004_amusing_kang",
+      "match": true
+    },
+    {
+      "position": 5,
+      "tag": "0005_people_perf_indexes",
+      "match": true
+    },
+    {
+      "position": 6,
+      "tag": "0006_skillhubcore_subscription_schema",
+      "match": true
+    },
+    {
+      "position": 7,
+      "tag": "0007_long_sentinels",
+      "match": true
+    },
+    {
+      "position": 8,
+      "tag": "0008_common_zodiak",
+      "match": true
+    }
+  ],
+  "historicalFiles": [
+    {
+      "path": "packages/db-people/migrations/0000_perpetual_microbe.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0001_abnormal_gamma_corps.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0002_low_captain_midlands.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0003_massive_kitty_pryde.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0004_amusing_kang.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0005_people_perf_indexes.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0006_skillhubcore_subscription_schema.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0007_long_sentinels.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0008_common_zodiak.sql",
+      "match": true
+    },
+    {
+      "path": "packages/db-people/migrations/0009_student_invitations.sql",
+      "match": true
+    }
+  ],
+  "credentialReferences": [
+    {
+      "file": ".env.local",
+      "credentialKeyNames": [
+        "TEST_ADMIN_TOKEN_RTH",
+        "TEST_ADMIN_TOKEN_SKILLUP",
+        "TEST_ADMIN_TOKEN",
+        "EMAIL_FROM",
+        "EMAIL_PROVIDER",
+        "NEXT_PUBLIC_ADMIN_URL",
+        "EMAIL_FROM_RTH",
+        "EMAIL_FROM_SKILLUP",
+        "SKILLHUB_ADMIN_URL",
+        "RTH_ADMIN_URL",
+        "SKILLUP_ADMIN_URL",
+        "SKILLHUBCORE_ADMIN_URL",
+        "RBAC_RTH_USER_EMAIL",
+        "RBAC_RTH_USER_PASSWORD",
+        "RBAC_SKILLUP_STUDENT_EMAIL",
+        "RBAC_SKILLUP_STUDENT_PASSWORD",
+        "AUTH_AUDIT_RTH_EMAIL",
+        "AUTH_AUDIT_RTH_PASSWORD",
+        "AUTH_AUDIT_SKILLUP_EMAIL",
+        "AUTH_AUDIT_SKILLUP_PASSWORD",
+        "AUTH_DIAGNOSTIC_RTH_EMAIL",
+        "AUTH_DIAGNOSTIC_RTH_PASSWORD",
+        "AUTH_DIAGNOSTIC_SKILLUP_EMAIL",
+        "AUTH_DIAGNOSTIC_SKILLUP_PASSWORD",
+        "AUTH_SAFETY_RTH_EMAIL",
+        "AUTH_SAFETY_RTH_PASSWORD",
+        "AUTH_SAFETY_SKILLUP_EMAIL",
+        "AUTH_SAFETY_SKILLUP_PASSWORD",
+        "RTH_TEST_EMAIL",
+        "RTH_TEST_PASSWORD",
+        "SKILLUP_TEST_EMAIL",
+        "SKILLUP_TEST_PASSWORD",
+        "SUIA_EMAIL",
+        "SUIA_PASSWORD",
+        "RTH_EMAIL",
+        "RTH_PASSWORD"
+      ]
+    },
+    {
+      "file": "apps/skillhubcore-admin/.env.local",
+      "credentialKeyNames": []
+    },
+    {
+      "file": "apps/skillup-web/.env.local",
+      "credentialKeyNames": []
+    },
+    {
+      "file": "apps/realtutorialhub-web/.env.local",
+      "credentialKeyNames": []
+    },
+    {
+      "file": ".project-ai/learner-runtime.env",
+      "credentialKeyNames": []
+    }
+  ]
+}
