@@ -1,0 +1,28 @@
+{
+  "started": "2026-11-14T06:07:31.192Z",
+  "checks": [
+    {
+      "label": "Protected endpoint rejected before connection",
+      "exitCode": 2,
+      "status": "BLOCKED",
+      "checksExecuted": 0,
+      "diagnostic": "Configured endpoint or database is outside the approved disposable target"
+    },
+    {
+      "label": "Malformed connection rejected without echoing input",
+      "exitCode": 2,
+      "status": "BLOCKED",
+      "checksExecuted": 0,
+      "diagnostic": "Invalid disposable connection configuration"
+    },
+    {
+      "label": "Missing setting fails closed",
+      "exitCode": 2,
+      "status": "BLOCKED",
+      "checksExecuted": 0,
+      "diagnostic": "Approved disposable R6_NEON_TEST_URL is unavailable. No database connection attempted."
+    }
+  ],
+  "finished": "2026-11-14T06:07:33.079Z",
+  "temporaryFileRemoved": true
+}

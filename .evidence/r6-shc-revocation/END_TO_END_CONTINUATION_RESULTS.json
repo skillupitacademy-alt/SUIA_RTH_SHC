@@ -1,0 +1,49 @@
+{
+  "baseline": "036681cd76b61b283a9a311e54609e4d43b088a0",
+  "decision": "HOLD",
+  "applicationSourceChanged": false,
+  "acceptedPreviousControlledTests": 157,
+  "newControlledChecks": 6,
+  "newLocalhostExpiredCredentialChecks": 3,
+  "newConnectionGuardChecks": 3,
+  "currentSecretFileExists": false,
+  "secretsPathGitIgnored": true,
+  "immediateBlocker": "Owner-supplied secure local env file with a separate uncompromised R6_NEON_TEST_URL is unavailable",
+  "expiryPolicy": "Preserve existing fresh login after SHC access expiry",
+  "physical0010": "BLOCKED",
+  "fullThreeAppNewSchemaRuntime": "BLOCKED",
+  "protectedMigration": "HOLD",
+  "credentialExposure": "OPEN - remediation deferred by owner",
+  "requiredReleaseApprovals": [
+    "Protected recovery point and disposable restore evidence",
+    "Exact pending 0009/0010 SQL execution approval",
+    "Credential-risk disposition",
+    "Deployment and live-smoke authorization"
+  ],
+  "changedFileHashes": [
+    {
+      "file": ".evidence/r6-shc-revocation/DISPOSABLE_RESULTS.json",
+      "sha256": "c12eef1fde50fc243c64b30ffd9b1c6f8601db99be4c4a3a4135f2d7816e858c"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/verify-disposable.mts",
+      "sha256": "7836e4f69297344b33b3b8c8e9b24b082286ea0acfcc99676b42938b660592bf"
+    },
+    {
+      "file": ".gitignore",
+      "sha256": "4522b8ad60e59a313f24185b3087c2a355a05102929fc508e12df44c8c06cd28"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "87aa1fe54fd60098d8bd4d0f8d464f94210e6eecb236ba79109456618e58a6d5"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "6bc2ec09df9b25427ad2169dd7ecf66577ab8253639d40a677e9cd44dba02eaa"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "sha256": "8246f467215d60eeb4ba277a3bc9bc2b12ead7d0c9cf5c2dd8c777205395cf37"
+    }
+  ]
+}

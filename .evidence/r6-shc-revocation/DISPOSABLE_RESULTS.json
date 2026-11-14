@@ -1,5 +1,5 @@
 {
   "status": "BLOCKED",
   "checks": [],
-  "failure": "Approved disposable R6_NEON_TEST_URL is unavailable. No database connection attempted."
+  "failure": "Explicit secrets file is missing, tracked or not Git-excluded"
 }

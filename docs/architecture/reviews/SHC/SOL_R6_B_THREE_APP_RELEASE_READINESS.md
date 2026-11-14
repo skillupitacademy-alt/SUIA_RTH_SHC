@@ -200,3 +200,45 @@ All ten historical SQL files retain their recorded SHA-256 hashes. The journal r
 6. Resolve the production risk decision for R6B-SEC-01. The incident stays **OPEN — REMEDIATION DEFERRED BY OWNER**.
 
 The SHCA-A01 evidence note records this source correction and its pending runtime status. All 62 criterion IDs and acceptance statuses are preserved. Q48 remains OPEN. Prior SUIA/RTH runtime evidence remains linked to its tested source boundary. Current changed-file scope leaves those learner authorities untouched. The local commit records the source/tests and explicit pending receipts for owner review.
+
+## Focused end-to-end closure continuation
+
+Implementation baseline is `036681cd76b61b283a9a311e54609e4d43b088a0`. The owner permits preserving fresh login at SHC expiry when that matches the existing behavior. The preceding 157 controlled tests and completed quality/build receipts remain accepted. This continuation changes the secure test-file loader and Git exclusion, with application implementation preserved.
+
+### Expiry policy and additional evidence
+
+The SHC page verifier rejects expired access tokens and the proxy redirects unauthenticated page requests to `/login`. `AdminGuard` redirects confirmed authentication failure to login. The shared API client may attempt its generic refresh fallback on eligible API calls, while administrative session checks bypass that fallback. A failed fallback invokes the existing unauthorized handling. The SHC application has no refresh BFF route or rewrite.
+
+Under the current owner instruction, preserve fresh authentication after SHC access expiry. Automatic renewal requires no implementation for this phase. Logout revocation stays enforced through the persisted session authority. A future automatic-renewal requirement would need its own contract.
+
+Four selected server-page authentication controls passed with real signed test credentials and a controlled account authority. Twenty unrelated cases were excluded by the explicit name filter. Two existing client refresh-fallback controls passed with controlled responses. These six additional cases supplement the accepted 157 cases.
+
+Three actual localhost HTTP controls used a signed, already-expired credential for a generated synthetic principal. `/dashboard` returned 307 to `/login`, `/api/admin/auth/me` returned 401, and `/api/admin/domains` returned 401. These GET-only controls created no login/session. `EXPIRY_LOCALHOST_RESULTS.json` records their boundary and outcomes. This closes the expiry-policy uncertainty at the observed localhost admission boundary. Full post-fix login, captured-cookie replay, revoked-refresh denial and fresh-login persistence verification remain pending isolated runtime.
+
+### Disposable connection blocker
+
+The suggested `.local-secrets/r6-neon-test.env` is absent, and no alternative owner-supplied file path is available. `/.local-secrets/` is now Git-excluded, confirmed by `git check-ignore`. The disposable verifier accepts an explicit local env-file path, checks repository exclusion and tracked-file status, and loads only `R6_NEON_TEST_URL`. An explicit missing file fails closed. Shared database URL settings provide no fallback.
+
+Controlled safety checks rejected a protected endpoint, malformed URL and missing setting with exit 2 before constructing a PostgreSQL client. The temporary synthetic configuration was removed. The updated verifier typecheck passed. The actual invocation against the missing suggested file also exited 2 with BLOCKED and zero executed database checks. A separate uncompromised disposable credential must be supplied through an owner-managed local file. Credential freshness remains unverified while that input is absent.
+
+From the repository root, the prepared invocation is `node node_modules/tsx/dist/cli.mjs --tsconfig apps/api-server/tsconfig.json .evidence/r6-shc-revocation/verify-disposable.mts .local-secrets/r6-neon-test.env`. Server-side verification of project `bitter-tree-18287476`, branch `br-young-silence-a1b1ta26`, endpoint `ep-fragrant-brook-a1mhx5dm` and database `people_prod` precedes its first write.
+
+Browser progress/quiz writes additionally require disposable brand/TutorialDB fixtures and an isolated audit destination where applicable. The current localhost configuration points at shared remote stores. Test-process bindings must therefore establish isolation before those write journeys. The running shared processes retain their existing configuration.
+
+### Closure matrix
+
+| Required flow | Current state | Evidence and outstanding condition |
+|---|---|---|
+| SHC frontend/BFF/API/PeopleDB | BLOCKED for final post-fix journey | Prior login/admin controls and 036681cd source checks retained. Current expiry denial passes localhost HTTP. Full persistence/replay verification needs the secure disposable input. |
+| SUIA frontend/BFF/API/PeopleDB/SkillUp DB | BLOCKED for final new-schema journey | Earlier dashboard/profile/logout receipts retained. Tutorial, progress and quiz journeys on the new disposable schema remain NOT TESTED. |
+| RTH frontend/BFF/API/PeopleDB/RTH DB | BLOCKED for final new-schema journey | Same boundary as SUIA. Existing independent brand-local account authority is preserved. |
+| SHC logout and expiry | Controlled revocation PASS, localhost expiry PASS, full isolated session runtime BLOCKED | Preserve fresh login at expiry. Captured-cookie and revoked-refresh runtime controls await isolated persistence. |
+| Registered 0010 disposable migration | BLOCKED | Registered SQL/journal/snapshot and metadata validation retained. No database connection opened in this continuation. |
+| Cross-brand authorization | Earlier bounded runtime PASS, final new-schema evidence BLOCKED | Prior foreign-brand profile denials retained. Full membership combinations, spoofed-header and resource-ownership controls await new-schema fixtures. |
+| Protected backup/recovery | PENDING | Current recoverable point, coverage/retention, disposable restoration rehearsal, recovery window and operator approval remain outstanding. |
+| Credential exposure | OPEN, remediation deferred by owner | The production risk remains open. |
+| Technical closure | HOLD | The missing secure disposable connection is the immediate execution blocker. Required end-to-end gates remain pending. |
+
+PeopleDB remains the shared registry with platform-qualified mappings. SUIA/RTH keep independent brand-local accounts, credentials and data ownership. Matching email addresses establish neither an identity merge nor a platform grant. Multi-platform controls must exercise verified existing grants with the appropriate brand-scoped principal.
+
+The final protected release still requires reviewed backup/recovery evidence, exact 0009/0010 execution authorization with fresh catalog/ledger/duplicate preflight, a credential-risk decision, and deployment/live-smoke authorization. All 62 acceptance statuses and Q48 remain owner-controlled. The local continuation commit records these specific evidence limits.

@@ -225,3 +225,6 @@ scripts/verify-*.mjs
 
 # Generated AI context packets and checkpoints (local-only, uncommitted)
 /.context-packets/
+
+# Owner-managed local qualification credentials
+/.local-secrets/

@@ -1,0 +1,25 @@
+{
+  "capturedUtc": "2026-11-14T06:08:13.513Z",
+  "origin": "http://skillhubcore.localhost:3007",
+  "boundary": "Actual localhost GET requests with an expired synthetic-principal credential. No login, session creation or database mutation.",
+  "checks": [
+    {
+      "route": "/dashboard",
+      "status": 307,
+      "redirectPath": "/login",
+      "pass": true
+    },
+    {
+      "route": "/api/admin/auth/me",
+      "status": 401,
+      "redirectPath": null,
+      "pass": true
+    },
+    {
+      "route": "/api/admin/domains",
+      "status": 401,
+      "redirectPath": null,
+      "pass": true
+    }
+  ]
+}

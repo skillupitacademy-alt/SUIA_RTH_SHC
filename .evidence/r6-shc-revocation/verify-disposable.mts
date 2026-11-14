@@ -9,6 +9,8 @@ import WebSocket from 'ws';
 import bcrypt from 'bcryptjs';
 import { NextRequest } from 'next/server';
 import { migratePeople } from '../../packages/db-people/src/migration-compatibility';
+import dotenv from 'dotenv';
+import { execFileSync } from 'node:child_process';
 
 const evidence = path.resolve('.evidence/r6-shc-revocation');
 const result: {
@@ -21,7 +23,32 @@ const result: {
   target?: { project: string; branch: string; endpoint: string };
 } = { status: 'RUNNING', checks: [] };
 const save = () => fs.writeFileSync(path.join(evidence, 'DISPOSABLE_RESULTS.json'), JSON.stringify(result, null, 2));
-const supplied = process.env.R6_NEON_TEST_URL;
+// The optional argument is a local file path. Credentials stay out of argv and
+// all command/evidence output. No shared database environment key is consulted.
+const environmentFile = process.argv[2];
+let supplied = process.env.R6_NEON_TEST_URL;
+if (environmentFile !== undefined) {
+  const absolute = path.resolve(environmentFile);
+  const relative = path.relative(path.resolve('.'), absolute);
+  const insideRepository = relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative);
+  try {
+    if (insideRepository) {
+      execFileSync('git', ['check-ignore', '--quiet', '--', relative], { stdio: 'ignore' });
+      try {
+        execFileSync('git', ['ls-files', '--error-unmatch', '--', relative], { stdio: 'ignore' });
+        throw new Error('Tracked secrets file');
+      } catch (error) {
+        if (!(typeof error === 'object' && error !== null && 'status' in error && error.status === 1)) throw error;
+      }
+    }
+    supplied = dotenv.parse(fs.readFileSync(absolute)).R6_NEON_TEST_URL;
+  } catch {
+    result.status = 'BLOCKED';
+    result.failure = 'Explicit secrets file is missing, tracked or not Git-excluded';
+    save();
+    process.exit(2);
+  }
+}
 if (!supplied) {
   result.status = 'BLOCKED';
   result.failure = 'Approved disposable R6_NEON_TEST_URL is unavailable. No database connection attempted.';
@@ -37,8 +64,12 @@ try {
   save();
   process.exit(2);
 }
-assert.ok(['ep-fragrant-brook-a1mhx5dm-pooler.ap-southeast-1.aws.neon.tech', 'ep-fragrant-brook-a1mhx5dm.ap-southeast-1.aws.neon.tech'].includes(target.hostname));
-assert.equal(target.pathname, '/people_prod');
+if (!['ep-fragrant-brook-a1mhx5dm-pooler.ap-southeast-1.aws.neon.tech', 'ep-fragrant-brook-a1mhx5dm.ap-southeast-1.aws.neon.tech'].includes(target.hostname) || target.pathname !== '/people_prod') {
+  result.status = 'BLOCKED';
+  result.failure = 'Configured endpoint or database is outside the approved disposable target';
+  save();
+  process.exit(2);
+}
 target.hostname = target.hostname.replace('-pooler.', '.');
 const database = 'r6b_shc_' + crypto.randomBytes(6).toString('hex');
 result.scratchDatabase = database;

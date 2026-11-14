@@ -249,3 +249,11 @@ Package and CLI source were typechecked. Relevant lint passed with max-warnings=
 ### Acceptance and remaining owner gates
 
 The supported fresh-replay migration blocker is technically resolved and recommended for closure after owner evidence review. Canonical CSV notes link this bounded result while preserving unrelated criterion statuses. Shared PeopleDB migration, rollout and the wider Q48 acceptance remain owner-controlled. The credential-exposure incident stays OPEN — REMEDIATION DEFERRED BY OWNER, and retained-branch cleanup remains an owner action after review. Further protected SQL or GitHub publication requires separate approval.
+
+### Registered 0010 and final integration continuation
+
+Implementation commit `036681cd76b61b283a9a311e54609e4d43b088a0` registers `0010_normalized_platform_email` after `0009_student_invitations` and implements SHC persisted-session revocation. Its 157 controlled tests and completed quality/build checks remain accepted evidence. The earlier 24 physical migration tests retain their historical boundary.
+
+The final integration continuation established SHC fresh-login-at-expiry behavior through source tracing, six additional focused controlled tests and three actual localhost expired-credential GET controls. The existing readiness report contains the current closure matrix and evidence paths under `.evidence/r6-shc-revocation`.
+
+Registered 0010 physical execution remains BLOCKED because the suggested secure test env file is absent. The verifier now accepts an explicit Git-excluded local file containing `R6_NEON_TEST_URL`, rejects protected/malformed/missing targets before connection, and preserves the approved disposable branch assertions. This continuation executed no migration or database write. Fresh login at SHC expiry is preserved under the latest owner instruction. Full new-schema session and three-app integration remain pending. Protected backup/recovery and shared 0009/0010 execution still require their recorded owner approvals. R6B-SEC-01 remains OPEN — REMEDIATION DEFERRED BY OWNER.
