@@ -22,7 +22,7 @@ function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
 }
 
-export default async function AuditPage({ searchParams }: { searchParams?: SearchParams }) {
+export default async function AuditPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   if ((await getSkillUpAdminRole()) !== 'admin') {
     return (
       <RoleLockedNotice
@@ -32,11 +32,12 @@ export default async function AuditPage({ searchParams }: { searchParams?: Searc
     );
   }
 
+  const resolvedSearchParams = await searchParams;
   const filters = {
-    student: firstValue(searchParams?.student),
-    action: firstValue(searchParams?.action),
-    from: firstValue(searchParams?.from),
-    to: firstValue(searchParams?.to),
+    student: firstValue(resolvedSearchParams?.student),
+    action: firstValue(resolvedSearchParams?.action),
+    from: firstValue(resolvedSearchParams?.from),
+    to: firstValue(resolvedSearchParams?.to),
   };
 
   const rows = await listAdminAuditLog(filters);

@@ -21,8 +21,8 @@ const mockTokenService = {
 const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn() };
-const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn(), touchSession: vi.fn() };
+const mockUserRepo = { findActiveUserWithRoles: vi.fn(), findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn() };
+const mockTokenRepo = { consumeToken: vi.fn(), getUserSessions: vi.fn(), findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn(), touchSession: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 
 vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
@@ -54,8 +54,11 @@ describe('AuthService extreme tail 2', () => {
         mockTokenService.generateAccessToken.mockResolvedValue('access');
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
         mockTokenService.hashToken.mockResolvedValue('hash');
+        mockTokenRepo.consumeToken.mockResolvedValue({ id: 'rt1' });
+        mockTokenRepo.getUserSessions.mockResolvedValue([]);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'fixture@example.invalid', roles: ['student'], isBlocked: false, deletedAt: null });
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
-        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', email: 'e', userRoles: [], isBlocked: false } as any);
     });
 
@@ -98,31 +101,37 @@ describe('AuthService extreme tail 2', () => {
         expect(result.isAdmin).toBe(true);
     });
 
-    it('refresh: customExpiration < standardExpireS && we are inside the grace period (Line 201)', async () => {
+    it('refresh: expired exam metadata cannot override current session rotation', async () => {
         const startedAt = new Date(Date.now() - (3600 * 1000) - 10000); 
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 3600, startedAt } as any);
         
         const { container } = await import('../../core/container');
         await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
-        expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', brand: 'realtutorialhub', aud: 'user', isAdmin: false, sessionBinding: 'hash' }));
     });
 
-    it('refresh: customExpiration < standardExpireS && we are inside exam time (Line 201)', async () => {
+    it('refresh: short exam metadata cannot override current session rotation', async () => {
         const startedAt = new Date(Date.now() - (60 * 1000)); 
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 600, startedAt } as any);
         
         const { container } = await import('../../core/container');
         await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
-        expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', brand: 'realtutorialhub', aud: 'user', isAdmin: false, sessionBinding: 'hash' }));
     });
 
-    it('refresh: customExpiration >= standardExpireS (Line 201)', async () => {
+    it('refresh: long exam metadata cannot override current session rotation', async () => {
         const startedAt = new Date(Date.now() - (60 * 1000)); 
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 7200, startedAt } as any);
         
         const { container } = await import('../../core/container');
         await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user', 'realtutorialhub');
-        expect(mockExamRepo.findActiveExam).toHaveBeenCalled();
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', brand: 'realtutorialhub', aud: 'user', isAdmin: false, sessionBinding: 'hash' }));
     });
 });
 

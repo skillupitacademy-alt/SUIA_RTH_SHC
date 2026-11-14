@@ -13,7 +13,7 @@ const badgeStyles: Record<string, string> = {
   enquired: 'border-slate-200 bg-slate-50 text-slate-700',
 };
 
-export default async function StudentDetailPage({ params }: { params: { id: string } }) {
+export default async function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   if ((await getSkillUpAdminRole()) !== 'admin') {
     return (
       <RoleLockedNotice
@@ -23,7 +23,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
     );
   }
 
-  const student = await getAdminStudentDetail(params.id);
+  const student = await getAdminStudentDetail((await params).id);
   if (student === undefined) {
     notFound();
   }

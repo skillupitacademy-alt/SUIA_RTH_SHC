@@ -24,7 +24,7 @@ const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
 const mockUserRepo = { 
-  findByIdWithDetails: vi.fn(), 
+  findActiveUserWithRoles: vi.fn(), findByIdWithDetails: vi.fn(),
   updateLastActive: vi.fn(), 
   findWithDetails: vi.fn(), 
   create: vi.fn(), 
@@ -42,7 +42,7 @@ const mockUserRepo = {
   updatePassword: vi.fn()
 };
 const mockTokenRepo = { 
-  findByHash: vi.fn(), 
+  consumeToken: vi.fn(), getUserSessions: vi.fn(), findByHash: vi.fn(),
   revokeAll: vi.fn(), 
   revokeById: vi.fn(), 
   createRefreshToken: vi.fn(), 
@@ -88,6 +88,9 @@ describe('AuthService (Main Suite)', () => {
     mockTokenService.generateAccessToken.mockResolvedValue('access');
     mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
     mockTokenService.hashToken.mockResolvedValue('hash');
+        mockTokenRepo.consumeToken.mockResolvedValue({ id: 'rt1' });
+        mockTokenRepo.getUserSessions.mockResolvedValue([]);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'fixture@example.invalid', roles: ['student'], isBlocked: false, deletedAt: null });
     mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
     mockPasswordService.hash.mockResolvedValue('hashed');
     mockPasswordService.compare.mockResolvedValue(true);
@@ -137,18 +140,35 @@ describe('AuthService (Main Suite)', () => {
   });
 
   describe('refresh', () => {
-    it('detects token reuse', async () => {
+    it('denies an unknown refresh token without issuing credentials', async () => {
       mockTokenRepo.findByHash.mockResolvedValue(undefined);
-      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Security Alert');
+      await expect(container.get(AuthService).refresh('unknown')).rejects.toThrow('Invalid refresh token');
+      expect(mockTokenRepo.consumeToken).not.toHaveBeenCalled();
+      expect(mockTokenService.generateAccessToken).not.toHaveBeenCalled();
+    });
+
+    it('rejects a token consumed concurrently without storing a successor', async () => {
+      mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) });
+      mockTokenRepo.consumeToken.mockResolvedValueOnce(undefined);
+      await expect(container.get(AuthService).refresh('token')).rejects.toThrow('Refresh token has been revoked or already consumed');
+      expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+      expect(mockTokenRepo.createRefreshToken).not.toHaveBeenCalled();
+    });
+
+    it('detects token reuse', async () => {
+      mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', revoked: true, expiresAt: new Date(Date.now() + 100000) });
+      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Refresh token has been revoked');
+      expect(mockTokenService.generateAccessToken).not.toHaveBeenCalled();
+      expect(mockTokenRepo.createRefreshToken).not.toHaveBeenCalled();
     });
 
     it('throws if refresh token is expired according to DB', async () => {
       mockTokenRepo.findByHash.mockResolvedValue({ expiresAt: new Date(Date.now() - 1000) } as any);
-      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Refresh _token expired');
+      await expect(container.get(AuthService).refresh('token', undefined, undefined, 'user', 'realtutorialhub')).rejects.toThrow('Refresh token has expired');
     });
 
-    it('handles exam grace window correctly', async () => {
-      mockTokenRepo.findByHash.mockResolvedValue({ id: 's1', expiresAt: new Date(Date.now() + 100000) } as any);
+    it('rotates an eligible session without using exam metadata as authority', async () => {
+      mockTokenRepo.findByHash.mockResolvedValue({ id: 's1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
       mockUserRepo.findByIdWithDetails.mockResolvedValue({ 
         id: 'u1', email: 't@t.com', isBlocked: false, userRoles: []
       } as any);
@@ -157,7 +177,9 @@ describe('AuthService (Main Suite)', () => {
       } as any);
 
       await container.get(AuthService).refresh('token', 'ip', 'e1', 'user', 'realtutorialhub');
-      expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.any(Object), expect.any(Number));
+      expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+      expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+      expect(mockTokenService.generateAccessToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1', brand: 'realtutorialhub', sessionBinding: 'hash', isAdmin: false, aud: 'user' }));
     });
   });
 

@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation';
 import { EnquiryEditForm } from '@/components/crm/EnquiryEditForm';
 import { getAdminEnquiryDetail } from '@/lib/skillup-admin-data';
 
-export default async function EnquiryDetailPage({ params }: { params: { id: string } }) {
-  const enquiry = await getAdminEnquiryDetail(params.id);
+export default async function EnquiryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const enquiry = await getAdminEnquiryDetail((await params).id);
   if (enquiry === undefined) {
     notFound();
   }

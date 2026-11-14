@@ -1,0 +1,17 @@
+ M apps/api-server/src/modules/auth/__tests__/auth.branches2.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.branches3.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.logout.branch.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.logout.edge.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.service.tail.lines.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.service.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts
+ M apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts
+ M apps/api-server/src/modules/auth/__tests__/batch-08-internal-auth-boundary.test.ts
+ M apps/skillup-admin/src/app/(admin)/audit/page.tsx
+ M apps/skillup-admin/src/app/(admin)/batches/[id]/page.tsx
+ M apps/skillup-admin/src/app/(admin)/crm/enquiries/[id]/page.tsx
+ M apps/skillup-admin/src/app/(admin)/students/[id]/page.tsx
+ M apps/skillup-admin/src/app/api/admin/students/invite/redeem/route.ts
+ M packages/types/src/tutorial-repositories.types.ts
+?? .evidence/r6-quality-closure/
+?? docs/architecture/reviews/SHC/SOL_R6_B_AUTH_NEXT_QUALITY_GATE_CLOSURE.md

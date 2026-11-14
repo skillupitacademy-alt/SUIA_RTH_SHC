@@ -9,7 +9,7 @@ import { container } from '../../core/container';
 const mockTokenService = { 
     hashToken: vi.fn().mockResolvedValue('hashed-token') 
 };
-const mockTokenRepo = { revokeToken: vi.fn() };
+const mockTokenRepo = { revokeToken: vi.fn(), getUserSessions: vi.fn() };
 const mockUserRepo = { updateLastActive: vi.fn() };
 const mockAuditService = { log: vi.fn() };
 
@@ -21,6 +21,7 @@ vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(()
 describe('AuthService.logout', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+    mockTokenRepo.getUserSessions.mockResolvedValue([]);
         container.reset();
         container.register(TokenService, mockTokenService as any);
         container.register(TokenRepository, mockTokenRepo as any);
@@ -36,4 +37,12 @@ describe('AuthService.logout', () => {
         expect(mockTokenRepo.revokeToken).toHaveBeenCalledWith('hashed-token');
         expect(mockUserRepo.updateLastActive).toHaveBeenCalledWith('u1', expect.any(Date));
     });
+    it('keeps the account online when another device remains active', async () => {
+        mockTokenRepo.getUserSessions.mockResolvedValue([{ id: 'device-b' }]);
+        await container.get(AuthService).logout('device-a', 'u1');
+        expect(mockTokenRepo.revokeToken).toHaveBeenCalledWith('hashed-token');
+        expect(mockTokenRepo.getUserSessions).toHaveBeenCalledWith('u1');
+        expect(mockUserRepo.updateLastActive).not.toHaveBeenCalled();
+    });
+
 });

@@ -1,0 +1,13 @@
+{
+  "baseline": "ecbad61b9f117d83e724d3f9e6e3c8cb55f5665f",
+  "results": [
+    {
+      "name": "changed-admin-lint",
+      "command": "pnpm --filter @quiz/skillup-admin exec eslint --no-ignore --max-warnings=0 src/app/(admin)/audit/page.tsx src/app/(admin)/batches/[id]/page.tsx src/app/(admin)/crm/enquiries/[id]/page.tsx src/app/(admin)/students/[id]/page.tsx src/app/api/admin/students/invite/redeem/route.ts",
+      "started": "2026-11-14T00:38:45.270Z",
+      "finished": "2026-11-14T00:38:51.546Z",
+      "exitCode": 0
+    }
+  ],
+  "environment": "Cleared database/provider environment; network transport blocked by inherited Node preload; controlled persistence"
+}

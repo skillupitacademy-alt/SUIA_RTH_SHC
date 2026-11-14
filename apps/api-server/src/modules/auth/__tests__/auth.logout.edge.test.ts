@@ -7,7 +7,7 @@ import { AuditService } from '../audit.service';
 import { container } from '../../core/container';
 
 const mockTokenService = { hashToken: vi.fn().mockResolvedValue('hash') };
-const mockTokenRepo = { revokeToken: vi.fn() };
+const mockTokenRepo = { revokeToken: vi.fn(), getUserSessions: vi.fn() };
 const mockUserRepo = { updateLastActive: vi.fn() };
 const mockAuditService = { log: vi.fn() };
 
@@ -19,6 +19,7 @@ vi.mock('../audit.service', () => ({ AuditService: vi.fn().mockImplementation(()
 describe('AuthService logout edge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTokenRepo.getUserSessions.mockResolvedValue([]);
     container.reset();
     container.register(TokenService, mockTokenService as any);
     container.register(TokenRepository, mockTokenRepo as any);

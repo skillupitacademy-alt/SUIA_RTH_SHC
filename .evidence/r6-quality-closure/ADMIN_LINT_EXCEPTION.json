@@ -1,0 +1,31 @@
+{
+  "result": "FAIL",
+  "exitCode": 1,
+  "errors": 0,
+  "warnings": 45,
+  "warningFiles": 3,
+  "baselineSourceAndConfigurationUnchanged": true,
+  "scope": "Existing invitation/admission code; no fixes authorized beyond the five Next type/module boundaries",
+  "rows": [
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/crm/enquiries/[id]/admit/__tests__/collision.test.ts",
+      "sha256": "35ac4b7b4291b4906fb5a0caa5e80f949fabc786f33dc4374ea503fc3c2940b3",
+      "unchangedAgainstBaseline": true
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/__tests__/invitation-redemption.test.ts",
+      "sha256": "e80d5d72ab8ec6797049b0de7632e40083681a73fedb890cc8e925b06e08b64c",
+      "unchangedAgainstBaseline": true
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/student-invitation.ts",
+      "sha256": "08bbac174309cce684a70bd4e37698eda58ba1a7a09895d1790e6b6da4a21322",
+      "unchangedAgainstBaseline": true
+    },
+    {
+      "path": "apps/skillup-admin/.eslintrc.json",
+      "sha256": "2df18b808c7f0a7eb2554c76a6decd44ac07177c8cb3716535f40749e02032c2",
+      "unchangedAgainstBaseline": true
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "baseline": "ecbad61b9f117d83e724d3f9e6e3c8cb55f5665f",
+  "changedFiles": [
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.branches2.test.ts",
+      "sha256": "e3938760a2bfd92c65013d230c7e8da715a2a91a144486498a4fc206be0e3065"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.branches3.test.ts",
+      "sha256": "95d8259dff204e5748c8ffe64c11dfe39a13726614de951130c21a9129f3c0a8"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.logout.branch.test.ts",
+      "sha256": "c5c7e2635d4244d7936e9f233208b455b9d6cc1e2ea62e262aecdd149a94d114"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.logout.edge.test.ts",
+      "sha256": "32c9c34c76ce96dd35bb0f3ea1fac18cd6c9c5e3e94b203a11517ac5e5c716fb"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.tail.lines.test.ts",
+      "sha256": "211d146eee0ada4e95121d3ffc505e149abebfc5be5cd38e9c8e6dc40ab5fe81"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.test.ts",
+      "sha256": "ee2d9dc128037f28c4eb8e91c8f744d0560ba5090ff0e67f64778e40141f5793"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts",
+      "sha256": "76f72a19caca52697e5a3ed3367bed7399326f3d286f1037e51475bf84bb3c41"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts",
+      "sha256": "1210201e75e6810c8d7411c2bb8626f92125ece29bbedb06dcdb53c0552f02c2"
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-internal-auth-boundary.test.ts",
+      "sha256": "6ebb9a5c369db6e4c1252e5c21f4c56609bfbe2cc29c4474e0284e66189d39cf"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/audit/page.tsx",
+      "sha256": "20560b7c93ce8ecc2ef473848d28d74b8644ed02ff708c565c7ea24d3219b670"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/batches/[id]/page.tsx",
+      "sha256": "2d847a8a2ddcc92e108df844568a0c49d951f57a9563a78b58911e17ecddad66"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/crm/enquiries/[id]/page.tsx",
+      "sha256": "3a06cb910d4acee87431c0911e2367909d4c684d4a9546bf2f2d5e2cf6c07078"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/students/[id]/page.tsx",
+      "sha256": "28fbab10462d78fd4ce5214bf11c476f72ce8b9f7ee420382fafb62add32f76f"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/invite/redeem/route.ts",
+      "sha256": "ced3a480b831f54c49852c0cf695a49db7e69afcab3ee2772a82c83281ec9df2"
+    },
+    {
+      "path": "packages/types/src/tutorial-repositories.types.ts",
+      "sha256": "cbd6a7902f8fb439b248996279bb2396f26bde0840b5aff50093177f13d5507d"
+    }
+  ],
+  "logs": [
+    {
+      "path": ".evidence/r6-quality-closure/admin-build.log",
+      "sha256": "2264122a7c894f083820dc923304613244bd511d5c7055d6e4f5a46532d19df6",
+      "bytes": 1502
+    },
+    {
+      "path": ".evidence/r6-quality-closure/admin-lint.log",
+      "sha256": "5009920b5bab1610b26486c5142e844c0232f54dca49340603d14a9dc0c4109a",
+      "bytes": 5867
+    },
+    {
+      "path": ".evidence/r6-quality-closure/admin-typecheck-after-build.log",
+      "sha256": "179493585217991824b0d89da967b207fa5e5eb761460916d25d90263370c1ec",
+      "bytes": 162
+    },
+    {
+      "path": ".evidence/r6-quality-closure/admin-typecheck.log",
+      "sha256": "179493585217991824b0d89da967b207fa5e5eb761460916d25d90263370c1ec",
+      "bytes": 162
+    },
+    {
+      "path": ".evidence/r6-quality-closure/api-auth-initial.log",
+      "sha256": "19f7742fa37f9f93eb9e8b9ae8d460c42f54e164bed6effbb90b43a5d169b07f",
+      "bytes": 232752
+    },
+    {
+      "path": ".evidence/r6-quality-closure/api-auth-tests.log",
+      "sha256": "3a6b814d783bf3a5ab39b017aace1631f86440e8ec44192cbec6cd1e10dd2b35",
+      "bytes": 233705
+    },
+    {
+      "path": ".evidence/r6-quality-closure/api-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".evidence/r6-quality-closure/changed-admin-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".evidence/r6-quality-closure/changed-auth-tests-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".evidence/r6-quality-closure/chg01b-tests.log",
+      "sha256": "8f307c45ccf486b10dd3603f5c3f67ed3252ac5a9cac66622086378e1819eccb",
+      "bytes": 346
+    },
+    {
+      "path": ".evidence/r6-quality-closure/chg03-bridge-tests.log",
+      "sha256": "229c3a58eeec6017bf34539dac2ad4d2dc730cabc556d57bcd4be01d919fc233",
+      "bytes": 2928
+    },
+    {
+      "path": ".evidence/r6-quality-closure/exam-and-report-regressions.log",
+      "sha256": "e3cfd46529f97a35a2cfaf232396f42ec3ed3dbd40a1b91263571fc828cb5690",
+      "bytes": 240
+    },
+    {
+      "path": ".evidence/r6-quality-closure/graphify-update.log",
+      "sha256": "3d91e15f83259f7843f3cd3a33528784c9ac295ccf3331c2d54aacfb22215bf2",
+      "bytes": 1968
+    },
+    {
+      "path": ".evidence/r6-quality-closure/report-tests.log",
+      "sha256": "dd217e8fc5d650153b008589f95d0eb3ba04e054c2d68cc6a9bd6c8a2fc5838e",
+      "bytes": 233
+    },
+    {
+      "path": ".evidence/r6-quality-closure/service-build.log",
+      "sha256": "e00f43923fc9468eaf2629ae9758b1bcce4cfbcd5228ce56aea1d8216d3803e3",
+      "bytes": 128
+    },
+    {
+      "path": ".evidence/r6-quality-closure/service-lint.log",
+      "sha256": "c4f15d123885c808627fd5ab9e0ef7a7904fd2b2090d7a38f0107bd88b45d2e7",
+      "bytes": 156
+    },
+    {
+      "path": ".evidence/r6-quality-closure/service-typecheck.log",
+      "sha256": "914061ba87b89185840a492165d4b55a91abafc858cce41aa53c80cf52f0dfef",
+      "bytes": 142
+    },
+    {
+      "path": ".evidence/r6-quality-closure/sso-auth-tests.log",
+      "sha256": "a1cbe0d1c1d25d43e2b7b6e46ee19525a94bd0aa9236370716d8bebcd813b756",
+      "bytes": 588
+    },
+    {
+      "path": ".evidence/r6-quality-closure/types-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".evidence/r6-quality-closure/types-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "graphifyExit": 0,
+  "tests": {
+    "auth": 386,
+    "examReportSession": 149,
+    "serviceAuth": 51,
+    "reportIdentity": 7,
+    "bridge": 15,
+    "suiaIdentity": 38,
+    "total": 646
+  }
+}

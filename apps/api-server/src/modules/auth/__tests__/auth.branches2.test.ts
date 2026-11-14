@@ -21,6 +21,7 @@ vi.mock('@quiz/db', () => ({
             where: vi.fn().mockReturnThis(),
             returning: vi.fn().mockResolvedValue([{ id: 'id' }])
         })),
+        select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ orderBy: vi.fn().mockResolvedValue([]) }) }) }),
         query: {
             refreshTokens: { findFirst: vi.fn() },
             users: { findFirst: vi.fn() }

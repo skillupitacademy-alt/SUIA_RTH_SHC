@@ -21,8 +21,8 @@ const mockTokenService = {
 const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), withDb: vi.fn(), findByEmail: vi.fn(), createToken: vi.fn(), findById: vi.fn(), verifyEmail: vi.fn(), deleteToken: vi.fn() };
-const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn() };
+const mockUserRepo = { findActiveUserWithRoles: vi.fn(), findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn(), create: vi.fn(), assignRole: vi.fn(), withDb: vi.fn(), findByEmail: vi.fn(), createToken: vi.fn(), findById: vi.fn(), verifyEmail: vi.fn(), deleteToken: vi.fn() };
+const mockTokenRepo = { consumeToken: vi.fn(), getUserSessions: vi.fn(), findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 
 // Manual mock for db to test AuditService internal logic
@@ -65,8 +65,11 @@ describe('Auth / Audit Tail Coverage', () => {
         mockTokenService.generateAccessToken.mockResolvedValue('access');
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
         mockTokenService.hashToken.mockResolvedValue('hash');
+        mockTokenRepo.consumeToken.mockResolvedValue({ id: 'rt1' });
+        mockTokenRepo.getUserSessions.mockResolvedValue([]);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'fixture@example.invalid', roles: ['student'], isBlocked: false, deletedAt: null });
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
-        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', email: 'e', userRoles: [], isBlocked: false } as any);
     });
 
@@ -110,7 +113,7 @@ describe('Auth / Audit Tail Coverage', () => {
         expect(result.isAdmin).toBe(true);
     });
 
-    it('AuthService.refresh: handles exam grace window logic', async () => {
+    it('AuthService.refresh: rotates the current learner session independently of exam metadata', async () => {
         const startedAt = new Date(Date.now() - 10000); 
         mockExamRepo.findActiveExam.mockResolvedValue({
             durationSeconds: 3600,

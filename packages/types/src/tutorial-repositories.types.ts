@@ -18,11 +18,9 @@ import type {
   AssignmentTierStatusMap,
 } from './assignment.types';
 import type {
-  LiveSessionRequestCreateInput,
   LiveSessionRequestFilters,
   LiveSessionRequestRecord,
   LiveSessionRequestStatus,
-  LiveSessionRequestUpdateInput,
 } from './live-session.types';
 import type {
   ProjectBadgeAwardRecord,
@@ -424,12 +422,12 @@ export type PeoplePlatform = 'realtutorialhub' | 'skillup';
 export type PeopleUserRole = 'student' | 'faculty' | 'admin' | 'super_admin';
 
 export interface PeopleDbClientLike {
-  query: Record<string, any>;
+  query: Record<string, unknown>;
   transaction: <T>(callback: (tx: PeopleDbClientLike) => Promise<T>) => Promise<T>;
-  select: (...args: any[]) => any;
-  insert: (...args: any[]) => any;
-  update: (...args: any[]) => any;
-  delete: (...args: any[]) => any;
+  select: (...args: unknown[]) => unknown;
+  insert: (...args: unknown[]) => unknown;
+  update: (...args: unknown[]) => unknown;
+  delete: (...args: unknown[]) => unknown;
 }
 
 export interface PeopleUserRecord {

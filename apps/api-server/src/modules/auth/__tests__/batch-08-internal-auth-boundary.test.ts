@@ -1,10 +1,12 @@
 import { NextRequest } from 'next/server';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { validateGatewaySecret } from '@/middleware/gateway-auth.middleware';
 import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import { UserRepository } from '../repositories/user.repository';
+import { TokenRepository } from '../repositories/token.repository';
 import { proxy } from '@/proxy';
 
 /**
@@ -34,6 +36,8 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
   const originalEnv = { ...process.env };
   let previousTokenServiceInstance: TokenService | null = null;
   let previousContainerTokenService: any = null;
+  let previousUserRepository: UserRepository;
+  let previousTokenRepository: TokenRepository;
 
   beforeEach(() => {
     process.env.INTERNAL_API_SECRET = TEST_INTERNAL_SECRET;
@@ -41,6 +45,8 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
     process.env.GATEWAY_TRUST_SECRET = TEST_GATEWAY_SECRET;
     process.env.INTERNAL_API_KEY = TEST_INTERNAL_SECRET;
 
+    previousUserRepository = container.get(UserRepository);
+    previousTokenRepository = container.get(TokenRepository);
     try {
       previousTokenServiceInstance = TokenService.getInstance();
     } catch {
@@ -55,6 +61,8 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
 
   afterEach(() => {
     process.env = { ...originalEnv };
+    container.register(UserRepository, previousUserRepository);
+    container.register(TokenRepository, previousTokenRepository);
     if (previousTokenServiceInstance) {
       TokenService.setInstance(previousTokenServiceInstance);
     }
@@ -176,6 +184,10 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
     container.register(TokenService, tokenService);
     TokenService.setInstance(tokenService);
 
+    const refresh = 'disposable-device-a-refresh';
+    const sessionLookup = vi.fn().mockResolvedValue({ id: 'device-a' });
+    container.register(UserRepository, { findActiveUserWithRoles: vi.fn().mockResolvedValue({ id: 'test-learner-1', roles: ['student'], deletedAt: null, isBlocked: false }) } as unknown as UserRepository);
+    container.register(TokenRepository, { findValidSession: sessionLookup } as unknown as TokenRepository);
     const learnerToken = await tokenService.generateAccessToken({
       userId: 'test-learner-1',
       brand: 'realtutorialhub',
@@ -183,27 +195,38 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
       aud: 'user',
       isAdmin: false,
       roles: ['student'],
+      sessionBinding: await tokenService.hashToken(refresh),
     });
 
-    // 1. Without internal key, valid learner token passes proxy (200)
+    // Access-only replay remains denied; only the exact persisted cookie pair passes.
+    const replay = await proxy(new NextRequest('https://realtutorialhub.test/api/export/status/test-job', { headers: { authorization: `Bearer ${learnerToken}` } }));
+    expect(replay.status).toBe(401);
+    expect(sessionLookup).not.toHaveBeenCalled();
+
+    // Without an internal key, the valid current device pair passes.
     const reqNormal = new NextRequest('https://realtutorialhub.test/api/export/status/test-job', {
       headers: {
         authorization: `Bearer ${learnerToken}`,
+        cookie: `refreshToken=${refresh}`,
       },
     });
     const resNormal = await proxy(reqNormal);
     expect(resNormal.status).toBe(200);
+    expect(sessionLookup).toHaveBeenCalledWith({ userId: 'test-learner-1', refreshTokenHash: await tokenService.hashToken(refresh) });
+    sessionLookup.mockClear();
 
     // An explicit invalid internal key must not fall through to learner authentication.
     const reqWithBadKey = new NextRequest('https://realtutorialhub.test/api/export/status/test-job', {
       headers: {
         authorization: `Bearer ${learnerToken}`,
+        cookie: `refreshToken=${refresh}`,
         'x-internal-key': 'explicit-wrong-internal-key',
       },
     });
     const resWithBadKey = await proxy(reqWithBadKey);
     // Explicitly rejected privileged credentials must fail closed before learner fallback.
     expect(resWithBadKey.status).toBe(403);
+    expect(sessionLookup).not.toHaveBeenCalled();
   });
 
   it('distinguishes absent, valid, empty and unconfigured internal keys', async () => {

@@ -1,0 +1,20 @@
+{
+  "baseline": "ecbad61b9f117d83e724d3f9e6e3c8cb55f5665f",
+  "results": [
+    {
+      "name": "exam-and-report-regressions",
+      "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/exam-engine/__tests__ src/app/api/generate-report/__tests__/report-auth.test.ts src/lib/__tests__/current-learner-context.test.ts src/app/api/auth/me/__tests__/device-session.test.ts --maxWorkers=1",
+      "started": "2026-11-14T00:37:07.439Z",
+      "finished": "2026-11-14T00:37:24.368Z",
+      "exitCode": 0
+    },
+    {
+      "name": "changed-auth-tests-lint",
+      "command": "pnpm --filter @quiz/api-server exec eslint --no-ignore --max-warnings=0 src/modules/auth/__tests__/auth.branches2.test.ts src/modules/auth/__tests__/auth.branches3.test.ts src/modules/auth/__tests__/auth.logout.branch.test.ts src/modules/auth/__tests__/auth.logout.edge.test.ts src/modules/auth/__tests__/auth.service.tail.lines.test.ts src/modules/auth/__tests__/auth.service.test.ts src/modules/auth/__tests__/auth.tail.test.ts src/modules/auth/__tests__/auth.tail2.test.ts src/modules/auth/__tests__/batch-08-internal-auth-boundary.test.ts",
+      "started": "2026-11-14T00:37:24.406Z",
+      "finished": "2026-11-14T00:38:01.162Z",
+      "exitCode": 0
+    }
+  ],
+  "environment": "Cleared database/provider environment; network transport blocked by inherited Node preload; controlled persistence"
+}

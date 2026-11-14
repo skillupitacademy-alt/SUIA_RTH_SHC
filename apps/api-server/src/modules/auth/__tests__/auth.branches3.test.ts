@@ -21,8 +21,8 @@ const mockTokenService = {
 const mockAuditService = { log: vi.fn() };
 const mockSecurityService = { isAccountLocked: vi.fn(), trackLoginAttempt: vi.fn() };
 const mockPasswordService = { compare: vi.fn(), hash: vi.fn() };
-const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn() };
-const mockTokenRepo = { findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn(), touchSession: vi.fn() };
+const mockUserRepo = { findActiveUserWithRoles: vi.fn(), findByIdWithDetails: vi.fn(), updateLastActive: vi.fn(), findWithDetails: vi.fn() };
+const mockTokenRepo = { consumeToken: vi.fn(), getUserSessions: vi.fn(), findByHash: vi.fn(), revokeAll: vi.fn(), revokeById: vi.fn(), createRefreshToken: vi.fn(), revokeToken: vi.fn(), touchSession: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 
 vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
@@ -54,41 +54,59 @@ describe('AuthService missing false-branches', () => {
         mockTokenService.generateAccessToken.mockResolvedValue('access');
         mockTokenService.generateRefreshToken.mockResolvedValue('refresh');
         mockTokenService.hashToken.mockResolvedValue('hash');
+        mockTokenRepo.consumeToken.mockResolvedValue({ id: 'rt1' });
+        mockTokenRepo.getUserSessions.mockResolvedValue([]);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'fixture@example.invalid', roles: ['student'], isBlocked: false, deletedAt: null });
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
-        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', expiresAt: new Date(Date.now() + 100000) } as any);
+        mockTokenRepo.findByHash.mockResolvedValue({ id: 'rt1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', email: 'e', userRoles: [], isBlocked: false } as any);
     });
 
-    it('AuthService.refresh: examId is undefined (Line 180 skip)', async () => {
+    it('AuthService.refresh: a current session rotates without an exam ID', async () => {
         const { container } = await import('../../core/container');
         await container.get(AuthService).refresh('token', '1.1.1.1', undefined, 'user');
-        expect(mockTokenService.verifyRefreshToken).toHaveBeenCalled();
+        expect(mockTokenService.verifyRefreshToken).toHaveBeenCalledWith('token', { audience: 'user' });
+        expect(mockUserRepo.findActiveUserWithRoles).toHaveBeenCalledWith('u1');
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
         expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
     });
 
-    it('AuthService.refresh: activeExam is undefined (Line 188 skip)', async () => {
+    it('AuthService.refresh: absent exam metadata cannot change rotation', async () => {
         mockExamRepo.findActiveExam.mockResolvedValue(undefined as any);
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        const result = await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        expect(result.accessToken).toBe('access');
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1' }));
     });
 
-    it('AuthService.refresh: activeExam duration is 0 (Line 188 skip)', async () => {
+    it('AuthService.refresh: zero-duration exam metadata cannot change rotation', async () => {
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 0 } as any);
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        const result = await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        expect(result.accessToken).toBe('access');
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1' }));
     });
 
-    it('AuthService.refresh: activeExam remaining time is negative (Line 194 skip)', async () => {
+    it('AuthService.refresh: expired exam metadata cannot change rotation', async () => {
         const oldDate = new Date(Date.now() - 10000000);
         mockExamRepo.findActiveExam.mockResolvedValue({ durationSeconds: 60, startedAt: oldDate } as any);
         const { container } = await import('../../core/container');
-        await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        const result = await container.get(AuthService).refresh('token', '1.1.1.1', 'exam-id', 'user');
+        expect(result.accessToken).toBe('access');
+        expect(mockExamRepo.findActiveExam).not.toHaveBeenCalled();
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
+        expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u1' }));
     });
 
-    it('AuthService.logout: userId is undefined (Line 243 skip)', async () => {
+    it('AuthService.logout: recovers the signed owner when userId is omitted', async () => {
         const { container } = await import('../../core/container');
         await container.get(AuthService).logout('token', undefined);
         expect(mockTokenRepo.revokeToken).toHaveBeenCalled();
-        expect(mockUserRepo.updateLastActive).not.toHaveBeenCalled();
+        expect(mockTokenRepo.getUserSessions).toHaveBeenCalledWith('u1');
+        expect(mockUserRepo.updateLastActive).toHaveBeenCalledWith('u1', expect.any(Date));
     });
 });

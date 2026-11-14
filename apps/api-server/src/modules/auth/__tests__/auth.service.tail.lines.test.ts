@@ -12,7 +12,7 @@ const mockTokenService = {
     verifyRefreshToken: vi.fn(), 
     hashToken: vi.fn().mockResolvedValue('hash') 
 };
-const mockUserRepo = { findByIdWithDetails: vi.fn() };
+const mockUserRepo = { findActiveUserWithRoles: vi.fn() };
 const mockTokenRepo = { findByHash: vi.fn() };
 const mockExamRepo = { findActiveExam: vi.fn() };
 const mockSecurityService = { trackLoginAttempt: vi.fn() };
@@ -45,7 +45,7 @@ describe('AuthService uncovered lines 89 & 201', () => {
     it('refresh: throws when user is blocked', async () => {
         mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
-        mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: true } as any);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', isBlocked: true, deletedAt: null, roles: ['student'] } as any);
 
         const service = container.get(AuthService);
         await expect(service.refresh('token')).rejects.toThrow('access_denied:user_blocked');
@@ -54,10 +54,10 @@ describe('AuthService uncovered lines 89 & 201', () => {
     it('refresh: throws when user not found (line ~201)', async () => {
         mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
-        // Must return undefined to trigger "User not found" branch
-        mockUserRepo.findByIdWithDetails.mockResolvedValue(undefined);
+        // Must return undefined to trigger current missing-account denial
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue(undefined);
 
         const service = container.get(AuthService);
-        await expect(service.refresh('token')).rejects.toThrow('User not found');
+        await expect(service.refresh('token')).rejects.toThrow('Invalid refresh token');
     });
 });

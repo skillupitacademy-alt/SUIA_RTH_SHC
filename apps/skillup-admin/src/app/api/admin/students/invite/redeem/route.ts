@@ -27,7 +27,7 @@ const redeemInvitationSchema = z.object({
   platform: z.string().optional(),
 });
 
-export function hasZeroAffectedRows(result: unknown): boolean {
+function hasZeroAffectedRows(result: unknown): boolean {
   if (result === null || result === undefined) {
     return true;
   }

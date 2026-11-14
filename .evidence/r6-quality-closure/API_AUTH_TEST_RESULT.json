@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter @quiz/api-server exec vitest run src/modules/auth/__tests__ --maxWorkers=1 --reporter=verbose --reporter=json --outputFile=E:\\onlinewebsites\\quiz-platform\\.evidence\\r6-quality-closure\\api-auth-results.json",
+  "started": "2026-11-14T00:35:23.591Z",
+  "finished": "2026-11-14T00:36:07.946Z",
+  "exitCode": 0,
+  "environment": "network blocked; controlled adapters"
+}

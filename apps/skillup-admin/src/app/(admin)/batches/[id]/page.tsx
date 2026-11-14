@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation';
 import { BatchEditForm } from '@/components/batches/BatchEditForm';
 import { getAdminBatchDetail } from '@/lib/skillup-admin-data';
 
-export default async function BatchDetailPage({ params }: { params: { id: string } }) {
-  const batch = await getAdminBatchDetail(params.id);
+export default async function BatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const batch = await getAdminBatchDetail((await params).id);
   if (batch === undefined) {
     notFound();
   }

@@ -1,0 +1,205 @@
+{
+  "passed": 20,
+  "rows": [
+    {
+      "id": 1,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches2.test.ts > AuthService edge branches > logout no-ops when session not found (405-406)",
+      "baselineFailure": "AssertionError: promise rejected \"TypeError: this.dbInstance.select is not \u00e2\u20ac\u00a6\" instead of resolving",
+      "file": "src/modules/auth/__tests__/auth.branches2.test.ts",
+      "currentTitle": "logout no-ops when session not found (405-406)",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 2,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches3.test.ts > AuthService missing false-branches > AuthService.refresh: examId is undefined (Line 180 skip)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.branches3.test.ts",
+      "currentTitle": "AuthService.refresh: a current session rotates without an exam ID",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 3,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches3.test.ts > AuthService missing false-branches > AuthService.refresh: activeExam is undefined (Line 188 skip)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.branches3.test.ts",
+      "currentTitle": "AuthService.refresh: absent exam metadata cannot change rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 4,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches3.test.ts > AuthService missing false-branches > AuthService.refresh: activeExam duration is 0 (Line 188 skip)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.branches3.test.ts",
+      "currentTitle": "AuthService.refresh: zero-duration exam metadata cannot change rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 5,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches3.test.ts > AuthService missing false-branches > AuthService.refresh: activeExam remaining time is negative (Line 194 skip)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.branches3.test.ts",
+      "currentTitle": "AuthService.refresh: expired exam metadata cannot change rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 6,
+      "original": "FAIL  src/modules/auth/__tests__/auth.branches3.test.ts > AuthService missing false-branches > AuthService.logout: userId is undefined (Line 243 skip)",
+      "baselineFailure": "TypeError: brandTokenRepo.getUserSessions is not a function",
+      "file": "src/modules/auth/__tests__/auth.branches3.test.ts",
+      "currentTitle": "AuthService.logout: recovers the signed owner when userId is omitted",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 7,
+      "original": "FAIL  src/modules/auth/__tests__/auth.logout.branch.test.ts > AuthService.logout > revokes refresh token and backdates lastActiveAt",
+      "baselineFailure": "TypeError: brandTokenRepo.getUserSessions is not a function",
+      "file": "src/modules/auth/__tests__/auth.logout.branch.test.ts",
+      "currentTitle": "revokes refresh token and backdates lastActiveAt",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 8,
+      "original": "FAIL  src/modules/auth/__tests__/auth.logout.edge.test.ts > AuthService logout edge > marks refresh token revoked and bumps lastActiveAt backwards",
+      "baselineFailure": "TypeError: brandTokenRepo.getUserSessions is not a function",
+      "file": "src/modules/auth/__tests__/auth.logout.edge.test.ts",
+      "currentTitle": "marks refresh token revoked and bumps lastActiveAt backwards",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 9,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.tail.lines.test.ts > AuthService uncovered lines 89 & 201 > refresh: throws when user is blocked",
+      "baselineFailure": "AssertionError: expected [Function] to throw error including 'access_denied:user_blocked' but got 'User repository does not support stri\u00e2\u20ac\u00a6'",
+      "file": "src/modules/auth/__tests__/auth.service.tail.lines.test.ts",
+      "currentTitle": "refresh: throws when user is blocked",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 10,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.tail.lines.test.ts > AuthService uncovered lines 89 & 201 > refresh: throws when user not found (line ~201)",
+      "baselineFailure": "AssertionError: expected [Function] to throw error including 'User not found' but got 'User repository does not support stri\u00e2\u20ac\u00a6'",
+      "file": "src/modules/auth/__tests__/auth.service.tail.lines.test.ts",
+      "currentTitle": "refresh: throws when user not found (line ~201)",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 11,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.test.ts > AuthService (Main Suite) > refresh > detects token reuse",
+      "baselineFailure": "AssertionError: expected [Function] to throw error including 'Security Alert' but got 'Invalid refresh token'",
+      "file": "src/modules/auth/__tests__/auth.service.test.ts",
+      "currentTitle": "detects token reuse",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 12,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.test.ts > AuthService (Main Suite) > refresh > throws if refresh token is expired according to DB",
+      "baselineFailure": "AssertionError: expected [Function] to throw error including 'Refresh _token expired' but got 'Refresh token has expired'",
+      "file": "src/modules/auth/__tests__/auth.service.test.ts",
+      "currentTitle": "throws if refresh token is expired according to DB",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 13,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.test.ts > AuthService (Main Suite) > refresh > handles exam grace window correctly",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.service.test.ts",
+      "currentTitle": "rotates an eligible session without using exam metadata as authority",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 14,
+      "original": "FAIL  src/modules/auth/__tests__/auth.service.test.ts > AuthService (Main Suite) > logout > sets user offline immediate",
+      "baselineFailure": "TypeError: brandTokenRepo.getUserSessions is not a function",
+      "file": "src/modules/auth/__tests__/auth.service.test.ts",
+      "currentTitle": "sets user offline immediate",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 15,
+      "original": "FAIL  src/modules/auth/__tests__/auth.tail.test.ts > Auth / Audit Tail Coverage > AuthService.refresh: handles exam grace window logic",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.tail.test.ts",
+      "currentTitle": "AuthService.refresh: rotates the current learner session independently of exam metadata",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 16,
+      "original": "FAIL  src/modules/auth/__tests__/auth.tail.test.ts > Auth / Audit Tail Coverage > AuthService.logout: forces offline status if userId is provided",
+      "baselineFailure": "TypeError: brandTokenRepo.getUserSessions is not a function",
+      "file": "src/modules/auth/__tests__/auth.tail.test.ts",
+      "currentTitle": "AuthService.logout: forces offline status if userId is provided",
+      "result": "passed",
+      "classification": "Logout adapter/contract",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    },
+    {
+      "id": 17,
+      "original": "FAIL  src/modules/auth/__tests__/auth.tail2.test.ts > AuthService extreme tail 2 > refresh: customExpiration < standardExpireS && we are inside the grace period (Line 201)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.tail2.test.ts",
+      "currentTitle": "refresh: expired exam metadata cannot override current session rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 18,
+      "original": "FAIL  src/modules/auth/__tests__/auth.tail2.test.ts > AuthService extreme tail 2 > refresh: customExpiration < standardExpireS && we are inside exam time (Line 201)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.tail2.test.ts",
+      "currentTitle": "refresh: short exam metadata cannot override current session rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 19,
+      "original": "FAIL  src/modules/auth/__tests__/auth.tail2.test.ts > AuthService extreme tail 2 > refresh: customExpiration >= standardExpireS (Line 201)",
+      "baselineFailure": "Error: Invalid refresh token",
+      "file": "src/modules/auth/__tests__/auth.tail2.test.ts",
+      "currentTitle": "refresh: long exam metadata cannot override current session rotation",
+      "result": "passed",
+      "classification": "Refresh fixture/contract",
+      "note": "Current persisted-session rotation is independent of exam metadata; legacy grace policy is not asserted as implemented."
+    },
+    {
+      "id": 20,
+      "original": "FAIL  src/modules/auth/__tests__/batch-08-internal-auth-boundary.test.ts > B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Downshift > 7. SECURITY INVARIANT: bad internal key is denied with a real signed learner token",
+      "baselineFailure": "AssertionError: expected 401 to be 200 // Object.is equality",
+      "file": "src/modules/auth/__tests__/batch-08-internal-auth-boundary.test.ts",
+      "currentTitle": "7. SECURITY INVARIANT: bad internal key is denied with a real signed learner token",
+      "result": "passed",
+      "classification": "Internal auth/device-binding fixture",
+      "note": "Current adapter/denial/session contract verified; production authentication unchanged."
+    }
+  ]
+}
