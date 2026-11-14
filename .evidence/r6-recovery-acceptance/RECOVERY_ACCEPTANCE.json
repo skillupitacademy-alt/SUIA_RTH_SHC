@@ -1,0 +1,6367 @@
+{
+  "startedUtc": "2026-11-14T12:51:41.025Z",
+  "command": "node .evidence/r6-recovery-acceptance/verify.cjs",
+  "sourceCommit": "41c1db60b282d11cdde076c92364c918c2ee7188",
+  "readOnly": true,
+  "snapshot": {
+    "name": "production at 2026-11-14 12:31:12 UTC (manual)",
+    "timestampUtc": "2026-11-14T12:31:12Z",
+    "expiryDisplayed": "Never",
+    "historyHours": 6,
+    "managementEvidence": "Authenticated Neon console previously confirmed snapshot creation. Owner confirms restore into br-withered-wave-a17wttsi."
+  },
+  "checks": [
+    {
+      "name": "Restored target positively verified as owner-named branch",
+      "status": "PASS"
+    },
+    {
+      "name": "Production target positively verified and read-only",
+      "status": "PASS"
+    },
+    {
+      "name": "Both ledgers match pre-migration source through 0008",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored tables match protected schema",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored columns match protected schema",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored constraints match protected schema",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored indexes match protected schema",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored enums match protected schema",
+      "status": "PASS"
+    },
+    {
+      "name": "Representative users, platform grants and session tables exist",
+      "status": "PASS"
+    },
+    {
+      "name": "All public table row counts and server-side fingerprints match",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored foreign keys validated with zero orphan rows",
+      "status": "PASS"
+    },
+    {
+      "name": "Protected foreign keys validated with zero orphan rows",
+      "status": "PASS"
+    },
+    {
+      "name": "Both branches have zero normalized same-platform conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "Protected migration ledger unchanged from prior preflight",
+      "status": "PASS"
+    }
+  ],
+  "recovery": {
+    "identity": {
+      "database": "people_prod",
+      "role": "neondb_owner",
+      "project": "bitter-tree-18287476",
+      "branch": "br-withered-wave-a17wttsi",
+      "read_only": "on",
+      "observed_at": "2026-11-14T12:51:42.331Z"
+    },
+    "ledger": [
+      {
+        "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+        "created_at": "1774191220131"
+      },
+      {
+        "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+        "created_at": "1774536900897"
+      },
+      {
+        "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+        "created_at": "1774537191952"
+      },
+      {
+        "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+        "created_at": "1774538285178"
+      },
+      {
+        "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+        "created_at": "1774541869102"
+      },
+      {
+        "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+        "created_at": "1774550945793"
+      },
+      {
+        "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+        "created_at": "1774591239501"
+      },
+      {
+        "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+        "created_at": "1774935418558"
+      },
+      {
+        "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+        "created_at": "1774938098054"
+      }
+    ],
+    "tables": [
+      "admissions",
+      "attendance_records",
+      "auth_audit_log",
+      "batch_enrollments",
+      "batch_sessions",
+      "batches",
+      "demo_sessions",
+      "domains",
+      "enquiries",
+      "enquiry_follow_ups",
+      "faculty",
+      "faculty_availability",
+      "payment_installments",
+      "placement_jobs",
+      "platform_access",
+      "refresh_token_families",
+      "sso_sessions",
+      "student_placement_profiles",
+      "subjects",
+      "subscription_features",
+      "subscription_plans",
+      "subscriptions",
+      "subtopics",
+      "topics",
+      "user_features_cache",
+      "user_profiles",
+      "users"
+    ],
+    "columns": [
+      {
+        "table_name": "admissions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "admission_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_admission_type",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_admission_status",
+        "is_nullable": "NO",
+        "column_default": "'pending'::people_admission_status"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "admission_date",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "documents",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'{}'::jsonb"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "approved_by",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "session_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_attendance_status",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "marked_by",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "marked_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "actor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "action",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "platform",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "ip",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "success",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "metadata",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": "'null'::jsonb"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "enrolled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enrollment_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_enrollment_status"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "dropped_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "scheduled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "duration_minutes",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "60"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "subtopics_covered",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "NO",
+        "column_default": "'{}'::uuid[]"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "session_notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_session_status",
+        "is_nullable": "NO",
+        "column_default": "'scheduled'::people_session_status"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "subject_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "start_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "end_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "capacity",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "enrolled_count",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "mode",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_batch_mode",
+        "is_nullable": "NO",
+        "column_default": "'online'::people_batch_mode"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_batch_status",
+        "is_nullable": "NO",
+        "column_default": "'upcoming'::people_batch_status"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "scheduled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_demo_session_status",
+        "is_nullable": "NO",
+        "column_default": "'scheduled'::people_demo_session_status"
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "feedback",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "domains",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "domains",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "full_name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "email",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "phone",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "source",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enquiry_source",
+        "is_nullable": "NO",
+        "column_default": "'website'::people_enquiry_source"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_source",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_medium",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_campaign",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enquiry_status",
+        "is_nullable": "NO",
+        "column_default": "'new'::people_enquiry_status"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "assigned_counsellor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "counsellor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "follow_up_type",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "next_follow_up_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "specializations",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "NO",
+        "column_default": "'{}'::uuid[]"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "availability_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_faculty_availability_type",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_faculty_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_faculty_status"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "hourly_rate",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "rating_avg",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "total_sessions",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "joined_at",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "NO",
+        "column_default": "CURRENT_DATE"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "day_of_week",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "start_time",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "end_time",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "is_booked",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "false"
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "booked_batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "label",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "due_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "amount",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_payment_installment_status",
+        "is_nullable": "NO",
+        "column_default": "'due'::people_payment_installment_status"
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "payment_ref",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "company",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "title",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "location",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "match_score",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "platform",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_platform",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "granted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "family_id",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "is_compromised",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "false"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "last_used_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "jwt_family",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "platform",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "revoked_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "role_goal",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "resume_status",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "profile_completion",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "interview_count",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "skills",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "NO",
+        "column_default": "'{}'::text[]"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "plan_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "feature_key",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_feature_key",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "limit_value",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "price_monthly",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "price_yearly",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "plan_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_plan",
+        "is_nullable": "NO",
+        "column_default": "'free'::people_subscription_plan"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_subscription_status"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "started_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "expires_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "topic_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "difficulty_levels",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "topics",
+        "column_name": "subject_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "cached_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "email",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "password_hash",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "role",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_user_role",
+        "is_nullable": "NO",
+        "column_default": "'student'::people_user_role"
+      },
+      {
+        "table_name": "users",
+        "column_name": "platform",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_platform",
+        "is_nullable": "NO",
+        "column_default": "'realtutorialhub'::people_platform"
+      },
+      {
+        "table_name": "users",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "users",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "version",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "1"
+      },
+      {
+        "table_name": "users",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "external_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "external_brand",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "constraints": [
+      {
+        "table_name": "admissions",
+        "conname": "admissions_approved_by_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_marked_by_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (marked_by) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_session_id_batch_sessions_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (session_id) REFERENCES batch_sessions(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "conname": "auth_audit_log_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_subject_id_subjects_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "domains",
+        "conname": "domains_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "enquiries",
+        "conname": "enquiries_assigned_counsellor_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (assigned_counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "enquiries",
+        "conname": "enquiries_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_counsellor_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "faculty",
+        "conname": "faculty_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "faculty",
+        "conname": "faculty_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_booked_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (booked_batch_id) REFERENCES batches(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "payment_installments",
+        "conname": "payment_installments_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "payment_installments",
+        "conname": "payment_installments_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "placement_jobs",
+        "conname": "placement_jobs_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "platform_access",
+        "conname": "platform_access_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "platform_access",
+        "conname": "platform_access_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_family_id_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (family_id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "sso_sessions",
+        "conname": "sso_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "sso_sessions",
+        "conname": "sso_sessions_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_user_id_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (user_id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "subjects",
+        "conname": "subjects_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id)"
+      },
+      {
+        "table_name": "subjects",
+        "conname": "subjects_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscription_features",
+        "conname": "subscription_features_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscription_features",
+        "conname": "subscription_features_plan_id_subscription_plans_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "subscription_plans",
+        "conname": "subscription_plans_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscriptions",
+        "conname": "subscriptions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscriptions",
+        "conname": "subscriptions_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "subtopics",
+        "conname": "subtopics_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subtopics",
+        "conname": "subtopics_topic_id_topics_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (topic_id) REFERENCES topics(id)"
+      },
+      {
+        "table_name": "topics",
+        "conname": "topics_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "topics",
+        "conname": "topics_subject_id_subjects_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (subject_id) REFERENCES subjects(id)"
+      },
+      {
+        "table_name": "user_features_cache",
+        "conname": "user_features_cache_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "user_features_cache",
+        "conname": "user_features_cache_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "user_profiles",
+        "conname": "user_profiles_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "user_profiles",
+        "conname": "user_profiles_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "users",
+        "conname": "users_email_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (email)"
+      },
+      {
+        "table_name": "users",
+        "conname": "users_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      }
+    ],
+    "indexes": [
+      {
+        "tablename": "admissions",
+        "indexname": "admissions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX admissions_pkey ON public.admissions USING btree (id)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_batch",
+        "indexdef": "CREATE INDEX idx_admissions_batch ON public.admissions USING btree (batch_id)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_status",
+        "indexdef": "CREATE INDEX idx_admissions_status ON public.admissions USING btree (status, created_at)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_student",
+        "indexdef": "CREATE UNIQUE INDEX idx_admissions_student ON public.admissions USING btree (student_user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "attendance_records_pkey",
+        "indexdef": "CREATE UNIQUE INDEX attendance_records_pkey ON public.attendance_records USING btree (id)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_session",
+        "indexdef": "CREATE INDEX idx_attendance_session ON public.attendance_records USING btree (session_id)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_student_date",
+        "indexdef": "CREATE INDEX idx_attendance_student_date ON public.attendance_records USING btree (student_user_id, marked_at)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_student_session",
+        "indexdef": "CREATE UNIQUE INDEX idx_attendance_student_session ON public.attendance_records USING btree (session_id, student_user_id)"
+      },
+      {
+        "tablename": "auth_audit_log",
+        "indexname": "auth_audit_log_pkey",
+        "indexdef": "CREATE UNIQUE INDEX auth_audit_log_pkey ON public.auth_audit_log USING btree (id)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "batch_enrollments_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batch_enrollments_pkey ON public.batch_enrollments USING btree (id)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "idx_enrollments_batch_student",
+        "indexdef": "CREATE UNIQUE INDEX idx_enrollments_batch_student ON public.batch_enrollments USING btree (batch_id, student_user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "idx_enrollments_student",
+        "indexdef": "CREATE INDEX idx_enrollments_student ON public.batch_enrollments USING btree (student_user_id, status)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "batch_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batch_sessions_pkey ON public.batch_sessions USING btree (id)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_batch_date",
+        "indexdef": "CREATE INDEX idx_batch_sessions_batch_date ON public.batch_sessions USING btree (batch_id, scheduled_at)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_faculty_upcoming",
+        "indexdef": "CREATE INDEX idx_batch_sessions_faculty_upcoming ON public.batch_sessions USING btree (faculty_id, scheduled_at)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_subtopics",
+        "indexdef": "CREATE INDEX idx_batch_sessions_subtopics ON public.batch_sessions USING gin (subtopics_covered)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "batches_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batches_pkey ON public.batches USING btree (id)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_active",
+        "indexdef": "CREATE INDEX idx_batches_active ON public.batches USING btree (status, start_date)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_faculty",
+        "indexdef": "CREATE INDEX idx_batches_faculty ON public.batches USING btree (faculty_id, status)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_status_domain",
+        "indexdef": "CREATE INDEX idx_batches_status_domain ON public.batches USING btree (status, domain_id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "demo_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX demo_sessions_pkey ON public.demo_sessions USING btree (id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "idx_demo_sessions_enquiry",
+        "indexdef": "CREATE INDEX idx_demo_sessions_enquiry ON public.demo_sessions USING btree (enquiry_id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "idx_demo_sessions_scheduled",
+        "indexdef": "CREATE INDEX idx_demo_sessions_scheduled ON public.demo_sessions USING btree (scheduled_at)"
+      },
+      {
+        "tablename": "domains",
+        "indexname": "domains_pkey",
+        "indexdef": "CREATE UNIQUE INDEX domains_pkey ON public.domains USING btree (id)"
+      },
+      {
+        "tablename": "domains",
+        "indexname": "domains_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX domains_slug_unique ON public.domains USING btree (slug)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "enquiries_pkey",
+        "indexdef": "CREATE UNIQUE INDEX enquiries_pkey ON public.enquiries USING btree (id)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_counsellor",
+        "indexdef": "CREATE INDEX idx_enquiries_counsellor ON public.enquiries USING btree (assigned_counsellor_id, status)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_phone",
+        "indexdef": "CREATE UNIQUE INDEX idx_enquiries_phone ON public.enquiries USING btree (phone) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_source",
+        "indexdef": "CREATE INDEX idx_enquiries_source ON public.enquiries USING btree (source, created_at)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_status_created",
+        "indexdef": "CREATE INDEX idx_enquiries_status_created ON public.enquiries USING btree (status, created_at)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "enquiry_follow_ups_pkey",
+        "indexdef": "CREATE UNIQUE INDEX enquiry_follow_ups_pkey ON public.enquiry_follow_ups USING btree (id)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "idx_followups_enquiry",
+        "indexdef": "CREATE INDEX idx_followups_enquiry ON public.enquiry_follow_ups USING btree (enquiry_id)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "idx_followups_scheduled",
+        "indexdef": "CREATE INDEX idx_followups_scheduled ON public.enquiry_follow_ups USING btree (next_follow_up_at)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "faculty_pkey",
+        "indexdef": "CREATE UNIQUE INDEX faculty_pkey ON public.faculty USING btree (id)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_specializations",
+        "indexdef": "CREATE INDEX idx_faculty_specializations ON public.faculty USING gin (specializations)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_status",
+        "indexdef": "CREATE INDEX idx_faculty_status ON public.faculty USING btree (status)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_user",
+        "indexdef": "CREATE UNIQUE INDEX idx_faculty_user ON public.faculty USING btree (user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "faculty_availability_pkey",
+        "indexdef": "CREATE UNIQUE INDEX faculty_availability_pkey ON public.faculty_availability USING btree (id)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "idx_faculty_avail_faculty",
+        "indexdef": "CREATE INDEX idx_faculty_avail_faculty ON public.faculty_availability USING btree (faculty_id, day_of_week)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "idx_faculty_avail_unbooked",
+        "indexdef": "CREATE INDEX idx_faculty_avail_unbooked ON public.faculty_availability USING btree (faculty_id, is_booked)"
+      },
+      {
+        "tablename": "payment_installments",
+        "indexname": "idx_payment_installments_student",
+        "indexdef": "CREATE INDEX idx_payment_installments_student ON public.payment_installments USING btree (student_user_id, due_date)"
+      },
+      {
+        "tablename": "payment_installments",
+        "indexname": "payment_installments_pkey",
+        "indexdef": "CREATE UNIQUE INDEX payment_installments_pkey ON public.payment_installments USING btree (id)"
+      },
+      {
+        "tablename": "placement_jobs",
+        "indexname": "idx_placement_jobs_active",
+        "indexdef": "CREATE INDEX idx_placement_jobs_active ON public.placement_jobs USING btree (is_active, match_score)"
+      },
+      {
+        "tablename": "placement_jobs",
+        "indexname": "placement_jobs_pkey",
+        "indexdef": "CREATE UNIQUE INDEX placement_jobs_pkey ON public.placement_jobs USING btree (id)"
+      },
+      {
+        "tablename": "platform_access",
+        "indexname": "platform_access_pkey",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+      },
+      {
+        "tablename": "platform_access",
+        "indexname": "platform_access_user_platform_unique",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+      },
+      {
+        "tablename": "refresh_token_families",
+        "indexname": "refresh_token_families_family_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX refresh_token_families_family_id_unique ON public.refresh_token_families USING btree (family_id)"
+      },
+      {
+        "tablename": "refresh_token_families",
+        "indexname": "refresh_token_families_pkey",
+        "indexdef": "CREATE UNIQUE INDEX refresh_token_families_pkey ON public.refresh_token_families USING btree (id)"
+      },
+      {
+        "tablename": "sso_sessions",
+        "indexname": "idx_sso_sessions_family",
+        "indexdef": "CREATE INDEX idx_sso_sessions_family ON public.sso_sessions USING btree (jwt_family, revoked_at)"
+      },
+      {
+        "tablename": "sso_sessions",
+        "indexname": "sso_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX sso_sessions_pkey ON public.sso_sessions USING btree (id)"
+      },
+      {
+        "tablename": "student_placement_profiles",
+        "indexname": "student_placement_profiles_pkey",
+        "indexdef": "CREATE UNIQUE INDEX student_placement_profiles_pkey ON public.student_placement_profiles USING btree (id)"
+      },
+      {
+        "tablename": "student_placement_profiles",
+        "indexname": "student_placement_profiles_user_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX student_placement_profiles_user_id_unique ON public.student_placement_profiles USING btree (user_id)"
+      },
+      {
+        "tablename": "subjects",
+        "indexname": "subjects_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subjects_pkey ON public.subjects USING btree (id)"
+      },
+      {
+        "tablename": "subjects",
+        "indexname": "subjects_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX subjects_slug_unique ON public.subjects USING btree (slug)"
+      },
+      {
+        "tablename": "subscription_features",
+        "indexname": "idx_subscription_features_plan",
+        "indexdef": "CREATE INDEX idx_subscription_features_plan ON public.subscription_features USING btree (plan_id, feature_key)"
+      },
+      {
+        "tablename": "subscription_features",
+        "indexname": "subscription_features_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscription_features_pkey ON public.subscription_features USING btree (id)"
+      },
+      {
+        "tablename": "subscription_plans",
+        "indexname": "idx_subscription_plans_active",
+        "indexdef": "CREATE INDEX idx_subscription_plans_active ON public.subscription_plans USING btree (is_active, name)"
+      },
+      {
+        "tablename": "subscription_plans",
+        "indexname": "subscription_plans_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscription_plans_pkey ON public.subscription_plans USING btree (id)"
+      },
+      {
+        "tablename": "subscriptions",
+        "indexname": "idx_subscriptions_user_active",
+        "indexdef": "CREATE INDEX idx_subscriptions_user_active ON public.subscriptions USING btree (user_id, status) WHERE (status = 'active'::people_subscription_status)"
+      },
+      {
+        "tablename": "subscriptions",
+        "indexname": "subscriptions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id)"
+      },
+      {
+        "tablename": "subtopics",
+        "indexname": "subtopics_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subtopics_pkey ON public.subtopics USING btree (id)"
+      },
+      {
+        "tablename": "subtopics",
+        "indexname": "subtopics_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX subtopics_slug_unique ON public.subtopics USING btree (slug)"
+      },
+      {
+        "tablename": "topics",
+        "indexname": "topics_pkey",
+        "indexdef": "CREATE UNIQUE INDEX topics_pkey ON public.topics USING btree (id)"
+      },
+      {
+        "tablename": "topics",
+        "indexname": "topics_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX topics_slug_unique ON public.topics USING btree (slug)"
+      },
+      {
+        "tablename": "user_features_cache",
+        "indexname": "idx_user_features_cache_user",
+        "indexdef": "CREATE INDEX idx_user_features_cache_user ON public.user_features_cache USING btree (user_id, cached_at)"
+      },
+      {
+        "tablename": "user_features_cache",
+        "indexname": "user_features_cache_pkey",
+        "indexdef": "CREATE UNIQUE INDEX user_features_cache_pkey ON public.user_features_cache USING btree (id)"
+      },
+      {
+        "tablename": "user_profiles",
+        "indexname": "user_profiles_pkey",
+        "indexdef": "CREATE UNIQUE INDEX user_profiles_pkey ON public.user_profiles USING btree (id)"
+      },
+      {
+        "tablename": "user_profiles",
+        "indexname": "user_profiles_user_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX user_profiles_user_id_unique ON public.user_profiles USING btree (user_id)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "idx_users_email_platform",
+        "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "idx_users_external_id_platform",
+        "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "users_email_unique",
+        "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "users_pkey",
+        "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+      }
+    ],
+    "enums": [
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "pending"
+      },
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "approved"
+      },
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "rejected"
+      },
+      {
+        "typname": "people_admission_type",
+        "enumlabel": "digital"
+      },
+      {
+        "typname": "people_admission_type",
+        "enumlabel": "training"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "present"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "absent"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "late"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "online"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "offline"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "hybrid"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "upcoming"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "scheduled"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "no_show"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "website"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "referral"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "ad"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "walkin"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "new"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "contacted"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "qualified"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "lost"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "dropped"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "fulltime"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "parttime"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "contract"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "inactive"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "on_leave"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "paid"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "due"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "overdue"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "realtutorialhub"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "skillup"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "both"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "skillhubcore"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "scheduled"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "exam.unlimited"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "exam.basic"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "tutorial.full_access"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "tutorial.preview_only"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "ai_tutor"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "certificate"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "placement_matching"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "live_sessions"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "free"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "pro"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "enterprise"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "expired"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "student"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "faculty"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "admin"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "super_admin"
+      }
+    ],
+    "tableFingerprints": [
+      {
+        "table": "admissions",
+        "count": 170,
+        "fingerprint": "d4458e1a1948209a8039a35a64513d0c"
+      },
+      {
+        "table": "attendance_records",
+        "count": 4,
+        "fingerprint": "fa11536f9b5f23dfb7ab793ea4beaa41"
+      },
+      {
+        "table": "auth_audit_log",
+        "count": 55,
+        "fingerprint": "903b0240230525c79bd6a6779f83b6f3"
+      },
+      {
+        "table": "batch_enrollments",
+        "count": 163,
+        "fingerprint": "b7fa78b97e2f0381f00faa512c1795c7"
+      },
+      {
+        "table": "batch_sessions",
+        "count": 3,
+        "fingerprint": "7b7b23e36c74e527bcdfd178ba12d185"
+      },
+      {
+        "table": "batches",
+        "count": 115,
+        "fingerprint": "ff3c61b64a485f980abe14e8e4642c1c"
+      },
+      {
+        "table": "demo_sessions",
+        "count": 1,
+        "fingerprint": "cf884d31ce9a6650457ecf6b29c8bf60"
+      },
+      {
+        "table": "domains",
+        "count": 1,
+        "fingerprint": "e106578961e94d37b87cacb6b924dba3"
+      },
+      {
+        "table": "enquiries",
+        "count": 283,
+        "fingerprint": "70d4f6f5d66173ae1e06e381940461d6"
+      },
+      {
+        "table": "enquiry_follow_ups",
+        "count": 204,
+        "fingerprint": "ab5507754fcefe853f4429d40ea53333"
+      },
+      {
+        "table": "faculty",
+        "count": 1,
+        "fingerprint": "54af3f2eb288b54b42315f9ce17bedb2"
+      },
+      {
+        "table": "faculty_availability",
+        "count": 2,
+        "fingerprint": "3acb0ee544d782cab4097e2ad964ee77"
+      },
+      {
+        "table": "payment_installments",
+        "count": 113,
+        "fingerprint": "dbda523c95b0b4a84e010f505b91e625"
+      },
+      {
+        "table": "placement_jobs",
+        "count": 85,
+        "fingerprint": "2c1024962d2d1ce1a56492cf71606300"
+      },
+      {
+        "table": "platform_access",
+        "count": 148,
+        "fingerprint": "437b2f5b5c6d09580aeea2dfb7a4c63b"
+      },
+      {
+        "table": "refresh_token_families",
+        "count": 40,
+        "fingerprint": "f8ba59441c332afcfe80d7c35b1c3102"
+      },
+      {
+        "table": "sso_sessions",
+        "count": 40,
+        "fingerprint": "b36a739dfab6d971cd1bcb0aa1c320e5"
+      },
+      {
+        "table": "student_placement_profiles",
+        "count": 1,
+        "fingerprint": "f9f85b6acfbd39d24911521a6473c220"
+      },
+      {
+        "table": "subjects",
+        "count": 1,
+        "fingerprint": "6921f16970d3d05e2db075a48a6b92fe"
+      },
+      {
+        "table": "subscription_features",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "subscription_plans",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "subscriptions",
+        "count": 9,
+        "fingerprint": "7e72bd74dd289dadf275ea6d9c857055"
+      },
+      {
+        "table": "subtopics",
+        "count": 1,
+        "fingerprint": "1389cfd698bfcded7d0ad79fca103a57"
+      },
+      {
+        "table": "topics",
+        "count": 1,
+        "fingerprint": "38a7c08b1ef5cf50794fe0cd56f1888a"
+      },
+      {
+        "table": "user_features_cache",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "user_profiles",
+        "count": 178,
+        "fingerprint": "c18dd926c6b02f57d82be02c86240975"
+      },
+      {
+        "table": "users",
+        "count": 319,
+        "fingerprint": "bb280583d47f9fe2887785f27ff2a24e"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "admissions_approved_by_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_marked_by_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_session_id_batch_sessions_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_enrollments_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_enrollments_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_sessions_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_sessions_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_subject_id_subjects_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "demo_sessions_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "demo_sessions_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiries_assigned_counsellor_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiry_follow_ups_counsellor_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiry_follow_ups_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_availability_booked_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_availability_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "payment_installments_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "platform_access_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "refresh_token_families_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "sso_sessions_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "student_placement_profiles_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subjects_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subscription_features_plan_id_subscription_plans_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subscriptions_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subtopics_topic_id_topics_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "topics_subject_id_subjects_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "user_features_cache_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "user_profiles_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      }
+    ],
+    "normalizedDuplicateGroups": 0
+  },
+  "production": {
+    "identity": {
+      "database": "people_prod",
+      "role": "neondb_owner",
+      "project": "bitter-tree-18287476",
+      "branch": "br-misty-wildflower-a1jalxmd",
+      "read_only": "on",
+      "observed_at": "2026-11-14T12:51:48.728Z"
+    },
+    "ledger": [
+      {
+        "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+        "created_at": "1774191220131"
+      },
+      {
+        "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+        "created_at": "1774536900897"
+      },
+      {
+        "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+        "created_at": "1774537191952"
+      },
+      {
+        "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+        "created_at": "1774538285178"
+      },
+      {
+        "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+        "created_at": "1774541869102"
+      },
+      {
+        "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+        "created_at": "1774550945793"
+      },
+      {
+        "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+        "created_at": "1774591239501"
+      },
+      {
+        "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+        "created_at": "1774935418558"
+      },
+      {
+        "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+        "created_at": "1774938098054"
+      }
+    ],
+    "tables": [
+      "admissions",
+      "attendance_records",
+      "auth_audit_log",
+      "batch_enrollments",
+      "batch_sessions",
+      "batches",
+      "demo_sessions",
+      "domains",
+      "enquiries",
+      "enquiry_follow_ups",
+      "faculty",
+      "faculty_availability",
+      "payment_installments",
+      "placement_jobs",
+      "platform_access",
+      "refresh_token_families",
+      "sso_sessions",
+      "student_placement_profiles",
+      "subjects",
+      "subscription_features",
+      "subscription_plans",
+      "subscriptions",
+      "subtopics",
+      "topics",
+      "user_features_cache",
+      "user_profiles",
+      "users"
+    ],
+    "columns": [
+      {
+        "table_name": "admissions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "admission_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_admission_type",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_admission_status",
+        "is_nullable": "NO",
+        "column_default": "'pending'::people_admission_status"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "admission_date",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "documents",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'{}'::jsonb"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "approved_by",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "admissions",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "session_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_attendance_status",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "marked_by",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "attendance_records",
+        "column_name": "marked_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "actor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "action",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "platform",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "ip",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "success",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "metadata",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": "'null'::jsonb"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "enrolled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enrollment_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_enrollment_status"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "dropped_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_enrollments",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "scheduled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "duration_minutes",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "60"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "subtopics_covered",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "NO",
+        "column_default": "'{}'::uuid[]"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "session_notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_session_status",
+        "is_nullable": "NO",
+        "column_default": "'scheduled'::people_session_status"
+      },
+      {
+        "table_name": "batch_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "subject_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "start_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "end_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "batches",
+        "column_name": "capacity",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "enrolled_count",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "mode",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_batch_mode",
+        "is_nullable": "NO",
+        "column_default": "'online'::people_batch_mode"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_batch_status",
+        "is_nullable": "NO",
+        "column_default": "'upcoming'::people_batch_status"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "batches",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "scheduled_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_demo_session_status",
+        "is_nullable": "NO",
+        "column_default": "'scheduled'::people_demo_session_status"
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "feedback",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "demo_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "domains",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "domains",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "domains",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "full_name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "email",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "phone",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "source",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enquiry_source",
+        "is_nullable": "NO",
+        "column_default": "'website'::people_enquiry_source"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_source",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_medium",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "utm_campaign",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_enquiry_status",
+        "is_nullable": "NO",
+        "column_default": "'new'::people_enquiry_status"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "assigned_counsellor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "enquiries",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "enquiry_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "counsellor_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "follow_up_type",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "notes",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "next_follow_up_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "specializations",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "NO",
+        "column_default": "'{}'::uuid[]"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "availability_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_faculty_availability_type",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_faculty_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_faculty_status"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "hourly_rate",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "rating_avg",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "total_sessions",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "joined_at",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "NO",
+        "column_default": "CURRENT_DATE"
+      },
+      {
+        "table_name": "faculty",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "faculty_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "day_of_week",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "start_time",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "end_time",
+        "data_type": "time without time zone",
+        "udt_name": "time",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "is_booked",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "false"
+      },
+      {
+        "table_name": "faculty_availability",
+        "column_name": "booked_batch_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "student_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "label",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "due_date",
+        "data_type": "date",
+        "udt_name": "date",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "amount",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_payment_installment_status",
+        "is_nullable": "NO",
+        "column_default": "'due'::people_payment_installment_status"
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "payment_ref",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "payment_installments",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "company",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "title",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "location",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "match_score",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "placement_jobs",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "platform",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_platform",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "granted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "platform_access",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "family_id",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "is_compromised",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "false"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "last_used_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "refresh_token_families",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "jwt_family",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "platform",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "revoked_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "sso_sessions",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "role_goal",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "resume_status",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "profile_completion",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "interview_count",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "skills",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "NO",
+        "column_default": "'{}'::text[]"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "domain_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subjects",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "plan_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "feature_key",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_feature_key",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "limit_value",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_features",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "price_monthly",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "price_yearly",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "0"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscription_plans",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "plan_type",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_plan",
+        "is_nullable": "NO",
+        "column_default": "'free'::people_subscription_plan"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "status",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_subscription_status",
+        "is_nullable": "NO",
+        "column_default": "'active'::people_subscription_status"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "started_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "expires_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subscriptions",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "topic_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "difficulty_levels",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "subtopics",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "topics",
+        "column_name": "subject_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "description",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "topics",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "features",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": "'[]'::jsonb"
+      },
+      {
+        "table_name": "user_features_cache",
+        "column_name": "cached_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "name",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "user_profiles",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "email",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "password_hash",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "role",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_user_role",
+        "is_nullable": "NO",
+        "column_default": "'student'::people_user_role"
+      },
+      {
+        "table_name": "users",
+        "column_name": "platform",
+        "data_type": "USER-DEFINED",
+        "udt_name": "people_platform",
+        "is_nullable": "NO",
+        "column_default": "'realtutorialhub'::people_platform"
+      },
+      {
+        "table_name": "users",
+        "column_name": "is_active",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "NO",
+        "column_default": "true"
+      },
+      {
+        "table_name": "users",
+        "column_name": "deleted_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "version",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "NO",
+        "column_default": "1"
+      },
+      {
+        "table_name": "users",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+      },
+      {
+        "table_name": "users",
+        "column_name": "external_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+      },
+      {
+        "table_name": "users",
+        "column_name": "external_brand",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+      }
+    ],
+    "constraints": [
+      {
+        "table_name": "admissions",
+        "conname": "admissions_approved_by_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "admissions",
+        "conname": "admissions_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_marked_by_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (marked_by) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_session_id_batch_sessions_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (session_id) REFERENCES batch_sessions(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "attendance_records",
+        "conname": "attendance_records_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "auth_audit_log",
+        "conname": "auth_audit_log_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batch_enrollments",
+        "conname": "batch_enrollments_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batch_sessions",
+        "conname": "batch_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "batches",
+        "conname": "batches_subject_id_subjects_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "demo_sessions",
+        "conname": "demo_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "domains",
+        "conname": "domains_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "enquiries",
+        "conname": "enquiries_assigned_counsellor_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (assigned_counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "enquiries",
+        "conname": "enquiries_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_counsellor_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (counsellor_id) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_enquiry_id_enquiries_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (enquiry_id) REFERENCES enquiries(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "enquiry_follow_ups",
+        "conname": "enquiry_follow_ups_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "faculty",
+        "conname": "faculty_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "faculty",
+        "conname": "faculty_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_booked_batch_id_batches_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (booked_batch_id) REFERENCES batches(id) ON DELETE SET NULL"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_faculty_id_faculty_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "faculty_availability",
+        "conname": "faculty_availability_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "payment_installments",
+        "conname": "payment_installments_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "payment_installments",
+        "conname": "payment_installments_student_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (student_user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "placement_jobs",
+        "conname": "placement_jobs_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "platform_access",
+        "conname": "platform_access_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "platform_access",
+        "conname": "platform_access_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_family_id_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (family_id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "refresh_token_families",
+        "conname": "refresh_token_families_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "sso_sessions",
+        "conname": "sso_sessions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "sso_sessions",
+        "conname": "sso_sessions_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_user_id_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (user_id)"
+      },
+      {
+        "table_name": "student_placement_profiles",
+        "conname": "student_placement_profiles_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "subjects",
+        "conname": "subjects_domain_id_domains_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (domain_id) REFERENCES domains(id)"
+      },
+      {
+        "table_name": "subjects",
+        "conname": "subjects_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscription_features",
+        "conname": "subscription_features_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscription_features",
+        "conname": "subscription_features_plan_id_subscription_plans_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "subscription_plans",
+        "conname": "subscription_plans_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscriptions",
+        "conname": "subscriptions_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subscriptions",
+        "conname": "subscriptions_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+      },
+      {
+        "table_name": "subtopics",
+        "conname": "subtopics_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "subtopics",
+        "conname": "subtopics_topic_id_topics_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (topic_id) REFERENCES topics(id)"
+      },
+      {
+        "table_name": "topics",
+        "conname": "topics_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "topics",
+        "conname": "topics_subject_id_subjects_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (subject_id) REFERENCES subjects(id)"
+      },
+      {
+        "table_name": "user_features_cache",
+        "conname": "user_features_cache_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "user_features_cache",
+        "conname": "user_features_cache_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "user_profiles",
+        "conname": "user_profiles_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "table_name": "user_profiles",
+        "conname": "user_profiles_user_id_users_id_fk",
+        "contype": "f",
+        "convalidated": true,
+        "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+      },
+      {
+        "table_name": "users",
+        "conname": "users_email_unique",
+        "contype": "u",
+        "convalidated": true,
+        "definition": "UNIQUE (email)"
+      },
+      {
+        "table_name": "users",
+        "conname": "users_pkey",
+        "contype": "p",
+        "convalidated": true,
+        "definition": "PRIMARY KEY (id)"
+      }
+    ],
+    "indexes": [
+      {
+        "tablename": "admissions",
+        "indexname": "admissions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX admissions_pkey ON public.admissions USING btree (id)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_batch",
+        "indexdef": "CREATE INDEX idx_admissions_batch ON public.admissions USING btree (batch_id)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_status",
+        "indexdef": "CREATE INDEX idx_admissions_status ON public.admissions USING btree (status, created_at)"
+      },
+      {
+        "tablename": "admissions",
+        "indexname": "idx_admissions_student",
+        "indexdef": "CREATE UNIQUE INDEX idx_admissions_student ON public.admissions USING btree (student_user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "attendance_records_pkey",
+        "indexdef": "CREATE UNIQUE INDEX attendance_records_pkey ON public.attendance_records USING btree (id)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_session",
+        "indexdef": "CREATE INDEX idx_attendance_session ON public.attendance_records USING btree (session_id)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_student_date",
+        "indexdef": "CREATE INDEX idx_attendance_student_date ON public.attendance_records USING btree (student_user_id, marked_at)"
+      },
+      {
+        "tablename": "attendance_records",
+        "indexname": "idx_attendance_student_session",
+        "indexdef": "CREATE UNIQUE INDEX idx_attendance_student_session ON public.attendance_records USING btree (session_id, student_user_id)"
+      },
+      {
+        "tablename": "auth_audit_log",
+        "indexname": "auth_audit_log_pkey",
+        "indexdef": "CREATE UNIQUE INDEX auth_audit_log_pkey ON public.auth_audit_log USING btree (id)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "batch_enrollments_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batch_enrollments_pkey ON public.batch_enrollments USING btree (id)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "idx_enrollments_batch_student",
+        "indexdef": "CREATE UNIQUE INDEX idx_enrollments_batch_student ON public.batch_enrollments USING btree (batch_id, student_user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "batch_enrollments",
+        "indexname": "idx_enrollments_student",
+        "indexdef": "CREATE INDEX idx_enrollments_student ON public.batch_enrollments USING btree (student_user_id, status)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "batch_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batch_sessions_pkey ON public.batch_sessions USING btree (id)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_batch_date",
+        "indexdef": "CREATE INDEX idx_batch_sessions_batch_date ON public.batch_sessions USING btree (batch_id, scheduled_at)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_faculty_upcoming",
+        "indexdef": "CREATE INDEX idx_batch_sessions_faculty_upcoming ON public.batch_sessions USING btree (faculty_id, scheduled_at)"
+      },
+      {
+        "tablename": "batch_sessions",
+        "indexname": "idx_batch_sessions_subtopics",
+        "indexdef": "CREATE INDEX idx_batch_sessions_subtopics ON public.batch_sessions USING gin (subtopics_covered)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "batches_pkey",
+        "indexdef": "CREATE UNIQUE INDEX batches_pkey ON public.batches USING btree (id)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_active",
+        "indexdef": "CREATE INDEX idx_batches_active ON public.batches USING btree (status, start_date)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_faculty",
+        "indexdef": "CREATE INDEX idx_batches_faculty ON public.batches USING btree (faculty_id, status)"
+      },
+      {
+        "tablename": "batches",
+        "indexname": "idx_batches_status_domain",
+        "indexdef": "CREATE INDEX idx_batches_status_domain ON public.batches USING btree (status, domain_id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "demo_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX demo_sessions_pkey ON public.demo_sessions USING btree (id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "idx_demo_sessions_enquiry",
+        "indexdef": "CREATE INDEX idx_demo_sessions_enquiry ON public.demo_sessions USING btree (enquiry_id)"
+      },
+      {
+        "tablename": "demo_sessions",
+        "indexname": "idx_demo_sessions_scheduled",
+        "indexdef": "CREATE INDEX idx_demo_sessions_scheduled ON public.demo_sessions USING btree (scheduled_at)"
+      },
+      {
+        "tablename": "domains",
+        "indexname": "domains_pkey",
+        "indexdef": "CREATE UNIQUE INDEX domains_pkey ON public.domains USING btree (id)"
+      },
+      {
+        "tablename": "domains",
+        "indexname": "domains_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX domains_slug_unique ON public.domains USING btree (slug)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "enquiries_pkey",
+        "indexdef": "CREATE UNIQUE INDEX enquiries_pkey ON public.enquiries USING btree (id)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_counsellor",
+        "indexdef": "CREATE INDEX idx_enquiries_counsellor ON public.enquiries USING btree (assigned_counsellor_id, status)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_phone",
+        "indexdef": "CREATE UNIQUE INDEX idx_enquiries_phone ON public.enquiries USING btree (phone) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_source",
+        "indexdef": "CREATE INDEX idx_enquiries_source ON public.enquiries USING btree (source, created_at)"
+      },
+      {
+        "tablename": "enquiries",
+        "indexname": "idx_enquiries_status_created",
+        "indexdef": "CREATE INDEX idx_enquiries_status_created ON public.enquiries USING btree (status, created_at)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "enquiry_follow_ups_pkey",
+        "indexdef": "CREATE UNIQUE INDEX enquiry_follow_ups_pkey ON public.enquiry_follow_ups USING btree (id)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "idx_followups_enquiry",
+        "indexdef": "CREATE INDEX idx_followups_enquiry ON public.enquiry_follow_ups USING btree (enquiry_id)"
+      },
+      {
+        "tablename": "enquiry_follow_ups",
+        "indexname": "idx_followups_scheduled",
+        "indexdef": "CREATE INDEX idx_followups_scheduled ON public.enquiry_follow_ups USING btree (next_follow_up_at)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "faculty_pkey",
+        "indexdef": "CREATE UNIQUE INDEX faculty_pkey ON public.faculty USING btree (id)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_specializations",
+        "indexdef": "CREATE INDEX idx_faculty_specializations ON public.faculty USING gin (specializations)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_status",
+        "indexdef": "CREATE INDEX idx_faculty_status ON public.faculty USING btree (status)"
+      },
+      {
+        "tablename": "faculty",
+        "indexname": "idx_faculty_user",
+        "indexdef": "CREATE UNIQUE INDEX idx_faculty_user ON public.faculty USING btree (user_id) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "faculty_availability_pkey",
+        "indexdef": "CREATE UNIQUE INDEX faculty_availability_pkey ON public.faculty_availability USING btree (id)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "idx_faculty_avail_faculty",
+        "indexdef": "CREATE INDEX idx_faculty_avail_faculty ON public.faculty_availability USING btree (faculty_id, day_of_week)"
+      },
+      {
+        "tablename": "faculty_availability",
+        "indexname": "idx_faculty_avail_unbooked",
+        "indexdef": "CREATE INDEX idx_faculty_avail_unbooked ON public.faculty_availability USING btree (faculty_id, is_booked)"
+      },
+      {
+        "tablename": "payment_installments",
+        "indexname": "idx_payment_installments_student",
+        "indexdef": "CREATE INDEX idx_payment_installments_student ON public.payment_installments USING btree (student_user_id, due_date)"
+      },
+      {
+        "tablename": "payment_installments",
+        "indexname": "payment_installments_pkey",
+        "indexdef": "CREATE UNIQUE INDEX payment_installments_pkey ON public.payment_installments USING btree (id)"
+      },
+      {
+        "tablename": "placement_jobs",
+        "indexname": "idx_placement_jobs_active",
+        "indexdef": "CREATE INDEX idx_placement_jobs_active ON public.placement_jobs USING btree (is_active, match_score)"
+      },
+      {
+        "tablename": "placement_jobs",
+        "indexname": "placement_jobs_pkey",
+        "indexdef": "CREATE UNIQUE INDEX placement_jobs_pkey ON public.placement_jobs USING btree (id)"
+      },
+      {
+        "tablename": "platform_access",
+        "indexname": "platform_access_pkey",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+      },
+      {
+        "tablename": "platform_access",
+        "indexname": "platform_access_user_platform_unique",
+        "indexdef": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+      },
+      {
+        "tablename": "refresh_token_families",
+        "indexname": "refresh_token_families_family_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX refresh_token_families_family_id_unique ON public.refresh_token_families USING btree (family_id)"
+      },
+      {
+        "tablename": "refresh_token_families",
+        "indexname": "refresh_token_families_pkey",
+        "indexdef": "CREATE UNIQUE INDEX refresh_token_families_pkey ON public.refresh_token_families USING btree (id)"
+      },
+      {
+        "tablename": "sso_sessions",
+        "indexname": "idx_sso_sessions_family",
+        "indexdef": "CREATE INDEX idx_sso_sessions_family ON public.sso_sessions USING btree (jwt_family, revoked_at)"
+      },
+      {
+        "tablename": "sso_sessions",
+        "indexname": "sso_sessions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX sso_sessions_pkey ON public.sso_sessions USING btree (id)"
+      },
+      {
+        "tablename": "student_placement_profiles",
+        "indexname": "student_placement_profiles_pkey",
+        "indexdef": "CREATE UNIQUE INDEX student_placement_profiles_pkey ON public.student_placement_profiles USING btree (id)"
+      },
+      {
+        "tablename": "student_placement_profiles",
+        "indexname": "student_placement_profiles_user_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX student_placement_profiles_user_id_unique ON public.student_placement_profiles USING btree (user_id)"
+      },
+      {
+        "tablename": "subjects",
+        "indexname": "subjects_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subjects_pkey ON public.subjects USING btree (id)"
+      },
+      {
+        "tablename": "subjects",
+        "indexname": "subjects_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX subjects_slug_unique ON public.subjects USING btree (slug)"
+      },
+      {
+        "tablename": "subscription_features",
+        "indexname": "idx_subscription_features_plan",
+        "indexdef": "CREATE INDEX idx_subscription_features_plan ON public.subscription_features USING btree (plan_id, feature_key)"
+      },
+      {
+        "tablename": "subscription_features",
+        "indexname": "subscription_features_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscription_features_pkey ON public.subscription_features USING btree (id)"
+      },
+      {
+        "tablename": "subscription_plans",
+        "indexname": "idx_subscription_plans_active",
+        "indexdef": "CREATE INDEX idx_subscription_plans_active ON public.subscription_plans USING btree (is_active, name)"
+      },
+      {
+        "tablename": "subscription_plans",
+        "indexname": "subscription_plans_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscription_plans_pkey ON public.subscription_plans USING btree (id)"
+      },
+      {
+        "tablename": "subscriptions",
+        "indexname": "idx_subscriptions_user_active",
+        "indexdef": "CREATE INDEX idx_subscriptions_user_active ON public.subscriptions USING btree (user_id, status) WHERE (status = 'active'::people_subscription_status)"
+      },
+      {
+        "tablename": "subscriptions",
+        "indexname": "subscriptions_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id)"
+      },
+      {
+        "tablename": "subtopics",
+        "indexname": "subtopics_pkey",
+        "indexdef": "CREATE UNIQUE INDEX subtopics_pkey ON public.subtopics USING btree (id)"
+      },
+      {
+        "tablename": "subtopics",
+        "indexname": "subtopics_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX subtopics_slug_unique ON public.subtopics USING btree (slug)"
+      },
+      {
+        "tablename": "topics",
+        "indexname": "topics_pkey",
+        "indexdef": "CREATE UNIQUE INDEX topics_pkey ON public.topics USING btree (id)"
+      },
+      {
+        "tablename": "topics",
+        "indexname": "topics_slug_unique",
+        "indexdef": "CREATE UNIQUE INDEX topics_slug_unique ON public.topics USING btree (slug)"
+      },
+      {
+        "tablename": "user_features_cache",
+        "indexname": "idx_user_features_cache_user",
+        "indexdef": "CREATE INDEX idx_user_features_cache_user ON public.user_features_cache USING btree (user_id, cached_at)"
+      },
+      {
+        "tablename": "user_features_cache",
+        "indexname": "user_features_cache_pkey",
+        "indexdef": "CREATE UNIQUE INDEX user_features_cache_pkey ON public.user_features_cache USING btree (id)"
+      },
+      {
+        "tablename": "user_profiles",
+        "indexname": "user_profiles_pkey",
+        "indexdef": "CREATE UNIQUE INDEX user_profiles_pkey ON public.user_profiles USING btree (id)"
+      },
+      {
+        "tablename": "user_profiles",
+        "indexname": "user_profiles_user_id_unique",
+        "indexdef": "CREATE UNIQUE INDEX user_profiles_user_id_unique ON public.user_profiles USING btree (user_id)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "idx_users_email_platform",
+        "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "idx_users_external_id_platform",
+        "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "users_email_unique",
+        "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+      },
+      {
+        "tablename": "users",
+        "indexname": "users_pkey",
+        "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+      }
+    ],
+    "enums": [
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "pending"
+      },
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "approved"
+      },
+      {
+        "typname": "people_admission_status",
+        "enumlabel": "rejected"
+      },
+      {
+        "typname": "people_admission_type",
+        "enumlabel": "digital"
+      },
+      {
+        "typname": "people_admission_type",
+        "enumlabel": "training"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "present"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "absent"
+      },
+      {
+        "typname": "people_attendance_status",
+        "enumlabel": "late"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "online"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "offline"
+      },
+      {
+        "typname": "people_batch_mode",
+        "enumlabel": "hybrid"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "upcoming"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_batch_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "scheduled"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_demo_session_status",
+        "enumlabel": "no_show"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "website"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "referral"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "ad"
+      },
+      {
+        "typname": "people_enquiry_source",
+        "enumlabel": "walkin"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "new"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "contacted"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "qualified"
+      },
+      {
+        "typname": "people_enquiry_status",
+        "enumlabel": "lost"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "dropped"
+      },
+      {
+        "typname": "people_enrollment_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "fulltime"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "parttime"
+      },
+      {
+        "typname": "people_faculty_availability_type",
+        "enumlabel": "contract"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "inactive"
+      },
+      {
+        "typname": "people_faculty_status",
+        "enumlabel": "on_leave"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "paid"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "due"
+      },
+      {
+        "typname": "people_payment_installment_status",
+        "enumlabel": "overdue"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "realtutorialhub"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "skillup"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "both"
+      },
+      {
+        "typname": "people_platform",
+        "enumlabel": "skillhubcore"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "scheduled"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "completed"
+      },
+      {
+        "typname": "people_session_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "exam.unlimited"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "exam.basic"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "tutorial.full_access"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "tutorial.preview_only"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "ai_tutor"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "certificate"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "placement_matching"
+      },
+      {
+        "typname": "people_subscription_feature_key",
+        "enumlabel": "live_sessions"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "free"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "pro"
+      },
+      {
+        "typname": "people_subscription_plan",
+        "enumlabel": "enterprise"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "active"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "cancelled"
+      },
+      {
+        "typname": "people_subscription_status",
+        "enumlabel": "expired"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "student"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "faculty"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "admin"
+      },
+      {
+        "typname": "people_user_role",
+        "enumlabel": "super_admin"
+      }
+    ],
+    "tableFingerprints": [
+      {
+        "table": "admissions",
+        "count": 170,
+        "fingerprint": "d4458e1a1948209a8039a35a64513d0c"
+      },
+      {
+        "table": "attendance_records",
+        "count": 4,
+        "fingerprint": "fa11536f9b5f23dfb7ab793ea4beaa41"
+      },
+      {
+        "table": "auth_audit_log",
+        "count": 55,
+        "fingerprint": "903b0240230525c79bd6a6779f83b6f3"
+      },
+      {
+        "table": "batch_enrollments",
+        "count": 163,
+        "fingerprint": "b7fa78b97e2f0381f00faa512c1795c7"
+      },
+      {
+        "table": "batch_sessions",
+        "count": 3,
+        "fingerprint": "7b7b23e36c74e527bcdfd178ba12d185"
+      },
+      {
+        "table": "batches",
+        "count": 115,
+        "fingerprint": "ff3c61b64a485f980abe14e8e4642c1c"
+      },
+      {
+        "table": "demo_sessions",
+        "count": 1,
+        "fingerprint": "cf884d31ce9a6650457ecf6b29c8bf60"
+      },
+      {
+        "table": "domains",
+        "count": 1,
+        "fingerprint": "e106578961e94d37b87cacb6b924dba3"
+      },
+      {
+        "table": "enquiries",
+        "count": 283,
+        "fingerprint": "70d4f6f5d66173ae1e06e381940461d6"
+      },
+      {
+        "table": "enquiry_follow_ups",
+        "count": 204,
+        "fingerprint": "ab5507754fcefe853f4429d40ea53333"
+      },
+      {
+        "table": "faculty",
+        "count": 1,
+        "fingerprint": "54af3f2eb288b54b42315f9ce17bedb2"
+      },
+      {
+        "table": "faculty_availability",
+        "count": 2,
+        "fingerprint": "3acb0ee544d782cab4097e2ad964ee77"
+      },
+      {
+        "table": "payment_installments",
+        "count": 113,
+        "fingerprint": "dbda523c95b0b4a84e010f505b91e625"
+      },
+      {
+        "table": "placement_jobs",
+        "count": 85,
+        "fingerprint": "2c1024962d2d1ce1a56492cf71606300"
+      },
+      {
+        "table": "platform_access",
+        "count": 148,
+        "fingerprint": "437b2f5b5c6d09580aeea2dfb7a4c63b"
+      },
+      {
+        "table": "refresh_token_families",
+        "count": 40,
+        "fingerprint": "f8ba59441c332afcfe80d7c35b1c3102"
+      },
+      {
+        "table": "sso_sessions",
+        "count": 40,
+        "fingerprint": "b36a739dfab6d971cd1bcb0aa1c320e5"
+      },
+      {
+        "table": "student_placement_profiles",
+        "count": 1,
+        "fingerprint": "f9f85b6acfbd39d24911521a6473c220"
+      },
+      {
+        "table": "subjects",
+        "count": 1,
+        "fingerprint": "6921f16970d3d05e2db075a48a6b92fe"
+      },
+      {
+        "table": "subscription_features",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "subscription_plans",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "subscriptions",
+        "count": 9,
+        "fingerprint": "7e72bd74dd289dadf275ea6d9c857055"
+      },
+      {
+        "table": "subtopics",
+        "count": 1,
+        "fingerprint": "1389cfd698bfcded7d0ad79fca103a57"
+      },
+      {
+        "table": "topics",
+        "count": 1,
+        "fingerprint": "38a7c08b1ef5cf50794fe0cd56f1888a"
+      },
+      {
+        "table": "user_features_cache",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "table": "user_profiles",
+        "count": 178,
+        "fingerprint": "c18dd926c6b02f57d82be02c86240975"
+      },
+      {
+        "table": "users",
+        "count": 319,
+        "fingerprint": "bb280583d47f9fe2887785f27ff2a24e"
+      }
+    ],
+    "foreignKeys": [
+      {
+        "name": "admissions_approved_by_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "admissions_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_marked_by_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_session_id_batch_sessions_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "attendance_records_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_enrollments_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_enrollments_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_sessions_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batch_sessions_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "batches_subject_id_subjects_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "demo_sessions_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "demo_sessions_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiries_assigned_counsellor_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiry_follow_ups_counsellor_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "enquiry_follow_ups_enquiry_id_enquiries_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_availability_booked_batch_id_batches_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_availability_faculty_id_faculty_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "faculty_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "payment_installments_student_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "platform_access_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "refresh_token_families_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "sso_sessions_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "student_placement_profiles_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subjects_domain_id_domains_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subscription_features_plan_id_subscription_plans_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subscriptions_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "subtopics_topic_id_topics_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "topics_subject_id_subjects_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "user_features_cache_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      },
+      {
+        "name": "user_profiles_user_id_users_id_fk",
+        "validated": true,
+        "orphans": 0
+      }
+    ],
+    "normalizedDuplicateGroups": 0
+  },
+  "finishedUtc": "2026-11-14T12:51:53.108Z",
+  "status": "PASS"
+}

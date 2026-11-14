@@ -1,0 +1,44 @@
+{
+  "sourceCommit": "41c1db60b282d11cdde076c92364c918c2ee7188",
+  "technicalQualification": "PASS - owner accepted",
+  "recovery": "PASS 14/14",
+  "productionPreflight": "PASS 8/8",
+  "productionMigration": "PENDING AUTHORIZATION",
+  "snapshot": "production at 2026-11-14 12:31:12 UTC (manual)",
+  "snapshotTimestampUtc": "2026-11-14T12:31:12Z",
+  "snapshotExpiryDisplayed": "Never",
+  "historyWindowHours": 6,
+  "recoveryBranch": "br-withered-wave-a17wttsi",
+  "protectedBranch": "br-misty-wildflower-a1jalxmd",
+  "restoreOperator": "Project owner RealTutorialHub or explicitly authorized database operator",
+  "pendingMigrations": [
+    "0009_student_invitations",
+    "0010_normalized_platform_email"
+  ],
+  "executionCommand": "pnpm --filter @quiz/db-people db:migrate",
+  "approvalPhrase": "AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION",
+  "decision": "GO TO OWNER AUTHORIZATION GATE",
+  "credentialExposure": "OPEN - owner deferred, requires execution risk acknowledgement",
+  "protectedWritesExecuted": false,
+  "deploymentExecuted": false,
+  "pushExecuted": false,
+  "snapshotAndRecoveryBranchRetained": true,
+  "canonicalStatusesPreserved": true,
+  "q48": "OPEN",
+  "syntax": {
+    "command": "node --check .evidence/r6-recovery-acceptance/verify.cjs",
+    "startedUtc": "2026-11-14T12:53:42.441Z",
+    "finishedUtc": "2026-11-14T12:53:42.590Z",
+    "exitCode": 0
+  },
+  "limitations": [
+    "Snapshot opaque UUID unavailable in observed card; unique name, UTC point, source and restored branch recorded",
+    "Neon management restoration performed by owner; remaining acceptance uses positively identified read-only SQL",
+    "Current rollback loses later legitimate writes and requires explicit recovery/switchover approval",
+    "Deployed application revision verification and deployment remain separate",
+    "Historical cold-start and baseline root audit/hook findings remain tracked"
+  ],
+  "inheritedHusky": "0",
+  "applicationSourceChanged": false,
+  "acceptedQualificationSuitesRepeated": false
+}

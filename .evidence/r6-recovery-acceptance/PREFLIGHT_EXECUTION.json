@@ -1,0 +1,8 @@
+{
+  "source": ".evidence/r6-cutover-preflight/preflight.cjs",
+  "sourceTransformation": "Only output receipt path changed to preserve prior preflight",
+  "startedUtc": "2026-11-14T12:52:14.444Z",
+  "finishedUtc": "2026-11-14T12:52:15.844Z",
+  "exitCode": 0,
+  "resultFile": ".evidence/r6-recovery-acceptance/PRODUCTION_PREFLIGHT.json"
+}

@@ -357,3 +357,55 @@ Before cutover, the owner/operator must identify a current protected recovery po
 **Phase 1 read-only preflight PASS. Phase 3 findings are dispositioned above. Phase 2 protected recovery evidence is BLOCKED. Phase 4 execution authorization remains PENDING. Protected migration recommendation HOLD.** Technical qualification remains accepted PASS.
 
 The requested authorization phrase is **AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION**. Request that execution decision after the protected recovery record/procedure is verified and approved, together with explicit credential-risk acknowledgement and the exact smoke-test scope. The current instruction requires stopping before protected writes. No migration, protected restore, deployment or GitHub push occurred in this checkpoint. Canonical acceptance statuses remain unchanged and Q48 remains OPEN.
+
+## Recovery acceptance and single execution authorization — 14 November 2026
+
+This section supersedes the preceding unavailable-console and unverified-recovery states. The owner authorized recovery preparation, designated the project owner or explicitly authorized database operator for restoration, and supplied the successful Neon restore destination. R6-B technical qualification remains accepted PASS. The protected migration remains unexecuted pending the exact authorization below.
+
+### Recovery point and tested destination
+
+| Field | Recorded evidence |
+|---|---|
+| Project/source branch | `platform-people`, `bitter-tree-18287476`, production `br-misty-wildflower-a1jalxmd` |
+| Recovery snapshot | `production at 2026-11-14 12:31:12 UTC (manual)` |
+| Snapshot UTC time | `2026-11-14T12:31:12Z` |
+| Snapshot retention | Authenticated console displays `Expires on: never`. Retention depends on keeping this snapshot and project available. A separate opaque snapshot UUID was not exposed in the inspected card. Name, source, UTC time and restored branch provide the recorded recovery reference. |
+| PITR history | Authenticated console displays a six-hour window. This rolling history is separate from the retained manual snapshot. |
+| Recovery destination | Owner-created `branch_from_snapshot_Nov 14, 2026 6:10 PM GMT+5:30`, ID `br-withered-wave-a17wttsi` |
+| Recovery endpoint/database | `ep-purple-water-a1tdj2jd.ap-southeast-1.aws.neon.tech`, `people_prod`, positively checked through server settings |
+| Restore operator | Project owner RealTutorialHub, or an explicitly authorized database operator acting under the owner-approved recovery procedure |
+| Retention instruction | Preserve the manual snapshot and restored branch until migration acceptance is recorded |
+
+The Windows native accessibility control reached the authenticated console after its earlier minimized-window failure. The console confirmed the production display name, six-hour history, successful snapshot creation in 1.02 seconds, UTC snapshot name and expiry `never`. Snapshot creation was expressly authorized. A later browser-policy stop ended that UI work before metadata/restore verification. The owner then supplied the successful restoration branch and ID. This continuation observed the restored branch in the existing authenticated SQL Editor and read its endpoint identifier. No additional screenshot or snapshot creation was needed for recovery acceptance.
+
+`node .evidence/r6-recovery-acceptance/verify.cjs` used the existing secure credentials without printing them. Both connections had connection-default read-only enabled and ran `REPEATABLE READ READ ONLY` transactions. Server-side checks required the exact project, database and branch IDs before table inspection. No application connection was switched to the recovery branch.
+
+All **14 recovery checks PASS**. The restored database has **27 public base tables**. Its columns, constraints, indexes and enums match production. All 27 table counts and server-side row fingerprints match the protected database at observation. Fingerprints retain only digest/count results, and no account rows or credentials are exported. Both ledgers contain the same nine historical source-matching entries through 0008. Representative users, platform grants and SSO sessions exist. Both databases have **35 validated foreign keys and zero orphan rows**, plus zero active normalized same-platform email conflicts. The production ledger remains unchanged from the prior preflight.
+
+The first checker attempt failed because PostgreSQL `name[]` column metadata was returned as a string by the client. The read-only checker now selects `text[]` before iterating. `INITIAL_RECOVERY_ACCEPTANCE.json` retains that failure, and `RECOVERY_ACCEPTANCE.json` retains the completed passing run. These are evidence-harness changes only.
+
+This accepts the actual Neon snapshot-to-isolated-branch recovery demonstrated by the owner and verified through real SQL. The previous successful synthetic `pg_dump`/`pg_restore` remains additional evidence for its own logical-recovery method. It is not used to claim that a Neon snapshot operation was tested. In-place production restoration remains outside the rehearsal.
+
+### Final production preflight
+
+At `2026-11-14T12:52:15Z`, the refreshed protected preflight passes **8/8 checks**. It verifies project `bitter-tree-18287476`, production branch `br-misty-wildflower-a1jalxmd`, direct endpoint `ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech`, `people_prod`, exact source ledger through 0008 and zero conflicting normalized same-platform emails. Registered pending migrations remain exactly 0009 invitations and 0010 normalized platform email, with the previously reviewed hashes. Required enum and old/new index states match the expected pre-migration baseline. Active application configuration contains no qualification-branch target. `PRODUCTION_PREFLIGHT.json` and `PREFLIGHT_EXECUTION.json` preserve the refreshed result without replacing the earlier receipt.
+
+The accepted local SHC/SUIA/RTH code and bounded regression/runtime evidence remain applicable. Broader cold-start behavior, fresh-install provenance and the absent audit script retain their existing dispositions. Deployed code revisions remain outside the local evidence. The immediate validation targets are the existing localhost apps on ports 3007, 3009 and 3003 with their configured protected stores. Deployment requires separate approval.
+
+### Exact approval and recovery procedure
+
+**Recovery acceptance PASS. Final database preflight PASS. GO to the single owner authorization gate. Production migration execution remains PENDING.** The credential-exposure incident remains OPEN — REMEDIATION DEFERRED BY OWNER and requires acknowledgement in the execution decision. This GO recommendation describes the reviewed database operation with that open risk disclosed.
+
+Authorize with **AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION**, acknowledging the existing credential-exposure risk and the documented snapshot recovery procedure. This approves the exact pending 0009/0010 sequence and the bounded localhost validation described in the owner's Phase D. It grants no deployment or GitHub push authority.
+
+After authorization, reconfirm protected identity, the snapshot/recovery reference, SQL/source hashes and pending ledger immediately before execution. Load the existing reviewed protected connection securely into both `DATABASE_URL_PEOPLE` and `DATABASE_DIRECT_URL_PEOPLE`; retain credentials in process environment. Set `PEOPLE_MIGRATION_RECEIPT` to a new absolute evidence path. From `E:\onlinewebsites\quiz-platform`, run exactly:
+
+```powershell
+pnpm --filter @quiz/db-people db:migrate
+```
+
+The already qualified runner applies **0009_student_invitations → 0010_normalized_platform_email** using its existing advisory lock, exclusive ledger lock, five-second lock timeout, 120-second statement timeout and transaction. Verify eleven exact ledger hashes, invitation schema, final normalized partial uniqueness, preserved access/session constraints and the absence of unintended changes. An unexpected error or uncertain commit requires read-only state assessment before any retry.
+
+For a detected uncommitted failure, confirm the original ledger and schema after rollback. For a committed failure requiring recovery, preserve the snapshot and current production state, keep affected writers controlled, and have the designated operator use the already verified snapshot to a new isolated branch. Verify that destination's schema, data fingerprints and ledger before an owner-approved service recovery/switchover. Replacing production or changing application connections requires explicit recovery approval. The pre-migration snapshot omits legitimate later writes, which must be assessed before rollback. Re-adding global email uniqueness can be impossible after valid cross-brand duplicates exist.
+
+The snapshot and recovery branch remain retained. No protected migration, production restore, application deployment or GitHub push occurred in this checkpoint. Canonical statuses and Q48 remain owner-controlled. This checkpoint stops at the single production authorization gate.

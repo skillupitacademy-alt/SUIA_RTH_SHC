@@ -1,0 +1,51 @@
+{
+  "sourceCommit": "41c1db60b282d11cdde076c92364c918c2ee7188",
+  "algorithm": "SHA-256 of staged Git canonical blobs",
+  "selfExcluded": true,
+  "files": [
+    {
+      "file": ".evidence/r6-recovery-acceptance/CSV_NOTE_DELTA.json",
+      "sha256": "7c15a3c92bca136510f94a963b2c27b60fd9a7be6b34728fe567f610317cd6f6"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/FINAL_GATE.json",
+      "sha256": "a84d940c47885136b16dcd850ce807c372c2d4ca689b65bcf9db96562c255079"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/INITIAL_RECOVERY_ACCEPTANCE.json",
+      "sha256": "cf3361fad7fbea383c5736ff3c34c763961f4720c3e5aef2d58008868f0ef304"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/PREFLIGHT_EXECUTION.json",
+      "sha256": "069bd543c30b47e7b3dacebd189062d03eca335832ffa8584cd08d5da46b815c"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/PRODUCTION_PREFLIGHT.json",
+      "sha256": "0f780dd9f6891d6a8b0a25adbd2356086aa2bb20e94c063f2d62a56e0c378ac8"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/RECOVERY_ACCEPTANCE.json",
+      "sha256": "a3c2c084192ed530e19f11522e2a4fc8abc2e866fc469756493e36bcfebcecad"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/SECRET_SCAN.json",
+      "sha256": "4ca4dcc41e206ce04807b94811a2e4fe8b3adb352cbc8560a43edea13ca81cff"
+    },
+    {
+      "file": ".evidence/r6-recovery-acceptance/verify.cjs",
+      "sha256": "6c432d62cef07a982bed55f6621111475b5b49a2e0f1d48c5f630d1cb61cc6fb"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "2922bf2e5a32871d75fb26df15ac3b91cde58348aac8094b4e18a0105a417b52"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "fc8a80c2ba4f3c3943ff0a62d37765aa8daac3e07f3e7b71c7fd52000230431c"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "sha256": "b6e667f351bf9fcf3955d535a231918c7873005e6a500dfc2bbecd9226956891"
+    }
+  ]
+}

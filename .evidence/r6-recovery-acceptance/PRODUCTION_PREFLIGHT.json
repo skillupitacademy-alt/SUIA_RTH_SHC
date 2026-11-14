@@ -1,0 +1,1038 @@
+{
+  "startedUtc": "2026-11-14T12:52:14.578Z",
+  "command": "node .evidence/r6-cutover-preflight/preflight.cjs",
+  "sourceCommit": "41c1db60b282d11cdde076c92364c918c2ee7188",
+  "target": {
+    "host": "ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech",
+    "database": "people_prod"
+  },
+  "checks": [
+    {
+      "name": "Protected project, branch, database and read-only transaction",
+      "status": "PASS"
+    },
+    {
+      "name": "Ledger matches exact registered historical prefix",
+      "status": "PASS"
+    },
+    {
+      "name": "Only expected 0009 and 0010 pending",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing platform enum includes all three application authorities",
+      "status": "PASS"
+    },
+    {
+      "name": "Old global constraint exists and new index is absent",
+      "status": "PASS"
+    },
+    {
+      "name": "Student invitation table is absent before pending 0009",
+      "status": "PASS"
+    },
+    {
+      "name": "Zero active normalized same-platform email conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "Active project env references exclude disposable qualification targets",
+      "status": "PASS"
+    }
+  ],
+  "scope": "Read-only protected PostgreSQL catalogs and local configuration. No migration runner invocation.",
+  "identity": {
+    "database": "people_prod",
+    "role": "neondb_owner",
+    "version": "PostgreSQL 17.12 (14c6cec) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+    "project": "bitter-tree-18287476",
+    "branch": "br-misty-wildflower-a1jalxmd",
+    "read_only": "on",
+    "observed_at": "2026-11-14T12:52:15.845Z"
+  },
+  "ledger": [
+    {
+      "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "created_at": "1774191220131"
+    },
+    {
+      "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "created_at": "1774536900897"
+    },
+    {
+      "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "created_at": "1774537191952"
+    },
+    {
+      "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "created_at": "1774538285178"
+    },
+    {
+      "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "created_at": "1774541869102"
+    },
+    {
+      "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "created_at": "1774550945793"
+    },
+    {
+      "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "created_at": "1774591239501"
+    },
+    {
+      "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "created_at": "1774935418558"
+    },
+    {
+      "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "created_at": "1774938098054"
+    }
+  ],
+  "pending": [
+    {
+      "tag": "0009_student_invitations",
+      "timestamp": 1791600000000,
+      "hash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+    },
+    {
+      "tag": "0010_normalized_platform_email",
+      "timestamp": 1794629868483,
+      "hash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "platform_access",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "platform_access",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "platform_access",
+      "column_name": "platform",
+      "data_type": "USER-DEFINED",
+      "udt_name": "people_platform",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "platform_access",
+      "column_name": "granted_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "platform_access",
+      "column_name": "deleted_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "jwt_family",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "platform",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "revoked_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "deleted_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "sso_sessions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "email",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "password_hash",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "role",
+      "data_type": "USER-DEFINED",
+      "udt_name": "people_user_role",
+      "is_nullable": "NO",
+      "column_default": "'student'::people_user_role"
+    },
+    {
+      "table_name": "users",
+      "column_name": "platform",
+      "data_type": "USER-DEFINED",
+      "udt_name": "people_platform",
+      "is_nullable": "NO",
+      "column_default": "'realtutorialhub'::people_platform"
+    },
+    {
+      "table_name": "users",
+      "column_name": "is_active",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO",
+      "column_default": "true"
+    },
+    {
+      "table_name": "users",
+      "column_name": "deleted_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "version",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "table_name": "users",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "external_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "external_brand",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "platform_access_pkey",
+      "table_name": "platform_access",
+      "contype": "p",
+      "convalidated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "platform_access_user_id_users_id_fk",
+      "table_name": "platform_access",
+      "contype": "f",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    },
+    {
+      "conname": "sso_sessions_pkey",
+      "table_name": "sso_sessions",
+      "contype": "p",
+      "convalidated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "sso_sessions_user_id_users_id_fk",
+      "table_name": "sso_sessions",
+      "contype": "f",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    },
+    {
+      "conname": "subscription_features_plan_id_subscription_plans_id_fk",
+      "table_name": "subscription_features",
+      "contype": "f",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "user_features_cache_user_id_users_id_fk",
+      "table_name": "user_features_cache",
+      "contype": "f",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "users_email_unique",
+      "table_name": "users",
+      "contype": "u",
+      "convalidated": true,
+      "definition": "UNIQUE (email)"
+    },
+    {
+      "conname": "users_pkey",
+      "table_name": "users",
+      "contype": "p",
+      "convalidated": true,
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "platform_access",
+      "indexname": "platform_access_pkey",
+      "indexdef": "CREATE UNIQUE INDEX platform_access_pkey ON public.platform_access USING btree (id)"
+    },
+    {
+      "tablename": "platform_access",
+      "indexname": "platform_access_user_platform_unique",
+      "indexdef": "CREATE UNIQUE INDEX platform_access_user_platform_unique ON public.platform_access USING btree (user_id, platform)"
+    },
+    {
+      "tablename": "sso_sessions",
+      "indexname": "idx_sso_sessions_family",
+      "indexdef": "CREATE INDEX idx_sso_sessions_family ON public.sso_sessions USING btree (jwt_family, revoked_at)"
+    },
+    {
+      "tablename": "sso_sessions",
+      "indexname": "sso_sessions_pkey",
+      "indexdef": "CREATE UNIQUE INDEX sso_sessions_pkey ON public.sso_sessions USING btree (id)"
+    },
+    {
+      "tablename": "subscription_features",
+      "indexname": "idx_subscription_features_plan",
+      "indexdef": "CREATE INDEX idx_subscription_features_plan ON public.subscription_features USING btree (plan_id, feature_key)"
+    },
+    {
+      "tablename": "subscription_plans",
+      "indexname": "idx_subscription_plans_active",
+      "indexdef": "CREATE INDEX idx_subscription_plans_active ON public.subscription_plans USING btree (is_active, name)"
+    },
+    {
+      "tablename": "subscriptions",
+      "indexname": "idx_subscriptions_user_active",
+      "indexdef": "CREATE INDEX idx_subscriptions_user_active ON public.subscriptions USING btree (user_id, status) WHERE (status = 'active'::people_subscription_status)"
+    },
+    {
+      "tablename": "user_features_cache",
+      "indexname": "idx_user_features_cache_user",
+      "indexdef": "CREATE INDEX idx_user_features_cache_user ON public.user_features_cache USING btree (user_id, cached_at)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "idx_users_email_platform",
+      "indexdef": "CREATE INDEX idx_users_email_platform ON public.users USING btree (email, platform) WHERE (deleted_at IS NULL)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "idx_users_external_id_platform",
+      "indexdef": "CREATE UNIQUE INDEX idx_users_external_id_platform ON public.users USING btree (external_id, platform) WHERE (external_id IS NOT NULL)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_email_unique",
+      "indexdef": "CREATE UNIQUE INDEX users_email_unique ON public.users USING btree (email)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_pkey",
+      "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+    }
+  ],
+  "enums": [
+    {
+      "typname": "people_platform",
+      "enumlabel": "realtutorialhub"
+    },
+    {
+      "typname": "people_platform",
+      "enumlabel": "skillup"
+    },
+    {
+      "typname": "people_platform",
+      "enumlabel": "both"
+    },
+    {
+      "typname": "people_platform",
+      "enumlabel": "skillhubcore"
+    }
+  ],
+  "duplicateGroups": 0,
+  "longTransactions": [],
+  "databaseSizeBytes": 10911744,
+  "configuration": [
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_RTH",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/rth_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_RTH",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/rth_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_SKILLUP",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/skillup_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_SKILLUP",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/skillup_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_PAYMENT",
+      "host": "ep-dawn-hill-a1lm0whl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/payment_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_PAYMENT",
+      "host": "ep-dawn-hill-a1lm0whl.ap-southeast-1.aws.neon.tech",
+      "path": "/payment_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_URL_PLACEMENT",
+      "host": "ep-mute-hill-a1pdakaj-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/placement_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "DATABASE_DIRECT_URL_PLACEMENT",
+      "host": "ep-mute-hill-a1pdakaj.ap-southeast-1.aws.neon.tech",
+      "path": "/placement_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "GATEWAY_URL_SKILLUP",
+      "host": "api.skillupitacademy.com",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "GATEWAY_URL_SKILLHUBCORE",
+      "host": "api.skillhubcore.in",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "GATEWAY_URL",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "INTERNAL_API_URL",
+      "host": "quiz-api-server-plldp3atca-as.a.run.app",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "SKILLHUBCORE_DATABASE_URL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.local",
+      "key": "SKILLHUBCORE_DATABASE_DIRECT_URL",
+      "host": "ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_RTH",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_RTH",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_SKILLUP",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_SKILLUP",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_TUTORIAL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_PEOPLE",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_PEOPLE",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_PAYMENT",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_PAYMENT",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_URL_PLACEMENT",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "DATABASE_DIRECT_URL_PLACEMENT",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "SKILLHUBCORE_DATABASE_URL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "SKILLHUBCORE_DATABASE_DIRECT_URL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "TEST_DATABASE_URL_TUTORIAL",
+      "host": "localhost",
+      "path": "/tutorial_test",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": ".env.test.local",
+      "key": "GATEWAY_URL",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_RTH",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/rth_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_RTH",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/rth_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_SKILLUP",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/skillup_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_SKILLUP",
+      "host": "ep-round-cherry-a1ogr3gr.ap-southeast-1.aws.neon.tech",
+      "path": "/skillup_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_PAYMENT",
+      "host": "ep-dawn-hill-a1lm0whl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/payment_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_PAYMENT",
+      "host": "ep-dawn-hill-a1lm0whl.ap-southeast-1.aws.neon.tech",
+      "path": "/payment_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_URL_PLACEMENT",
+      "host": "ep-mute-hill-a1pdakaj-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/placement_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "DATABASE_DIRECT_URL_PLACEMENT",
+      "host": "ep-mute-hill-a1pdakaj.ap-southeast-1.aws.neon.tech",
+      "path": "/placement_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "GATEWAY_URL",
+      "host": "api.realtutorialhub.com",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "GATEWAY_URL_SKILLUP",
+      "host": "api.skillupitacademy.com",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "GATEWAY_URL_SKILLHUBCORE",
+      "host": "api.skillhubcore.in",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "INTERNAL_API_URL",
+      "host": "quiz-api-server-plldp3atca-as.a.run.app",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "SKILLHUBCORE_DATABASE_URL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\api-server\\.env.local",
+      "key": "SKILLHUBCORE_DATABASE_DIRECT_URL",
+      "host": "ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "DATABASE_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "DATABASE_DIRECT_URL_PEOPLE",
+      "host": "ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech",
+      "path": "/people_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "DATABASE_DIRECT_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "GATEWAY_URL",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "GATEWAY_URL_SKILLHUBCORE",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillhubcore-admin\\.env.local",
+      "key": "DATABASE_URL",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillup-web\\.env.local",
+      "key": "GATEWAY_URL",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillup-web\\.env.local",
+      "key": "DATABASE_URL",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillup-web\\.env.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\skillup-web\\.env.local",
+      "key": "INTERNAL_API_URL",
+      "host": "localhost",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\realtutorialhub-web\\.env.local",
+      "key": "GATEWAY_URL",
+      "host": "127.0.0.1",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\realtutorialhub-web\\.env.local",
+      "key": "DATABASE_URL",
+      "host": "ep-round-cherry-a1ogr3gr-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/quiz_platform_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\realtutorialhub-web\\.env.local",
+      "key": "DATABASE_URL_TUTORIAL",
+      "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+      "path": "/tutorial_prod",
+      "disposable": false,
+      "template": false
+    },
+    {
+      "file": "apps\\realtutorialhub-web\\.env.local",
+      "key": "INTERNAL_API_URL",
+      "host": "localhost",
+      "disposable": false,
+      "template": false
+    }
+  ],
+  "files": [
+    {
+      "file": "packages/db-people/scripts/migrate.mts",
+      "sha256": "1abc1b24a49f9654d0befa335efbff5de8b21ca5a2794303eaff05ef941a211d"
+    },
+    {
+      "file": "packages/db-people/src/migration-compatibility.ts",
+      "sha256": "eeae69b49865cdb36e0c31ab3ce2aff8236f72173c9fb4ea2097a298f3641c33"
+    },
+    {
+      "file": "packages/db-people/drizzle.config.ts",
+      "sha256": "7a6fd7375a7b6544e0f342acec588bd1300339b1771db405d83971cd4ebc05ad"
+    },
+    {
+      "file": "packages/db-people/migrations/meta/_journal.json",
+      "sha256": "5d77bca0dee0989a9e3bfb401ae43da5b26fb348b4c60d54ad444fb7c321ce50"
+    },
+    {
+      "file": "packages/db-people/migrations/0009_student_invitations.sql",
+      "sha256": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+    },
+    {
+      "file": "packages/db-people/migrations/0010_normalized_platform_email.sql",
+      "sha256": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+    }
+  ],
+  "protectedRecoverability": "NOT VERIFIED - SQL catalogs provide no approved restore-point, retention or protected restore rehearsal evidence",
+  "finishedUtc": "2026-11-14T12:52:15.765Z",
+  "status": "PASS_READ_ONLY_PREFLIGHT"
+}

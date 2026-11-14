@@ -1,0 +1,17 @@
+{
+  "startedUtc": "2026-11-14T12:51:28.349Z",
+  "command": "node .evidence/r6-recovery-acceptance/verify.cjs",
+  "sourceCommit": "41c1db60b282d11cdde076c92364c918c2ee7188",
+  "readOnly": true,
+  "snapshot": {
+    "name": "production at 2026-11-14 12:31:12 UTC (manual)",
+    "timestampUtc": "2026-11-14T12:31:12Z",
+    "expiryDisplayed": "Never",
+    "historyHours": 6,
+    "managementEvidence": "Authenticated Neon console previously confirmed snapshot creation. Owner confirms restore into br-withered-wave-a17wttsi."
+  },
+  "checks": [],
+  "failure": "TypeError",
+  "finishedUtc": "2026-11-14T12:51:32.165Z",
+  "status": "FAIL_OR_REVIEW_REQUIRED"
+}
