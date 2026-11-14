@@ -1,4 +1,4 @@
-import { desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import {
   admissions,
@@ -533,8 +533,12 @@ export async function listAdminActivityFeed(): Promise<AdminActivityItem[]> {
   return items.slice(0, 3);
 }
 
+export class StudentReportingConflictError extends Error {
+  constructor() { super('Student reporting association is ambiguous'); }
+}
+
 export async function getAdminStudentDetail(id: string): Promise<AdminStudentDetail | undefined> {
-  const [studentRow] = await db
+  const studentRows = await db
     .select({
       userId: users.id,
       name: userProfiles.name,
@@ -548,25 +552,31 @@ export async function getAdminStudentDetail(id: string): Promise<AdminStudentDet
     })
     .from(users)
     .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-    .leftJoin(admissions, eq(admissions.studentUserId, users.id))
+    .leftJoin(admissions, and(eq(admissions.studentUserId, users.id), isNull(admissions.deletedAt)))
     .leftJoin(batches, eq(batches.id, admissions.batchId))
-    .leftJoin(enquiries, eq(enquiries.email, users.email))
-    .where(eq(users.id, id))
-    .limit(1);
+    .leftJoin(enquiries, and(eq(enquiries.id, admissions.enquiryId), isNull(enquiries.deletedAt)))
+    .where(and(eq(users.id, id), eq(users.platform, 'skillup'), isNull(users.deletedAt)))
+    .limit(2);
+
+  if (studentRows.length > 1) {
+    throw new StudentReportingConflictError();
+  }
+  const studentRow = studentRows[0];
 
   if (studentRow === undefined) {
     return undefined;
   }
 
-  const [counsellorRow] = await db
+  const counsellorRows = studentRow.enquiryId === null ? [] : await db
     .select({
       name: userProfiles.name,
     })
     .from(enquiries)
-    .leftJoin(users, eq(users.id, enquiries.assignedCounsellorId))
+    .leftJoin(users, and(eq(users.id, enquiries.assignedCounsellorId), isNull(users.deletedAt)))
     .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-    .where(eq(enquiries.email, studentRow.email))
+    .where(and(eq(enquiries.id, studentRow.enquiryId), isNull(enquiries.deletedAt)))
     .limit(1);
+  const counsellorRow = counsellorRows[0];
 
   const attendanceRows = await db
     .select({

@@ -1,0 +1,17 @@
+{
+  "head": "977fe044c6aa04f3bf63ff58560ae69c941ea0a6",
+  "captured": "2026-11-13T19:48:31.631Z",
+  "files": {
+    "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts": "2595bfa933ec5238c7f1b6e99a271871522c9e2611e73811011126eaa518df02",
+    "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts": "4b8dfc0f524478d66e931a67ac0c163494042d40c72f87b16beef1bab0446836",
+    "services/skillhubcore-service/src/modules/user/user.repository.ts": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+    "services/skillhubcore-service/src/middleware/verify-jwt.ts": "ff3866e98d8ce1e303939b5f59bdeb77d123b0c252fa3bef66d9bd7dd04bfe52",
+    "packages/types/src/tutorial-repositories.types.ts": "595d2fb9d4fb70aa50c448737b9b0d8a604a7d38fac1e6d78f1ad9f685540564",
+    "apps/skillup-admin/src/lib/skillup-admin-data.ts": "82abc56f11ed746b6ca913a8483ff72975a9958a05ffa2be786c8dbcaaaf7e99",
+    "apps/api-server/src/modules/auth/shc-auth.service.ts": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+    "packages/identity-bridge/src/UserIdentityBridgeService.ts": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739",
+    "apps/skillup-web/src/lib/student-auth.ts": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+    "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+    ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547"
+  }
+}

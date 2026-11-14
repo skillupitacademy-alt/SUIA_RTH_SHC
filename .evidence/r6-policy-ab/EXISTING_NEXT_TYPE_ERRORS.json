@@ -1,0 +1,35 @@
+{
+  "observedAfter": "next build --experimental-build-mode=compile --webpack",
+  "rows": [
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/audit/page.tsx",
+      "baselineReadExit": 0,
+      "unchanged": true,
+      "sha256": "492308ce7f87dd2f7e93ebbb2511928f36e5226e4f12cf3a3ad3e821ff17a4c1"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/batches/[id]/page.tsx",
+      "baselineReadExit": 0,
+      "unchanged": true,
+      "sha256": "bdc0d4e4d6bffa37bc406689f262631cb9a6ec66d53493a8d0e7674a40316fd8"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/crm/enquiries/[id]/page.tsx",
+      "baselineReadExit": 0,
+      "unchanged": true,
+      "sha256": "d19041847883250b6c1a1f50c2990845c3181bb9e5aa76dab7831a769ccc84ab"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/(admin)/students/[id]/page.tsx",
+      "baselineReadExit": 0,
+      "unchanged": true,
+      "sha256": "540f61a4205594d33ff0d8b337785eb6ab3e543b1b5f1c6ba498743347b64d20"
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/invite/redeem/route.ts",
+      "baselineReadExit": 0,
+      "unchanged": true,
+      "sha256": "c1c4c94e9d0840f1d2267f4c2709d72b8803a3a44a3d043229c8608393547bd3"
+    }
+  ]
+}

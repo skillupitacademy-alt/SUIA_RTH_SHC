@@ -1,0 +1,322 @@
+{
+  "captured": "2026-11-13T19:57:05.131Z",
+  "baselineHead": "977fe044c6aa04f3bf63ff58560ae69c941ea0a6",
+  "headNow": "977fe044c6aa04f3bf63ff58560ae69c941ea0a6",
+  "changedFrozenSources": [
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.service.ts",
+      "before": "2595bfa933ec5238c7f1b6e99a271871522c9e2611e73811011126eaa518df02",
+      "after": "0c97dcd5ad36d668307519ff2d49867f5e77b5588624d6fb286382e7cd440994"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/sso.routes.ts",
+      "before": "4b8dfc0f524478d66e931a67ac0c163494042d40c72f87b16beef1bab0446836",
+      "after": "f8c4fa7c68df4b3ffa651142501de8a23c201a6699c43cee51593298132db55b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/user.repository.ts",
+      "before": "aa74356884decbdd0cbf45a5c1a7df4fb7d3b7b814ee9fdd8088efddc299e4ab",
+      "after": "975bcdc0d32d969aa2f78004498b576bf139f98c2f74b9518145407b8d9c0d5c"
+    },
+    {
+      "path": "packages/types/src/tutorial-repositories.types.ts",
+      "before": "595d2fb9d4fb70aa50c448737b9b0d8a604a7d38fac1e6d78f1ad9f685540564",
+      "after": "e94aecd9fcde8092c203131df05b01367cc63c5a9f60c88b87dfba209b3243f8"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/skillup-admin-data.ts",
+      "before": "82abc56f11ed746b6ca913a8483ff72975a9958a05ffa2be786c8dbcaaaf7e99",
+      "after": "507c7f19def2576f1696cdfd48cabbe5d2a11e7eb4703e7ab06e26413bbe651d"
+    }
+  ],
+  "additionalSource": {
+    "path": "apps/skillup-admin/src/app/api/admin/students/[id]/route.ts",
+    "sha256": "a20b83ea77756b9109b01446d332218d3bc3140c6bc5e5355354b4e5ef45c12a"
+  },
+  "testFiles": [
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/__tests__/sso.routes.test.ts",
+      "sha256": "db8e552702630681aedce8b036f5a81ab2712d95dcf9ed27b247bf895be46f7b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/sso/__tests__/sso.service.test.ts",
+      "sha256": "e772bf6acbbfc3d14b72bb1f0fc91919aec94d8fc1b1157a07ebc4e4d2033f5b"
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/user/__tests__/user.repository.test.ts",
+      "sha256": "25be49d7b32c145bb3a11910a5cfca0ec06b0d8077b18bedef237528fd550b86"
+    },
+    {
+      "path": "apps/skillup-admin/src/lib/__tests__/student-report-identity.test.ts",
+      "sha256": "a4386e2870da7aee3571ee1cbd67dd59895663ce01287d90e7677bc07a5bc890"
+    }
+  ],
+  "protectedChecks": [
+    {
+      "path": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "matches": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "matches": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/middleware/verify-jwt.ts",
+      "matches": true
+    }
+  ],
+  "chg03SourceChecksExceptExplicitReportRoute": [
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/src/seed-skillup.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-auth.service.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/signup.service.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-lifecycle-transition.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-tenant-session-isolation.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-01-tenant-isolation.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/login-01-purpose.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/route.ts",
+      "matches": true
+    }
+  ],
+  "heldReportingTail": {
+    "heldReportingTailUnchanged": true
+  },
+  "quality": {
+    "results": [
+      {
+        "name": "sso-auth-tests",
+        "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts",
+        "started": "2026-11-13T19:53:56.572Z",
+        "finished": "2026-11-13T19:54:07.469Z",
+        "exitCode": 0
+      },
+      {
+        "name": "report-tests",
+        "command": "pnpm exec vitest run --config .evidence/r6-policy-ab/report-tests.vitest.config.mts",
+        "started": "2026-11-13T19:54:07.472Z",
+        "finished": "2026-11-13T19:54:10.346Z",
+        "exitCode": 0
+      },
+      {
+        "name": "chg03-bridge-tests",
+        "command": "pnpm --filter @quiz/identity-bridge test",
+        "started": "2026-11-13T19:54:10.348Z",
+        "finished": "2026-11-13T19:54:12.090Z",
+        "exitCode": 0
+      },
+      {
+        "name": "chg01b-tests",
+        "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts --maxWorkers=1",
+        "started": "2026-11-13T19:54:12.092Z",
+        "finished": "2026-11-13T19:54:15.409Z",
+        "exitCode": 0
+      },
+      {
+        "name": "service-typecheck",
+        "command": "pnpm --filter @quiz/skillhubcore-service type-check",
+        "started": "2026-11-13T19:54:15.411Z",
+        "finished": "2026-11-13T19:54:17.486Z",
+        "exitCode": 0
+      },
+      {
+        "name": "service-lint",
+        "command": "pnpm --filter @quiz/skillhubcore-service lint",
+        "started": "2026-11-13T19:54:17.487Z",
+        "finished": "2026-11-13T19:54:21.420Z",
+        "exitCode": 0
+      },
+      {
+        "name": "service-build",
+        "command": "pnpm --filter @quiz/skillhubcore-service build",
+        "started": "2026-11-13T19:54:21.421Z",
+        "finished": "2026-11-13T19:54:23.525Z",
+        "exitCode": 0
+      },
+      {
+        "name": "admin-typecheck",
+        "command": "pnpm --filter @quiz/skillup-admin exec tsc --noEmit",
+        "started": "2026-11-13T19:54:23.526Z",
+        "finished": "2026-11-13T19:54:34.921Z",
+        "exitCode": 1
+      },
+      {
+        "name": "admin-lint",
+        "command": "pnpm --filter @quiz/skillup-admin exec eslint --no-ignore --max-warnings=0 src/lib/skillup-admin-data.ts src/app/api/admin/students/[id]/route.ts src/lib/__tests__/student-report-identity.test.ts",
+        "started": "2026-11-13T19:54:34.924Z",
+        "finished": "2026-11-13T19:54:39.709Z",
+        "exitCode": 0
+      }
+    ],
+    "environment": "Controlled adapters and cleared database/provider environment"
+  },
+  "adminCompilation": {
+    "command": "pnpm --filter @quiz/skillup-admin exec next build --experimental-build-mode=compile --webpack",
+    "started": "2026-11-13T19:53:29.859Z",
+    "finished": "2026-11-13T19:54:37.111Z",
+    "exitCode": 0,
+    "scope": "Next webpack production compilation mode only; static generation and runtime execution unqualified; generated next-env restored to original bytes"
+  },
+  "finalAdminTypecheckExit": 1,
+  "reportTestsExit": 0,
+  "reportTestLintExit": 0,
+  "graphifyExit": 0,
+  "targetedTests": {
+    "service": 51,
+    "report": 7,
+    "bridge": 15,
+    "chg01b": 38,
+    "total": 111
+  },
+  "report": {
+    "path": "docs/architecture/reviews/SHC/SOL_R6_B_POLICY_A_B_SECURITY_CORRECTIONS.md",
+    "sha256": "b0a883dbb06752852aa40df7e7381246174285fecbbfe6072f6149cc2232f6a9"
+  },
+  "logHashes": [
+    {
+      "file": "admin-compile-build.log",
+      "sha256": "cd6a0b90cb8cd6a70cb1576e88d7d63ef00a763d4c4301113381cec6925638a6"
+    },
+    {
+      "file": "admin-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "admin-typecheck-final.log",
+      "sha256": "a4e01d946f67d2207ed6752545aa2b3b1b136f85c4d2286d580a1a7f88172401"
+    },
+    {
+      "file": "admin-typecheck.log",
+      "sha256": "f78ba7aad04fb098f8a8322a643bba1e00c2cafeab1bda87146da179c0cc3e17"
+    },
+    {
+      "file": "chg01b-tests.log",
+      "sha256": "c28615641b08ef3ce033c2b6de94c65bdd55de93bb8dda12d3061289f7b2e5d0"
+    },
+    {
+      "file": "chg03-bridge-tests.log",
+      "sha256": "c714fde7f0359a673292f70b9ca8b3e0c643a9a73c92fb2dfb5c9903bfc118ba"
+    },
+    {
+      "file": "graphify-update-final.log",
+      "sha256": "49c33585735dcbb81a81dc5a36db7a082d78dd08931a49f5fadaa904ecf8b4d5"
+    },
+    {
+      "file": "graphify-update.log",
+      "sha256": "40f4219ee1262e04f8680eec97a241cd99e02ce152791c44a669634d2331a2a6"
+    },
+    {
+      "file": "report-before.log",
+      "sha256": "5fdbf3d12079f39bce8d8ecc0c1893aad53bd7996c3e061a236309e3c3f83fca"
+    },
+    {
+      "file": "report-test-final-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "report-tests-final.log",
+      "sha256": "17211152aee853884329aec8381c24996d24eab9a26bd918b6ea611afef2773a"
+    },
+    {
+      "file": "report-tests.log",
+      "sha256": "c7d0d1265d379906b256433cbe74b1e5b3076047301a1f207e632fbe1352c336"
+    },
+    {
+      "file": "service-build.log",
+      "sha256": "e00f43923fc9468eaf2629ae9758b1bcce4cfbcd5228ce56aea1d8216d3803e3"
+    },
+    {
+      "file": "service-lint.log",
+      "sha256": "c4f15d123885c808627fd5ab9e0ef7a7904fd2b2090d7a38f0107bd88b45d2e7"
+    },
+    {
+      "file": "service-tests.log",
+      "sha256": "4dcda14206f74b0fb2f951bc25510549b1a3e16a9c933eae90b706745c764dba"
+    },
+    {
+      "file": "service-typecheck.log",
+      "sha256": "914061ba87b89185840a492165d4b55a91abafc858cce41aa53c80cf52f0dfef"
+    },
+    {
+      "file": "sso-auth-tests.log",
+      "sha256": "5a7103a30bc86802d6fba90e2648d6c218a9ad33f2196d411e2959e889888d84"
+    },
+    {
+      "file": "sso-before.log",
+      "sha256": "f434ce60c4fe46933fb48f9dc306a989424b5e0a7235774dc8f691330c3b81b6"
+    },
+    {
+      "file": "sso-tests.log",
+      "sha256": "6af408b065db2abc225df30988d989a96d2dc0bd6b1df1dea67e9358462baa7e"
+    }
+  ],
+  "limitations": [
+    "Controlled persistence and SQL-generation boundaries. No real PostgreSQL or browser execution.",
+    "Admin full typecheck remains failed on five unchanged source signatures after Next type generation.",
+    "Existing broader auth failures and shared-types lint exceptions remain open."
+  ]
+}

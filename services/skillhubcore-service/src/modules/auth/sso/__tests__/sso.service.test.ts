@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { PeoplePlatform, IUserRepository } from '@quiz/types';
 
 import { SsoService } from '../sso.service';
+import { PlatformAccessRevokedError } from '../../../user/user.repository';
 
 class FakeRepo implements IUserRepository {
   readonly users = new Map<string, { id: string; email: string }>();
@@ -61,8 +62,8 @@ class FakeRepo implements IUserRepository {
     const existing = rows.find((row) => row.platform === platform);
     if (existing === undefined) {
       rows.push({ platform, deletedAt: null });
-    } else {
-      existing.deletedAt = null;
+    } else if (existing.deletedAt !== null) {
+      throw new PlatformAccessRevokedError();
     }
     this.platforms.set(userId, rows);
     return { id: randomUUID(), userId, platform };
@@ -150,7 +151,7 @@ describe('SsoService', () => {
     await service.revokePlatformAccess(userId, 'skillup');
     expect(await service.getUserPlatforms(userId)).toEqual(['realtutorialhub']);
 
-    await service.grantPlatformAccess(userId, 'skillup');
-    expect(await service.getUserPlatforms(userId)).toEqual(['realtutorialhub', 'skillup']);
+    await expect(service.grantPlatformAccess(userId, 'skillup')).rejects.toBeInstanceOf(PlatformAccessRevokedError);
+    expect(await service.getUserPlatforms(userId)).toEqual(['realtutorialhub']);
   });
 });

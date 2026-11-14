@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter @quiz/skillup-admin exec next build --experimental-build-mode=compile --webpack",
+  "started": "2026-11-13T19:53:29.859Z",
+  "finished": "2026-11-13T19:54:37.111Z",
+  "exitCode": 0,
+  "scope": "Next webpack production compilation mode only; static generation and runtime execution unqualified; generated next-env restored to original bytes"
+}

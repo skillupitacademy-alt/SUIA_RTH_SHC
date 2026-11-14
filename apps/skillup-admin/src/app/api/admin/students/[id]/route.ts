@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
-import { getAdminStudentDetail } from '@/lib/skillup-admin-data';
+import { getAdminStudentDetail, StudentReportingConflictError } from '@/lib/skillup-admin-data';
 import { jsonData, jsonError, parseJsonOrFormBody, requireAdminOrForbidden } from '@/lib/admin-bff';
 import { admissions, batchCapacityService, batchEnrollments, batches, db, enquiries, userProfiles, users } from '@quiz/db-people';
 
@@ -21,7 +21,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
   if (forbidden !== null) return forbidden;
 
   const { id } = await context.params;
-  const student = await getAdminStudentDetail(id);
+  let student: Awaited<ReturnType<typeof getAdminStudentDetail>>;
+  try { student = await getAdminStudentDetail(id); }
+  catch (error) {
+    if (error instanceof StudentReportingConflictError) return jsonError('Student association requires review', 409);
+    throw error;
+  }
   if (student === undefined) {
     return jsonError('Student not found', 404);
   }

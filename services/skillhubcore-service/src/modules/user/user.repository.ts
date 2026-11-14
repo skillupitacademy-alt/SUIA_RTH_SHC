@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import { withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
 import type { PeopleDbClientLike, PeoplePlatform, PeopleSessionRecord, PeopleSubscriptionRecord, PeopleUserRecord, PeopleUserRole, IUserRepository } from '@quiz/types';
@@ -28,6 +28,12 @@ export interface CreateSessionInput {
 type PeopleDb = typeof db;
 type SessionRow = PeopleSessionRecord;
 
+export class PlatformAccessRevokedError extends Error {
+  constructor() {
+    super('Platform access restoration requires explicit authority');
+  }
+}
+
 export class DrizzleUserRepository implements IUserRepository {
   constructor(private readonly dbClient: PeopleDb = db) {}
 
@@ -37,6 +43,16 @@ export class DrizzleUserRepository implements IUserRepository {
 
   async transaction<T>(callback: (repo: IUserRepository) => Promise<T>): Promise<T> {
     return this.dbClient.transaction(async (tx) => callback(new DrizzleUserRepository(tx as unknown as PeopleDb)));
+  }
+
+  async lockUsers(userIds: string[]): Promise<void> {
+    await withTimeout(
+      this.dbClient.select({ id: schema.users.id }).from(schema.users)
+        .where(inArray(schema.users.id, [...new Set(userIds)].sort()))
+        .orderBy(asc(schema.users.id)).for('update'),
+      STANDARD_QUERY_TIMEOUT,
+      'people.users.lockAccessChange',
+    );
   }
 
   async findByEmail(email: string, platform?: PeoplePlatform): Promise<PeopleUserRecord | undefined> {
@@ -120,19 +136,10 @@ export class DrizzleUserRepository implements IUserRepository {
     );
 
     if (existing.length > 0) {
-      const [row] = await withTimeout(
-        this.dbClient
-          .update(schema.platformAccess)
-          .set({
-            deletedAt: null,
-            grantedAt: new Date(),
-          })
-          .where(and(eq(schema.platformAccess.userId, userId), eq(schema.platformAccess.platform, platform)))
-          .returning(),
-        STANDARD_QUERY_TIMEOUT,
-        'people.platform_access.restore'
-      );
-      return row ?? existing[0];
+      if (existing[0].deletedAt !== null) {
+        throw new PlatformAccessRevokedError();
+      }
+      return existing[0];
     }
 
     const [row] = await withTimeout(

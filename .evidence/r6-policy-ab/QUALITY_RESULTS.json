@@ -1,0 +1,68 @@
+{
+  "results": [
+    {
+      "name": "sso-auth-tests",
+      "command": "pnpm --filter @quiz/skillhubcore-service exec vitest run src/modules/auth src/modules/user/__tests__ src/middleware/__tests__/verify-jwt.test.ts",
+      "started": "2026-11-13T19:53:56.572Z",
+      "finished": "2026-11-13T19:54:07.469Z",
+      "exitCode": 0
+    },
+    {
+      "name": "report-tests",
+      "command": "pnpm exec vitest run --config .evidence/r6-policy-ab/report-tests.vitest.config.mts",
+      "started": "2026-11-13T19:54:07.472Z",
+      "finished": "2026-11-13T19:54:10.346Z",
+      "exitCode": 0
+    },
+    {
+      "name": "chg03-bridge-tests",
+      "command": "pnpm --filter @quiz/identity-bridge test",
+      "started": "2026-11-13T19:54:10.348Z",
+      "finished": "2026-11-13T19:54:12.090Z",
+      "exitCode": 0
+    },
+    {
+      "name": "chg01b-tests",
+      "command": "pnpm --filter @quiz/skillup-web exec vitest run src/lib/student-auth.test.ts src/lib/student-auth-callers.test.ts src/lib/student-auth-token-contract.test.ts --maxWorkers=1",
+      "started": "2026-11-13T19:54:12.092Z",
+      "finished": "2026-11-13T19:54:15.409Z",
+      "exitCode": 0
+    },
+    {
+      "name": "service-typecheck",
+      "command": "pnpm --filter @quiz/skillhubcore-service type-check",
+      "started": "2026-11-13T19:54:15.411Z",
+      "finished": "2026-11-13T19:54:17.486Z",
+      "exitCode": 0
+    },
+    {
+      "name": "service-lint",
+      "command": "pnpm --filter @quiz/skillhubcore-service lint",
+      "started": "2026-11-13T19:54:17.487Z",
+      "finished": "2026-11-13T19:54:21.420Z",
+      "exitCode": 0
+    },
+    {
+      "name": "service-build",
+      "command": "pnpm --filter @quiz/skillhubcore-service build",
+      "started": "2026-11-13T19:54:21.421Z",
+      "finished": "2026-11-13T19:54:23.525Z",
+      "exitCode": 0
+    },
+    {
+      "name": "admin-typecheck",
+      "command": "pnpm --filter @quiz/skillup-admin exec tsc --noEmit",
+      "started": "2026-11-13T19:54:23.526Z",
+      "finished": "2026-11-13T19:54:34.921Z",
+      "exitCode": 1
+    },
+    {
+      "name": "admin-lint",
+      "command": "pnpm --filter @quiz/skillup-admin exec eslint --no-ignore --max-warnings=0 src/lib/skillup-admin-data.ts src/app/api/admin/students/[id]/route.ts src/lib/__tests__/student-report-identity.test.ts",
+      "started": "2026-11-13T19:54:34.924Z",
+      "finished": "2026-11-13T19:54:39.709Z",
+      "exitCode": 0
+    }
+  ],
+  "environment": "Controlled adapters and cleared database/provider environment"
+}

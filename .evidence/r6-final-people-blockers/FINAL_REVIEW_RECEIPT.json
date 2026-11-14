@@ -1,0 +1,182 @@
+{
+  "captured": "2026-11-13T19:39:44.846Z",
+  "sourceChecks": [
+    {
+      "path": "packages/identity-bridge/src/index.ts",
+      "expected": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99",
+      "current": "c95d8dac44ff08e228f0870ffa8c2887806af3d41deb95e92713845250108c99",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/types.ts",
+      "expected": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e",
+      "current": "039b7010b8ba6d7ef4cda8a948a9ef3bbf1a2d81ee6dbbc2ffc800b6bdc9465e",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/UserIdentityBridgeService.ts",
+      "expected": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739",
+      "current": "3aaa7ee8818f33502d63852a712ee970a2010587cd29fddbdb30a824ede36739",
+      "matches": true
+    },
+    {
+      "path": "packages/identity-bridge/src/__tests__/bridge.service.test.ts",
+      "expected": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17",
+      "current": "9e1176398743babc6e02473cc21c68abd90a8845ee0534e7a5da4272232bfb17",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/src/seed-skillup.ts",
+      "expected": "fc8efeb9d6dcb52612417b6c10feebbff9e6c043701606d2822cb986ed3bb70e",
+      "current": "fc8efeb9d6dcb52612417b6c10feebbff9e6c043701606d2822cb986ed3bb70e",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/admin-auth.service.ts",
+      "expected": "8e2d9ed18111734791fa34366c844d3f554635e2c13977ad136af591b75a3c63",
+      "current": "8e2d9ed18111734791fa34366c844d3f554635e2c13977ad136af591b75a3c63",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/login.service.ts",
+      "expected": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970",
+      "current": "f04327f80df1704087af8b9a2a11b73aa13b4f6b298a523d112be4159c994970",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/signup.service.ts",
+      "expected": "4ab5321acb92d0f7bd7ada6eac3debd5cc3ee7d34c0424bb919dba0211b4f033",
+      "current": "4ab5321acb92d0f7bd7ada6eac3debd5cc3ee7d34c0424bb919dba0211b4f033",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.service.test.ts",
+      "expected": "0ddbee1b1716bf16fc1b75c5be50b26e00c7ced33081c909cc72336e5f283afa",
+      "current": "0ddbee1b1716bf16fc1b75c5be50b26e00c7ced33081c909cc72336e5f283afa",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail.test.ts",
+      "expected": "4a0408d3375d9d1087f212b42033dfbe3a64bca68275c045d306ec31a6a13da0",
+      "current": "4a0408d3375d9d1087f212b42033dfbe3a64bca68275c045d306ec31a6a13da0",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/auth.tail2.test.ts",
+      "expected": "1c3efdf2224a6819097492de1b287e96894215739e31901d65c4001de798d287",
+      "current": "1c3efdf2224a6819097492de1b287e96894215739e31901d65c4001de798d287",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-lifecycle-transition.test.ts",
+      "expected": "266af61d2d729a956c0eed64fad8905ee22c7a8a8cb6efb41901df81a60076a0",
+      "current": "266af61d2d729a956c0eed64fad8905ee22c7a8a8cb6efb41901df81a60076a0",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/batch-08-tenant-session-isolation.test.ts",
+      "expected": "668b21bd3428d73ecefe2df5130f9d53a88d24c1c2f181cae83d55f64d75d446",
+      "current": "668b21bd3428d73ecefe2df5130f9d53a88d24c1c2f181cae83d55f64d75d446",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/fixture-01-tenant-isolation.test.ts",
+      "expected": "0187676fe8b42b464c593df5ac531c625ac9cdd0bcecdc5945948c48b7d81cdb",
+      "current": "0187676fe8b42b464c593df5ac531c625ac9cdd0bcecdc5945948c48b7d81cdb",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/login-01-purpose.test.ts",
+      "expected": "2baf8485b47461e5e73a0fcac5fe9f5451c12c250353d264f8eaf8b8fccd00dc",
+      "current": "2baf8485b47461e5e73a0fcac5fe9f5451c12c250353d264f8eaf8b8fccd00dc",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/route.ts",
+      "expected": "6c387862511a97aba2cf2d3a5d5953e34de821845765338d353f5542d3a75f38",
+      "current": "6c387862511a97aba2cf2d3a5d5953e34de821845765338d353f5542d3a75f38",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/[id]/route.ts",
+      "expected": "d57537b593e532c2b1fe9d27625b5aa70436fea589586777de0b6ca032c43000",
+      "current": "d57537b593e532c2b1fe9d27625b5aa70436fea589586777de0b6ca032c43000",
+      "matches": true
+    },
+    {
+      "path": "packages/db-people/src/__tests__/seed-user-conflict.test.ts",
+      "expected": "9ff307379e5445be357276d3794ee035769cdfd7630bae9385e1d88f5637110e",
+      "current": "9ff307379e5445be357276d3794ee035769cdfd7630bae9385e1d88f5637110e",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/__tests__/chg03-recovery.test.ts",
+      "expected": "6c10956eff3713996ac2c896e34b9698285f2e11b085c1d023b7d8cca55bb705",
+      "current": "6c10956eff3713996ac2c896e34b9698285f2e11b085c1d023b7d8cca55bb705",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-admin/src/app/api/admin/students/__tests__/email-boundary.test.ts",
+      "expected": "a2d2ec062ee0a4dfe80c4db075eee83b6805662027f3436b0acd827d48a4d6df",
+      "current": "a2d2ec062ee0a4dfe80c4db075eee83b6805662027f3436b0acd827d48a4d6df",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/auth/shc-auth.service.ts",
+      "expected": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "current": "122dff5f52f04da5c6091b12c8bdad5891084c9eba5ff98a65c3501bb93afc74",
+      "matches": true
+    },
+    {
+      "path": "apps/skillup-web/src/lib/student-auth.ts",
+      "expected": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "current": "970cdb98ca80772964d48a12d5b509a1829fd524af324a58cbc50f81feaddc9b",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.engine.ts",
+      "expected": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "current": "44b299c0b246f323475a8546de51de002b96eda3a802515e41d98e142e3f9bd5",
+      "matches": true
+    },
+    {
+      "path": "apps/api-server/src/modules/exam-engine/exam.observer.ts",
+      "expected": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "current": "b55fe88ff394ea42983733bc15a05209b5e5c2df6accfa011f9d38ebf2a35ef6",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/auth.service.ts",
+      "expected": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "current": "8e70609969cf1830fcf4984989f95278dce2d7db097a8bf6cb1a8b802a1493cb",
+      "matches": true
+    },
+    {
+      "path": "services/skillhubcore-service/src/modules/auth/token-rotation.service.ts",
+      "expected": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+      "current": "98f1342e18e45a165367d2e70465ab0c89bc0d3feb8535cc7481d163576e7387",
+      "matches": true
+    },
+    {
+      "path": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "expected": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "current": "7a6d7d43c7f535f24ca56e78781e9f98c747e7e249465121b06f37e2f56bc97e",
+      "matches": true
+    },
+    {
+      "path": ".evidence/r3-acceptance-20261112/Q01_Q48_REGISTER.md",
+      "expected": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "current": "6a132cb0611f8e36f67725473337c31f6c66d0d72b8887f9bb1d00763b3f8547",
+      "matches": true
+    }
+  ],
+  "mismatches": [],
+  "failureRows": 20,
+  "allReproducedInBaseline": true,
+  "report": {
+    "path": "docs/architecture/reviews/SHC/SOL_R6_B_FINAL_PEOPLEDB_BLOCKER_DECISIONS.md",
+    "sha256": "163ba7b76aae04c1c1e7e1b7cc234817f1c8c4c2adc32f8b229acdbd2f037260"
+  },
+  "newTestOrDatabaseExecution": false,
+  "newGitMutation": false
+}

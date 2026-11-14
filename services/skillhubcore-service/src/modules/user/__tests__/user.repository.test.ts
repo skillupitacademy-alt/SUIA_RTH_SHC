@@ -11,7 +11,7 @@ vi.mock('@quiz/db', () => ({
   STANDARD_QUERY_TIMEOUT: 100,
 }));
 
-import { DrizzleUserRepository } from '../user.repository';
+import { DrizzleUserRepository, PlatformAccessRevokedError } from '../user.repository';
 
 const createRepository = (rows: unknown[]) => {
   const limit = vi.fn(async (_count: number) => rows);
@@ -31,6 +31,18 @@ const createRepository = (rows: unknown[]) => {
 };
 
 describe('PeopleDB email selection SQL', () => {
+  it('refuses to restore a revoked grant through ordinary grant operations', async () => {
+    const { repository, values } = createRepository([{ userId: 'person', platform: 'skillup', deletedAt: new Date() }]);
+    await expect(repository.grantPlatformAccess('person', 'skillup')).rejects.toBeInstanceOf(PlatformAccessRevokedError);
+    expect(values).not.toHaveBeenCalled();
+  });
+
+  it('retains an existing active grant without rewriting its lifecycle', async () => {
+    const grant = { userId: 'person', platform: 'skillup', deletedAt: null };
+    const { repository, values } = createRepository([grant]);
+    expect(await repository.grantPlatformAccess('person', 'skillup')).toEqual(grant);
+    expect(values).not.toHaveBeenCalled();
+  });
   it.each(['skillup', 'realtutorialhub'] as const)('normalizes email and requires exact %s scope and undeleted rows', async (platform) => {
     const { repository, where, limit } = createRepository([]);
     await repository.findByEmail(' Shared@Example.COM ', platform);

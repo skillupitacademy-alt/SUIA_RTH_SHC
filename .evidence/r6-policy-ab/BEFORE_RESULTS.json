@@ -1,0 +1,15 @@
+{
+  "sourceRef": "977fe044c6aa04f3bf63ff58560ae69c941ea0a6",
+  "results": [
+    {
+      "name": "sso",
+      "command": "pnpm exec vitest run --config .evidence/r6-policy-ab/sso-baseline.vitest.config.mts src/modules/auth/sso/__tests__/sso.routes.test.ts -t denies cross-platform",
+      "exitCode": 1
+    },
+    {
+      "name": "report",
+      "command": "pnpm exec vitest run --config .evidence/r6-policy-ab/report-baseline.vitest.config.mts -t joins the selected person",
+      "exitCode": 1
+    }
+  ]
+}

@@ -481,6 +481,8 @@ export interface AuthResultDTO {
 }
 
 export interface IUserRepository {
+  /** Optional for adapters that support serialized administrative access changes. */
+  lockUsers?(userIds: string[]): Promise<void>;
   withDb(dbClient: PeopleDbClientLike): this;
   transaction<T>(callback: (repo: IUserRepository) => Promise<T>): Promise<T>;
   /** A missing platform is permitted only for unambiguous legacy shared-admin login. */
