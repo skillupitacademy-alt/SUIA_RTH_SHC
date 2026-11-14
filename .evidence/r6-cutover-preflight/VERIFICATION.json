@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "94bdb5910acfef47dd84cef18d55cfdebbac8ebd",
+  "command": "node --check .evidence/r6-cutover-preflight/preflight.cjs",
+  "startedUtc": "2026-11-14T12:26:57.287Z",
+  "finishedUtc": "2026-11-14T12:26:57.428Z",
+  "exitCode": 0,
+  "applicationSourceChanged": false,
+  "acceptedQualificationSuitesRepeated": false,
+  "typecheckLintBuild": "Prior accepted source receipts reused; current changes are documentation and a read-only evidence script",
+  "inheritedHusky": "0",
+  "rootAuthAudit": "Known baseline absent script; failure retained in .evidence/r6-e2e/ROOT_AUTH_AUDIT_EXCEPTION.json"
+}

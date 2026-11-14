@@ -1,0 +1,51 @@
+{
+  "sourceCommit": "94bdb5910acfef47dd84cef18d55cfdebbac8ebd",
+  "algorithm": "SHA-256 of Git staged canonical blobs",
+  "selfExcluded": true,
+  "files": [
+    {
+      "file": ".evidence/r6-cutover-preflight/CSV_NOTE_DELTA.json",
+      "sha256": "84c1bbb1ac9c801cee579dc2777b3ae28174c569208bb7586fc276db67ca82d2"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/GATE_DECISION.json",
+      "sha256": "41bc4bee19de8003e5c05bf8edeb089cf13e78f6c4a36e93fc495784b0a12ce7"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/LOCAL_LISTENERS.json",
+      "sha256": "5a7e93eeaf2fdbf803b1808c4c79d0720c0aab979f4998b104531b641975f067"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/OBJECT_DEFINITIONS.json",
+      "sha256": "9346cf5c01a7189f5b84cf51cb2bba6852bb09394a5c5880713b8a594868b2a7"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/PREFLIGHT.json",
+      "sha256": "f3eb62a30484dadf7d8d5c478adef72b33fa45eb1cbf041affb07f1a0313787e"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/SECRET_SCAN.json",
+      "sha256": "1c8b360272a9d2b172e9770865b9a73eaec8073133d6f2ebae566720e917e9ca"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/VERIFICATION.json",
+      "sha256": "a8bd839bd035ce446e53ac4a94411d9a01b1b5cd733ecbfb4509f6845af56365"
+    },
+    {
+      "file": ".evidence/r6-cutover-preflight/preflight.cjs",
+      "sha256": "3f303ffce82e9fe1710f4ee09ac445520591a6455513b9a843f084c211e7ba9d"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "e5c5b8a07c8e8e32cc3820b546e7ebb7bb99e338c55f0dff0c1f36575574fc31"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "61074ef8a3b7737acae0ef33385f1e4599fe6d7d21e48d561691dd04ffd4995f"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "sha256": "866e1b47982e24b192d645f9a91240e76e561bb7467dc98cb792a3f68d22c2ef"
+    }
+  ]
+}

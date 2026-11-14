@@ -1,0 +1,33 @@
+{
+  "sourceCommit": "94bdb5910acfef47dd84cef18d55cfdebbac8ebd",
+  "technicalQualification": "PASS - accepted by owner",
+  "protectedReadOnlyPreflight": "PASS",
+  "catalogDefinitionComparisons": "PASS 7/7",
+  "backupRecoverability": "NOT VERIFIED",
+  "recoveryEvidence": {
+    "syntheticLogicalRehearsal": ".evidence/r6-neon-qualification/RECOVERY_REHEARSAL.json",
+    "syntheticStatus": "PASS",
+    "protectedBackupId": null,
+    "protectedRecoveryTimestamp": null,
+    "retentionExpiry": null,
+    "restoreOperator": null,
+    "approvedDestination": null,
+    "approvedProcedure": false,
+    "consoleObservation": "Existing Neon Console window minimized; available control could not read it",
+    "hostBackupScope": "Configuration and certificates; no database dump"
+  },
+  "criticalFindings": {
+    "coldStart": "Open; warmed flows pass; require actual readiness before smoke",
+    "freshShcEnum": "Present on protected target; fresh-install provenance tracked separately",
+    "rootAuthAudit": "Existing missing script; no passing audit claimed",
+    "hooks": "Inherited HUSKY=0; unchanged and disclosed",
+    "credentials": "OPEN - REMEDIATION DEFERRED BY OWNER"
+  },
+  "decision": "HOLD at production authorization gate",
+  "productionMigrationExecuted": false,
+  "protectedWritesExecuted": false,
+  "deploymentExecuted": false,
+  "pushExecuted": false,
+  "nextOwnerAction": "Identify and approve protected recovery point, retention, restore operator and procedure, with chosen rehearsal evidence and credential-risk acknowledgement. Then authorize exact protected migration and smoke scope.",
+  "executionApprovalPhrase": "AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION"
+}

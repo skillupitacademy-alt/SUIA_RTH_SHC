@@ -1,0 +1,42 @@
+{
+  "basedOn": "PREFLIGHT.json protected read-only catalog",
+  "checks": [
+    {
+      "name": "idx_subscription_features_plan",
+      "expected": "CREATE INDEX idx_subscription_features_plan ON public.subscription_features USING btree (plan_id, feature_key)",
+      "status": "PASS"
+    },
+    {
+      "name": "idx_subscription_plans_active",
+      "expected": "CREATE INDEX idx_subscription_plans_active ON public.subscription_plans USING btree (is_active, name)",
+      "status": "PASS"
+    },
+    {
+      "name": "idx_user_features_cache_user",
+      "expected": "CREATE INDEX idx_user_features_cache_user ON public.user_features_cache USING btree (user_id, cached_at)",
+      "status": "PASS"
+    },
+    {
+      "name": "idx_subscriptions_user_active",
+      "expected": "CREATE INDEX idx_subscriptions_user_active ON public.subscriptions USING btree (user_id, status) WHERE (status = 'active'::people_subscription_status)",
+      "status": "PASS"
+    },
+    {
+      "name": "idx_sso_sessions_family",
+      "expected": "CREATE INDEX idx_sso_sessions_family ON public.sso_sessions USING btree (jwt_family, revoked_at)",
+      "status": "PASS"
+    },
+    {
+      "name": "subscription_features_plan_id_subscription_plans_id_fk",
+      "expected": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE",
+      "status": "PASS"
+    },
+    {
+      "name": "user_features_cache_user_id_users_id_fk",
+      "expected": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "executionGuard": "The existing migration runner revalidates full catalog equivalence under its transaction lock."
+}

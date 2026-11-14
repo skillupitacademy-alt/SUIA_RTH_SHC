@@ -296,3 +296,64 @@ Private generated fixture credentials were deleted. The owner-supplied ignored c
 **Tested PeopleDB migration and warmed three-app integration gates PASS. R6-B is technically ready for a separately controlled existing-schema release decision within this scope. Protected release remains HOLD.** Cold-start reliability, fresh-install provenance and broader acceptance gaps remain visible.
 
 Remaining protected approvals are backup/recovery evidence and rehearsal, exact 0009/0010 execution with execution-window preflight, credential-risk disposition, and any deployment/live-smoke operation. Canonical acceptance statuses remain unchanged and Q48 stays OPEN. Exact commands, outcomes, hashes and cleanup are consolidated under `.evidence/r6-e2e`.
+
+## Protected cutover preflight and authorization gate — 14 November 2026
+
+The owner accepts R6-B technical qualification as PASS at `94bdb5910acfef47dd84cef18d55cfdebbac8ebd`. That milestone is closed within its recorded migration and bounded integration scope. This checkpoint covers requested Phases 1–4. The actual protected migration and subsequent application validation remain pending.
+
+### Current protected preflight
+
+`node .evidence/r6-cutover-preflight/preflight.cjs` completed successfully at 12:24 UTC on 14 November 2026. All protected SQL ran in an explicitly read-only transaction with connection-default read-only enabled. Eight checks pass. `PREFLIGHT.json` records the catalog, source hashes and sanitized local environment inventory.
+
+| Item | Verified state |
+|---|---|
+| Neon project | `bitter-tree-18287476`, locally named platform-people |
+| Protected branch | `br-misty-wildflower-a1jalxmd`; production display label retains operator provenance |
+| Direct endpoint | `ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech` |
+| Database and role | `people_prod`, `neondb_owner`, PostgreSQL 17.12 |
+| Historical ledger | Nine entries through 0008, every hash/timestamp matches the registered source prefix |
+| Pending 0009 | `0009_student_invitations`, timestamp `1791600000000`, SHA-256 `f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df` |
+| Pending 0010 | `0010_normalized_platform_email`, timestamp `1794629868483`, SHA-256 `88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93` |
+| Invitation baseline | Table absent, matching pending 0009 |
+| Current uniqueness | Global `users_email_unique` exists; target normalized index is absent |
+| Active normalized same-platform duplicate groups | Zero |
+| Platform enum | Includes skillup, realtutorialhub and skillhubcore |
+| Compatibility objects | Both FK definitions and all five index definitions match the approved objects. `OBJECT_DEFINITIONS.json` records seven passing comparisons. The runner also performs its complete locked catalog validation during an approved execution. |
+| Observed load | No other transaction older than one minute at observation; approximate database size 10.4 MiB. These are time-bound observations. |
+
+The local root, API, SHC, SUIA, RTH and gateway environment inventories contain no active disposable database references. The Git-ignored qualification reference is outside application env loading. Local application compatibility is established by the accepted integration receipts. Environment files include a mixture of localhost and existing remote API destinations, retained in the sanitized inventory. The configuration and source revision of deployed processes have not been inspected through a deployment control plane. A localhost pass establishes the tested local code boundary. The eventual release operator must confirm the compatible API/BFF revisions before migration and smoke tests.
+
+### Recovery evidence and exact missing action
+
+Protected recoverability is **NOT VERIFIED**. The existing host `backup.sh` archives configuration, certificates and deployment files. Its output establishes no PeopleDB data recovery point. The accepted `RECOVERY_REHEARSAL.json` passes a custom-format PostgreSQL logical backup/restore with matched synthetic data, schema and ledger fingerprints. It records no protected archive or Neon PITR execution.
+
+An existing Neon Console window was discovered, but the available UI control returned a minimized-window access error. No recovery settings were changed or confirmed. SQL catalogs provide no verified recovery retention window or authorized management restore capability. No Neon management key was requested.
+
+Before cutover, the owner/operator must identify a current protected recovery point or restricted logical archive and provide its identifier, UTC timestamp, database coverage, retention expiry and restore authority. Record the disposable recovery destination, acceptable data-loss/recovery windows and operator. Approve the recovery procedure and either the applicable protected restore rehearsal or explicit acceptance of the existing synthetic rehearsal for the selected method. Any restoration containing protected records requires its own named disposable destination and authorization. Recovery readiness is a prerequisite in the owner's Phase 2 instruction.
+
+### Cutover relevance of existing findings
+
+| Finding | Existing-database cutover disposition |
+|---|---|
+| Cold-start reliability | Warming and real readiness checks belong in the migration window and smoke plan. The historical 500 cause remains open. The latest complete warmed SUIA result and RTH completed results pass. The 0009/0010 SQL has no dependency on cold compilation. These receipts permit preserving the accepted technical qualification. |
+| Fresh-install SHC enum provenance | Protected enum already includes skillhubcore. Existing-schema upgrade can proceed after other gates. Fresh-install provenance remains tracked separately. |
+| Missing root auth-audit script | Existing tooling failure. Manual source hashes, accepted security regressions and runtime receipts supply the evidence for this bounded change. No passing root audit is claimed. Its repair remains separate. |
+| Inherited HUSKY=0 | Existing local environment setting. The previous commit disclosed absent hook execution. This checkpoint also records explicit review/verification and the same inherited setting. The release operator must use the approved process and reviewed artifact hashes. |
+| Credential exposure R6B-SEC-01 | OPEN — REMEDIATION DEFERRED BY OWNER. Routine project-wide rotation remains deferred. Protected execution requires explicit acknowledgement of the unresolved exposure risk. |
+
+### Exact execution procedure prepared for separate approval
+
+1. Establish and approve the protected recovery record above. Agree a short migration window with application writers controlled, especially account creation, email updates and admissions. This also prevents new duplicate conflicts and limits the recovery data-loss window.
+2. Confirm the reviewed migration-runner, SQL and journal hashes against `PREFLIGHT.json`. Confirm the compatible local or deployed consumers selected for the release. Re-run the read-only command and require the same protected project/branch/database, exact nine-row source prefix and exact two pending migrations. A changed state requires reviewing the delta before a write.
+3. Load only the reviewed protected PeopleDB connection from the existing local secure configuration into both process variables `DATABASE_URL_PEOPLE` and `DATABASE_DIRECT_URL_PEOPLE`, so direct-URL precedence cannot select another target. Keep credentials in process environment. Set `PEOPLE_MIGRATION_RECEIPT` to an absolute new evidence file under `.evidence/r6-cutover-preflight`. From repository root, the exact existing supported execution command is `pnpm --filter @quiz/db-people db:migrate`. This command has been inspected and prepared, and remains unexecuted at this checkpoint.
+4. The existing command runs `packages/db-people/scripts/migrate.mts` and `migratePeople()`. Its transaction sets 5-second lock timeout and 120-second statement timeout, acquires the existing transaction advisory lock, locks the ledger exclusively, verifies the source prefix and seven compatibility objects, applies pending 0009 then 0010, appends original ledger hashes and commits. The 0010 index is built before dropping the old constraint. Non-concurrent index creation can block writers. No historical migration is edited.
+5. On success, verify eleven source-matching ledger rows, student-invitation table/FK/index definitions, valid normalized partial unique index, removed global constraint, preserved platform-access constraints and SHC session schema. Use read-only catalogs and aggregate integrity checks. Any protected synthetic writes used for uniqueness or smoke controls require inclusion in the execution approval and an explicit cleanup plan.
+6. On reported failure or connection uncertainty, keep writers controlled and re-read the ledger/catalog before any retry. The supported runner rolls back a detected transaction failure. An uncertain commit must be resolved from actual state. If the ledger remains nine rows and old constraint/table state is intact, document rollback and assess the specific cause. If eleven matching rows and expected schema exist, document a committed outcome. Any other state requires manual review.
+7. After a committed migration, choose a reviewed forward correction or the approved recovery procedure. Re-adding global email uniqueness may fail after legitimate cross-platform duplicate emails exist. Restoration can discard later writes and requires the approved recovery point/operator/destination. No automatic protected branch reset or database recreation is part of this procedure.
+8. Once separately authorized, smoke the approved application targets with approved identities. Reuse the accepted bounded sequence of login, identity, dashboard, tutorial rendering, own progress and quiz, cross-brand denial, logout/replay denial and fresh login. Protected login/session changes and learning writes must be included in that approval. Record whether targets are localhost consumers of protected stores or deployed sites. Deployment and provider calls require their respective release authorization.
+
+### Authorization decision
+
+**Phase 1 read-only preflight PASS. Phase 3 findings are dispositioned above. Phase 2 protected recovery evidence is BLOCKED. Phase 4 execution authorization remains PENDING. Protected migration recommendation HOLD.** Technical qualification remains accepted PASS.
+
+The requested authorization phrase is **AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION**. Request that execution decision after the protected recovery record/procedure is verified and approved, together with explicit credential-risk acknowledgement and the exact smoke-test scope. The current instruction requires stopping before protected writes. No migration, protected restore, deployment or GitHub push occurred in this checkpoint. Canonical acceptance statuses remain unchanged and Q48 remains OPEN.
