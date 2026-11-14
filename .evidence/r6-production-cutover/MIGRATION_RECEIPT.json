@@ -1,0 +1,46 @@
+{
+  "compatibilityRevision": "people-0007-exact-objects-v1",
+  "committed": true,
+  "executed": [
+    {
+      "tag": "0009_student_invitations",
+      "originalHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+      "executedHash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df"
+    },
+    {
+      "tag": "0010_normalized_platform_email",
+      "originalHash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93",
+      "executedHash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+    }
+  ],
+  "decisions": [
+    {
+      "object": "subscription_features_plan_id_subscription_plans_id_fk",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "user_features_cache_user_id_users_id_fk",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscription_features_plan",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscription_plans_active",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_user_features_cache_user",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_subscriptions_user_active",
+      "decision": "validated_applied"
+    },
+    {
+      "object": "idx_sso_sessions_family",
+      "decision": "validated_applied"
+    }
+  ]
+}

@@ -409,3 +409,52 @@ The already qualified runner applies **0009_student_invitations → 0010_normali
 For a detected uncommitted failure, confirm the original ledger and schema after rollback. For a committed failure requiring recovery, preserve the snapshot and current production state, keep affected writers controlled, and have the designated operator use the already verified snapshot to a new isolated branch. Verify that destination's schema, data fingerprints and ledger before an owner-approved service recovery/switchover. Replacing production or changing application connections requires explicit recovery approval. The pre-migration snapshot omits legitimate later writes, which must be assessed before rollback. Re-adding global email uniqueness can be impossible after valid cross-brand duplicates exist.
 
 The snapshot and recovery branch remain retained. No protected migration, production restore, application deployment or GitHub push occurred in this checkpoint. Canonical statuses and Q48 remain owner-controlled. This checkpoint stops at the single production authorization gate.
+
+## Authorized protected migration execution — 14 November 2026
+
+The owner explicitly authorized `AUTHORIZE R6-B PRODUCTION PEOPLEDB MIGRATION. Please go ahead`. Source baseline is `995bb5871e8ab1989b5e8d76c464e1a6580fbcf7`. The supported command `pnpm --filter @quiz/db-people db:migrate` ran against protected `people_prod`, project `bitter-tree-18287476`, production branch `br-misty-wildflower-a1jalxmd`, direct endpoint `ep-young-wildflower-a1frkuuj.ap-southeast-1.aws.neon.tech`.
+
+Execution started at `2026-11-14T13:00:57Z` and finished at `2026-11-14T13:01:06Z`, exit 0. The committed receipt contains exactly `0009_student_invitations` then `0010_normalized_platform_email`. All nineteen execution checks pass. Source hashes and the recovery branch were reconfirmed before the write. The pre-existing protected table fingerprints matched the accepted recovery state immediately before migration and remained identical immediately after it.
+
+The production ledger now has eleven exact source-matching hashes/timestamps. The normalized partial unique index is unique, valid and ready. The global email constraint is removed. The invitation table has the thirteen declared source columns, foreign key and expected indexes, with zero rows immediately after migration. Existing platform-access/session constraints are preserved. A read-only integrity check confirms 36 validated foreign keys and zero orphan rows. The normalized same-platform conflict count remains zero. `EXECUTION.json`, `MIGRATION_RECEIPT.json`, `SCHEMA_VALIDITY.json` and `POST_MIGRATION_INTEGRITY.json` are under `.evidence/r6-production-cutover`.
+
+The initial schema diagnostic assumed fifteen invitation columns and reported REVIEW. The approved SQL declares thirteen. The checker was corrected to derive exact column names from that unchanged SQL. The initial diagnostic is retained. The source and production table required no correction.
+
+### Post-migration localhost validation
+
+The existing approved accounts and original localhost listeners were used. SHC on 3007 passes 17/17 browser/HTTP checks, including login, identity, dashboard, admin domains, logout, captured identity/admin cookie denial, revoked-refresh denial and fresh login. SUIA on 3009 and RTH on 3003 each pass 22 recorded controls covering login, identity, dashboard, signed learner/person mapping, spoofed-header resistance, cross-brand profile denial, own progress read, completed own quiz result, foreign quiz result denial, logout/replay and fresh login. Read-only PeopleDB checks confirm both accounts retain their correct platform-qualified projection and active own-platform grant.
+
+Both learner smoke receipts also retain tutorial HTTP 404 and subsequent text-wait timeout. The initially selected stored sidebar URL was stale. Follow-up checks selected canonical domain/subject/topic names and the authoritative TutorialDB subtopic slug. Java and Python still returned 404 from the existing running learner servers. Their dev route manifests contain no compiled tutorial-v2 entry. The current source resolver executed independently against configured databases resolves Java successfully for both brands with one content block. Python resolves with empty content because its working version lacks a published snapshot, and the existing publication guard correctly withholds it. No publication state was changed.
+
+These observations establish a remaining running-application tutorial validation failure. They do not establish that the PeopleDB migration caused it. Protected TutorialDB content and hierarchy corrections are outside the approved PeopleDB SQL operation. A focused request to restart only the learner dev servers and retry affected tutorial checks is pending. Initial failed receipts and canonical selection diagnostics are preserved.
+
+**Production PeopleDB migration PASS. Database ledger/schema/integrity PASS. SHC integration PASS. SUIA/RTH identity, quiz and session controls PASS with tutorial-rendering validation unresolved. Full three-app closure remains HOLD.** The snapshot and recovery branch remain retained. Credential exposure remains OPEN — REMEDIATION DEFERRED BY OWNER. Deployment and live-site compatibility retain their separate authorization and evidence requirements. Canonical acceptance statuses remain unchanged and Q48 stays OPEN.
+
+### Final post-migration completion
+
+The owner approved restarting only the two learner servers on existing ports 3009 and 3003. Their normal restart exposed generated-page loading errors while compiling tutorial-v2. A subsequent cache refresh preserved RTH's old `.next/dev` directory by rename. Windows denied the corresponding SUIA rename, so SUIA retained its existing cache. Both processes were restarted with their existing source/configuration. `APP_RESTART.json` and `CACHE_REFRESH.json` record the process IDs and the denied cache operation.
+
+SUIA subsequently loaded the canonical Java lesson, rendered its published text, read own progress and logged out successfully. RTH's first regenerated request returned HTTP 200 after 119 seconds, including 114 seconds compiling, exceeding the check's 65-second allowance. Its warmed retry then passed rendered text, progress read and logout. Each final affected tutorial receipt passes **6/6**. Cold compilation failures/timeouts remain preserved. These results close the affected warmed tutorial controls while leaving startup reliability tracked.
+
+| Final deliverable | Result |
+|---|---|
+| Production migrations 0009 then 0010 | PASS, committed on protected PeopleDB |
+| Exact ledger, normalized uniqueness and invitation schema | PASS |
+| Existing data preservation at migration boundary | PASS, all pre-existing public table fingerprints identical before/after |
+| Foreign-key integrity | PASS, 36 validated foreign keys and zero orphan rows |
+| SHC localhost integration | PASS, 17/17 controls |
+| SUIA localhost integration | PASS for the bounded flow, 22 identity/dashboard/quiz/session controls plus final tutorial 6/6 |
+| RTH localhost integration | PASS for the bounded flow, 22 identity/dashboard/quiz/session controls plus final tutorial 6/6 |
+| Cross-brand profile and foreign-result denial | PASS in both brands |
+| Snapshot and isolated recovery acceptance | VERIFIED, retained |
+| R6-B database migration and bounded localhost cutover | PASS, milestone complete |
+| Application deployment/live-site validation | Pending separate release scope |
+| Credential incident | OPEN — REMEDIATION DEFERRED BY OWNER |
+
+The smoke tests used existing approved accounts and existing completed exams. They performed login/logout session changes and browser-generated tutorial activity within the approved smoke scope. Learning-data checks used existing own progress and quiz results, avoiding a new exam or manually overwriting progress. Disposable qualification evidence retains the answer/submission/write-path coverage. This checkpoint establishes the bounded post-migration smoke outcome, with the tested localhost applications and their protected stores.
+
+The selected stored tutorial URL was stale, and one intermediate diagnostic rebuilt the subtopic path from its name rather than its authoritative slug. The final Java control uses the existing TutorialDB slug `what-is-java-12efacf1`. Python's missing published snapshot remains an existing content qualification limitation and was excluded from the final lesson control. No tutorial publication or hierarchy record was edited. Initial diagnostics and failed receipts remain available.
+
+All application listeners are running on their expected ports. SHC/API/gateway original processes were retained, and learner process changes follow the explicit restart approval. Private generated smoke-plan metadata was removed after evidence capture. Runtime credentials remain in their existing Git-ignored references. Secret checks, command receipts and changed-file hashes accompany the local evidence commit. The inherited `HUSKY=0` and existing missing root audit script remain disclosed, with explicit harness syntax checks and accepted earlier source-quality receipts reused.
+
+The retained recovery snapshot is `production at 2026-11-14 12:31:12 UTC (manual)`, with displayed expiry `never`, and the recovery branch is `br-withered-wave-a17wttsi`. Keep both until owner migration acceptance. Any eventual restoration must account for legitimate post-snapshot session/activity writes. The known credential exposure remains open and owner-deferred. Q48, all 62 canonical acceptance statuses, held business features and broader project acceptance retain their existing authority boundaries.

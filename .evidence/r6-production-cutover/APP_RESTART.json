@@ -1,0 +1,22 @@
+{
+  "ownerApproved": true,
+  "startedUtc": "2026-11-14T13:14:43.764Z",
+  "originalRoots": [
+    34944,
+    40240
+  ],
+  "roots": [
+    {
+      "app": "skillup-web",
+      "port": 3009,
+      "pid": 2632
+    },
+    {
+      "app": "realtutorialhub-web",
+      "port": 3003,
+      "pid": 27464
+    }
+  ],
+  "configurationChanged": false,
+  "followup": "CACHE_REFRESH.json records a second restart and per-app cache preservation outcomes"
+}

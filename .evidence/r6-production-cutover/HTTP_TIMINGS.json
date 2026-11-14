@@ -1,0 +1,29 @@
+{
+  "migration.log": [],
+  "realtutorialhub-web-restart.log": [
+    " POST /api/auth/login 200 in 24.4s (compile: 18.5s, proxy.ts: 2.1s, render: 3.7s)",
+    " POST /api/auth/logout 200 in 7.7s (compile: 5.8s, proxy.ts: 610ms, render: 1263ms)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 200 in 73s (proxy.ts: 1399ms)",
+    " POST /api/auth/login 200 in 19.6s (compile: 14.4s, proxy.ts: 1989ms, render: 3.1s)",
+    " POST /api/auth/logout 200 in 5.3s (compile: 3.6s, proxy.ts: 1180ms, render: 581ms)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 200 in 119s (compile: 114s, proxy.ts: 1020ms, render: 3.3s)",
+    " POST /api/auth/login 200 in 6.1s (compile: 58ms, proxy.ts: 2.1s, render: 4.0s)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 200 in 3.5s (compile: 174ms, proxy.ts: 597ms, render: 2.7s)",
+    " GET /api/tutorial/progress?subtopicId=12efacf1-b5ad-4b43-9fe4-17ba1cf249e4 200 in 7.6s (compile: 5.9s, proxy.ts: 561ms, render: 1106ms)",
+    " POST /api/auth/logout 200 in 6.6s (compile: 5.7s, proxy.ts: 23ms, render: 882ms)"
+  ],
+  "skillup-web-restart.log": [
+    " POST /api/auth/login 200 in 15.5s (compile: 10.0s, proxy.ts: 40ms, render: 5.4s)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 500 in 96s (compile: 93s, proxy.ts: 1168ms, render: 1825ms)",
+    " POST /api/auth/logout 200 in 31.6s (compile: 30.4s, proxy.ts: 311ms, render: 820ms)",
+    " POST /api/auth/login 200 in 16.2s (compile: 11.1s, proxy.ts: 1924ms, render: 3.2s)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 200 in 21.7s (compile: 12.8s, proxy.ts: 754ms, render: 8.2s)",
+    " GET /api/tutorial/progress?subtopicId=12efacf1-b5ad-4b43-9fe4-17ba1cf249e4 200 in 10.8s (compile: 8.6s, proxy.ts: 767ms, render: 1452ms)",
+    " POST /api/auth/logout 200 in 7.1s (compile: 6.3s, proxy.ts: 17ms, render: 746ms)",
+    " GET /api/tutorial/ils/navigation/whatisjava?subtopicId=414f63eb-cccf-4bd1-bcc0-b52df69ce499 200 in 8.8s (proxy.ts: 2.0s)",
+    " POST /api/tutorial/ils/visit 200 in 8.8s (compile: 5.8s, proxy.ts: 2.3s, render: 732ms)",
+    " GET /tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava 200 in 8.5s (compile: 5.7s, proxy.ts: 2.0s, render: 722ms)",
+    " POST /api/tutorial/ils/block-visit 200 in 8.9s (compile: 5.7s, proxy.ts: 2.4s, render: 750ms)",
+    " GET /api/tutorial/progress?subtopicId=414f63eb-cccf-4bd1-bcc0-b52df69ce499 200 in 8.9s (compile: 5.7s, proxy.ts: 2.4s, render: 731ms)"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "brand": "realtutorialhub",
+  "origin": "http://realtutorialhub.localhost:3003",
+  "startedUtc": "2026-11-14T13:22:00.066Z",
+  "checks": [
+    {
+      "name": "Login BFF",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fixture logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "scope": "Only affected canonical tutorial rendering and own progress read",
+  "failure": "TIMEOUT_65_SECONDS",
+  "finishedUtc": "2026-11-14T13:23:42.639Z",
+  "status": "FAIL_OR_BLOCKED"
+}

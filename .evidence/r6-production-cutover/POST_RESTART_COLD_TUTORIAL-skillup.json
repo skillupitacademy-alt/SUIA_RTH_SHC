@@ -1,0 +1,11 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3009",
+  "startedUtc": "2026-11-14T13:15:56.470Z",
+  "checks": [],
+  "scope": "Only affected canonical tutorial rendering and own progress read",
+  "failure": "TIMEOUT_65_SECONDS",
+  "logout": "UNVERIFIED",
+  "finishedUtc": "2026-11-14T13:18:06.497Z",
+  "status": "FAIL_OR_BLOCKED"
+}

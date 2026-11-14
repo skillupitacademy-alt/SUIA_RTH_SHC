@@ -1,0 +1,193 @@
+{
+  "observedUtc": "2026-11-14T13:06:04.730Z",
+  "readOnly": true,
+  "identity": {
+    "database": "people_prod",
+    "branch": "br-misty-wildflower-a1jalxmd",
+    "read_only": "on"
+  },
+  "foreignKeys": [
+    {
+      "name": "admissions_approved_by_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "admissions_batch_id_batches_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "admissions_domain_id_domains_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "admissions_enquiry_id_enquiries_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "admissions_student_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "attendance_records_marked_by_faculty_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "attendance_records_session_id_batch_sessions_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "attendance_records_student_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batch_enrollments_batch_id_batches_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batch_enrollments_student_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batch_sessions_batch_id_batches_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batch_sessions_faculty_id_faculty_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batches_domain_id_domains_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batches_faculty_id_faculty_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "batches_subject_id_subjects_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "demo_sessions_enquiry_id_enquiries_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "demo_sessions_faculty_id_faculty_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "enquiries_assigned_counsellor_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "enquiry_follow_ups_counsellor_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "enquiry_follow_ups_enquiry_id_enquiries_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "faculty_availability_booked_batch_id_batches_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "faculty_availability_faculty_id_faculty_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "faculty_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "payment_installments_student_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "platform_access_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "refresh_token_families_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "sso_sessions_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "student_invitations_user_id_fkey",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "student_placement_profiles_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "subjects_domain_id_domains_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "subscription_features_plan_id_subscription_plans_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "subscriptions_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "subtopics_topic_id_topics_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "topics_subject_id_subjects_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "user_features_cache_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    },
+    {
+      "name": "user_profiles_user_id_users_id_fk",
+      "validated": true,
+      "orphans": 0
+    }
+  ],
+  "ledgerRows": 11,
+  "status": "PASS"
+}

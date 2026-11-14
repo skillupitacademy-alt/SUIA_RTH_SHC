@@ -1,0 +1,33 @@
+{
+  "recordedUtc": "2026-11-14T13:29:02.022Z",
+  "sourceCommit": "995bb5871e8ab1989b5e8d76c464e1a6580fbcf7",
+  "productionMigration": "PASS",
+  "databaseLedgerSchema": "PASS",
+  "foreignKeys": 36,
+  "orphanRows": 0,
+  "shc": "PASS 17/17",
+  "suiaIdentityQuizSessionControls": "PASS 22",
+  "rthIdentityQuizSessionControls": "PASS 22",
+  "suiaTutorial": "PASS 6/6",
+  "rthTutorial": "PASS 6/6",
+  "brandIsolation": "PASS in both brands",
+  "recovery": "Verified snapshot restoration and retained recovery branch",
+  "snapshotRetained": true,
+  "recoveryBranchRetained": true,
+  "credentialExposure": "OPEN - REMEDIATION DEFERRED BY OWNER",
+  "deployment": "NOT EXECUTED",
+  "liveWebsiteVerification": "NOT TESTED",
+  "q48": "OPEN",
+  "heldFeaturesModified": false,
+  "applicationSourceChanged": false,
+  "finalDatabaseCutover": "PASS - bounded localhost validation complete",
+  "productionRelease": "Deployment and live-site verification pending separate authorization",
+  "startupReliability": "Cold compilation timeouts preserved",
+  "checkerCorrections": [
+    "Invitation column count derived from exact approved source after initial assumed count",
+    "Canonical tutorial selection uses authoritative subtopic slug"
+  ],
+  "learnerRestart": "Owner approved; RTH cache preserved, SUIA cache rename denied; final warmed checks pass",
+  "inheritedHusky": "0",
+  "completedUtc": "2026-11-14T13:30:54.180Z"
+}

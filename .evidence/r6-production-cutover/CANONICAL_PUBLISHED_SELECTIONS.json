@@ -1,0 +1,8 @@
+{
+  "rule": "Active deployed shared content; domain/subject/topic names normalized; authoritative TutorialDB subtopic.slug retained",
+  "paths": [
+    "/tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava",
+    "/tutorial-v2/full-stack-development/backend-development/python/complete-python-5b1cfc3d/whatispython"
+  ],
+  "databaseChanged": false
+}

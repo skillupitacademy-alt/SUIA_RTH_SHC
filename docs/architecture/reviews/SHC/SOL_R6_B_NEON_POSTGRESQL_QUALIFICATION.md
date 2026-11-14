@@ -285,3 +285,17 @@ The authenticated Neon console confirmed creation of `production at 2026-11-14 1
 The actual snapshot restoration is evidenced by the owner's Neon operation and the verified restored database. The historical logical-backup rehearsal retains its separate method and scope. The snapshot and recovery branch are retained through acceptance. The refreshed protected preflight passes 8/8 checks with exactly registered 0009/0010 pending. `.evidence/r6-recovery-acceptance` records results and the first checker metadata-array error, corrected without database mutation.
 
 Recovery acceptance PASS and production preflight PASS support GO to the single explicit owner authorization gate. The existing readiness report contains the exact command, recovery operator/procedure and risk acknowledgement. Protected execution remains unperformed. R6B-SEC-01 stays OPEN — REMEDIATION DEFERRED BY OWNER. Q48 remains OPEN.
+
+### Protected production migration executed
+
+The owner's direct authorization was received at source baseline `995bb5871e8ab1989b5e8d76c464e1a6580fbcf7`. The supported `pnpm --filter @quiz/db-people db:migrate` command completed with exit 0 on protected `people_prod`, project `bitter-tree-18287476`, production branch `br-misty-wildflower-a1jalxmd`, from 13:00:57 to 13:01:06 UTC on 14 November 2026.
+
+The committed receipt records exactly registered 0009 invitations then 0010 normalized platform email. All 19 execution checks pass. The eleven-row ledger matches source hashes and timestamps. The unique expression/partial index is valid and ready, global uniqueness is removed, the invitation schema matches the approved thirteen columns, and existing access/session constraints are preserved. All pre-existing table fingerprints matched before and immediately after the migration. Read-only post-migration integrity verifies 36 validated foreign keys and zero orphan rows. `.evidence/r6-production-cutover` retains execution, schema, integrity and subsequent localhost evidence.
+
+The manual snapshot and verified recovery branch remain retained. R6B-SEC-01 remains OPEN — REMEDIATION DEFERRED BY OWNER. Application deployment and live-site validation remain separately controlled. The current localhost validation disposition is recorded in `SOL_R6_B_THREE_APP_RELEASE_READINESS.md`. Canonical acceptance statuses and Q48 remain owner-controlled.
+
+### Final bounded cutover acceptance
+
+Post-migration SHC localhost checks pass 17/17. SUIA and RTH each pass 22 identity/dashboard/quiz/session controls, including foreign-brand and foreign-result denial. Each final canonical Java tutorial check passes 6/6 with rendered published text and own progress read. The owner authorized learner-server restarts on existing ports. Initial stale URL selections, generated-page loading failures, cold compilation timeouts and SUIA's denied cache rename remain in the evidence. The final warmed controls pass. Python publication-snapshot absence remains a content limitation outside this migration.
+
+Production PeopleDB migration, schema/ledger/integrity and the bounded three-app localhost cutover are PASS. The database migration milestone is complete. Snapshot and recovery branch remain retained through owner acceptance. Deployment/live-site validation remain separately authorized. Credential exposure is OPEN — REMEDIATION DEFERRED BY OWNER. Q48 and canonical acceptance statuses remain owner-controlled.

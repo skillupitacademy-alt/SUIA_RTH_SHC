@@ -1,0 +1,16 @@
+{
+  "readOnly": true,
+  "checks": [
+    {
+      "brand": "skillup",
+      "personMappingMatches": true,
+      "activeOwnGrant": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "personMappingMatches": true,
+      "activeOwnGrant": true
+    }
+  ],
+  "status": "PASS"
+}

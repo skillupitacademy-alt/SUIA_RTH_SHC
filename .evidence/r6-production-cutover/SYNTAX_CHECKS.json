@@ -1,0 +1,20 @@
+[
+  {
+    "command": "node --check .evidence/r6-production-cutover/execute.cjs",
+    "startedUtc": "2026-11-14T13:22:15.506Z",
+    "finishedUtc": "2026-11-14T13:22:15.591Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence/r6-production-cutover/smoke.cjs",
+    "startedUtc": "2026-11-14T13:22:15.591Z",
+    "finishedUtc": "2026-11-14T13:22:15.682Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence/r6-production-cutover/tutorial-check.cjs",
+    "startedUtc": "2026-11-14T13:22:15.682Z",
+    "finishedUtc": "2026-11-14T13:22:15.770Z",
+    "exitCode": 0
+  }
+]

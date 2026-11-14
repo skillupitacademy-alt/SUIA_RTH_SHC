@@ -1,0 +1,21 @@
+{
+  "scope": "HTTP response diagnostic markers only, no HTML or cookie capture",
+  "results": [
+    {
+      "brand": "skillup",
+      "login": 200,
+      "status": 404,
+      "diagnosticMarkers": [],
+      "devDiagnosticsPresent": false,
+      "logout": 200
+    },
+    {
+      "brand": "realtutorialhub",
+      "login": 200,
+      "status": 404,
+      "diagnosticMarkers": [],
+      "devDiagnosticsPresent": false,
+      "logout": 200
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3009",
+  "startedUtc": "2026-11-14T13:05:10.140Z",
+  "boundary": "Existing localhost frontend/BFF/gateway/API against configured protected stores after authorized PeopleDB migration",
+  "checks": [
+    {
+      "name": "Login warmup",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Anonymous private access",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Real UI login",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Access and refresh cookies established",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected own identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Response belongs to approved account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected dashboard HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected dashboard path",
+      "actual": "/dashboard",
+      "expected": [
+        "/dashboard"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Signed learner subject matches brand authority",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Signed person claim matches stored brand link",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Spoofed headers cannot replace approved account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own cookie pair denied in other brand",
+      "actual": 403,
+      "expected": [
+        401,
+        403
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Published tutorial HTTP",
+      "actual": 404,
+      "expected": [
+        200
+      ],
+      "status": "FAIL"
+    },
+    {
+      "name": "Published tutorial path retained",
+      "actual": "/tutorial-v2/full-stack-development/backend-development/python/whatispython/whatispython",
+      "expected": [
+        "/tutorial-v2/full-stack-development/backend-development/python/whatispython/whatispython"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Published tutorial rendering",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "name": "Own tutorial progress read",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own quiz result",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign quiz result denied",
+      "actual": 403,
+      "expected": [
+        403,
+        404
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Identity after logout",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Captured identity cookie replay denied",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh UI login after logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh session identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh session cleanup logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedUtc": "2026-11-14T13:06:41.164Z",
+  "status": "FAIL_OR_BLOCKED"
+}

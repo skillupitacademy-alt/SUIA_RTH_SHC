@@ -1,0 +1,22 @@
+{
+  "reason": "Generated tutorial page module missing after normal restart",
+  "action": "Preserved old .next/dev directories by rename; regenerate disposable development cache",
+  "sourceOrEnvChanged": false,
+  "roots": [
+    {
+      "app": "skillup-web",
+      "port": 3009,
+      "pid": 4388
+    },
+    {
+      "app": "realtutorialhub-web",
+      "port": 3003,
+      "pid": 16452
+    }
+  ],
+  "startedUtc": "2026-11-14T13:23:56.009Z",
+  "outcomes": {
+    "skillup": "Cache rename denied by Windows; original directory retained",
+    "realtutorialhub": "Cache preserved by rename; fresh dev directory generated"
+  }
+}

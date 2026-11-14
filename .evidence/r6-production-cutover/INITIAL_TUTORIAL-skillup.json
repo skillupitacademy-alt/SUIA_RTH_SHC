@@ -1,0 +1,42 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3009",
+  "startedUtc": "2026-11-14T13:07:32.313Z",
+  "checks": [
+    {
+      "name": "Login BFF",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Canonical tutorial HTTP",
+      "actual": 404,
+      "expected": [
+        200
+      ],
+      "status": "FAIL"
+    },
+    {
+      "name": "Canonical tutorial path retained",
+      "actual": "/tutorial-v2/full-stack-development/backend-development/python/complete-python/whatispython",
+      "expected": [
+        "/tutorial-v2/full-stack-development/backend-development/python/complete-python/whatispython"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fixture logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "scope": "Only affected canonical tutorial rendering and own progress read",
+  "finishedUtc": "2026-11-14T13:07:38.105Z",
+  "status": "FAIL_OR_BLOCKED"
+}

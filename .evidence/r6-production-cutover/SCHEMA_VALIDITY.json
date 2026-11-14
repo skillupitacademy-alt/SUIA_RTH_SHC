@@ -1,0 +1,112 @@
+{
+  "observedUtc": "2026-11-14T13:04:57.221Z",
+  "readOnly": true,
+  "index": [
+    {
+      "relname": "uniq_users_email_platform",
+      "indisunique": true,
+      "indisvalid": true,
+      "indisready": true,
+      "definition": "CREATE UNIQUE INDEX uniq_users_email_platform ON public.users USING btree (lower(TRIM(BOTH FROM email)), platform) WHERE (deleted_at IS NULL)"
+    }
+  ],
+  "invitations": [
+    {
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "email",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "platform",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "NO",
+      "column_default": "'skillup'::people_platform"
+    },
+    {
+      "column_name": "token_hash",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'pending'::character varying"
+    },
+    {
+      "column_name": "claim_owner_token",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "column_name": "claim_expires_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "column_name": "issued_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "column_name": "expires_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "column_name": "redeemed_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "invitationRowCount": 0,
+  "status": "PASS",
+  "expectedColumns": [
+    "id",
+    "user_id",
+    "email",
+    "platform",
+    "token_hash",
+    "status",
+    "claim_owner_token",
+    "claim_expires_at",
+    "issued_at",
+    "expires_at",
+    "redeemed_at",
+    "created_at",
+    "updated_at"
+  ],
+  "columnDefinitionNamesMatchSource": true,
+  "checkerCorrection": "Initial diagnostic assumed 15 columns. Registered 0009 declares 13. Replaced assumed count with exact names derived from unchanged approved SQL."
+}

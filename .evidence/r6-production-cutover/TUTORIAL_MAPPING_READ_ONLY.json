@@ -1,0 +1,30 @@
+[
+  {
+    "domain_id": "658b00bf-ae25-4f47-990a-58a573ee8240",
+    "domain": "Full Stack Development",
+    "subject_id": "0facd94f-1b62-414c-8ded-921fb7e68086",
+    "subject": "Backend Development",
+    "topic_internal": "fb47747d-ac1c-4091-bd8e-a8a7d7378e07",
+    "topic_external": "4b21ddc0-123b-41e3-8ea1-280d37f7f035",
+    "topic": "Java",
+    "subtopic": "What is Java?",
+    "slug": "what-is-java-12efacf1",
+    "subtopic_external": "12efacf1-b5ad-4b43-9fe4-17ba1cf249e4",
+    "external_sidebar_count": 1,
+    "internal_sidebar_count": 0
+  },
+  {
+    "domain_id": "658b00bf-ae25-4f47-990a-58a573ee8240",
+    "domain": "Full Stack Development",
+    "subject_id": "0facd94f-1b62-414c-8ded-921fb7e68086",
+    "subject": "Backend Development",
+    "topic_internal": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+    "topic_external": "a4d80bff-f42e-4db1-ac9a-26759e6bd8cb",
+    "topic": "Python",
+    "subtopic": "Complete Python",
+    "slug": "complete-python-5b1cfc3d",
+    "subtopic_external": "5b1cfc3d-8744-4ae6-903c-ea79aaf648a0",
+    "external_sidebar_count": 1,
+    "internal_sidebar_count": 0
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "source": "Read-only deployed section and hierarchy relationships, existing canonical name slugification",
+  "selections": [
+    {
+      "brand": "skillup",
+      "storedPath": "/tutorial-v2/full-stack-development/backend-development/python/whatispython/whatispython",
+      "canonicalPath": "/tutorial-v2/full-stack-development/backend-development/python/complete-python/whatispython",
+      "changed": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "storedPath": "/tutorial-v2/full-stack-development/backend-development/python/whatispython/whatispython",
+      "canonicalPath": "/tutorial-v2/full-stack-development/backend-development/python/complete-python/whatispython",
+      "changed": true
+    }
+  ],
+  "applicationOrDatabaseChanges": false
+}

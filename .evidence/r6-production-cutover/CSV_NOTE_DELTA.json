@@ -1,0 +1,8 @@
+{
+  "onlyFieldChanged": "SHCA-A01.verification_notes",
+  "rows": 62,
+  "acceptanceStatusesPreserved": true,
+  "q48Unchanged": true,
+  "beforeSha256": "908f90a1f7bc8e0926ee713406e057eb2b3e5bb7e924ab6c0212587a5c976447",
+  "afterSha256": "a3b042fdc19113036430c3f533cc29dfd5cdc65f54a1cccff092088dd52bc741"
+}

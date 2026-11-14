@@ -1,0 +1,61 @@
+{
+  "boundary": "Current source resolver, configured database, diagnostic without application source changes",
+  "results": [
+    {
+      "brand": "skillup",
+      "path": "/tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava",
+      "success": true,
+      "reason": null,
+      "blockCount": 1,
+      "events": [
+        "[DELIVERY_TRACE] Subtopic not found by name, trying slug match",
+        "[DELIVERY_TRACE] resolveHierarchy SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialSidebar SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload SUCCESS"
+      ]
+    },
+    {
+      "brand": "skillup",
+      "path": "/tutorial-v2/full-stack-development/backend-development/python/complete-python-5b1cfc3d/whatispython",
+      "success": true,
+      "reason": null,
+      "blockCount": 0,
+      "events": [
+        "[DELIVERY_TRACE] Subtopic not found by name, trying slug match",
+        "[DELIVERY_TRACE] resolveHierarchy SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialSidebar SUCCESS",
+        "[TutorialDeliveryService] Draft isolation violation prevented: tutorial 05b5cfa0-e45b-4fb6-93de-d47545d6c02f is at working version 17 but published snapshot is missing.",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload - tutorial is null, continuing with empty content",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload SUCCESS"
+      ]
+    },
+    {
+      "brand": "realtutorialhub",
+      "path": "/tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava",
+      "success": true,
+      "reason": null,
+      "blockCount": 1,
+      "events": [
+        "[DELIVERY_TRACE] Subtopic not found by name, trying slug match",
+        "[DELIVERY_TRACE] resolveHierarchy SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialSidebar SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload SUCCESS"
+      ]
+    },
+    {
+      "brand": "realtutorialhub",
+      "path": "/tutorial-v2/full-stack-development/backend-development/python/complete-python-5b1cfc3d/whatispython",
+      "success": true,
+      "reason": null,
+      "blockCount": 0,
+      "events": [
+        "[DELIVERY_TRACE] Subtopic not found by name, trying slug match",
+        "[DELIVERY_TRACE] resolveHierarchy SUCCESS",
+        "[DELIVERY_TRACE] getPublishedTutorialSidebar SUCCESS",
+        "[TutorialDeliveryService] Draft isolation violation prevented: tutorial 05b5cfa0-e45b-4fb6-93de-d47545d6c02f is at working version 17 but published snapshot is missing.",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload - tutorial is null, continuing with empty content",
+        "[DELIVERY_TRACE] getPublishedTutorialPagePayload SUCCESS"
+      ]
+    }
+  ]
+}

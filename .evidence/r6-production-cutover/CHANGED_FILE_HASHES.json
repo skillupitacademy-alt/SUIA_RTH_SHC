@@ -1,0 +1,171 @@
+{
+  "baseline": "995bb5871e8ab1989b5e8d76c464e1a6580fbcf7",
+  "algorithm": "SHA-256 of Git staged canonical blobs",
+  "selfExcluded": true,
+  "files": [
+    {
+      "file": ".evidence/r6-production-cutover/APP_RESTART.json",
+      "sha256": "443c0ccad2b8ef4fa31b446284e7a1cc2662513b0986f8114c59751798485b2d"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/CACHE_REFRESH.json",
+      "sha256": "ee62ceb78dc1327ff98724cc6fd6bf216963252944b27adf0ad45c7e4d7c4c18"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/CANONICAL_PUBLISHED_SELECTIONS.json",
+      "sha256": "b6fde61da46181fedf077a4f429abb4211b765fd26c31514914950cf1af819e8"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/CSV_NOTE_DELTA.json",
+      "sha256": "e41d974bd2a3a7097d2fb449b297dec094718199bb0c76ea8f67b8100f19ee4f"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/EXECUTION.json",
+      "sha256": "5d0105dbc06f6774552666d894328c8300b69dff2d5652ccc2cfdaece89486db"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/FINAL_LOCAL_LISTENERS.json",
+      "sha256": "338e46f5e00d5ca0c5409de8383e40d3d38965e5f8b558f4a91825819eb6edfb"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/FINAL_RESULTS.json",
+      "sha256": "36f8cdd014470cae31b7f5166356b9e054906a6fa68e939ca352732a79d4b89e"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/HTTP_TIMINGS.json",
+      "sha256": "4ba12508c18ae608163eb8ccdf5c47026cf63fd346db3ba96949221e4982f61f"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/INITIAL_SCHEMA_VALIDITY.json",
+      "sha256": "d298077b0474b7982466b912dfc29b0f24fb509ceaf92149b91300ae8aab953b"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/INITIAL_TUTORIAL-skillup.json",
+      "sha256": "6b5524e99e98d6354f3903102b35cd73ab7e6a64ddf92d3022f112ce6a09df92"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/LOCAL_LISTENERS.json",
+      "sha256": "5a7e93eeaf2fdbf803b1808c4c79d0720c0aab979f4998b104531b641975f067"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/MIGRATION_RECEIPT.json",
+      "sha256": "29faac5cbf58e5965a564b66cc311be07acee76ddae59e5ffea101469afac0fc"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/POST_CACHE_COLD_TUTORIAL-realtutorialhub.json",
+      "sha256": "9f7fc7427a6147fa16abf156519750603ff9e255fc3deffbfb2e6147c8389902"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/POST_MIGRATION_INTEGRITY.json",
+      "sha256": "032ce8fc4fbc73ce324603bd22b649a61dde046980a609fa1438a9e1bd11f2ea"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/POST_RESTART_COLD_TUTORIAL-skillup.json",
+      "sha256": "b85fdc4a17ae389a12eb5e0d2987c9550af4596dd03dcdbdbbe058e1e33c2aa0"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/POST_SMOKE_IDENTITY.json",
+      "sha256": "33c9f3dbe9c23c0c35145d606a90214b724fcc36b3224b3bfbdfdf310917e1fb"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/PRE_CACHE_TUTORIAL-realtutorialhub.json",
+      "sha256": "1de9c31c78c1c7b43447a7367e7baa16b3fa01cafb8475bda82f20bde77ca0cc"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/PRE_FINAL_TUTORIAL-skillup.json",
+      "sha256": "fa1ec2e9a1e82d2b8bdd2fa48edbd02a524f4cfe10f42e312eea162809aec3b3"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/PRE_RESTART_TUTORIAL-skillup.json",
+      "sha256": "dfdd09f12fe033a6c16b300d51e6c56ada0f2089f0ca08e6259d4ce7de05f4f0"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/REDACTION.json",
+      "sha256": "93a5ec48b303c7d91b2ef17ca6199e58de13ef0c178bb392ee3cc9aa93c9a083"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/RUNNING_TUTORIAL_DIAGNOSTICS.json",
+      "sha256": "c2802d3d7885e70f730b116ec71ca556b3cf40a0880593b40eddc981714a1306"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SCHEMA_VALIDITY.json",
+      "sha256": "46367b700b5a6fc5430e3c4c0a8877c28b7dcb915d1b30d227645d108112e4ef"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SECRET_SCAN.json",
+      "sha256": "e5b999105fe70d82556e4e2b695b5753362518c3944eba12af54397d3c8a9ee4"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SMOKE-realtutorialhub.json",
+      "sha256": "99c2bc204558a05cdd3cc2d97a24e22ae48353c02c11c49d3991b7513117afaf"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SMOKE-skillhubcore.json",
+      "sha256": "f396f48a29dfbe1ca686544a73fcefdb933769900ac981b904dae3754f5a8e1e"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SMOKE-skillup.json",
+      "sha256": "60740c8390241a2b4bc5e7d5fd03d20ea44fa2155daede180d6e579fc70946ab"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SMOKE_FIXTURE_AVAILABILITY.json",
+      "sha256": "6983a9cecd893178bc1b4523e138910fca4ae310251dd51004a0389a09abebde"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/SYNTAX_CHECKS.json",
+      "sha256": "dab0f233cae55329c508e2c173ce5b57066708c06aebf98195d2095a0d59e921"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL-realtutorialhub.json",
+      "sha256": "4623bba8a117aec281ac4fc39eaba6bcf98a339d5f0b5ce20671f4c33019ae64"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL-skillup.json",
+      "sha256": "eec003d30480d481cf84f577ec142d9f5874e24c298521ece205f6bfe95991c2"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL_COLUMNS.json",
+      "sha256": "21865f843fa0d493215fdc9ec960402a2d73ac6652d15ff61d02ba9ebbd093fb"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL_MAPPING_READ_ONLY.json",
+      "sha256": "e3b180d0a7dbbf8b483c71d79e01022881dc00b553c346835034367cbf8d7fc8"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL_PATH_SELECTION.json",
+      "sha256": "755802c688fa6087004e0bb4c139a12352488d14521379ef13c7c9542d7e0b47"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/TUTORIAL_RESOLVER.json",
+      "sha256": "c46598ad1f0de2d5ac4e685031f4b7f697fa615b91ae57ac390c3579028da625"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/execute.cjs",
+      "sha256": "6c2c91f310d4fcf8b4c456f0c7298cbad73755d9f6cc365fb96f24305154dcba"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/resolve-tutorial.mts",
+      "sha256": "f05d795f12e1a989ef7ff4b78553e61092d9037a6badd49d785aa2933b80982e"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/smoke.cjs",
+      "sha256": "dfe386be61e916b9ec9a835b35540f20b46e9dd1cf180534232cd49fbc38d684"
+    },
+    {
+      "file": ".evidence/r6-production-cutover/tutorial-check.cjs",
+      "sha256": "f5859a2303d11c11d903806b056d824ac861a2d6431d3f4da270a03a0529908d"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "sha256": "5be66299cbd73237ff66c312ccf56681b06634a446f1925d8d1963b6b0bc753f"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "sha256": "fa2e50ef666e0cf617733331871fd93cfadf8ed8c3d0248d246cef893de7e87a"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "sha256": "ae336a9f44fd286ac962244835c04222c34f2f689659cc2b01e8b10124be33d6"
+    }
+  ]
+}

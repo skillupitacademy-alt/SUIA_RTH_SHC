@@ -1,0 +1,24 @@
+{
+  "accounts": [
+    {
+      "brand": "skillup",
+      "uniqueApprovedUser": true,
+      "existingOwnExamCount": 3,
+      "personLinkPresent": true
+    },
+    {
+      "brand": "realtutorialhub",
+      "uniqueApprovedUser": true,
+      "existingOwnExamCount": 3,
+      "personLinkPresent": true
+    }
+  ],
+  "tutorials": {
+    "skillup": {
+      "existingCanonicalPaths": 1
+    },
+    "realtutorialhub": {
+      "existingCanonicalPaths": 0
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "brand": "skillhubcore",
+  "origin": "http://skillhubcore.localhost:3007",
+  "startedUtc": "2026-11-14T13:04:10.508Z",
+  "boundary": "Existing localhost frontend/BFF/gateway/API against configured protected stores after authorized PeopleDB migration",
+  "checks": [
+    {
+      "name": "Login warmup",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Anonymous private access",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Real UI login",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Access and refresh cookies established",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected own identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Response belongs to approved account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected dashboard HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Protected dashboard path",
+      "actual": "/dashboard",
+      "expected": [
+        "/dashboard"
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Authorized administrative API",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Identity after logout",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Captured identity cookie replay denied",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Captured admin cookie replay denied",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Revoked refresh cannot restore session",
+      "actual": 401,
+      "expected": [
+        401,
+        403,
+        404
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh UI login after logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh session identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fresh session cleanup logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedUtc": "2026-11-14T13:04:57.204Z",
+  "status": "PASS"
+}

@@ -1,0 +1,166 @@
+[
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "subtopic_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "order_index"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "content"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "version"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "language"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "status"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "generated_by_ai"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "ai_model_used"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "generation_job_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "quality_score"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "hallucination_score"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "regeneration_count"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "approved_by"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "approved_at"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "rejection_reason"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "prompt_template_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "educational_architecture_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "ui_architecture_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "brand_id"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "brand_visibility"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "brand_customizations"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "created_at"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "updated_at"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "published_at"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "deleted_at"
+  },
+  {
+    "table_name": "tutorial_sections",
+    "column_name": "navigation_node_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "brand_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "domain_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "subject_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "topic_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "active_subtopic_id"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "tree"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "source_format"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "source_content"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "status"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "version"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "published_at"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "created_at"
+  },
+  {
+    "table_name": "tutorial_sidebar_trees_v2",
+    "column_name": "updated_at"
+  }
+]
