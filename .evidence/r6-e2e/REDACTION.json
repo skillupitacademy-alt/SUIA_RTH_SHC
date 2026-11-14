@@ -1,0 +1,5 @@
+{
+  "redactedLines": 1210,
+  "rawCredentialsPublished": false,
+  "diagnosticLimitation": "Credential-bearing lines and long opaque values removed. Structured status receipts and timing lines retained."
+}

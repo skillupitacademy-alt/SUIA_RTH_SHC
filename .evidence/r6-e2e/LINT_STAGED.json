@@ -1,0 +1,9 @@
+{
+  "command": "pnpm lint-staged",
+  "startedUtc": "2026-11-14T09:59:22.891Z",
+  "finishedUtc": "2026-11-14T09:59:26.278Z",
+  "exitCode": 0,
+  "stdout": "→ lint-staged could not find any staged files matching configured tasks.\n",
+  "stderr": "",
+  "scope": "Evidence and documentation only; application globs have no eligible changed files"
+}

@@ -1,0 +1,111 @@
+{
+  "brand": "realtutorialhub",
+  "origin": "http://realtutorialhub.localhost:3303",
+  "boundary": "Actual localhost HTTP/BFF/gateway/backend and disposable PostgreSQL. Browser rendering is recorded separately.",
+  "startedUtc": "2026-11-14T09:37:34.690Z",
+  "checks": [
+    {
+      "name": "Login BFF",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own cookies denied in foreign brand context",
+      "actual": 403,
+      "expected": [
+        401,
+        403
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Progress write",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Progress read",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign exam denial",
+      "actual": 403,
+      "expected": [
+        403,
+        404
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own result",
+      "actual": 202,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own answer",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own submit",
+      "actual": 200,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Tenant-qualified progress persisted",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Captured cookie replay",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    }
+  ],
+  "freshSyntheticExam": true,
+  "finishedUtc": "2026-11-14T09:38:53.603Z",
+  "status": "PASS"
+}

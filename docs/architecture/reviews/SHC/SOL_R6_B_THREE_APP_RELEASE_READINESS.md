@@ -242,3 +242,57 @@ Browser progress/quiz writes additionally require disposable brand/TutorialDB fi
 PeopleDB remains the shared registry with platform-qualified mappings. SUIA/RTH keep independent brand-local accounts, credentials and data ownership. Matching email addresses establish neither an identity merge nor a platform grant. Multi-platform controls must exercise verified existing grants with the appropriate brand-scoped principal.
 
 The final protected release still requires reviewed backup/recovery evidence, exact 0009/0010 execution authorization with fresh catalog/ledger/duplicate preflight, a credential-risk decision, and deployment/live-smoke authorization. All 62 acceptance statuses and Q48 remain owner-controlled. The local continuation commit records these specific evidence limits.
+
+## Disposable PostgreSQL and three-app runtime completion — 14 November 2026
+
+This section supersedes the preceding missing-connection and unperformed-runtime states. Source baseline is `4aa0cad2e7659b35e2092c2edbfe4638868c917f`. Application implementation and registered migration bytes are unchanged. The owner explicitly reauthorized the supplied disposable credential. Its access-restricted local reference is Git-ignored. Credential exposure remains OPEN — REMEDIATION DEFERRED BY OWNER.
+
+### Isolation and migration
+
+Server settings verified project `bitter-tree-18287476`, branch `br-young-silence-a1b1ta26`, endpoint `ep-fragrant-brook-a1mhx5dm`, and `people_prod`. Branch name and parent retain the owner's dashboard provenance. The supplied default `neondb` was inspected before selecting the existing application database.
+
+The standalone verifier passed seven recorded groups using its own scratch database. These cover supported fresh replay through 0009, registered 0010 upgrade/repeat, duplicate rollback with SQLSTATE 23505, independent cross-platform emails and actual SHC authority with real PostgreSQL session revocation. Its audit destination was a controlled adapter. The earlier BLOCKED receipt remains in `PRE_CONNECTION_BLOCKED.json`.
+
+Five further assignment-owned databases, `r6b_e2e_97d2df2ca9_*`, received read-only schema copies and synthetic fixtures. Operational account rows were excluded. The empty disposable PeopleDB received the protected ledger prefix. `MIGRATION_RECEIPT.json` records exactly 0009 student invitations followed by registered 0010, with matching original/executed hashes. Final ledger has eleven entries. The unique index is `(lower(trim(email)), platform) WHERE deleted_at IS NULL`, and disposable global `users_email_unique` is absent.
+
+Original localhost listeners on 3007, 3009, 3003, API 3000 and gateway 8787 retained their PIDs. Temporary copies used 3307, 3309, 3303, API 3300 and gateway 8887, with all database bindings restricted to disposable targets. Frontends were tested sequentially to reduce memory use. The existing Hono gateway used a Node transport adapter that cloned fetch response headers and suppressed credential-bearing debug output. Cloudflare deployment was outside this execution.
+
+### Functional results
+
+| Required flow | Result | Evidence |
+|---|---|---|
+| SHC UI/BFF/API/PeopleDB | PASS for recorded functional controls | `JOURNEY-skillhubcore.json` has 16 passing functional checks and one initial warm-up timeout. Login, identity, dashboard and authorized domains pass. |
+| SHC logout and fresh login | PASS | Captured identity/admin replay returns 401. Captured refresh cannot restore the browser session. Fresh UI login, identity and logout pass. Earlier localhost expiry controls retain the fresh-login-after-expiry policy. |
+| SUIA UI/BFF/API/PeopleDB/SkillUp DB | PASS | Final `JOURNEY-skillup.json` passes 23/23, including UI login, dashboard, tutorial navigation, tenant-qualified progress persistence, answer, submit, logout and replay denial. |
+| RTH UI/BFF/API/PeopleDB/RTH DB | PASS after documented retries | Browser login/dashboard/spoofed-header controls pass. `HTTP-realtutorialhub.json` passes 12/12 fresh-exam controls. `TUTORIAL-realtutorialhub.json` passes 5/5 Chromium lesson-rendering controls. |
+| Completed quiz results | PASS | SUIA `TUTORIAL-skillup.json` passes 7/7, including a physically completed own exam and result HTTP 200. RTH `RESULT-realtutorialhub.json` passes 4/4 including completed-result HTTP 200. Earlier 202 responses describe started exams. |
+| Cross-brand/ownership boundaries | PASS for bounded cases | Each valid cookie pair is denied in foreign-brand gateway context with 403. Foreign exam submit returns 403. Spoofed headers cannot replace the account. |
+| Physical identity/data consistency | PASS, 9/9 | `FINAL_CATALOG.json` verifies distinct brand-local and PeopleDB UUIDs, persisted `(platform, external_id)` links, independent same-email accounts, active own-platform grants, answers, completed exams, ledger and index. |
+| Protected preflight | PASS, read-only | `PROTECTED_READ_ONLY_FINAL.json` records read-only `on`, nine ledger entries through 0008, retained global uniqueness and zero normalized same-platform duplicate groups. |
+| Protected backup/recovery | PENDING | Protected recoverable point, retention, operator, recovery window and approved restoration rehearsal remain required. Prior synthetic logical recovery proof retains its historical scope. |
+
+Matching email establishes no shared principal or cross-brand permission. Tests use independent registrations and mappings. Administrative cross-brand grant/restoration remains denied under Policy B until explicit authority exists. MainDB tenant-qualified ownership and colliding-local-UUID qualification remain in their separate phase.
+
+### Failures and evidence limits
+
+Initial gateway module/immutable-response errors, BFF base-path configuration, missing RTH translations, tutorial mapping/slug fixtures and a request sent before its listener started were harness defects. Corrections affect the disposable harness. Failed receipts remain alongside final results.
+
+Some initial dev compiles exceeded the 65-second request allowance. The recorded RTH tutorial request took 83 seconds, including 79 seconds compiling. Its warmed Chromium lesson rendered successfully. Initial SUIA progress/quiz requests produced timeouts, 500/503 and Neon/ErrorEvent diagnostics, followed by a completely passing warmed journey. These observations do not establish the historical cold-start quiz-result 500's cause. Cold-start reliability remains unqualified. Broader performance remediation remains HOLD.
+
+Original exam fixtures aged beyond their one-hour limit during the paused execution. Their 400 answer result remains recorded. Fresh synthetic exams accepted answers and completed. The final learner harness creates a new exam per journey.
+
+Historical fresh PeopleDB replay lacks the `skillhubcore` enum label. The standalone verifier added it only to its scratch fixture, matching the existing protected schema. The five-database runtime copied that existing schema. This is a fresh-install provenance limitation. The current results qualify the existing-schema upgrade path.
+
+External report providers, email, payments, Redis/QStash and background integrations were excluded. Inline scoring and completed result retrieval passed. PDF-provider delivery, every course/enrollment workflow and all 195 authorization methods remain outside this bounded evidence. Existing 157 source tests, six expiry/fallback cases, quality/build receipts and 24 migration/25 regression receipts are reused at their original boundaries.
+
+Ten JavaScript harness syntax checks pass. A separate repository-hook inspection found that `npm run auth:audit` fails because its referenced `scripts/auth-audit.js` is absent, including at baseline HEAD. The session inherited `HUSKY=0`. This environment setting was preserved, and the failed audit is recorded in `ROOT_AUTH_AUDIT_EXCEPTION.json`. No passing root audit or automatic hook execution is claimed. Repository-tooling repair is outside this integration correction.
+
+### Cleanup and decision
+
+All five new databases and the standalone scratch database were removed and verified absent. Temporary app copies, owned processes and client utilities were removed. Original listener PIDs remained unchanged. The existing qualification branch and its pre-existing databases were retained. Cleanup and port receipts are in `.evidence/r6-e2e`.
+
+Private generated fixture credentials were deleted. The owner-supplied ignored connection reference remains local. Credential-bearing diagnostic lines were redacted, retaining structured statuses and timing evidence. Secret checks found no known credentials or JWTs in new evidence. No credential was rotated or declared safe.
+
+**Tested PeopleDB migration and warmed three-app integration gates PASS. R6-B is technically ready for a separately controlled existing-schema release decision within this scope. Protected release remains HOLD.** Cold-start reliability, fresh-install provenance and broader acceptance gaps remain visible.
+
+Remaining protected approvals are backup/recovery evidence and rehearsal, exact 0009/0010 execution with execution-window preflight, credential-risk disposition, and any deployment/live-smoke operation. Canonical acceptance statuses remain unchanged and Q48 stays OPEN. Exact commands, outcomes, hashes and cleanup are consolidated under `.evidence/r6-e2e`.

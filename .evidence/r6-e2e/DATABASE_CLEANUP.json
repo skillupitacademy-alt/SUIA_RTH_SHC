@@ -1,0 +1,26 @@
+{
+  "databases": [
+    {
+      "name": "r6b_e2e_97d2df2ca9_main",
+      "removed": true
+    },
+    {
+      "name": "r6b_e2e_97d2df2ca9_skillup",
+      "removed": true
+    },
+    {
+      "name": "r6b_e2e_97d2df2ca9_realtutorialhub",
+      "removed": true
+    },
+    {
+      "name": "r6b_e2e_97d2df2ca9_tutorial",
+      "removed": true
+    },
+    {
+      "name": "r6b_e2e_97d2df2ca9_people",
+      "removed": true
+    }
+  ],
+  "temporaryClientsRemoved": true,
+  "sharedBranchesModified": false
+}

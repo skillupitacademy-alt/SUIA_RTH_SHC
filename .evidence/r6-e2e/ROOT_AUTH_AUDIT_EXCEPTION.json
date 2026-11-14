@@ -1,0 +1,11 @@
+{
+  "command": "npm run auth:audit",
+  "startedUtc": "2026-11-14T09:57:42.791Z",
+  "finishedUtc": "2026-11-14T09:57:43.346Z",
+  "exitCode": 1,
+  "result": "FAIL - referenced scripts/auth-audit.js is absent",
+  "alsoAbsentAtBaseline": true,
+  "inheritedHusky": "0",
+  "hookEnvironmentChanged": false,
+  "productionAuthChanged": false
+}

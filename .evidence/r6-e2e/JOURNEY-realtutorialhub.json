@@ -1,0 +1,181 @@
+{
+  "brand": "realtutorialhub",
+  "origin": "http://realtutorialhub.localhost:3303",
+  "startedUtc": "2026-11-14T09:28:58.765Z",
+  "boundary": "Actual isolated Next UI/BFF, existing gateway, backend and disposable PostgreSQL schemas",
+  "checks": [
+    {
+      "check": "Login-page warmup",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Anonymous denial",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Real login form",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Access and refresh cookies established",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own profile or identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Returned own account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Protected dashboard page",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Dashboard URL retained",
+      "actual": "/dashboard",
+      "expected": [
+        "/dashboard"
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Spoofed headers do not replace account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Valid cookie pair denied in foreign brand context",
+      "actual": 403,
+      "expected": [
+        401,
+        403
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Canonical tutorial",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Own progress write",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own progress read",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Progress persisted under learner and tenant",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Foreign exam submit denied",
+      "actual": 403,
+      "expected": [
+        403,
+        404
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own started exam result",
+      "actual": 202,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own question answer",
+      "actual": 400,
+      "expected": [
+        200
+      ],
+      "status": "FAIL"
+    },
+    {
+      "check": "Own exam submit",
+      "actual": 200,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Exam persisted under correct learner",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Logout HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Profile after logout",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Captured pre-logout identity replay",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedUtc": "2026-11-14T09:36:54.055Z",
+  "status": "FAIL_OR_BLOCKED"
+}

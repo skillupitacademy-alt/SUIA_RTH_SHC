@@ -1,0 +1,29 @@
+{
+  "startedUtc": "2026-11-14T07:04:46.844Z",
+  "mode": "Existing approved identities, localhost UI login and single-session logout only",
+  "isolation": "All five schemas and synthetic accounts are on the approved disposable branch",
+  "results": [
+    {
+      "brand": "skillup",
+      "origin": "http://skillup.localhost:3309",
+      "credentialReferenceAvailable": true,
+      "anonymousPrivateStatus": 401,
+      "loginStatus": 503
+    },
+    {
+      "brand": "realtutorialhub",
+      "origin": "http://realtutorialhub.localhost:3303",
+      "credentialReferenceAvailable": true,
+      "anonymousPrivateStatus": 401,
+      "errorCategory": "TIMEOUT"
+    },
+    {
+      "brand": "skillhubcore",
+      "origin": "http://skillhubcore.localhost:3307",
+      "credentialReferenceAvailable": true,
+      "anonymousPrivateStatus": 401,
+      "loginStatus": 403
+    }
+  ],
+  "finishedUtc": "2026-11-14T07:08:38.540Z"
+}

@@ -1,0 +1,10 @@
+{
+  "command": "graphify update .",
+  "exitCode": 0,
+  "finishedObservedUtc": "2026-11-14T09:59:26.325Z",
+  "mode": "AST only, no LLM",
+  "nodes": 38013,
+  "edges": 88300,
+  "communities": 1286,
+  "warning": "Community labels retain previous semantic naming; no LLM labeling requested"
+}

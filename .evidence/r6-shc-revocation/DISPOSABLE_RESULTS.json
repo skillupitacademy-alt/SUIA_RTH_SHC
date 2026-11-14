@@ -1,5 +1,85 @@
 {
-  "status": "BLOCKED",
-  "checks": [],
-  "failure": "Explicit secrets file is missing, tracked or not Git-excluded"
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "Disposable branch identity verified before first write",
+      "result": "PASS"
+    },
+    {
+      "check": "Normalized duplicate aborts registered 0010 with ledger and global constraint retained",
+      "result": "PASS",
+      "sqlstate": "23505"
+    },
+    {
+      "check": "Registered 0010 upgrade and supported repeat execution",
+      "result": "PASS",
+      "receipt": {
+        "compatibilityRevision": "people-0007-exact-objects-v1",
+        "committed": true,
+        "executed": [
+          {
+            "tag": "0010_normalized_platform_email",
+            "originalHash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93",
+            "executedHash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93"
+          }
+        ],
+        "decisions": [
+          {
+            "object": "subscription_features_plan_id_subscription_plans_id_fk",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "user_features_cache_user_id_users_id_fk",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "idx_subscription_features_plan",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "idx_subscription_plans_active",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "idx_user_features_cache_user",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "idx_subscriptions_user_active",
+            "decision": "validated_applied"
+          },
+          {
+            "object": "idx_sso_sessions_family",
+            "decision": "validated_applied"
+          }
+        ]
+      }
+    },
+    {
+      "check": "Independent same-email brands and normalized within-platform rejection",
+      "result": "PASS"
+    },
+    {
+      "check": "SHC fixture mirrors observed shared enum label",
+      "result": "PASS",
+      "historicalFreshSchemaLacksShcLabel": true
+    },
+    {
+      "check": "Actual SHC service, identity handler and backend admin guard reject pre-logout credentials",
+      "result": "PASS",
+      "persistence": "Real disposable PostgreSQL",
+      "audit": "Controlled adapter to avoid protected MainDB writes"
+    },
+    {
+      "check": "New legitimate SHC login remains usable",
+      "result": "PASS"
+    }
+  ],
+  "scratchDatabase": "r6b_shc_a58f424aad43",
+  "target": {
+    "project": "bitter-tree-18287476",
+    "branch": "br-young-silence-a1b1ta26",
+    "endpoint": "ep-fragrant-brook-a1mhx5dm.ap-southeast-1.aws.neon.tech"
+  },
+  "cleanup": true
 }

@@ -1,0 +1,25 @@
+{
+  "sourceCommit": "4aa0cad2e7659b35e2092c2edbfe4638868c917f",
+  "project": "bitter-tree-18287476",
+  "branch": "br-young-silence-a1b1ta26",
+  "endpoint": "ep-fragrant-brook-a1mhx5dm.ap-southeast-1.aws.neon.tech",
+  "databases": {
+    "main": "r6b_e2e_97d2df2ca9_main",
+    "skillup": "r6b_e2e_97d2df2ca9_skillup",
+    "realtutorialhub": "r6b_e2e_97d2df2ca9_realtutorialhub",
+    "tutorial": "r6b_e2e_97d2df2ca9_tutorial",
+    "people": "r6b_e2e_97d2df2ca9_people"
+  },
+  "origins": {
+    "skillhubcore": "http://skillhubcore.localhost:3307",
+    "skillup": "http://skillup.localhost:3309",
+    "realtutorialhub": "http://realtutorialhub.localhost:3303"
+  },
+  "protectedTargetsWritten": false,
+  "schemaOnlyCopies": true,
+  "operationalRowsCopied": false,
+  "syntheticFixtures": 3,
+  "identityPolicy": "Independent brand-local accounts and platform-qualified PeopleDB projections; matching email does not merge accounts",
+  "gatewayRuntime": "Existing Hono gateway through Node transport adapter",
+  "renewalPolicy": "SHC expiry requires fresh login; no automatic renewal introduced"
+}

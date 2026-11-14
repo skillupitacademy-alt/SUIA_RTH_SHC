@@ -1,0 +1,39 @@
+{
+  "run": "r6b_e2e_97d2df2ca9",
+  "ports": {
+    "api": 3300,
+    "gateway": 8887,
+    "skillhubcore": 3307,
+    "skillup": 3309,
+    "realtutorialhub": 3303
+  },
+  "origins": {
+    "skillhubcore": "http://skillhubcore.localhost:3307",
+    "skillup": "http://skillup.localhost:3309",
+    "realtutorialhub": "http://realtutorialhub.localhost:3303"
+  },
+  "processes": [
+    {
+      "name": "api-server",
+      "pid": 22560
+    },
+    {
+      "name": "skillhubcore-admin",
+      "pid": 34040
+    },
+    {
+      "name": "skillup-web",
+      "pid": 35772
+    },
+    {
+      "name": "realtutorialhub-web",
+      "pid": 21624
+    },
+    {
+      "name": "gateway",
+      "pid": 17880
+    }
+  ],
+  "allDatabaseEndpoints": "ep-fragrant-brook-a1mhx5dm",
+  "protectedProcessesModified": false
+}

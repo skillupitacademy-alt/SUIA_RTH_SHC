@@ -1,0 +1,27 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3309",
+  "startedUtc": "2026-11-14T09:27:35.618Z",
+  "boundary": "Actual isolated Next UI/BFF, existing gateway, backend and disposable PostgreSQL schemas",
+  "checks": [
+    {
+      "check": "Login-page warmup",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Anonymous private request",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    }
+  ],
+  "fatal": "TIMEOUT_65_SECONDS",
+  "finishedUtc": "2026-11-14T09:28:48.992Z",
+  "status": "FAIL_OR_BLOCKED"
+}

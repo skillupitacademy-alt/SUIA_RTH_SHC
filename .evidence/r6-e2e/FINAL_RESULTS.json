@@ -1,0 +1,105 @@
+{
+  "sourceCommit": "4aa0cad2e7659b35e2092c2edbfe4638868c917f",
+  "recordedUtc": "2026-11-14T09:58:08.698Z",
+  "applicationImplementationChanged": false,
+  "testedExistingSchemaUpgradeAndWarmedFlows": "PASS",
+  "protectedRelease": "HOLD",
+  "scope": "Bounded synthetic localhost and disposable PostgreSQL integration",
+  "evidence": [
+    {
+      "file": "JOURNEY-skillup.json",
+      "status": "PASS",
+      "pass": 23,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:46:16.076Z",
+      "finishedUtc": "2026-11-14T09:48:51.586Z"
+    },
+    {
+      "file": "JOURNEY-skillhubcore.json",
+      "status": "FAIL_OR_BLOCKED",
+      "pass": 16,
+      "fail": 0,
+      "blocked": 1,
+      "startedUtc": "2026-11-14T09:42:11.353Z",
+      "finishedUtc": "2026-11-14T09:45:20.863Z"
+    },
+    {
+      "file": "JOURNEY-realtutorialhub.json",
+      "status": "FAIL_OR_BLOCKED",
+      "pass": 18,
+      "fail": 1,
+      "blocked": 3,
+      "startedUtc": "2026-11-14T09:28:58.765Z",
+      "finishedUtc": "2026-11-14T09:36:54.055Z"
+    },
+    {
+      "file": "HTTP-realtutorialhub.json",
+      "status": "PASS",
+      "pass": 12,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:37:34.690Z",
+      "finishedUtc": "2026-11-14T09:38:53.603Z"
+    },
+    {
+      "file": "TUTORIAL-skillup.json",
+      "status": "PASS",
+      "pass": 7,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:49:01.436Z",
+      "finishedUtc": "2026-11-14T09:49:14.301Z"
+    },
+    {
+      "file": "TUTORIAL-realtutorialhub.json",
+      "status": "PASS",
+      "pass": 5,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:39:48.647Z",
+      "finishedUtc": "2026-11-14T09:40:43.475Z"
+    },
+    {
+      "file": "RESULT-realtutorialhub.json",
+      "status": "PASS",
+      "pass": 4,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:49:59.130Z",
+      "finishedUtc": "2026-11-14T09:50:15.569Z"
+    },
+    {
+      "file": "FINAL_CATALOG.json",
+      "status": "PASS",
+      "pass": 9,
+      "fail": 0,
+      "blocked": 0,
+      "startedUtc": "2026-11-14T09:49:11.249Z",
+      "finishedUtc": null
+    }
+  ],
+  "standalonePostgres": "PASS",
+  "disposableCleanup": true,
+  "originalListenersUnchanged": true,
+  "isolatedListenersRemaining": 0,
+  "rootAuthAudit": "FAIL - absent baseline script; inherited HUSKY=0 unchanged",
+  "protectedMigrationExecuted": false,
+  "deploymentExecuted": false,
+  "githubPushExecuted": false,
+  "credentialExposure": "OPEN - remediation deferred by owner",
+  "q48": "OPEN",
+  "remainingApprovals": [
+    "Protected backup/recovery evidence and approved rehearsal",
+    "Exact protected 0009/0010 execution and execution-window preflight",
+    "Credential-risk disposition",
+    "Any deployment and live-smoke operation"
+  ],
+  "unqualified": [
+    "Historical cold-start 500 root cause and cold startup reliability",
+    "Fresh-install SHC enum provenance",
+    "All 195 methods and broader learning workflows",
+    "PDF-provider delivery",
+    "Separate MainDB tenant-ownership phase"
+  ]
+}

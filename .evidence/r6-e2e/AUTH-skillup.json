@@ -1,0 +1,28 @@
+{
+  "startedUtc": "2026-11-14T07:08:53.496Z",
+  "mode": "Existing approved identities, localhost UI login and single-session logout only",
+  "isolation": "All five schemas and synthetic accounts are on the approved disposable branch",
+  "results": [
+    {
+      "brand": "skillup",
+      "origin": "http://skillup.localhost:3309",
+      "credentialReferenceAvailable": true,
+      "anonymousPrivateStatus": 401,
+      "loginStatus": 200,
+      "landingPath": "/login",
+      "accessCookieEstablished": true,
+      "refreshCookieEstablished": true,
+      "tokenBrandMatches": true,
+      "distinctPersonClaim": true,
+      "authenticatedPrivateStatus": 503,
+      "dashboardStatus": 503,
+      "dashboardRedirectPath": null,
+      "errorCategory": "SANITIZED_RUNTIME_ERROR",
+      "logoutStatus": 200,
+      "afterLogoutPrivateStatus": 401,
+      "authCookiesCleared": true,
+      "revokedSessionReplayStatus": 401
+    }
+  ],
+  "finishedUtc": "2026-11-14T07:10:41.298Z"
+}

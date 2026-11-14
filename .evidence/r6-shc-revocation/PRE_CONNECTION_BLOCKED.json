@@ -1,0 +1,5 @@
+{
+  "status": "BLOCKED",
+  "checks": [],
+  "failure": "Explicit secrets file is missing, tracked or not Git-excluded"
+}

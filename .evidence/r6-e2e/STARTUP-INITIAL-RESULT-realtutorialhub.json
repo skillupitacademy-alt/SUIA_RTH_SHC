@@ -1,0 +1,11 @@
+{
+  "brand": "realtutorialhub",
+  "origin": "http://realtutorialhub.localhost:3303",
+  "startedUtc": "2026-11-14T09:49:49.862Z",
+  "checks": [],
+  "boundary": "Completed-exam BFF result, with optional warmed Chromium tutorial rendering, using a disposable account",
+  "failure": "Error",
+  "logout": "BLOCKED",
+  "finishedUtc": "2026-11-14T09:49:49.892Z",
+  "status": "FAIL_OR_BLOCKED"
+}

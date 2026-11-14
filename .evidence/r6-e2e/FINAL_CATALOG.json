@@ -1,0 +1,120 @@
+{
+  "recordedUtc": "2026-11-14T09:49:11.249Z",
+  "checks": [
+    {
+      "name": "Ledger includes registered 0009 and 0010",
+      "status": "PASS"
+    },
+    {
+      "name": "Global email uniqueness replaced",
+      "status": "PASS"
+    },
+    {
+      "name": "skillup projection and persisted brand link agree",
+      "status": "PASS"
+    },
+    {
+      "name": "skillup active own-platform grant exists",
+      "status": "PASS"
+    },
+    {
+      "name": "realtutorialhub projection and persisted brand link agree",
+      "status": "PASS"
+    },
+    {
+      "name": "realtutorialhub active own-platform grant exists",
+      "status": "PASS"
+    },
+    {
+      "name": "Same normalized email retains distinct platform-qualified people",
+      "status": "PASS"
+    },
+    {
+      "name": "skillup answered and submitted exam physically persisted",
+      "status": "PASS"
+    },
+    {
+      "name": "realtutorialhub answered and submitted exam physically persisted",
+      "status": "PASS"
+    }
+  ],
+  "databases": {
+    "people": "r6b_e2e_97d2df2ca9_people",
+    "skillup": "r6b_e2e_97d2df2ca9_skillup",
+    "realtutorialhub": "r6b_e2e_97d2df2ca9_realtutorialhub",
+    "main": "r6b_e2e_97d2df2ca9_main"
+  },
+  "ledger": [
+    {
+      "hash": "695139a67b8f310fc8f8d345a0fe6068721759d3e233218b9e64ad8edf3f149c",
+      "created_at": "1774191220131"
+    },
+    {
+      "hash": "38299f1bab0e4ac0570634e48587073371f61c9ba67c9bfdbc964660c169015f",
+      "created_at": "1774536900897"
+    },
+    {
+      "hash": "8b3b3a5bb74bf13cfd7f5e6b107ab207628422792a69fd2040fcd4230756aab7",
+      "created_at": "1774537191952"
+    },
+    {
+      "hash": "55c2530b914fc9ce64870be97e81a136795f87ec77ffe0635d07adadd8ebb1b9",
+      "created_at": "1774538285178"
+    },
+    {
+      "hash": "3137d0209c09ce6a811ad4da639a26e61aa4062e6599eaf0a5822e6240703e56",
+      "created_at": "1774541869102"
+    },
+    {
+      "hash": "283b7a351d43c0b185bd58b6c6f3bd0cc9e7867d61e41acac317e49a5e4a94e5",
+      "created_at": "1774550945793"
+    },
+    {
+      "hash": "4a582468d983f70ce7401787af16a854a74739b693f804eb3cae5da5ed1d5184",
+      "created_at": "1774591239501"
+    },
+    {
+      "hash": "ac832a23a2a42236bdd0326f72d0779b830188f8a5391b75638d6489634fc5b6",
+      "created_at": "1774935418558"
+    },
+    {
+      "hash": "7017f989d52ee4b5b015470ee7e74c57584bbed44c71afbdc68ad646228573b9",
+      "created_at": "1774938098054"
+    },
+    {
+      "hash": "f5aef816d0822d8cba9534dddbb11af2a3cac644f72354639823bec6597b38df",
+      "created_at": "1791600000000"
+    },
+    {
+      "hash": "88f558d88d335b7a35e3e744bc7e70281756d56402c30891f7041db416f7af93",
+      "created_at": "1794629868483"
+    }
+  ],
+  "emailIndexes": [
+    {
+      "indexname": "uniq_users_email_platform",
+      "indexdef": "CREATE UNIQUE INDEX uniq_users_email_platform ON public.users USING btree (lower(TRIM(BOTH FROM email)), platform) WHERE (deleted_at IS NULL)"
+    }
+  ],
+  "skillupExamStates": [
+    {
+      "status": "started",
+      "user_answer": null
+    },
+    {
+      "status": "completed",
+      "user_answer": "A"
+    }
+  ],
+  "realtutorialhubExamStates": [
+    {
+      "status": "completed",
+      "user_answer": null
+    },
+    {
+      "status": "completed",
+      "user_answer": "A"
+    }
+  ],
+  "status": "PASS"
+}

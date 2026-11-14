@@ -1,0 +1,62 @@
+[
+  {
+    "command": "node --check .evidence\\r6-e2e\\authentication.cjs",
+    "startedUtc": "2026-11-14T09:55:36.681Z",
+    "finishedUtc": "2026-11-14T09:55:36.743Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\catalog-checks.cjs",
+    "startedUtc": "2026-11-14T09:55:36.743Z",
+    "finishedUtc": "2026-11-14T09:55:36.803Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\cleanup-databases.cjs",
+    "startedUtc": "2026-11-14T09:55:36.803Z",
+    "finishedUtc": "2026-11-14T09:55:36.862Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\content-fixtures.cjs",
+    "startedUtc": "2026-11-14T09:55:36.862Z",
+    "finishedUtc": "2026-11-14T09:55:36.918Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\http-checks.cjs",
+    "startedUtc": "2026-11-14T09:55:36.918Z",
+    "finishedUtc": "2026-11-14T09:55:36.983Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\journey.cjs",
+    "startedUtc": "2026-11-14T09:55:36.983Z",
+    "finishedUtc": "2026-11-14T09:55:37.042Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\protected-read-only.cjs",
+    "startedUtc": "2026-11-14T09:55:37.042Z",
+    "finishedUtc": "2026-11-14T09:55:37.106Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\setup.cjs",
+    "startedUtc": "2026-11-14T09:55:37.106Z",
+    "finishedUtc": "2026-11-14T09:55:37.169Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\start.cjs",
+    "startedUtc": "2026-11-14T09:55:37.169Z",
+    "finishedUtc": "2026-11-14T09:55:37.236Z",
+    "exitCode": 0
+  },
+  {
+    "command": "node --check .evidence\\r6-e2e\\tutorial-page.cjs",
+    "startedUtc": "2026-11-14T09:55:37.236Z",
+    "finishedUtc": "2026-11-14T09:55:37.296Z",
+    "exitCode": 0
+  }
+]

@@ -1,0 +1,168 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3309",
+  "startedUtc": "2026-11-14T07:17:35.798Z",
+  "boundary": "Actual isolated Next UI/BFF, existing gateway, backend and disposable PostgreSQL schemas",
+  "checks": [
+    {
+      "check": "Login-page warmup",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Anonymous private request",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Real login form",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Access and refresh cookies established",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own profile or identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Returned own account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Protected dashboard page",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Dashboard URL retained",
+      "actual": "/dashboard",
+      "expected": [
+        "/dashboard"
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Spoofed headers do not replace account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Canonical tutorial",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Progress write",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Own progress read",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Progress persisted under learner and tenant",
+      "actual": false,
+      "expected": [
+        true
+      ],
+      "status": "FAIL"
+    },
+    {
+      "check": "Foreign exam owner denial",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Own started exam result",
+      "actual": 503,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "FAIL"
+    },
+    {
+      "check": "Own populated exam answer",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Own exam submit",
+      "actual": 503,
+      "expected": [
+        200,
+        202
+      ],
+      "status": "FAIL"
+    },
+    {
+      "check": "Exam persisted under correct learner",
+      "actual": false,
+      "expected": [
+        true
+      ],
+      "status": "FAIL"
+    },
+    {
+      "check": "Logout HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Profile after logout",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Captured pre-logout identity replay",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedUtc": "2026-11-14T07:25:10.065Z",
+  "status": "FAIL_OR_BLOCKED"
+}

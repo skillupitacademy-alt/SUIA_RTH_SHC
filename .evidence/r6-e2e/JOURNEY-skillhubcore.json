@@ -1,0 +1,145 @@
+{
+  "brand": "skillhubcore",
+  "origin": "http://skillhubcore.localhost:3307",
+  "startedUtc": "2026-11-14T09:42:11.353Z",
+  "boundary": "Actual isolated Next UI/BFF, existing gateway, backend and disposable PostgreSQL schemas",
+  "checks": [
+    {
+      "check": "Login-page warmup",
+      "status": "BLOCKED",
+      "category": "TIMEOUT_65_SECONDS"
+    },
+    {
+      "check": "Anonymous private request",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Real login form",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Access and refresh cookies established",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Own profile or identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Returned own account",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Protected dashboard page",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Dashboard URL retained",
+      "actual": "/dashboard",
+      "expected": [
+        "/dashboard"
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Authorized domains API",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Logout HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Profile after logout",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Captured pre-logout identity replay",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Captured pre-logout admin replay",
+      "actual": 401,
+      "expected": [
+        401
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Revoked refresh cannot restore browser session",
+      "actual": 401,
+      "expected": [
+        401,
+        403,
+        404
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Fresh login after logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Fresh login identity",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "Fresh-session cleanup logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedUtc": "2026-11-14T09:45:20.863Z",
+  "status": "FAIL_OR_BLOCKED"
+}

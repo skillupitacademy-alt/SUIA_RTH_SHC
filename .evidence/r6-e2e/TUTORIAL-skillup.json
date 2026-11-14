@@ -1,0 +1,66 @@
+{
+  "brand": "skillup",
+  "origin": "http://skillup.localhost:3309",
+  "startedUtc": "2026-11-14T09:49:01.436Z",
+  "checks": [
+    {
+      "name": "Login BFF",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Own completed exam exists",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Completed exam result BFF",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Canonical tutorial HTTP",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Canonical tutorial path retained",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Synthetic lesson rendered",
+      "actual": true,
+      "expected": [
+        true
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "Fixture session logout",
+      "actual": 200,
+      "expected": [
+        200
+      ],
+      "status": "PASS"
+    }
+  ],
+  "boundary": "Completed-exam BFF result, with optional warmed Chromium tutorial rendering, using a disposable account",
+  "finishedUtc": "2026-11-14T09:49:14.301Z",
+  "status": "PASS"
+}

@@ -1,0 +1,28 @@
+{
+  "recordedUtc": "2026-11-14T09:28:37.491Z",
+  "syntheticOnly": true,
+  "people": [
+    {
+      "platform": "skillup",
+      "count": 1
+    },
+    {
+      "platform": "skillhubcore",
+      "count": 1
+    }
+  ],
+  "grants": [
+    {
+      "platform": "skillup",
+      "deleted": false,
+      "count": 1
+    }
+  ],
+  "exams": [
+    {
+      "status": "started",
+      "count": 2
+    }
+  ],
+  "progress": []
+}

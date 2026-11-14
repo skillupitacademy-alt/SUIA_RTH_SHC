@@ -1,0 +1,304 @@
+{
+  "sourceCommit": "4aa0cad2e7659b35e2092c2edbfe4638868c917f",
+  "algorithm": "SHA-256",
+  "stagedRepresentation": "Git canonical blob",
+  "workingRepresentation": "Filesystem bytes, including local line endings",
+  "selfExcluded": true,
+  "files": [
+    {
+      "file": ".evidence/r6-e2e/AUTH-skillup.json",
+      "stagedSha256": "4aa937873c3ac6f4f5c0cdda33903c2b2ba5654aa8e6680115a0483a5426ab6f",
+      "workingSha256": "4aa937873c3ac6f4f5c0cdda33903c2b2ba5654aa8e6680115a0483a5426ab6f"
+    },
+    {
+      "file": ".evidence/r6-e2e/AUTHENTICATION_RESULTS.json",
+      "stagedSha256": "029e7e9b900f087857e93a6b25ccb04b619253183db1b7db92cc5579c6b5f860",
+      "workingSha256": "029e7e9b900f087857e93a6b25ccb04b619253183db1b7db92cc5579c6b5f860"
+    },
+    {
+      "file": ".evidence/r6-e2e/COLD-JOURNEY-skillup.json",
+      "stagedSha256": "3e8b05c68c01e173aa05ebd0054aaeeef352352f9a8f4446918b86b3456eb331",
+      "workingSha256": "3e8b05c68c01e173aa05ebd0054aaeeef352352f9a8f4446918b86b3456eb331"
+    },
+    {
+      "file": ".evidence/r6-e2e/CONFIG-INITIAL-JOURNEY-skillup.json",
+      "stagedSha256": "cde69cde8110de19634219c8ed7337c43cc62d2324462157cfb756d6ba9ed9f4",
+      "workingSha256": "cde69cde8110de19634219c8ed7337c43cc62d2324462157cfb756d6ba9ed9f4"
+    },
+    {
+      "file": ".evidence/r6-e2e/CONTENT_FIXTURES.json",
+      "stagedSha256": "1ebdda2f0b92ecad2092e9d22dc8d0b1b0304a4abbde3239ab05cf6ea145f5bb",
+      "workingSha256": "1ebdda2f0b92ecad2092e9d22dc8d0b1b0304a4abbde3239ab05cf6ea145f5bb"
+    },
+    {
+      "file": ".evidence/r6-e2e/CSV_NOTE_DELTA.json",
+      "stagedSha256": "b6db936d292b264cc95b7bc7815f40634f1af465cc5bbdef94dc9d3da1073b4a",
+      "workingSha256": "b4a81200c5f0a5157ab272bb2deae2f1df690aedd19d162ffd6aca507c79d70e"
+    },
+    {
+      "file": ".evidence/r6-e2e/DATABASE_CLEANUP.json",
+      "stagedSha256": "eeb496b35327b43f38b269e010480721eb64fb74d5b893036029aa2e8ff2d5ef",
+      "workingSha256": "eeb496b35327b43f38b269e010480721eb64fb74d5b893036029aa2e8ff2d5ef"
+    },
+    {
+      "file": ".evidence/r6-e2e/FINAL_CATALOG.json",
+      "stagedSha256": "17dfa4798414431e0e8745ce7957a5d4d2f82e6d5b571f8d890cfbc6c1fbe135",
+      "workingSha256": "17dfa4798414431e0e8745ce7957a5d4d2f82e6d5b571f8d890cfbc6c1fbe135"
+    },
+    {
+      "file": ".evidence/r6-e2e/FINAL_RESULTS.json",
+      "stagedSha256": "a70d393ceea2960c35aefdcb7f83673951c390df26518b7f08bb5338893c3c09",
+      "workingSha256": "a70d393ceea2960c35aefdcb7f83673951c390df26518b7f08bb5338893c3c09"
+    },
+    {
+      "file": ".evidence/r6-e2e/FIXTURE_SCHEMA_CATALOG.json",
+      "stagedSha256": "0a91fd281c916c5f8004e1015ed3239e4b1450c129ad36f5c789c87af71bf79a",
+      "workingSha256": "0a91fd281c916c5f8004e1015ed3239e4b1450c129ad36f5c789c87af71bf79a"
+    },
+    {
+      "file": ".evidence/r6-e2e/GRAPH_UPDATE.json",
+      "stagedSha256": "4d5b8e18efbf0d98405ed11652d96df09ff0abd5b799e51e13703eda086a3503",
+      "workingSha256": "4d5b8e18efbf0d98405ed11652d96df09ff0abd5b799e51e13703eda086a3503"
+    },
+    {
+      "file": ".evidence/r6-e2e/HARNESS_SYNTAX.json",
+      "stagedSha256": "4c405267801c9dede9bbd6e36a380657534e7d8bfa645ba8a9c2291af5a0cdab",
+      "workingSha256": "4c405267801c9dede9bbd6e36a380657534e7d8bfa645ba8a9c2291af5a0cdab"
+    },
+    {
+      "file": ".evidence/r6-e2e/HTTP-realtutorialhub.json",
+      "stagedSha256": "ac9481fa50bf167e31ee98a9be15e730c08a6024da923de11ad74e55d46ee5b0",
+      "workingSha256": "ac9481fa50bf167e31ee98a9be15e730c08a6024da923de11ad74e55d46ee5b0"
+    },
+    {
+      "file": ".evidence/r6-e2e/HTTP_STATUS_TIMINGS.json",
+      "stagedSha256": "283f8ec8e4ce8ba7acd37a0ecca242ff7383189be7a543491eec8b6d978ba931",
+      "workingSha256": "283f8ec8e4ce8ba7acd37a0ecca242ff7383189be7a543491eec8b6d978ba931"
+    },
+    {
+      "file": ".evidence/r6-e2e/INITIAL-JOURNEY-skillup.json",
+      "stagedSha256": "5c6f14b25171dfd6050bd18c352cc72c4d7ccafb0789a9ff16e2fffac449cec6",
+      "workingSha256": "5c6f14b25171dfd6050bd18c352cc72c4d7ccafb0789a9ff16e2fffac449cec6"
+    },
+    {
+      "file": ".evidence/r6-e2e/ISOLATED_PROCESSES.json",
+      "stagedSha256": "3db92696e7a53635b6098f065d8c3a48de11990d6d8443da16a2d69ebe150971",
+      "workingSha256": "3db92696e7a53635b6098f065d8c3a48de11990d6d8443da16a2d69ebe150971"
+    },
+    {
+      "file": ".evidence/r6-e2e/ISOLATION_MANIFEST.json",
+      "stagedSha256": "d65d7345d92637f7662111a7bda4057746d256352def6ab58181e517d973e7f4",
+      "workingSha256": "d65d7345d92637f7662111a7bda4057746d256352def6ab58181e517d973e7f4"
+    },
+    {
+      "file": ".evidence/r6-e2e/JOURNEY-realtutorialhub.json",
+      "stagedSha256": "92b4fb71aab8ad72825f5202afc7e3c48c016ad2eecd71c41a52e403c7bbb92a",
+      "workingSha256": "92b4fb71aab8ad72825f5202afc7e3c48c016ad2eecd71c41a52e403c7bbb92a"
+    },
+    {
+      "file": ".evidence/r6-e2e/JOURNEY-skillhubcore.json",
+      "stagedSha256": "5d10c3932215d069f1b9346f3cb5549a817e693549d7d6d2ca5e5d17c8c4f7a8",
+      "workingSha256": "5d10c3932215d069f1b9346f3cb5549a817e693549d7d6d2ca5e5d17c8c4f7a8"
+    },
+    {
+      "file": ".evidence/r6-e2e/JOURNEY-skillup.json",
+      "stagedSha256": "5aba9da8c147cd82630b1ef655d7950faa5945ed9354fe8f8f737164d90c30b8",
+      "workingSha256": "5aba9da8c147cd82630b1ef655d7950faa5945ed9354fe8f8f737164d90c30b8"
+    },
+    {
+      "file": ".evidence/r6-e2e/LINT_STAGED.json",
+      "stagedSha256": "a3b7f6045e9ef342b8de00f9fd97dd3d0aa380ca6637da3c155ab36104de54e6",
+      "workingSha256": "a3b7f6045e9ef342b8de00f9fd97dd3d0aa380ca6637da3c155ab36104de54e6"
+    },
+    {
+      "file": ".evidence/r6-e2e/MIGRATION_RECEIPT.json",
+      "stagedSha256": "701cbb0ef04562ff5a20a785ba00984189b4191a9993fb65b2d4d6ade157ca01",
+      "workingSha256": "701cbb0ef04562ff5a20a785ba00984189b4191a9993fb65b2d4d6ade157ca01"
+    },
+    {
+      "file": ".evidence/r6-e2e/PERSISTENCE_CHECKPOINT.json",
+      "stagedSha256": "3b9035184cc143b28b15abcf722c3eb09a39fa778ed0cb9c693db8bc5f701c11",
+      "workingSha256": "3b9035184cc143b28b15abcf722c3eb09a39fa778ed0cb9c693db8bc5f701c11"
+    },
+    {
+      "file": ".evidence/r6-e2e/PORTS_AFTER_CLEANUP.json",
+      "stagedSha256": "5a7e93eeaf2fdbf803b1808c4c79d0720c0aab979f4998b104531b641975f067",
+      "workingSha256": "426438118cebbea989e54b9d5a3e26b4eddc76bf30f1de5c1dc71f8d5963cce0"
+    },
+    {
+      "file": ".evidence/r6-e2e/PORTS_BEFORE_CLEANUP.json",
+      "stagedSha256": "823f6853c034dd688393fc39726e3d1f76a647afca0da30140e5e7bc34984387",
+      "workingSha256": "305ec101a977ad6b0ecd4d2b5cdef9cbd4c628c431d0eeb7383187303a0043bc"
+    },
+    {
+      "file": ".evidence/r6-e2e/PROCESS_CLEANUP.json",
+      "stagedSha256": "c2155c89e35e2edff1b7e390b7103d3f8d5ec802f8d44380c373c5d0cdb98e02",
+      "workingSha256": "78af6e78958fcc0c2bc4e251fba0cceaa8fbb13bb5b58ed6906b6f98dfab1a71"
+    },
+    {
+      "file": ".evidence/r6-e2e/PROTECTED_READ_ONLY_FINAL.json",
+      "stagedSha256": "30085ba209458ad9a2b2d8f8494a73098c51c20ffed1e1f0b019661db179ae4e",
+      "workingSha256": "30085ba209458ad9a2b2d8f8494a73098c51c20ffed1e1f0b019661db179ae4e"
+    },
+    {
+      "file": ".evidence/r6-e2e/README.md",
+      "stagedSha256": "64216a4bcb67be917d13165436fe15bab6c109a9e1f1c1b44e1ed139482222ca",
+      "workingSha256": "64216a4bcb67be917d13165436fe15bab6c109a9e1f1c1b44e1ed139482222ca"
+    },
+    {
+      "file": ".evidence/r6-e2e/REDACTION.json",
+      "stagedSha256": "33e3c87b8bd2aecb7c8c2f3c473eb625b7b9437001ec8fd752de321cecadbd32",
+      "workingSha256": "33e3c87b8bd2aecb7c8c2f3c473eb625b7b9437001ec8fd752de321cecadbd32"
+    },
+    {
+      "file": ".evidence/r6-e2e/RESULT-realtutorialhub.json",
+      "stagedSha256": "2bc3efd1f459e914ab15a733cef68468dd3cd9a4c6d01f33973b7181dbaf1816",
+      "workingSha256": "2bc3efd1f459e914ab15a733cef68468dd3cd9a4c6d01f33973b7181dbaf1816"
+    },
+    {
+      "file": ".evidence/r6-e2e/ROOT_AUTH_AUDIT_EXCEPTION.json",
+      "stagedSha256": "482808d868aeb7c5bb4617996ce1650008c7a1d6f236afb1b984aaf0046585fc",
+      "workingSha256": "482808d868aeb7c5bb4617996ce1650008c7a1d6f236afb1b984aaf0046585fc"
+    },
+    {
+      "file": ".evidence/r6-e2e/SECRET_SCAN.json",
+      "stagedSha256": "19ec94ea5ee2f2c3f02a28e02b0942a645fa1c8599a34de7c22651560d00ea4d",
+      "workingSha256": "19ec94ea5ee2f2c3f02a28e02b0942a645fa1c8599a34de7c22651560d00ea4d"
+    },
+    {
+      "file": ".evidence/r6-e2e/SETUP.json",
+      "stagedSha256": "5668f47f16ebd17a70c18a07502d58b197e69d7e0d7ffce76ce39201df935c33",
+      "workingSha256": "5668f47f16ebd17a70c18a07502d58b197e69d7e0d7ffce76ce39201df935c33"
+    },
+    {
+      "file": ".evidence/r6-e2e/STARTUP-INITIAL-JOURNEY-skillup.json",
+      "stagedSha256": "0a05c8a78f17b3cb03acb4f7e3a42b701422fdad3ba4a22bdcd64e4d0134810f",
+      "workingSha256": "0a05c8a78f17b3cb03acb4f7e3a42b701422fdad3ba4a22bdcd64e4d0134810f"
+    },
+    {
+      "file": ".evidence/r6-e2e/STARTUP-INITIAL-RESULT-realtutorialhub.json",
+      "stagedSha256": "1a5964697fdf27dfcb3c7bd3e88a379df97d9f6be94e7804870a5cefb9b684e5",
+      "workingSha256": "1a5964697fdf27dfcb3c7bd3e88a379df97d9f6be94e7804870a5cefb9b684e5"
+    },
+    {
+      "file": ".evidence/r6-e2e/TUTORIAL-realtutorialhub.json",
+      "stagedSha256": "c638f44c14f2b5055ee7905840a89d8171413778366044f8db1a8e54b3d6467c",
+      "workingSha256": "c638f44c14f2b5055ee7905840a89d8171413778366044f8db1a8e54b3d6467c"
+    },
+    {
+      "file": ".evidence/r6-e2e/TUTORIAL-skillup.json",
+      "stagedSha256": "4244b7183187826370335c2b5a60585ac3a9c82e67a9b9d430096da570fac6df",
+      "workingSha256": "4244b7183187826370335c2b5a60585ac3a9c82e67a9b9d430096da570fac6df"
+    },
+    {
+      "file": ".evidence/r6-e2e/WARM-INITIAL-JOURNEY-skillup.json",
+      "stagedSha256": "0fa2a653a8876ec2d4569a0c910c8609d0d1d37d0cd3dd79493ceaf9bb058e5b",
+      "workingSha256": "0fa2a653a8876ec2d4569a0c910c8609d0d1d37d0cd3dd79493ceaf9bb058e5b"
+    },
+    {
+      "file": ".evidence/r6-e2e/WARMUP.json",
+      "stagedSha256": "171fd11dd05face61c2e71ae6e9e8fb18bcba5a019e52e43a0fafe6a95a85a20",
+      "workingSha256": "171fd11dd05face61c2e71ae6e9e8fb18bcba5a019e52e43a0fafe6a95a85a20"
+    },
+    {
+      "file": ".evidence/r6-e2e/authentication.cjs",
+      "stagedSha256": "402e5076c2dadcba358cdb7f1cf44f7827002eef57c00c1968eb6bd90d105815",
+      "workingSha256": "402e5076c2dadcba358cdb7f1cf44f7827002eef57c00c1968eb6bd90d105815"
+    },
+    {
+      "file": ".evidence/r6-e2e/catalog-checks.cjs",
+      "stagedSha256": "58075241e5f985ce9727e2564f5e38e1ed0d176456e8c2b950dac43007583b27",
+      "workingSha256": "58075241e5f985ce9727e2564f5e38e1ed0d176456e8c2b950dac43007583b27"
+    },
+    {
+      "file": ".evidence/r6-e2e/cleanup-databases.cjs",
+      "stagedSha256": "ab3324672e9940d057931ef2b4387ea52c9e7aea002de58cde3f481248e71bd2",
+      "workingSha256": "ab3324672e9940d057931ef2b4387ea52c9e7aea002de58cde3f481248e71bd2"
+    },
+    {
+      "file": ".evidence/r6-e2e/cleanup.ps1",
+      "stagedSha256": "7636a82de11785bc736e5778a792b6e3c5100b0d57d29c9ec01a598559137650",
+      "workingSha256": "7636a82de11785bc736e5778a792b6e3c5100b0d57d29c9ec01a598559137650"
+    },
+    {
+      "file": ".evidence/r6-e2e/content-fixtures.cjs",
+      "stagedSha256": "cbcd7f75b94b78a8e00e6e5334d4097659e7b1da348f2840743047dea2e19ef9",
+      "workingSha256": "cbcd7f75b94b78a8e00e6e5334d4097659e7b1da348f2840743047dea2e19ef9"
+    },
+    {
+      "file": ".evidence/r6-e2e/gateway.cts",
+      "stagedSha256": "609138d967c8ada9e4c784744d9c0d131c7d084d99c29ff4c80f25c48278e15c",
+      "workingSha256": "e7993ec516ef4aa6f35fcf2f20778e51e12ab60eae6b57b95ba0aab07ad9493e"
+    },
+    {
+      "file": ".evidence/r6-e2e/http-checks.cjs",
+      "stagedSha256": "7327d7144867c0b13f9e81d9d8b03a1dbedbd1108d4ec885d892d0fa4ca808de",
+      "workingSha256": "7327d7144867c0b13f9e81d9d8b03a1dbedbd1108d4ec885d892d0fa4ca808de"
+    },
+    {
+      "file": ".evidence/r6-e2e/journey.cjs",
+      "stagedSha256": "584e250f4f949885ac8afa1f1e4386381d634cc79bfe1ee2c08ad0f98983c4a9",
+      "workingSha256": "584e250f4f949885ac8afa1f1e4386381d634cc79bfe1ee2c08ad0f98983c4a9"
+    },
+    {
+      "file": ".evidence/r6-e2e/migrate.mts",
+      "stagedSha256": "ef7b945d2770e4c0588ea437a1ab695572e4fdb923e84635e55a461b5d80d28a",
+      "workingSha256": "ef7b945d2770e4c0588ea437a1ab695572e4fdb923e84635e55a461b5d80d28a"
+    },
+    {
+      "file": ".evidence/r6-e2e/protected-read-only.cjs",
+      "stagedSha256": "e784e46fdf5a239c114384cd61b381d7ffc010a3b9743f47f209964233b069fe",
+      "workingSha256": "e784e46fdf5a239c114384cd61b381d7ffc010a3b9743f47f209964233b069fe"
+    },
+    {
+      "file": ".evidence/r6-e2e/setup.cjs",
+      "stagedSha256": "b0ea3618c1861b51c3a481daa757a75d9a14f49ad911dcaa1193fad9b731c839",
+      "workingSha256": "b0ea3618c1861b51c3a481daa757a75d9a14f49ad911dcaa1193fad9b731c839"
+    },
+    {
+      "file": ".evidence/r6-e2e/start.cjs",
+      "stagedSha256": "cdb0df1fcc6ba424b5e3c610cdb8adbfbaec0bf77a1aa36cbbdfab456a39747f",
+      "workingSha256": "cdb0df1fcc6ba424b5e3c610cdb8adbfbaec0bf77a1aa36cbbdfab456a39747f"
+    },
+    {
+      "file": ".evidence/r6-e2e/switch-app.ps1",
+      "stagedSha256": "1664f128adeacfc6079e2fd97078dcde08b4a40aa30cfe4d3c288c64c46cbb5d",
+      "workingSha256": "1664f128adeacfc6079e2fd97078dcde08b4a40aa30cfe4d3c288c64c46cbb5d"
+    },
+    {
+      "file": ".evidence/r6-e2e/tutorial-page.cjs",
+      "stagedSha256": "aa5b76a9ecf1e06e3b4257e1c1b7e7f47b90d6d3b7d92f9ddbff6fde06c6d425",
+      "workingSha256": "aa5b76a9ecf1e06e3b4257e1c1b7e7f47b90d6d3b7d92f9ddbff6fde06c6d425"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/DISPOSABLE_RESULTS.json",
+      "stagedSha256": "3505da4609efc7d95d8cf0df860572b6c256b2542aac4b7e2ef2d18a590f9fbb",
+      "workingSha256": "3505da4609efc7d95d8cf0df860572b6c256b2542aac4b7e2ef2d18a590f9fbb"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/PRE_CONNECTION_BLOCKED.json",
+      "stagedSha256": "c12eef1fde50fc243c64b30ffd9b1c6f8601db99be4c4a3a4135f2d7816e858c",
+      "workingSha256": "c12eef1fde50fc243c64b30ffd9b1c6f8601db99be4c4a3a4135f2d7816e858c"
+    },
+    {
+      "file": ".evidence/r6-shc-revocation/SUPPLIED_TARGET_VERIFICATION.json",
+      "stagedSha256": "c69843972f73163628d37c7c21b14e80a0a6abd440d5233d9837f81ac1bdb459",
+      "workingSha256": "c69843972f73163628d37c7c21b14e80a0a6abd440d5233d9837f81ac1bdb459"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/10_SHC_ADMIN_ACCEPTANCE_LEDGER.csv",
+      "stagedSha256": "5d636e6de7394ff801a1912717fc115943c918b0ca7da275290c39cb0274dff0",
+      "workingSha256": "0e02c24efc6dcf9647825648e09fa6b0ac67a2ec2140f34eb76cd57cc7229baa"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_NEON_POSTGRESQL_QUALIFICATION.md",
+      "stagedSha256": "2397b979d85c2db0bc1793f9e07158422203af63daa5c98f6ad2cacbfab90f1a",
+      "workingSha256": "43c05e0a0590e46178685f4ad5771142e2b2ca2b912aef675d739d6d217219e8"
+    },
+    {
+      "file": "docs/architecture/reviews/SHC/SOL_R6_B_THREE_APP_RELEASE_READINESS.md",
+      "stagedSha256": "98314d652e976fcd83342d19c7b5b21622f12d752b621bee1fabfa7a5c13426c",
+      "workingSha256": "98314d652e976fcd83342d19c7b5b21622f12d752b621bee1fabfa7a5c13426c"
+    }
+  ]
+}
